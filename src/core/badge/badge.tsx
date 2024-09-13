@@ -1,0 +1,1 @@
+export {Badge, type BadgeProps} from "../../mui/components/Badge";

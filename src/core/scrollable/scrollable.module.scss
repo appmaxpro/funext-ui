@@ -1,0 +1,67 @@
+$width: 6px;
+
+.scrollable {
+  min-width: 0;
+  min-height: 0;
+}
+
+.overflowX {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  padding-top: calc($width + 2px);
+  padding-bottom: 2px;
+}
+
+.overflowY {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding-left: calc($width + 2px);
+  padding-right: 2px;
+}
+
+.overflowX.overflowY {
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+[dir="rtl"] .overflowY,
+.overflowY[dir="rtl"] {
+  padding-left: 2px;
+  padding-right: calc($width + 2px);
+}
+
+.scrollable {
+  --scrollbar-color: var(
+    --ax-theme-shell-scrollbar-color,
+    var(--bs-border-color)
+  );
+  scrollbar-color: var(--scrollbar-color) transparent;
+  scrollbar-width: auto;
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    background-clip: padding-box;
+    border: 0;
+    border-radius: calc(($width / 3) * 2);
+    box-shadow: none;
+    min-height: 50px;
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track:hover {
+    background: none;
+    border: none;
+  }
+
+  &:not(:hover) {
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    }
+    scrollbar-color: transparent transparent;
+  }
+}

@@ -1,0 +1,373 @@
+'use client';
+import React from "react";
+
+// @floating-ui
+import {
+  useFloating,
+  useFloatingTree,
+  useFloatingNodeId,
+  useFloatingParentNodeId,
+  FloatingNode,
+  useInteractions,
+  offset as fuiOffset,
+  flip,
+  shift,
+  useHover,
+  useClick,
+  useRole,
+  useDismiss,
+  safePolygon,
+  useListNavigation,
+  useTypeahead,
+  useMergeRefs,
+  autoUpdate,
+  arrow as fuArrow,
+  UseFloatingReturn,
+  FloatingTree
+} from "@floating-ui/react";
+
+// utils
+import merge from "deepmerge";
+
+// context
+import { useTailwindTheme, useRtl } from "../../theme";
+import { MenuContextProvider } from "./MenuContext";
+// types
+import type {
+  Handler,
+  Placement,
+  OffsetProps,
+  AnimationProps,
+  MenuDismissProps,
+  children,
+  Arrow
+} from "../../types/components/menu";
+import { isElement } from "../../utils";
+import { usePrevious } from "../../hooks";
+import { 
+  type AnimationProps as MotionAnimationProps,
+  cubicBezier 
+} from "framer-motion"
+
+
+export interface MenuProps<T=HTMLElement|null>{
+  open?: boolean;
+  handler?: Handler;
+  placement?: Placement;
+  offset?: OffsetProps;
+  dismiss?: MenuDismissProps;
+  animate?: AnimationProps;
+  lockScroll?: boolean;
+  children: React.ReactNode;
+  allowHover?: boolean;
+  arrow?: Arrow | boolean;
+  target?: React.MutableRefObject<T> | T | null;
+  nav?:boolean;
+  disablePortal?:boolean;
+}
+
+export const Menu = React.forwardRef<
+  HTMLButtonElement, 
+  MenuProps
+>(
+  (
+    { children, ...props },
+    ref,
+  ) => {
+    // 1. init
+    const parentId = useFloatingParentNodeId();
+
+    // 2. return
+    if (parentId == null) {
+      return (
+        <FloatingTree>
+          <MenuCore ref={ref as any} {...props}>
+            {children}
+          </MenuCore>
+        </FloatingTree>
+      );
+    }
+
+    return (
+      <MenuCore ref={ref as any} {...props}>
+        {children}
+      </MenuCore>
+    );
+  },
+);
+
+Menu.displayName = "Mux.Menu";
+
+const ease = cubicBezier(0.4, 0, 0.2, 1);
+
+export const MenuCore = React.forwardRef<
+  HTMLButtonElement,
+  MenuProps
+>(
+  (
+    { open, 
+      handler, 
+      placement, 
+      offset, 
+      dismiss, 
+      animate, 
+      lockScroll, 
+      allowHover, 
+      arrow = false, 
+      target,
+      nav,
+      disablePortal,
+      children ,
+
+    },
+    ref,
+  ) => {
+    // 1. init
+    const { menu } = useTailwindTheme();
+    const { defaultProps, styles } = menu;
+    const [internalOpen, setInternalOpen] = React.useState(false);
+    const [internalAllowHover, setInternalAllowHover] = React.useState(false);
+    const arrowRef = React.useRef<any>(null);
+    
+    // 2. set default props
+    open = open ?? internalOpen;
+    handler = handler ?? setInternalOpen;
+    //placement = placement ?? defaultProps.placement;
+    offset = offset ?? defaultProps.offset;
+    dismiss = dismiss ?? defaultProps.dismiss;
+    animate = animate ?? defaultProps.animate;
+    lockScroll = lockScroll ?? defaultProps.lockScroll;
+    let arrowProps  = typeof arrow !== 'boolean' ?  arrow : defaultProps.arrow;
+
+    const showArrow = typeof arrow === 'boolean' ? arrow : !!arrowProps;
+    
+    if (showArrow === false) {
+        arrowProps = undefined;
+    } else if (showArrow) {
+        arrowProps = merge(defaultProps.arrow ?? styles.base.defaultArrow, arrowProps ?? {});
+    }
+    
+    
+
+    // 3. set animation
+    const animation = {
+      unmount: {
+        opacity: 0,
+        transition: { duration: 0.35, ease },
+        startDelay: 0,
+        transform: {
+          transform: "scale(0.9)",
+          transition: { duration: 0.243, ease },
+          startDelay: 0,
+        }
+      },
+      mount: {
+        opacity: 1,
+        transition: { duration: 0.35, ease },
+        startDelay: 0,
+        transform: { 
+          transform: "scale(1)",
+          transition: { duration: 0.243, ease },
+          startDelay: 0,
+        }
+      },
+    };
+
+    const appliedAnimation = merge(animation, animate as any);
+
+    // 4. set @floating-ui
+    const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
+    const listItemsRef = React.useRef<Array<HTMLButtonElement | null>>([]);
+    const listContentRef = React.useRef(
+      React.Children.map(children, (child) =>
+        React.isValidElement(child) ? child.props.label : null,
+      ) as Array<string | null>,
+    );
+
+    const tree = useFloatingTree();
+    const nodeId = useFloatingNodeId();
+    const parentId = useFloatingParentNodeId();
+    const rtl = useRtl();
+    const nested = parentId != null;
+    placement = placement ?? (nested ? (rtl ? 'left-start' : 'right-start') : 'bottom')
+    const { x, y, strategy, refs, context } = useFloating<HTMLButtonElement>({
+      open,
+      nodeId,
+      placement: placement,
+      onOpenChange: handler,
+      middleware: [
+        fuiOffset(offset), 
+        flip(), 
+        shift(), 
+        showArrow &&
+        fuArrow({
+          element: arrowRef,
+          padding: arrowProps.padding ?? 5,
+        }),
+      ],
+      whileElementsMounted: autoUpdate,
+
+      elements: target ? {
+         reference: isElement(target) ? target : target?.current
+      } : undefined
+    });
+
+    const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([
+      useHover(context, {
+        handleClose: safePolygon({
+          
+          blockPointerEvents: true,
+        }),
+        restMs: 25,
+        enabled: allowHover ?? (nested && internalAllowHover),
+        delay: { open: 75 },
+      }),
+      useClick(context, {
+        toggle: !nested || !internalAllowHover,
+        event: "mousedown",
+        ignoreMouse: nested,
+      }),
+      useRole(context, { role: "menu" }),
+      useDismiss(context, dismiss),
+      useListNavigation(context, {
+        listRef: listItemsRef,
+        activeIndex,
+        nested,
+        onNavigate: setActiveIndex,
+        rtl
+      }),
+      useTypeahead(context, {
+        listRef: listContentRef,
+        onMatch: open ? setActiveIndex : undefined,
+        activeIndex,
+      }),
+    ]);
+
+    React.useEffect(() => {
+      function handleTreeClick() {
+        if (dismiss?.itemPress) handler?.(false);
+      }
+
+      function onSubMenuOpen(event: { nodeId: string; parentId: string }) {
+        if (event.nodeId !== nodeId && event.parentId === parentId) {
+          handler?.(false);
+        }
+      }
+
+      tree?.events.on("click", handleTreeClick);
+      tree?.events.on("menuopen", onSubMenuOpen);
+
+      return () => {
+        tree?.events.off("click", handleTreeClick);
+        tree?.events.off("menuopen", onSubMenuOpen);
+      };
+    }, [tree, nodeId, parentId, handler, dismiss]);
+
+    React.useEffect(() => {
+      if (open) {
+        tree?.events.emit("menuopen", {
+          parentId,
+          nodeId,
+        });
+      }
+    }, [tree, open, nodeId, parentId]);
+
+    React.useEffect(() => {
+      function onPointerMove({ pointerType }: PointerEvent) {
+        if (pointerType !== "touch") {
+          setInternalAllowHover(true);
+        }
+      }
+
+      function onKeyDown() {
+        setInternalAllowHover(false);
+      }
+
+      window.addEventListener("pointermove", onPointerMove, {
+        once: true,
+        capture: true,
+      });
+
+      window.addEventListener("keydown", onKeyDown, true);
+      return () => {
+        window.removeEventListener("pointermove", onPointerMove, {
+          capture: true,
+        });
+
+        window.removeEventListener("keydown", onKeyDown, true);
+      };
+    }, [internalAllowHover]);
+
+    //const referenceRef = useMergeRefs([refs.setReference, ref]);
+
+    const contextValue = React.useMemo(
+      () => ({
+        open,
+        handler,
+        setInternalOpen,
+        strategy,
+        x,
+        y,
+        reference: refs.setReference,
+        floating: refs.setFloating,
+        listItemsRef,
+        getReferenceProps,
+        getFloatingProps,
+        getItemProps,
+        appliedAnimation,
+        lockScroll,
+        context,
+        activeIndex,
+        tree,
+        allowHover,
+        internalAllowHover,
+        nested,
+        setActiveIndex,
+        rtl,
+        placement,
+        arrow: arrowProps,
+        arrowRef
+      }),
+      [
+        open,
+        handler,
+        setInternalOpen,
+        strategy,
+        x,
+        y,
+        //referenceRef,
+        refs,
+        getReferenceProps,
+        getFloatingProps,
+        getItemProps,
+        appliedAnimation,
+        lockScroll,
+        context,
+        activeIndex,
+        tree,
+        allowHover,
+        internalAllowHover,
+        nested,
+        setActiveIndex,
+        placement,
+        arrowRef
+      ],
+    );
+
+    // 5. return
+    return (
+      <MenuContextProvider value={contextValue as any}>
+        <FloatingNode id={nodeId}>{children}</FloatingNode>
+      </MenuContextProvider>
+    );
+
+  },
+);
+
+
+MenuCore.displayName = "Mux.MenuCore";
+
+
+
+
+export default Menu;

@@ -1,0 +1,448 @@
+.container {
+  --ax-input-border: none;
+  --ax-input-focus-padding: var(--ax-input-padding);
+  --ax-input-focus-border: none;
+  --ax-input-border-radius: 0;
+  --ax-input-border-width: 0;
+  --ax-input-focus-border-width: 0;
+  --ax-clear-padding: .4rm 6rem;
+  --ax-clear-border: none;
+  --ax-clear-focus-padding: var(--ax-clear-padding);
+  --ax-clear-focus-border: none;
+  --ax-clear-border-radius: 0;
+  --ax-clear-border-width: 0;
+  --ax-clear-focus-border-width: 0;
+  --ax-theme-input-padding: 0.2rem 0.375rem;
+  --ax-theme-input-focus-padding: var(--ax-theme-input-padding);
+  --ax-theme-focus-padding: var(--ax-theme-input-padding);
+  --ax-theme-input-border:none;
+  --ax-theme-input-focus-border: none;
+  --ax-theme-input-focus-shadow: none;
+  --ax-theme-input-border-radius: 0;
+  --ax-theme-input-border-width: var(--ax-theme-input-border-width);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  user-select: none;
+  flex: 1;
+  position: relative;
+  outline: none;
+  color: var(--bs-table-color);
+  background-color: var(--bs-table-bg);
+  border-color: var(--bs-table-border-color); 
+}
+
+.resizingColumns,
+.focusElement {
+  cursor: pointer;
+}
+
+.dragElement {
+  opacity: 1;
+  &.dragging {
+    opacity: 0.8;
+  }
+}
+
+.body {
+  flex: 1;
+  width: fit-content;
+  min-width: 100%;
+}
+
+.row {
+  display: flex;
+  cursor: pointer;
+}
+
+.body > .dndRow:nth-of-type(odd) > .row,
+.body > .row:not(:hover):not(.selected):not(.inner):nth-of-type(odd) {
+  color: var(--bs-table-striped-color);
+  background: var(--bs-table-striped-bg);
+}
+
+.body > .row:hover {
+  background: var(--bs-table-hover-bg);
+  color: var(--bs-table-hover-color);
+}
+
+.body > .row.selected {
+  background: var(--bs-table-active-bg);
+  color: var(--bs-table-active-color);
+}
+
+.header {
+  width: fit-content;
+  min-width: 100%;
+  color: var(--bs-table-th-color);
+  background-color: var(--bs-table-th-bg);
+  &.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    &.shadow {
+      box-shadow:
+        0 4px 6px -1px rgb(0 0 0 / 10%),
+        0 2px 4px -2px rgb(0 0 0 / 10%);
+    }
+  }
+}
+
+.container.no-columns .header {
+  width: 100%;
+  & .row {
+    min-height: 2rem;
+  }
+}
+
+.footer {
+  width: fit-content;
+  min-width: 100%;
+  border: var(--bs-table-footer-border, 1px solid var(--bs-table-border-color));
+  border-left: none;
+  border-right: none;
+  background-color: var(--bs-table-th-bg);
+  &.sticky {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+.header .column {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.header .column,
+.footerRow .column {
+  font-weight: var(--bs-table-th-font-weight);
+}
+
+.container:not(.no-columns):not(.rtl)
+  .header.options
+  .column:last-child:not(.action) {
+  padding-right: 1.5rem !important;
+  .headerColumnMenuButton {
+    right: 1.25rem;
+  }
+}
+.container.rtl:not(.no-columns)
+  .header.options
+  .column:last-child:not(.action) {
+  padding-left: 1.5rem !important;
+  .headerColumnMenuButton {
+    left: 1.25rem;
+  }
+}
+
+.column {
+  &.selected {
+    position: relative;
+    background-color: var(--bs-table-cell-active-bg, rgba(0, 0, 0, 0.05));
+  }
+  &.center {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.dragColumn {
+  flex: 1;
+  overflow: hidden;
+}
+
+.headerColumnTitle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  & span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  &.center {
+    justify-content: center;
+  }
+  &.resizable {
+    max-width: calc(100% - 0.5rem);
+  }
+}
+
+.headerColumnMenuButton {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  .rtl & {
+    right: unset;
+    left: 0;
+  }
+  .header .column:hover &,
+  &.active {
+    visibility: visible;
+  }
+}
+
+.ascSortIcon {
+  transform: scaleY(-1);
+}
+
+.headerColumnMenuIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.headerMenuItem:active {
+  background: transparent;
+}
+
+.header .row:first-child .column::before {
+  content: " ";
+  width: 2px;
+  height: 100%;
+  background-color: var(--bs-table-border-color);
+  position: absolute;
+  left: -1px;
+  opacity: 0.5;
+}
+
+.columnResizer {
+  width: 0.5rem;
+  height: 100%;
+  cursor: col-resize;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+
+  right: 0;
+  padding: 0.75rem 0;
+  overflow: hidden;
+
+  hr {
+    background: var(--bs-table-border-color);
+  }
+
+  &.fixed {
+    cursor: pointer;
+  }
+}
+
+.container.rtl {
+  .columnResizer {
+    right: unset;
+    left: 0;
+  }
+  .header .row:first-child .column::before {
+    left: unset;
+    right: -1px;
+  }
+}
+
+.detailsRow {
+  width: 100%;
+  border-bottom: var(--bs-table-body-border, 1px solid var(--bs-table-border-color));
+}
+
+.expandRowIcon.disabled {
+  opacity: 0.25;
+}
+
+.expandRowIcon:hover {
+  background: var(--bs-table-cell-active-bg);
+}
+.groupRow {
+  color: var(--bs-table-hover-color);
+  padding: var(--bs-table-cell-padding);
+  min-height: 2rem;
+  cursor: pointer;
+  font-weight: var(--bs-table-th-font-weight);
+  min-width: 100%;
+}
+
+.groupSpacer {
+  width: 12px;
+}
+
+.groupRowContent {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.row .column {
+  padding: var(--bs-table-cell-padding);
+  display: flex;
+  align-items: center;
+  &,
+  & > * {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    .variable-rows & {
+      white-space: wrap;
+    }
+  }
+}
+.header .row,
+.body .row {
+  box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+.header .row {
+  border-bottom: var(--bs-table-header-border, 1px solid var(--bs-table-border-color));
+}
+.body .row {
+  border-bottom: var(--bs-table-body-border, 1px solid var(--bs-table-border-color));
+}
+
+.body [data-dragging] > .row {
+  border-top: var(--bs-table-body-border, 1px solid var(--bs-table-border-color));
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.header {
+  border-top: var(--bs-table-header-border, 1px solid var(--bs-table-border-color));
+}
+
+.header .searchRow {
+  .column {
+    padding: 0;
+  }
+}
+
+.editRow {
+  .column {
+    padding: var(--bs-table-cell-padding);
+  }
+}
+
+.container.has-footer .body .row:last-child {
+  border-bottom: none;
+}
+.container:not(.rtl) .header .column:last-child {
+  border-right: none;
+  flex: 1;
+}
+
+.container.rtl .header .column:first-child {
+  border-right: none;
+  flex: 1;
+}
+
+.drag-over-current {
+  background: var(--bs-table-hover-bg) !important;
+}
+
+.groupTagContainer {
+  padding: 0.25rem;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.groupTagWrapper {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.groupTag {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.25rem;
+}
+
+.groupTagTitle {
+  user-select: none;
+  cursor: inherit;
+}
+
+.container.no-records {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  & .body {
+    flex: 1;
+    justify-content: center;
+    display: flex;
+    width: 100%;
+    min-height: 3rem;
+  }
+}
+
+.container.no-records:not(.has-add-new) .body {
+  align-items: center;
+}
+
+.addNewText {
+  cursor: pointer;
+  padding-left: 30px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  .rtl & {
+    padding-left: 0;
+    padding-right: 30px;
+  }
+}
+
+.noRecordsText {
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.columnOptions {
+  cursor: pointer;
+  position: absolute;
+  right: 0.25rem;
+  top: 0.5rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  .rtl & {
+    right: unset;
+    left: 0;
+  }
+}
+
+.columnOptionsMenu {
+  display: flex;
+  max-width: 200px;
+}
+
+.columnOptionsMenuColumns {
+  max-height: 350px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.columnOptionMenuTitle {
+  width: 120px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bs-table-color);
+}
+
+.dragColumnArea {
+  min-height: 1.25rem;
+  width: 100%;
+}
+
+.groupPlaceholder {
+  opacity: 0.5;
+  padding: 0 0.25rem;
+}

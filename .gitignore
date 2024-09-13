@@ -1,0 +1,30 @@
+# dependencies
+node_modules
+
+# testing
+coverage
+
+# production
+build
+dist
+storybook-static
+
+# Eclispe
+bin
+.project
+.classpath
+.settings
+.metadata
+
+# Intellij
+out
+.idea
+*.iml
+*.ipr
+*.iws
+*.iml
+atlassian-ide-plugin.xml
+
+# misc
+.DS_*
+*.log

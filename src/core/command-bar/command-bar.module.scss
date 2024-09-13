@@ -1,0 +1,92 @@
+
+.bar {
+  display: flex;
+
+}
+
+.itemWrapper {
+  display: flex;
+}
+
+.item {
+  outline: 0;
+  border: 0;
+  user-select: none;
+  box-shadow: none;
+  position: relative;
+}
+
+.item:focus-visible {
+  box-shadow: none;
+}
+
+.item > .title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  & img {
+    max-width: 24px;
+    max-height: 24px;
+  }
+}
+
+.item.split {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.item.open {
+ 
+}
+
+.bar > .divider {
+  width: 1px;
+  border-top: 0;
+  margin: 0 0.25rem;
+  opacity: 1;
+}
+
+.icon {
+  line-height: 1;
+  font-size: 1.5rem;
+}
+
+.arrowIcon {
+  line-height: 1;
+  margin: -0.25rem;
+  font-size: 1rem;
+}
+
+
+.image {
+  max-width: 24px;
+  max-height: 24px;
+}
+
+.iconCircle {
+  display: flex;
+}
+
+.iconEnd {
+  flex-direction: row-reverse;
+}
+
+.titleText {
+  margin: 0 0.25rem;
+}
+
+.menuTexts {
+  display: flex;
+  flex-direction: column;
+  .menuSub {
+    font-size: smaller;
+    opacity: 0.5;
+  }
+}
+.menuTitle {
+  flex: 1;
+}
+
+.menuItemIcon {
+  line-height: 0;
+}

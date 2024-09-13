@@ -1,0 +1,20 @@
+.board {
+  height: inherit;
+  width: 100%;
+  display: inline-flex;
+  background-color: inherit;
+}
+
+.column {
+  position: relative;
+  width: 250px;
+}
+
+.record-list {
+  padding: 8px;
+}
+
+.record {
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+}
