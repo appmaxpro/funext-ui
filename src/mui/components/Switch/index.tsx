@@ -32,6 +32,7 @@ export interface SwitchProps extends React.ComponentProps<"input"> {
   circleProps?: objectType;
   inputRef?: React.Ref<HTMLInputElement>;
   rippleClass?: string;
+  error?: any;
 }
 
 export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
@@ -47,6 +48,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
       labelProps,
       inputRef,
       rippleClass,
+      error,
       ...rest
     },
     ref,
@@ -58,7 +60,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     const switchId = React.useId();
 
     // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
+    color = useThemeColor(error ? 'error' : color, defaultProps.color);
     ripple = ripple ?? defaultProps.ripple;
     disabled = disabled ?? defaultProps.disabled;
     containerProps = containerProps ?? defaultProps.containerProps;

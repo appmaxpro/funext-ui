@@ -1,7 +1,8 @@
+'use client';
 import React, { useMemo } from "react";
 
 // framer-motion
-import { AnimatePresence, m, useAnimation, domAnimation, LazyMotion } from "framer-motion";
+import { AnimatePresence, m, useAnimation, domAnimation, LazyMotion, cubicBezier} from "framer-motion";
 
 // @floating-ui
 import { 
@@ -22,34 +23,38 @@ import { useTailwindTheme } from "../../theme";
 
 // types
 import {
-  open,
-  size,
-  overlay,
-  children,
-  placement,
-  overlayProps,
-  className,
+  Placement,
+  OverlayProps,
+  DismissProps,
   onClose,
-  dismiss,
-  transition,
-  overlayRef
+  Transition,
+  OverlayRef,
+
 } from "../../types/components/drawer";
 import useEnhancedEffect from "@mui/utils/useEnhancedEffect";
-import { isRTL } from "../../../core";
-import { SxComponentProps } from "../../styles";
+import { SxComponentProps, useRtl, styled } from "../../styles";
+
+const DrawerRoot = styled(m.div, {
+  name: 'MuxDrawer',
+  slot: 'Root'
+})
+<SxComponentProps<any>>({
+  transition: 'transform 225ms cubic-bezier(0, 0, 0.2, 1)'
+});
+
 
 export interface DrawerProps extends SxComponentProps<"div"> {
   open: boolean;
-  size?: size;
+  size?: number;
   overlay?: boolean;
-  children: children;
-  placement?: placement;
-  overlayProps?: overlayProps;
-  className?: className;
+  placement?: Placement;
+  overlayProps?: OverlayProps;
+  overlayRef?: OverlayRef;
+  className?: string;
+  dismiss?: DismissProps;
   onClose?: onClose;
-  dismiss?: dismiss;
-  transition?: transition;
-  overlayRef?: overlayRef;
+  transition?: Transition;
+
   strategy?:Strategy;
 }
 
@@ -105,7 +110,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     }, [open, controls, placement]);
 
     //@ts-nocheck
-    const isRtl = useMemo(()=> isRTL((refs.reference?.current ?? refs.floating?.current) as any), []);
+    const isRtl = useRtl();
     
     const dirPlacement = ((placement === "left" || placement === "right") && isRtl) 
          ? (placement === "left" ? 'right' : 'left')
@@ -168,17 +173,18 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
             )}
           </AnimatePresence>
           <AnimatePresence>
-            <m.div
+            <DrawerRoot
               {...getFloatingProps({
                 ref,
                 ...rest,
               })}
               className={drawerClasses}
               style={{
-                maxWidth: placement === "left" || placement === "right" ? size : "100%",
-                maxHeight: placement === "top" || placement === "bottom" ? size : "100%",
-                height: placement === "left" || placement === "right" ? "100vh" : "100%",
-                position: floatStrategy
+                width: placement === "left" || placement === "right" ? size : undefined,
+                height: placement === "top" || placement === "bottom" ? size : undefined,
+                //height: placement === "left" || placement === "right" ? "100vh" : "100%",
+                position: floatStrategy,
+                ...rest.style
               }}
               initial="close"
               animate={controls}
@@ -186,7 +192,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
               transition={transition}
             >
               {children}
-            </m.div>
+            </DrawerRoot>
           </AnimatePresence>
         </LazyMotion>
       </React.Fragment>

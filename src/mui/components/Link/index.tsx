@@ -13,7 +13,9 @@ import {
   alpha,
   getPath,
   type SxThemeProps,
-  type StyledComponent
+  type StyledComponent,
+  memoTheme,
+  Theme
 } 
 from '../../styles';
 
@@ -60,7 +62,7 @@ const LinkRoot = styled(TextRoot, {
       ownerState.component === 'button' && styles.button,
     ];
   },
-})(({ theme }) => {
+})(memoTheme(({ theme }) => {
   return {
     variants: [
       {
@@ -161,7 +163,7 @@ const LinkRoot = styled(TextRoot, {
       },
     ],
   };
-}) as StyledComponent<LinkOwnProps>;
+})) as StyledComponent<LinkOwnProps>;
 
 const Link = React.forwardRef<HTMLElement, LinkProps>(function Link(inProps, ref) {
   
@@ -185,6 +187,7 @@ const Link = React.forwardRef<HTMLElement, LinkProps>(function Link(inProps, ref
     sx,
     color:asColor,
     variant:asVariant,
+    disabled,
     ...other
   } = props;
 
@@ -216,12 +219,11 @@ const Link = React.forwardRef<HTMLElement, LinkProps>(function Link(inProps, ref
     underline: underlineVal,
     focusVisible,
     color,
-    variant
+    variant,
+    disabled
   };
 
   const classes = useUtilityClasses(ownerState);
-
-  console.log("MuxLink props:", TypographyClasses);
    
   return (
     <LinkRoot

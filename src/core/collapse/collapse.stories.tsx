@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { Box } from "../box";
-import { Collapse, Button } from "../../mui";
+import { Collapse, Button, Text } from "../../mui";
 
 const config = {
   component: Collapse,
@@ -15,7 +15,7 @@ export const Basic = function () {
   };
 
   return (
-    <Box>
+    <Box className="flex flex-col items-start justify-start">
       <Button onClick={toggle}>
         Toggle
       </Button>
@@ -24,8 +24,12 @@ export const Basic = function () {
           mt={2}
           rounded
           bg="primary"
-          style={{ width: 300, height: 100 }}
-        ></Box>
+          style={{ width: 300 }}
+        >
+          <Text>
+              A live, editable example of the Framer Motion API. Explore this online Framer Motion: Accordion sandbox and experiment with it yourself.
+          </Text>
+        </Box>
       </Collapse>
     </Box>
   );
@@ -38,7 +42,7 @@ export const Horizontal = function () {
   };
 
   return (
-    <Box>
+    <Box className="flex items-start">
       <Button  onClick={toggle}>
         Toggle
       </Button>
@@ -47,8 +51,13 @@ export const Horizontal = function () {
           mt={2}
           rounded
           bg="gray-300"
-          style={{ width: 300, height: 100 }}
-        ></Box>
+          style={{ height: 100, width: 300 }}
+        >
+          <Text>
+              A live, editable example of the Framer Motion API. Explore this online Framer Motion: Accordion sandbox and experiment with it yourself.
+          </Text>
+
+        </Box>
       </Collapse>
     </Box>
   );

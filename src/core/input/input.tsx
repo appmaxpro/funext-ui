@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { ComponentProps, ComponentType, forwardRef, useState } from "react";
-import { Box, useClassNames } from "..";
+import { Box, useClassNames } from "../..";
 import styled from "../styled";
 import { clsx } from "../clsx";
 import styles from "./input.module.scss";

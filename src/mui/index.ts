@@ -2,6 +2,7 @@
 // components
 export * from "./theme";
 export * from "./styles";
+export * from "./props";
 
 export * from "./components/Accordion";
 export * from "./components/Alert";
@@ -41,9 +42,20 @@ export * from "./components/Panel";
 export * from "./components/Divider";
 export * from "./components/Link";
 export * from "./components/Box";
+export * from "./components/Stack";
 export * from "./components/Grid";
 export * from "./components/Select/AutoSelect";
 export * from "./components/Focus";
+export * from "./components/Snackbar";
+
+export * from "./hooks";
+export * from "./utils";
+export * from "../icons/material-icon";
+
+import Input from "./components/Input"
+export { 
+  Input as TextField
+}
 // context
 export { 
   TailwindThemeContext as MaterialTailwindTheme, 
@@ -51,6 +63,5 @@ export {
   useTailwindTheme 
 } from "./theme";
 
-export * from "./styles";
 // theme
 export * from "./components/index";

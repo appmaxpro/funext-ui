@@ -13,10 +13,14 @@ import { SxComponentProps, styled } from "../../styles";
 const CardBodyRoot = styled('div', {
   name: 'MuxCardBody',
   slot: 'Root'
-})('');
+})({
+  padding: 16,
+  '&:last-child': {
+    paddingBottom: 24,
+  },
+});
 
 export type CardBodyProps = SxComponentProps<"div"> & {};
-
 
 export const CardBody = React.forwardRef<HTMLDivElement, CardBodyProps>(
   ({ className, ...rest }, ref) => {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Box } from "../core";
+import { Box } from "../mui";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 
 import KanbanRecord from "./kanban-record";

@@ -23,7 +23,8 @@ import {
   autoUpdate,
   arrow as fuArrow,
   UseFloatingReturn,
-  FloatingTree
+  FloatingTree,
+  Strategy
 } from "@floating-ui/react";
 
 // utils
@@ -64,6 +65,7 @@ export interface MenuProps<T=HTMLElement|null>{
   target?: React.MutableRefObject<T> | T | null;
   nav?:boolean;
   disablePortal?:boolean;
+  strategy?: Strategy;
 }
 
 export const Menu = React.forwardRef<
@@ -115,6 +117,7 @@ export const MenuCore = React.forwardRef<
       allowHover, 
       arrow = false, 
       target,
+      strategy:strategyProp="fixed",
       nav,
       disablePortal,
       children ,
@@ -152,24 +155,19 @@ export const MenuCore = React.forwardRef<
     // 3. set animation
     const animation = {
       unmount: {
-        opacity: 0,
-        transition: { duration: 0.35, ease },
-        startDelay: 0,
-        transform: {
-          transform: "scale(0.9)",
-          transition: { duration: 0.243, ease },
-          startDelay: 0,
-        }
+        transform: 'scale(0)',
+        transition: { 
+          duration: .25, 
+          ease 
+        },
       },
       mount: {
-        opacity: 1,
-        transition: { duration: 0.35, ease },
-        startDelay: 0,
-        transform: { 
-          transform: "scale(1)",
-          transition: { duration: 0.243, ease },
-          startDelay: 0,
-        }
+        transform: ['scale(0)', 'scale(1.1)', 'scale(1)'],
+        transition: { 
+          times: [0, .25, 0.3],
+          duration: .8,
+          ease 
+        },
       },
     };
 
@@ -194,15 +192,15 @@ export const MenuCore = React.forwardRef<
       open,
       nodeId,
       placement: placement,
+      strategy: strategyProp,
       onOpenChange: handler,
       middleware: [
         fuiOffset(offset), 
         flip(), 
         shift(), 
-        showArrow &&
         fuArrow({
           element: arrowRef,
-          padding: arrowProps.padding ?? 5,
+          padding: arrowProps?.padding ?? 5,
         }),
       ],
       whileElementsMounted: autoUpdate,

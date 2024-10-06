@@ -6,8 +6,10 @@ import { CommandBar, CommandBarProps, CommandItemProps } from "../command-bar";
 import { Scrollable } from "../scrollable";
 
 import styles from "./panel.module.scss";
+import { useDialogContext } from "../../mui";
+import { size } from "@floating-ui/react";
 
-export interface PanelProps extends React.HTMLProps<HTMLDivElement> {
+export interface ToolPanelProps extends React.HTMLProps<HTMLDivElement> {
   header?: React.ReactNode;
   footer?: React.ReactNode;
   toolbar?: CommandBarProps;
@@ -24,9 +26,11 @@ export interface PanelProps extends React.HTMLProps<HTMLDivElement> {
   onToggle?: (collapsed: boolean) => void;
 }
 
-export const Panel = forwardRef<HTMLDivElement, PanelProps>((props, ref) => {
-  const { className, children, scrollbar = {}, ...moreProps } = props;
+export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref) => {
   const {
+    className, 
+    children, 
+    scrollbar = {},
     header,
     footer,
     toolbar,
@@ -35,8 +39,10 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>((props, ref) => {
     setCollapsed,
     onToggle,
     ...restProps
-  } = moreProps;
+  } = props;
 
+  const dialogCtx = useDialogContext();
+  
   const hasHeader = Boolean(header || toolbar || collapsible);
   const hasFooter = Boolean(footer);
 
@@ -82,13 +88,14 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>((props, ref) => {
 
   const actualToolbarItems = collapsible 
       ? [
-        ...(toolbar?.items as []),
+        ...(toolbar?.items ?? []),
         {
           key: "toggle",
           className: styles.toggle,
           iconProps: {
             icon: "keyboard_arrow_down",
           },
+          size: "sm",
           onClick: handleToggle,
         }]
       : null;
@@ -128,12 +135,11 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>((props, ref) => {
   return (
     <div
       ref={ref}
-      className={clsx(styles.panel, className, styles[collapseState])}
+      className={clsx(styles.panel, dialogCtx && styles['in-dialog'], className, styles[collapseState])}
       {...restProps}
     >
       {hasHeader && (
         <Header
-          {...moreProps}
           toolbar={actualToolbar}
           collapsible={collapsible}
           handleToggle={handleToggle}
@@ -148,7 +154,7 @@ export const Panel = forwardRef<HTMLDivElement, PanelProps>((props, ref) => {
   );
 });
 
-function Header(props: PanelProps & { handleToggle?: () => void }) {
+function Header(props: ToolPanelProps & { handleToggle?: () => void }) {
   const { header, toolbar, className, children, collapsible, handleToggle } =
     props;
   return (
@@ -168,7 +174,7 @@ function Header(props: PanelProps & { handleToggle?: () => void }) {
           </div>
         )}
         {toolbar && (
-          <div className={styles.toolbar}>
+          <div className={clsx(styles.toolbar, 'ms-auto')}>
             <CommandBar {...toolbar} />
           </div>
         )}

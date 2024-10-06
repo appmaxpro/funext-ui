@@ -8,14 +8,11 @@ export interface ItemInteractive {
 
 export interface ListContextValues {
   list?: {
-    gap: string;//"gap-1",
-    minWidth: string;//"min-w-[240px]",
-    padding: string;//"p-2",
-    fontFamily: string;//"font-sans",
-    fontSize: string;//"text-base",
-    fontWeight: string;//"font-normal",
-    color: string;//"text-slate-700",
-    bg: string;
+    gap?: string;//"gap-1",
+    minWidth?: string;//"min-w-[240px]",
+    padding?: string;//"p-2",
+    color?: string;//"text-slate-700",
+    bg?: string;
   };
   className?: string,
   item?: {
@@ -26,7 +23,7 @@ export interface ListContextValues {
     active?: ItemInteractive | string;
     selected?: ItemInteractive | string;
     disabled?: ItemInteractive | string;
-    
+    initial?: any;
   },
   hover?:boolean;
   select?:boolean;

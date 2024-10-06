@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { SxProps } from '@mui/system';
 import type{ 
   OverridableComponent, 
   OverrideProps,
   DistributiveOmit 
-} 
-from '../../uprops';
-import type{ Theme } from '../../styles';
+} from '../../props';
+
+import type{ Theme, SxThemeProps } from '../../styles';
 import { TextOwnProps } from '../Text';
 import type{ LinkClasses } from './linkClasses';
 
@@ -27,7 +26,7 @@ export interface LinkOwnProps extends DistributiveOmit<LinkBaseProps, 'classes'>
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */
-  sx?: SxProps<Theme>;
+  sx?: SxThemeProps;
   /**
    * `classes` prop applied to the [`Typography`](/material-ui/api/typography/) element.
    */
@@ -66,7 +65,7 @@ export interface LinkTypeMap<AdditionalProps = {}, RootComponent extends React.E
 export type LinkBaseProps = DistributiveOmit<
 TextOwnProps,
   'children' | 'color' | 'variant' | 'classes'
->;
+> & {disabled?: boolean};
 
 export type LinkProps<
   RootComponent extends React.ElementType = LinkTypeMap['defaultComponent'],

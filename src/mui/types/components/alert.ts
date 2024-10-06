@@ -15,7 +15,7 @@ export type icon = ReactNode;
 export type open = boolean;
 export type onClose = () => void;
 export type action = ReactNode;
-export type animate = AnimationProps;
+export type animate = AnimationProps | boolean;
 export type className = string;
 export type children = ReactNode;
 

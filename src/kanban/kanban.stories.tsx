@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Box, Input, Button, Menu, MenuItem } from "../core";
+import { Box, Input, Button, Menu, MenuItem } from "..";
 
 import { Kanban, KanbanProps } from "./kanban";
 import { CardEvent, Column, ColumnEvent } from "./types";

@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 
 // utils
 import classnames from "classnames";
@@ -12,13 +11,12 @@ import { useTailwindTheme } from "../../theme";
 
 // types
 import type { variant, size, className, withBorder, color } from "../../types/components/avatar";
-import {
-  propTypesVariant,
-  propTypesSize,
-  propTypesClassName,
-  propTypesColor,
-  propTypesWithBorder,
-} from "../../types/components/avatar";
+import { styled } from "../../styles";
+
+const AvatarRoot = styled('div', {
+  name: 'MuxAvatar',
+  slot: 'Root',
+})('');
 
 export interface AvatarProps extends React.ComponentProps<"img"> {
   variant?: variant;
@@ -58,14 +56,6 @@ export const Avatar = React.forwardRef<HTMLImageElement, AvatarProps>(
     return <img {...rest} ref={ref} className={classes} />;
   },
 );
-
-Avatar.propTypes = {
-  variant: PropTypes.oneOf(propTypesVariant),
-  size: PropTypes.oneOf(propTypesSize),
-  className: propTypesClassName,
-  withBorder: propTypesWithBorder,
-  color: PropTypes.oneOf(propTypesColor),
-};
 
 Avatar.displayName = "Mux.Avatar";
 

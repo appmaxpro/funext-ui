@@ -1,4 +1,4 @@
-import { Box } from "../../core";
+import { Box } from "../..";
 import { BootstrapIcon, BootstrapIconProps } from "./bootstrap-icon";
 
 const config = {

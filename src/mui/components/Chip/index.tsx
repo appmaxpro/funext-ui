@@ -1,7 +1,13 @@
 import React from "react";
 
 // framer-motion
-import { AnimatePresence, m, MotionProps, LazyMotion, domAnimation } from "framer-motion";
+import {
+  AnimatePresence,
+  m,
+  MotionProps,
+  LazyMotion,
+  domAnimation,
+} from "framer-motion";
 
 // utils
 import classnames from "classnames";
@@ -12,7 +18,7 @@ import objectsToString from "../../utils/objectsToString";
 
 // context
 import { useTailwindTheme } from "../../theme";
-import {OverrideProps} from "../../props";
+import { OverrideProps } from "../../props";
 
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
@@ -33,37 +39,64 @@ import IconButton from "../IconButton";
 import { useThemeColor } from "../../hooks";
 import { MaterialIcon } from "../../../icons/material-icon";
 
-export interface ChipOwnProps extends Omit<MotionProps, "animate"> {
-  variant?: variant;
+import { styled } from "../../styles";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+import Button, {ButtonProps} from "../Button";
+
+
+export interface ChipOwnProps extends Omit<ButtonProps, 'color'> {
   size?: size;
   color?: color;
-  icon?: icon;
   open?: open;
   onClose?: (event: React.MouseEvent<HTMLButtonElement> | undefined) => void;
-  action?: action;
   animate?: animate;
-  className?: className;
   label?: value;
+  motionProps?: MotionProps;
 }
 
 export interface ChipTypeMap<
   AdditionalProps = {},
-  RootComponent extends React.ElementType = 'div',
+  RootComponent extends React.ElementType = "div",
 > {
   props: AdditionalProps & ChipOwnProps;
   defaultComponent: RootComponent;
 }
 
 export type ChipProps<
-  RootComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
+  RootComponent extends React.ElementType = ChipTypeMap["defaultComponent"],
   AdditionalProps = {},
-> = OverrideProps<ChipTypeMap<AdditionalProps, RootComponent>, RootComponent> & {
+> = OverrideProps<
+  ChipTypeMap<AdditionalProps, RootComponent>,
+  RootComponent
+> & {
   component?: React.ElementType;
 };
 
+const ChipRoot = styled(Button, {
+  name: "MuxChip",
+  slot: "Root",
+  shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes',
+  overridesResolver: (props, styles) => styles.root,
+})({
+  minWidth: 'unset'
+});
+
 export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
   (
-    { variant, size, color, icon, open, onClose, action, animate, className, label, children, ...rest },
+    {
+      variant,
+      size,
+      color,
+      open,
+      onClose,
+      action,
+      animate,
+      className,
+      label,
+      children,
+      motionProps,
+      ...rest
+    },
     ref,
   ) => {
     // 1. init
@@ -84,19 +117,70 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
     // 3. set styles
     const chipBase = objectsToString(base.chip);
     const chipAction = objectsToString(base.action);
-    const chipIcon = objectsToString(base.icon);
     const chipVariant = objectsToString(
       variants[findMatch(valid.variants, variant, "filled")][
-        findMatch(valid.colors, color, "gray")
+        findMatch(valid.colors, color, "")
       ],
     );
-    const chipSize = objectsToString(sizes[findMatch(valid.sizes, size, "md")]["chip"]);
-    const actionSize = objectsToString(sizes[findMatch(valid.sizes, size, "md")]["action"]);
-    const iconSize = objectsToString(sizes[findMatch(valid.sizes, size, "md")]["icon"]);
-    const classes = twMerge(classnames(chipBase, chipVariant, chipSize), className);
-    const actionClasses = classnames(chipAction, actionSize, 'ms-3');
-    const iconClasses = classnames(chipIcon, iconSize, 'me-3');
-    const contentClasses = classnames("grow");
+
+    const sizeVariant = findMatch(valid.sizes, size, "md");
+
+    const chipSize = objectsToString(
+      sizes[sizeVariant]["chip"],
+    );
+    const actionSize = objectsToString(
+      sizes[sizeVariant]["action"],
+    );
+
+    const classes = twMerge(
+      classnames(chipBase, chipVariant, chipSize),
+      className,
+    );
+
+    const actionClasses = twMerge(classnames(chipAction, actionSize));
+    
+    const ownerState = {
+      size: '',
+      color: '',
+      variant,
+      classes:{
+        startIcon: 'shrink p-0 m-0 mx-3',
+        endIcon: 'shrink p-0 m-0 ms-3'
+      } 
+    }
+    // 5. icon template
+
+    const child = <ChipRoot
+        {...rest}
+        ref={ref}
+        className={classes}
+        ownerState={ownerState}
+        component='span'
+        endIcon={ onClose 
+           ? <IconButton
+           onClick={onClose}
+           size={size}
+           variant="text"
+           color={
+             variant === "outlined" || variant === "ghost"
+               ? color
+               : "inherit"
+           }
+           className={actionClasses}
+           disabled={rest.disabled}
+         >
+           <MaterialIcon icon="close"/>
+         </IconButton>
+         : rest.endIcon 
+        }
+    >
+      <span className="grow">{label ? label : (children as any)}</span>
+    </ChipRoot>
+
+    if (!motionProps) {
+      return child;
+    }
+
 
     // 4. set animation
     const mainAnimation = {
@@ -110,11 +194,9 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
 
     const appliedAnimation = merge(mainAnimation, animate as any);
 
-    // 5. icon template
-    const iconTemplate = <div className={iconClasses}>{icon}</div>;
-
     // 6. Create an instance of AnimatePresence because of the types issue with the children
-    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
+    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> =
+      AnimatePresence;
 
     // 7. return
     return (
@@ -122,30 +204,13 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
         <NewAnimatePresence>
           {open && (
             <m.div
-              {...rest}
-              ref={ref}
-              className={classes}
               initial="unmount"
               exit="unmount"
               animate={open ? "mount" : "unmount"}
               variants={appliedAnimation}
+              {...motionProps}
             >
-              {icon && iconTemplate}
-              <span className={contentClasses}>
-                {(label ? label : (children as any))}
-              </span>
-              {onClose && !action && (
-                <IconButton
-                  onClick={onClose}
-                  size={size}
-                  variant="text"
-                  color={(variant === "outlined" || variant === "ghost") ? color : "inherit"}
-                  className={actionClasses}
-                >
-                  <MaterialIcon icon="close"/>
-                </IconButton>
-              )}
-              {action || null}
+              {child}
             </m.div>
           )}
         </NewAnimatePresence>

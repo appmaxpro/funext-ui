@@ -19,7 +19,7 @@ export const MenuHandler = React.forwardRef<HTMLElement, MenuHandlerProps>(
     const { getReferenceProps, reference, nested, open, rtl } = useMenu();
 
     const mergedRef = useMergeRefs([ref, reference]);
-    const endIcon = rest.endIcon ?? children.endIcon ;
+    const endIcon = rest.endIcon ?? children.props.endIcon ;
 
     const icon = ((nested && !endIcon) ? 
       <MaterialIcon {...{
@@ -30,10 +30,12 @@ export const MenuHandler = React.forwardRef<HTMLElement, MenuHandlerProps>(
       : endIcon);
 
     const refProps = getReferenceProps({
+      
       ...rest,
       ref: mergedRef,
       onClick(event) {
         event.stopPropagation();
+        children.props.onClick?.(event);
       },
       ...(nested && {
         role: "menuitem",

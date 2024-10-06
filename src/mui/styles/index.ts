@@ -14,10 +14,9 @@ import type { StyledComponent } from '@emotion/styled';
 import type { Theme } from '../theme';
 import {internal_useTheme as useTheme} from '../theme/useTheme';
 
-console.log("-----export theme");
 export * from '../theme';
 
-export {clsx} from './clsx';
+export * from './clsx';
 export {default as styled } from './styled';
 export {default as getOverlayAlpha} from './getOverlayAlpha';
 export {default as useSlot} from './useSlot';

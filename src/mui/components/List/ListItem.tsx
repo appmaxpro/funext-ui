@@ -64,7 +64,6 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
   
     const item = (
       <ListItemRoot 
-          tabIndex={0}
           {...(rest as any)}
           disabled={(typeof as === 'string' && disabled) ? `true` : undefined}
           area-disabled={disabled ? 'true' : undefined}

@@ -29,6 +29,18 @@ export interface SizeProps {
 }
 
 const size = (cls: string) => (value: any, breakpoint?: string) => {
+  if(typeof value === 'number') {
+    const className = breakpoint ? `${cls}-${breakpoint}` : `${cls}`;
+    
+    const styles = {
+      [`--l-${className}`]: [25, 50, 75, 100].includes(value) ?`${value}%` : `${value}px`,
+    };
+
+    return {
+      classes: [`l-${className}`],
+      styles,
+    };
+  }
   return breakpoint ? `${breakpoint}:${cls}-${value}` : `${cls}-${value}`;
 };
 

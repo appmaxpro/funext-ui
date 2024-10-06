@@ -9,8 +9,6 @@ import emStyled from '@emotion/styled';
 
 import { Theme as SystemTheme } from '../../theme';
 
-
-
 function styled(tag:any, options:any) {
   const stylesFactory = emStyled(tag, options);
 
@@ -75,11 +73,9 @@ export default function createBox<
   const Box = React.forwardRef(function Box(inProps, ref) {
     const theme:SystemTheme = useTheme(defaultTheme);
     const { className, component = 'div', ...other }:any = extendSxProp(inProps);
-
-    
-    
+        
     //console.log("Test box compose:", compose(VX1, VX2, VX3)({VX3: .66}))
-    console.log("createBox: sx:", other.sx);
+    //console.log("createBox: sx:", other.sx);
     /*
     const {
       sx, 

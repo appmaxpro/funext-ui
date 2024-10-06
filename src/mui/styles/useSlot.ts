@@ -1,15 +1,9 @@
 import * as React from 'react';
 import type{ ClassValue } from './clsx';
 import {useRefs} from '../hooks';
-import {
-  mergeSlotProps
-} from './mergeSlotProps';
-
-import {
-  resolveComponentProps
-} from './resolveComponentProps';
-
 import appendOwnerState from '@mui/utils/appendOwnerState';
+import resolveComponentProps from '@mui/utils/resolveComponentProps';
+import mergeSlotProps from '@mui/utils/mergeSlotProps';
 
 export type WithCommonProps<T> = T & {
   className?: string;

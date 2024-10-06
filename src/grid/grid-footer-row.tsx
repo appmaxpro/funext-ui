@@ -1,11 +1,13 @@
 import React from "react";
-import { Box, Popper, useClassNames, usePopperTrigger } from "../core";
+import { Box, ToolPanel, useClassNames} from "../core";
+
 import * as TYPES from "./types";
 
 import { GridColumn } from "./grid-column";
 import { capitalizeWord } from "./utils";
 import { useTranslation } from "./translate";
 import styles from "./grid.module.scss";
+import Popover from "../mui/components/Popover";
 
 export const GridFooterRow = React.memo(function GridFooterRow(
   props: TYPES.GridRowProps,
@@ -66,35 +68,26 @@ function GridFooterRowColumn(
   }, [column, row]);
 
   const t = useTranslation();
-  const {
-    open: popperOpen,
-    targetEl,
-    setTargetEl,
-  } = usePopperTrigger({ trigger: "hover", delay: { open: 1000, close: 100 } });
-
+  
   return (
     <GridColumn selected={selected} index={index} data={column} type="footer">
-      {column.aggregate && (
-        <>
-          <span ref={setTargetEl}>{textValue}</span>
-          <Popper
-            open={popperOpen}
-            target={targetEl}
-            offset={[7, 0]}
+      {column.aggregate && <Popover
+            offset={7}
             arrow
-            shadow
-            rounded
             placement="top"
           >
-            <Box p={2}>
-              <span>
-                {t(capitalizeWord(column.aggregate) as TYPES.GridLabel)} :{" "}
-                {textValue}
-              </span>
-            </Box>
-          </Popper>
-        </>
-      )}
+            <Popover.Handler>
+              <span>{textValue}</span>
+            </Popover.Handler>
+            <Popover.Content>
+              <ToolPanel className="rounded-md p-2 shadow">
+                <span>
+                  {t(capitalizeWord(column.aggregate) as TYPES.GridLabel)} :{" "}
+                  {textValue}
+                </span>
+              </ToolPanel>
+          </Popover.Content>
+        </Popover>}
     </GridColumn>
   );
 }

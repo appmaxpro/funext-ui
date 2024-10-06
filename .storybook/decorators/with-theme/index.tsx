@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Decorator } from "@storybook/react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 
-import { ThemeProvider } from "../../../src/core";
+import { CoreThemeProvider } from "../../../src/core";
 import { Panel } from "../../../src/mui";
 
 import ar_MA from "./locales/ar_MA/translations.json";
@@ -14,6 +14,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import '@fontsource/roboto';
+import "../../../src/global.css";
+
 import {createPortal} from 'react-dom';
 
 const i18n = i18next.createInstance();
@@ -46,11 +48,11 @@ export const WithTheme: Decorator = (Story, context) => {
     <I18nextProvider i18n={i18n}>
 
       {
-      <ThemeProvider dir={dir} theme={theme}>
+      <CoreThemeProvider dir={dir} theme={theme}>
         <Panel className='w-full min-h-screen bg-header-min'>
           {Story(context)}
         </Panel> 
-      </ThemeProvider>
+      </CoreThemeProvider>
       }
     </I18nextProvider>
   );

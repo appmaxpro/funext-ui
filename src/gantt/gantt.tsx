@@ -1,7 +1,7 @@
 import moment, { Dayjs } from "dayjs";
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, useClassNames, useTheme } from "../core";
-
+import { useClassNames, useCoreTheme } from "../core";
+import { Box } from "../mui";
 import { GanttBody } from "./gantt-body";
 import { GanttEdge } from "./gantt-edge";
 import { GanttHeader } from "./gantt-header";
@@ -108,7 +108,7 @@ export function Gantt({
   const [container, setContainer] = React.useState<HTMLDivElement | null>(null);
   const [activeRow, setActiveRow] = React.useState<number | null>(null);
 
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
   const classNames = useClassNames();
 

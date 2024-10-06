@@ -231,7 +231,7 @@ const CircularProgressCircle = styled('circle', {
  * you should use `aria-describedby` to point to the progress bar, and set the `aria-busy`
  * attribute to `true` on that region until it has finished loading.
  */
-const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref) {
+export const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref) {
   const props = useMuiDefaultProps({ props: inProps, name: 'MuxCircularProgress' }) as CircularProgressProps;
   const {
     className,
@@ -313,9 +313,7 @@ const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref
 
 CircularProgress.displayName = "Mux.CircularProgress";
 
-export type {
-  CircularProgress,
-  
+export type {  
   CircularProgressClassKey,
   CircularProgressClasses
 }

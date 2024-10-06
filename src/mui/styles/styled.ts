@@ -1,5 +1,4 @@
 console.log("<-----------styled-------------->");
-import {InternalStandardProps} from '../props';
 import createStyled, {CreateMUIStyled} from '@mui/system/createStyled';
 import defaultTheme from '../theme/defaultTheme';
 import { Theme as MuiTheme} from '../theme';

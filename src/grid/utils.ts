@@ -1,4 +1,4 @@
-import { useTheme } from "../core";
+import { useCoreTheme } from "../core";
 
 import {
   GridColumn,
@@ -318,6 +318,6 @@ export function capitalizeWord(word: string) {
 }
 
 export function useRTL() {
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   return dir === "rtl";
 }

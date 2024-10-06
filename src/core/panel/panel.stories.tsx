@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Panel } from "./panel";
+import {ToolPanel as Panel } from "./panel";
 
 const meta = {
   title: "Components/Panel",

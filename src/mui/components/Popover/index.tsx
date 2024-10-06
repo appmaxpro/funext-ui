@@ -12,7 +12,9 @@ import {
   useDismiss,
   useId,
   useClick,
-  arrow as fuiArrow
+  arrow as fuiArrow,
+  useHover,
+  safePolygon
 } from "@floating-ui/react";
 
 // utils
@@ -50,6 +52,8 @@ export interface PopoverProps {
   children: children;
   arrow?: ArrowProps | boolean;
   target?: React.MutableRefObject<HTMLElement|null> | HTMLElement | null;
+  hover?: boolean;
+  trigger?: React.ReactNode;
 }
 
 const Popover = ({
@@ -60,8 +64,10 @@ const Popover = ({
   dismiss,
   animate,
   arrow,
+  hover,
   children,
   target,
+  trigger
 }: PopoverProps) => {
   // 1. init
   const { popover } = useTailwindTheme();
@@ -128,6 +134,9 @@ const Popover = ({
     useClick(context),
     useRole(context),
     useDismiss(context, dismiss),
+    hover ? useHover(context, {
+      handleClose: safePolygon(),
+    }) : undefined
   ]);
   
   React.useEffect(() => {
@@ -176,9 +185,23 @@ const Popover = ({
     }
   }, [open]);
 
-  const hasTarget = !!target;
+  const hasTarget = !!target && !trigger;
   if (!initialized && hasTarget) {
-     return null;
+     return trigger;
+  }
+
+  if (trigger) {
+    // 6. return
+    return (
+      <PopoverContextProvider value={contextValue}>
+        {trigger}
+        {(children as any)?.type !== PopoverContent
+          ? <PopoverContent>
+            {children}
+          </PopoverContent>
+          : children
+        }
+      </PopoverContextProvider>);
   }
 
   // 6. return
@@ -186,7 +209,7 @@ const Popover = ({
     <PopoverContextProvider value={contextValue}>
       {
         hasTarget || initialized
-        ? children
+        ? (trigger || children)
         : React.Children.toArray(children)
           .filter(c => ( c as any).type !== PopoverContent)
       }

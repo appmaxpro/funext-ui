@@ -40,7 +40,10 @@ const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
 
     // 3. set styles
     const accordionClasses = twMerge(
-      classnames(objectsToString(base.container), { [objectsToString(base.disabled)]: disabled }),
+      classnames(
+        objectsToString(base.container), 
+        disabled && objectsToString(base.disabled)
+      ),
       className,
     );
 

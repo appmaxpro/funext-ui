@@ -19,4 +19,17 @@ export const Scrollable = forwardRef<HTMLDivElement, ScrollableProps>(
   },
 );
 
+
+export function getScrollClasses({overflowX, overflowY}:{
+  overflowX?: boolean;
+  overflowY?: boolean;
+}={}) {
+  const className = clsx(styles.scrollable, {
+    [styles.overflowX]: overflowX,
+    [styles.overflowY]: overflowY,
+  });
+
+  return className;
+}
+
 Scrollable.displayName = "Scrollable";

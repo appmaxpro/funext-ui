@@ -77,19 +77,13 @@ export const chip: ChipStylesType = {
   styles: {
     base: {
       chip: {
-        position: "relative",
-        display: "inline-flex",
-        nowrap: "flex-nowrap",
-        placeItems: "items-center",
-        fontFamily: "font-sans",
-        fontWeight: "font-bold",
         textTransform: "uppercase",
-        lineHeight: "leading-none",
         whiteSpace: "whitespace-nowrap",
-        userSelect: "select-none",
+        fontSize: "text-xs",
       },
       action: {
-        shrink: 'shrink p-0'
+        shrink: 'shrink p-0',
+        fontSize: "!text-xs",
       },
       icon: {
         shrink: 'shrink'
@@ -99,9 +93,6 @@ export const chip: ChipStylesType = {
       sm: {
         chip: {
           py: "py-0.5",
-          px: "px-1",
-          fontWeight: "font-medium",
-          fontSize: "text-xs",
           borderRadius: "rounded-sm",
         },
         action: {
@@ -112,8 +103,7 @@ export const chip: ChipStylesType = {
       md: {
         chip: {
           py: "py-1",
-          px: "px-2",
-          fontSize: "text-xs",
+          fontWeight: "font-normal",
           borderRadius: "rounded-md",
         },
         action: {
@@ -124,11 +114,11 @@ export const chip: ChipStylesType = {
       lg: {
         chip: {
           py: "py-1.5",
-          px: "px-3",
-          fontSize: "text-xs",
+          fontWeight: "font-bold",
           borderRadius: "rounded-md",
         },
         action: {
+          fontSize: "!text-sm",
         },
         icon: {
         },

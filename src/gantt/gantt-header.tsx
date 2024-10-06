@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as TYPES from "./types";
-import { Box, useClassNames } from "../core";
+import { useClassNames } from "../core";
+import { Box } from "../mui";
 import classes from "./gantt.module.scss";
 
 export const GanttHeader = React.memo(function GanttHeader(props: {

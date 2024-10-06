@@ -56,9 +56,11 @@ export const AccordionBody = React.forwardRef<HTMLDivElement, AccordionBodyProps
 
     const mainAnimation = {
       unmount: {
+        opacity: 0,
         transition: { duration: 0.3, ease: "linear" },
       },
       mount: {
+        opacity: 1,
         transition: { duration: 0.3, ease: "linear" },
       },
     };

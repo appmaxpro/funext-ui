@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { Box, useClassNames } from "../core";
+import {  useClassNames } from "../core";
 import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 
 import styles from "./kanban.module.css";
 import KanbanColumn, { KanbanColumnProps } from "./kanban-column";
 import { CardEvent, Column, ColumnEvent } from "./types";
+import { Box } from "../mui";
 
 export type KanbanProps = {
   columns?: Column[];

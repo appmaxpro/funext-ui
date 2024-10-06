@@ -1,4 +1,4 @@
-import styled from "../styled";
+import styled from "../../../core/styled";
 
 export interface StackProps {
   gap?: 0 | 1 | 2 | 3 | 4 | 5;

@@ -1,7 +1,7 @@
 import { cloneElement, forwardRef, isValidElement } from "react";
 import { Transition } from "react-transition-group";
 import { useForwardedRef } from "../hooks";
-import { useTheme } from "../styles";
+import { useCoreTheme } from "../styles";
 import { TransitionProps } from "../transitions/types";
 import {
   getTransition,
@@ -95,7 +95,7 @@ export const Slide = forwardRef<HTMLElement, SlideProps>(
     }: SlideProps,
     ref,
   ) => {
-    const { dir } = useTheme();
+    const { dir } = useCoreTheme();
     const nodeRef = useForwardedRef<any>(ref);
     const handleEnter = (isAppearing: boolean) => {
       const node: HTMLElement = nodeRef.current!;

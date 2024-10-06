@@ -1,17 +1,12 @@
-export * from '../props';
-export {default as useEnhancedEffect} from '../hooks/useEnhancedEffect';
-export * from '../hooks/useIsFocusVisible';
-export {default as useOnMount} from '../hooks/useOnMount';
-export * from '../hooks/useTimeout';
-export {default as useTimeout} from '../hooks/useTimeout';
-export {default as useMedia} from './useMedia';
-export * from '../hooks/use-copy-to-clipboard';
-
 import Color from 'color';
+export {default as withMT} from '../theme/tw/withMT';
+export * from './cn';
+export * from './objectsToString';
 
 export function intcomma(x: number): string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+
 
 /**
  * Replaces slug special chars with a space
@@ -144,38 +139,6 @@ export function isRTL(element: Element | null | undefined):boolean  {
 export function isElement(value: unknown): value is Element {
   return value instanceof Element || value instanceof getWindow(value).Element;
 }
-
-export function composeClasses<ClassKey extends string>(
-  slots: Record<ClassKey, ReadonlyArray<string | false | undefined | null>>,
-  getUtilityClass: (slot: string) => string,
-  classes: Record<string, string> | undefined = undefined,
-): Record<ClassKey, string> {
-  const output: Record<ClassKey, string> = {} as any;
-
-  Object.keys(slots).forEach(
-    // `Object.keys(slots)` can't be wider than `T` because we infer `T` from `slots`.
-    // @ts-expect-error no thing https://github.com/microsoft/TypeScript/pull/12253#issuecomment-263132208
-    (slot: ClassKey) => {
-      output[slot] = slots[slot]
-        .reduce((acc, key) => {
-          if (key) {
-            const utilityClass = getUtilityClass(key);
-            if (utilityClass !== '') {
-              acc.push(utilityClass);
-            }
-            if (classes && classes[key]) {
-              acc.push(classes[key]);
-            }
-          }
-          return acc;
-        }, [] as string[])
-        .join(' ');
-    },
-  );
-
-  return output;
-}
-
 // It should to be noted that this function isn't equivalent to `text-transform: capitalize`.
 //
 // A strict capitalization should uppercase the first letter of each word in the sentence.

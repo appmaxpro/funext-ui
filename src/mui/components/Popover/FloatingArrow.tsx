@@ -1,4 +1,4 @@
-import {isRTL as isRtl, NODE_ENV, useEnhancedEffect} from '../../utils';
+import {isRTL as isRtl, NODE_ENV} from '../../utils';
 import * as React from 'react';
 // @floating-ui
 import {
@@ -8,7 +8,8 @@ import {
   useId
 } from "@floating-ui/react";
 
-import { useRtl } from '../../../core';
+import { useEnhancedEffect } from '../../hooks';
+import { useRtl } from '../../styles';
 
 export interface FloatingArrowProps extends React.ComponentPropsWithRef<'svg'> {
   // Omit the original `refs` property from the context to avoid issues with
@@ -84,17 +85,7 @@ export const FloatingArrow = React.forwardRef(function FloatingArrow(
   
 
   const clipPathId = useId();
-  const [isRTL, setIsRTL] = React.useState(false);
-
-  // https://github.com/floating-ui/floating-ui/issues/2932
-  useEnhancedEffect(() => {
-    if (!floating) return;
-    useRtl
-    const isRTL = isRtl(floating);
-    if (isRTL) {
-      setIsRTL(true);
-    }
-  }, [floating]);
+  const isRtl = useRtl();
 
   if (!floating) {
     return null;
@@ -114,7 +105,7 @@ export const FloatingArrow = React.forwardRef(function FloatingArrow(
 
   const yOffsetProp = staticOffset && alignment === 'end' ? 'bottom' : 'top';
   let xOffsetProp = staticOffset && alignment === 'end' ? 'right' : 'left';
-  if (staticOffset && isRTL) {
+  if (staticOffset && isRtl) {
     xOffsetProp = alignment === 'end' ? 'left' : 'right';
   }
 

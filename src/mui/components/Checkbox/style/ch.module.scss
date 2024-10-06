@@ -1,26 +1,26 @@
 .check{
   display: inline-flex;
-    -webkit-box-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
-    position: relative;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    background-color: transparent;
-    outline: 0px;
-    border: 0px;
-    margin: 0px;
-    cursor: pointer;
-    user-select: none;
-    vertical-align: middle;
-    appearance: none;
-    text-decoration: none;
-    padding: 9px;
-    border-radius: 50%;
-    &:hover{
-      background-color: rgb(var(--tw-stale) / .15);
-    }
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  background-color: transparent;
+  outline: 0px;
+  border: 0px;
+  margin: 0px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  text-decoration: none;
+  padding: 7px;
+  border-radius: 50%;
+  &:hover{
+    background-color: rgb(var(--tw-stale) / .15);
+  }
 }
 .input {
   cursor: inherit;
@@ -54,6 +54,11 @@
       }
     }
   }
+  &:not(:checked) {
+    .icon {
+      opacity: .7;
+    }
+  }
 }
 
 .icon {
@@ -65,7 +70,7 @@
   flex-shrink: 0;
   -webkit-transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
 .icon.lg{

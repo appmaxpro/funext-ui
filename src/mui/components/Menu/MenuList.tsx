@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 // @floating-ui
 import {
@@ -152,43 +152,49 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
           : context;
     
     const side = placement.split('-')[0] as Side;
-    const animation = useMemo(() => {      
-        if (!(open || openState)) return {};
-        const {
-          trans,
-          untrans,
-          ...others
-        } = pickAnimation(appliedAnimation);
-        
-        const transformOrigin = {
-          top: `${
-            usageContext?.x ?? 0
-          }px bottom`,
-          bottom: `${
-            usageContext?.x ?? 0
-          }px top`,
-          left: `right ${
-            usageContext?.y ?? 0
-          }px bottom`,
-          right: `left ${
-            usageContext?.y ?? 0
-          }px`,
-        }[side];
 
-        return {
-          trans: {
-            transformOrigin,
-            ...trans,
-          },
-          untrans: {
-            transformOrigin,
-            ...untrans,
-          },
-          ...others
+    const animation = React.useRef({});
+
+    const shouldOpen = initialized || nested;
+
+    useEffect(()=> {
+
+      if (!open && !openState) {
+        //animation.current = {};
+        return;
+      };
+      
+      const transformOrigin = {
+        top: `${
+          usageContext?.x ?? 0
+        }px bottom`,
+        bottom: `${
+          usageContext?.x ?? 0
+        }px top`,
+        left: `right ${
+          usageContext?.y ?? 0
+        }px bottom`,
+        right: `left ${
+          usageContext?.y ?? 0
+        }px`,
+      }[side];
+
+      const {amount, unmount, ...others} = appliedAnimation as any;
+
+      animation.current = {
+        ...others,
+        amount: {
+          transformOrigin,
+          ...amount,
+        },
+        unmount: {
+          transformOrigin,
+          ...unmount,
         }
-    }, [usageContext.x, usageContext.y, side])
-
-    if (!initialized && !nested) {
+      }
+    }, [side, open]);
+    
+    if ((!initialized && !nested) || !(animation.current as any).amount) {
       return null;
     }
 
@@ -293,7 +299,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
     //console.log("MenuList:nested:", nested, ", cords:", {x, y, open, placement: context.placement})
     // 6. menu component.
     const menuComponent = ( 
-      <m.div
+      <motion.div
         className="z-modal"
         key={`move-${context.nodeId}`}
         ref={mergedRef as any}
@@ -315,23 +321,22 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
         })}
         initial="unmount"
         exit="unmount"
-        animate={open ? ["mount", "trans"] : ["unmount", "untrans"]}
-        variants={animation}
+        animate={open ? "mount" : "unmount"}
+        variants={animation.current}
         onAnimationComplete={(def)=> {
           console.log("onAnimationComplete:", def);
           setOpenStated(open);
         }}
+        transformTemplate={scaleTranslate}
       >
         <PanelRoot className={panelClasses} elevation={4} variant="outlined">{child}</PanelRoot>
-        {!nested && arrow ? (
-          <FloatingArrow
-            {...arrow.props}
-            className={arrow.props?.className}
+        <FloatingArrow
+            {...arrow?.props}
+            className={clsx(arrow?.props?.className, (nested || !arrow) && 'hidden')}
             ref={arrowRef as any}
             context={context}
           />
-        ) : null}
-      </m.div>
+      </motion.div>
     );
 
     // 7. return
@@ -370,6 +375,24 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
     );
   },
 );
+
+
+/**
+ * `transform` is order-dependent, so if you scale(0.5) before translateX(100px),
+ * the visual translate will only be 50px.
+ *
+ * The intuitive pattern is to translate before doing things like scale and
+ * rotate that will affect the coordinate space. So Framer Motion takes an
+ * opinion on that and allows you to animate them
+ * individually without having to write a whole transform string.
+ *
+ * However in this component we're doing something novel by inverting
+ * the scale of the parent component. Because of this we want to translate
+ * through scaled coordinate space, and can use the transformTemplate prop to do so.
+ */
+const scaleTranslate = ({ x, y, scaleX, scaleY }:any) =>
+  `scaleX(${scaleX}) scaleY(${scaleY}) translate(${x}, ${y}) translateZ(0)`;
+
 
 MenuList.displayName = "Mux.MenuList";
 

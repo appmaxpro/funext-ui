@@ -1,11 +1,10 @@
 import React, { useCallback } from "react";
 import {
-  Box,
   useClassNames,
-  clsx
 } from "../core";
 
 import {
+  Box,
   Divider,
   Checkbox,
   Menu,
@@ -15,7 +14,8 @@ import {
   IconButton,
   useRtl,
   Badge,
-  Chip
+  Chip,
+  clsx
 } from "../mui";
 
 import { MaterialIcon } from "../icons/material-icon";
@@ -139,11 +139,9 @@ export const GridHeaderMenu = React.memo(function GridHeaderMenu({
                         return (
                           <Checkbox
                               checked={visible}
-                              onChange={() => {}}
+                              onChange={toggle}
                               label={column.title}
-                              labelProps={{
-                                className: clsx(styles.columnOptionMenuTitle, 'ms-2')
-                              }}
+                              fullWidth
                             />
                         );
                       }
@@ -172,37 +170,37 @@ export const GridHeaderMenu = React.memo(function GridHeaderMenu({
                     <>
                       <MenuDivider />
                       <CustomMenuItem>
-                      <GridDragElement
-                        canDrag={false}
-                        canDrop={true}
-                        onDrop={onColumnDrop}
-                        className={styles.dragColumnArea}
-                        aria-disabled="true"
-                      >
-                        <Box className={styles.groupTagContainer}>
-                          {(groupBy || []).length === 0 && (
-                            <Box className={styles.groupPlaceholder}>
-                              {t("Groups")}
-                            </Box>
-                          )}
-                          {(groupBy || []).map((group) => {
-                            const column = columns.find((x) => x.name === group.name);
-                            return (
-                              <GridGroupTag
-                                key={group.name}
-                                title={column && column.title}
-                                name={group.name}
-                                onDrop={onColumnDrop}
-                                onRemove={onColumnGroupRemove}
-                              />
-                            );
-                          })}
-                        </Box>
-                      </GridDragElement>
+                        <GridDragElement
+                          canDrag={false}
+                          canDrop={true}
+                          onDrop={onColumnDrop}
+                          className={styles.dragColumnArea}
+                          aria-disabled="true"
+                        >
+                          <Box className={styles.groupTagContainer}>
+                            {(groupBy || []).length === 0 && (
+                              <Box className={styles.groupPlaceholder}>
+                                {t("Groups")}
+                              </Box>
+                            )}
+                            {(groupBy || []).map((group) => {
+                              const column = columns.find((x) => x.name === group.name);
+                              return (
+                                <GridGroupTag
+                                  key={group.name}
+                                  title={column && column.title}
+                                  name={group.name}
+                                  onDrop={onColumnDrop}
+                                  onRemove={onColumnGroupRemove}
+                                />
+                              );
+                            })}
+                          </Box>
+                        </GridDragElement>
                       </CustomMenuItem>
                     </>
                   )}
-              {onColumnCustomize && (
+                  {onColumnCustomize && (
                   <>
                     <MenuDivider  />
                     <CustomMenuItem

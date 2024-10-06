@@ -121,6 +121,9 @@ export interface CheckboxProps extends React.ComponentProps<"input"> {
   iconProps?: objectType;
   rootRef?: React.Ref<HTMLDivElement>;
   rippleClass?: string;
+  error?: boolean;
+  indeterminate?: boolean;
+  fullWidth?: boolean;
 }
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
@@ -137,9 +140,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       iconProps,
       rootRef,
       rippleClass,
+      error,
       defaultChecked=false,
       checked:isChecked,
       onChange,
+      fullWidth,
+      indeterminate,
       ...rest
     },
     ref,
@@ -151,7 +157,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const checkboxId = React.useId();
 
     // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
+    color = useThemeColor(error ? 'error' : color, defaultProps.color);
     icon = icon ?? defaultProps.icon;
     ripple = ripple ?? defaultProps.ripple;
     disabled = disabled ?? defaultProps.disabled;
@@ -184,13 +190,14 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     
     // 4. set styles
     const rootClasses = classnames(objectsToString(base.root), {
-      [objectsToString(base.disabled)]: disabled
+      [objectsToString(base.disabled)]: disabled,
+      ["w-full"]: fullWidth
     });
     const containerClasses = twMerge(
       classnames(
         objectsToString({
           ...base.container, 
-          color: ((checked || (rest as any).indeterminate) 
+          color: ((checked || indeterminate) 
                 ? `text-${color ?? "primary"}-500`
                 : undefined
           ),
@@ -206,15 +213,18 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       classnames(
         objectsToString(base.input),
       ),
+      'MuxCheckbox-root',
       className,
     );
-    const labelClasses = twMerge(classnames(objectsToString(base.label)), labelProps?.className);
+    const labelClasses = twMerge(
+        classnames(objectsToString(base.label), fullWidth && 'grow'),
+        labelProps?.className
+    );
+
     const iconContainerClasses = twMerge(
       classnames(objectsToString(base.icon)),
       iconProps?.className,
     );
-
-
 
     //const inputRef = useForwardedRef(ref);
 
@@ -232,6 +242,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             disabled={disabled}
             className={inputClasses}
             checked={isChecked}
+            //@ts-ignore 
+            indeterminate={indeterminate ? true: undefined}
             onChange={handleValueChange}
             id={rest.id || checkboxId}
           />
@@ -242,7 +254,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                   data-testid="CheckBoxIcon">
                     {checked 
                         ? <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-                        : ((rest as any).indeterminate)
+                        : indeterminate
                         ? <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"></path>
                         : <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
                       }

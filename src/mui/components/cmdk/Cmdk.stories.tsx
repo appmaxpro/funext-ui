@@ -19,6 +19,7 @@ export const Template = () => {
   const [page, setPage] = useState<"root" | "positions">("root");
 
   useHandleOpenCmdk(setIsOpen);
+  const iconProps = {size: 24};
 
   const items: JsonStructure = [
     {
@@ -32,12 +33,14 @@ export const Template = () => {
           disabled: true,
           href: "#",
           renderLink: (props) => <a {...props} />,
+          iconProps,
         },
         {
           children: "Settings",
           icon: "settings",
           id: "settings",
           disabled: true,
+          iconProps,
         },
         {
           children: "Positions",
@@ -49,6 +52,7 @@ export const Template = () => {
             setPage("positions");
             setSearch("");
           },
+          iconProps,
         },
         {
           children: "Candidates",
@@ -57,6 +61,7 @@ export const Template = () => {
           onClick: () => {
             alert("hj");
           },
+          iconProps,
         },
       ],
     },
@@ -67,10 +72,11 @@ export const Template = () => {
         {
           href: "https://google.com",
           children: "Help",
-          icon: "head_mounted_device",
+          icon: "headphones",
           id: "support",
           target: "_blank",
           rel: "noopener noreferrer",
+          iconProps,
         },
       ],
     },
@@ -82,21 +88,25 @@ export const Template = () => {
           children: "Privacy policy",
           icon: "flag",
           id: "privacy",
+          iconProps,
         },
         {
           children: "User agreement",
           icon: "person",
           id: "user-agreement",
+          iconProps,
         },
         {
           children: "About",
-          icon: "eye_tracking",
+          icon: "emergency_share_off",
           id: "about",
+          iconProps,
         },
         {
           children: "Career",
           icon: "person",
           id: "career",
+          iconProps,
         },
       ],
     },
@@ -124,7 +134,7 @@ export const Template = () => {
         isOpen={isOpen}
         page={page}
         footer={
-          <div style={{ paddingInline: "1rem", paddingBlock: "0.75rem" }}>
+          <div style={{ paddingInline: "1rem", paddingBlock: "0.75rem" }} className="footer-menu">
             <p>hej</p>
           </div>
         }

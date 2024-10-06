@@ -1,10 +1,10 @@
 // types
-import type { className, animate } from "../../../types/components/collapse";
+import type { AnimationProps } from "../../../types/components/collapse";
 
 export interface CollapseStylesType {
   defaultProps?: {
-    animate?: animate;
-    className?: className;
+    animate?: AnimationProps;
+    className?: string;
   };
   styles?: {
     base?: object;
@@ -22,8 +22,6 @@ export const collapse: CollapseStylesType = {
   styles: {
     base: {
       display: "block",
-      width: "w-full",
-      basis: "basis-full",
       overflow: "overflow-hidden",
     },
   },

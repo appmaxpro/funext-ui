@@ -18,7 +18,8 @@ import {
   alpha,
   clsx,
   ThemeProvider,
-  memoTheme
+  memoTheme,
+  useTailwindTheme
 } from '../../styles';
 import autoSelectClasses, { getAutoSelectUtilityClass } from './autoSelectClasses';
 import { MaterialIcon } from '../../../icons/material-icon';
@@ -45,6 +46,7 @@ const useUtilityClasses = (ownerState) => {
       fullWidth && 'fullWidth',
       hasClearIcon && 'hasClearIcon',
       hasPopupIcon && 'hasPopupIcon',
+      size
     ],
     inputRoot: ['inputRoot'],
     input: ['input', inputFocused && 'inputFocused'],
@@ -81,6 +83,7 @@ const animation = {
   },
 };
 
+
 const AutoSelectRoot = styled('div', {
   name: 'MuxAutoSelect',
   slot: 'Root',
@@ -89,11 +92,11 @@ const AutoSelectRoot = styled('div', {
     const { fullWidth, hasClearIcon, hasPopupIcon, inputFocused, size } = ownerState;
 
     return [
-      { [`& .${autoSelectClasses.tag}`]: styles.tag },
-      { [`& .${autoSelectClasses.tag}`]: styles[`tag-size-${capitalize(size)}`] },
-      { [`& .${autoSelectClasses.inputRoot}`]: styles.inputRoot },
-      { [`& .${autoSelectClasses.input}`]: styles.input },
-      { [`& .${autoSelectClasses.input}`]: inputFocused && styles.inputFocused },
+      { [`& .${autocompleteClasses.tag}`]: styles.tag },
+      { [`& .${autocompleteClasses.tag}`]: styles[`tagSize${capitalize(size)}`] },
+      { [`& .${autocompleteClasses.inputRoot}`]: styles.inputRoot },
+      { [`& .${autocompleteClasses.input}`]: styles.input },
+      { [`& .${autocompleteClasses.input}`]: inputFocused && styles.inputFocused },
       styles.root,
       fullWidth && styles.fullWidth,
       hasPopupIcon && styles.hasPopupIcon,
@@ -111,7 +114,7 @@ const AutoSelectRoot = styled('div', {
     },
   },
   [`& .${autoSelectClasses.tag}`]: {
-    margin: 3,
+    margin: 1,
     maxWidth: 'calc(100% - 6px)',
   },
   [`& .${autoSelectClasses.input}`]: {
@@ -152,7 +155,7 @@ const AutoSelectClearIndicator = styled(IconButton, {
   slot: 'ClearIndicator',
   overridesResolver: (props, styles) => styles.clearIndicator,
 })({
-  padding: 6,
+  padding: 4,
   visibility: 'hidden',
 });
 
@@ -234,18 +237,18 @@ const AutoSelectMenuFooter = styled('div', {
 });
 
 
-const AutoSelectListbox = styled('div', {
+const AutoSelectListbox = styled('ul', {
   name: 'MuxAutoSelect',
   slot: 'Listbox',
   overridesResolver: (props, styles) => styles.listbox,
-})(memoTheme(({ theme }) => (!theme?.palette ? {} : {
+})(memoTheme(({ theme}) => (!theme?.palette ? {} : {
   listStyle: 'none',
   margin: 0,
   padding: '8px 0',
   maxHeight: '40vh',
   overflow: 'auto',
   position: 'relative',
-  //
+
   [`& .${autoSelectClasses.option}`]: {
     minHeight: 48,
     display: 'flex',
@@ -278,7 +281,7 @@ const AutoSelectListbox = styled('div', {
       backgroundColor: 'rgb(var(--tw-primary-rgb) / 50%)',
     },
     '&[aria-selected="true"]': {
-      backgroundColor: theme.palette.action.activeGray ?? (theme.vars
+      backgroundColor: (theme.vars
         ? `rgba(${theme.vars.palette.primary.mainChannel} / ${theme.vars.palette.action.selectedOpacity})`
         : alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity)),
       [`&.${autoSelectClasses.focused}`]: {
@@ -303,6 +306,7 @@ const AutoSelectListbox = styled('div', {
       },
     },
   },
+  
 })));
 
 const AutoSelectGroupLabel = styled(ListSubheader, {
@@ -330,29 +334,32 @@ export { createFilterOptions };
 const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
 
   const theme = useTheme();
-
+  //console.log("AutoSelect::inProps-variant:", inProps.variant)
   const props = useMuiDefaultProps({props: {...inProps, theme}, name: "MuxAuoSelect"});
+  const { select: {defaultProps} } = useTailwindTheme();
   
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
+    variant = defaultProps.variant,
+    size = defaultProps.size,
     autoComplete = false,
     autoHighlight = false,
     autoSelect = false,
     blurOnSelect = false,
-    ChipProps: ChipPropsProp,
+    clearOnSelect,
     className,
     clearIcon = <MaterialIcon icon='close'/>,
     clearOnBlur = !props.freeSolo,
     clearOnEscape = false,
     clearText = 'Clear',
     closeText = 'Close',
-    componentsProps,
     defaultValue = props.multiple ? [] : null,
-    disableClearable = false,
-    disableCloseOnSelect = false,
+    disableClearable = clearIcon === false,
+    disableCloseOnSelect,
+    disabledItemsFocusable,
+    disableListWrap,
     disabled = false,
-    disabledItemsFocusable = false,
-    disableListWrap = false,
+    disableBorder,
     disablePortal = false,
     filterOptions,
     filterSelectedOptions = false,
@@ -369,10 +376,9 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     handleHomeEndKeys = !props.freeSolo,
     id: idProp,
     includeInputInList = false,
+    allowFilter,
     inputValue: inputValueProp,
     limitTags = -1,
-    ListboxComponent: ListboxComponentProp,
-    ListboxProps: ListboxPropsProp,
     loading = false,
     loadingText = 'Loading…',
     multiple = false,
@@ -386,11 +392,8 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     openOnFocus = false,
     openText = 'Open',
     options = [],
-    popperProps,
-    PanelComponent: PanelComponentProp,
     popupIcon = <MaterialIcon icon='keyboard_arrow_down'/>,
     renderGroup: renderGroupProp,
-    variant,
     label,
     placeholder,
     name,
@@ -400,16 +403,23 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     renderOption: renderOptionProp,
     renderTags,
     selectOnFocus = !props.freeSolo,
-    size = 'md',
     slots = {},
     slotProps = {},
     value: valueProp,
     menuHeader,
     menuFooter,
     extraAdornment,
+    error,
+    shrink,
+    disablePopper,
+    itemFocusClassName,
+    itemFocusVisibleClassName,
+    theme: _th,
     ...other
   } = props;
   /* eslint-enable @typescript-eslint/no-unused-vars */
+
+  //console.log("AutoSelect::variant:", props.variant)
 
   const action = React.useRef(null);
 
@@ -437,7 +447,13 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     inputValue,
     groupedOptions,
 
-  } = useAutocomplete({ ...props, inOpen: openState , options, componentName: 'AutoSelect' });
+  } = useAutocomplete({ 
+    ...props, 
+    disableClearable,
+    inOpen: openState , 
+    options, 
+    componentName: 'AutoSelect' 
+  });
 
   
   const onOpenChange = (open, event, reason) => {
@@ -445,20 +461,21 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       //action.current.handleOpen(event) 
     } else {
       //action.current.handleOpen(event, reason); 
+      console.log("MuxSelect close reason:", reason)
     }
   }
    
   const popupOpen = asPopupOpen || !!open;
   
-  const hasClearIcon = !disableClearable && !disabled && dirty && !readOnly;
-  const hasPopupIcon = (!freeSolo || forcePopupIcon === true) && forcePopupIcon !== false;
+  const hasClearIcon = !loading && !disableClearable && !disabled && dirty && !readOnly;
+  const hasPopupIcon = forcePopupIcon !== false && (!freeSolo || forcePopupIcon === true) ;
 
   const { onMouseDown: handleInputMouseDown } = getInputProps();
   const { ref: listboxRef, ...otherListboxProps } = getListboxProps();
 
   const defaultGetOptionLabel = (option) => option.label ?? option;
   const getOptionLabel = getOptionLabelProp || defaultGetOptionLabel;
-
+  const buttonSize = size === 'lg' ? 'md' : 'sm'; 
   // If you modify this, make sure to keep the `AutoSelectOwnerState` type in sync.
   const ownerState = {
     ...props,
@@ -472,6 +489,8 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     inputFocused: focusedTag === -1,
     popupOpen,
     size,
+    buttonSize,
+    disablePopper
   };
 
   const classes = useUtilityClasses(ownerState);
@@ -479,14 +498,9 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
 
   const externalForwardedProps = {
     slots: {
-      listbox: ListboxComponentProp,
-      panel: PanelComponentProp,
       ...slots,
     },
     slotProps: {
-      chip: ChipPropsProp,
-      listbox: ListboxPropsProp,
-      ...componentsProps,
       ...slotProps,
     },
   };
@@ -507,7 +521,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     className: classes.panel,
   });
 
-  const buttonSize = size === 'lg' ? 'md' : 'sm'; 
+  
   let startAdornment;
 
   if (multiple && value.length > 0) {
@@ -521,7 +535,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       startAdornment = renderTags(value, getCustomizedTagProps, ownerState);
     } else {
       startAdornment = value.map((option, index) => {
-        const { key, ...customTagProps } = getCustomizedTagProps({ index });
+        const { key, ...customTagProps } = getCustomizedTagProps(index);
         return (
           <Chip
             key={key}
@@ -537,7 +551,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
 
   if (limitTags > -1 && Array.isArray(startAdornment)) {
     const more = startAdornment.length - limitTags;
-    if (!focused && more > 0) {
+    if ((!focused || limitTags === 0) && more > 0) {
       
       startAdornment = startAdornment.splice(0, limitTags);
       startAdornment.push(
@@ -567,9 +581,9 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
   );
 
   const renderGroup = renderGroupProp || defaultRenderGroup;
-  const defaultRenderOption = (props2, option) => {
+  const defaultRenderOption = (props, option) => {
     // Need to clearly apply key because of https://github.com/vercel/next.js/issues/55642
-    const { key, ...otherProps } = props2;
+    const { key, ...otherProps } = props;
     return (
       <li key={key} {...otherProps}>
         {getOptionLabel(option)}
@@ -615,7 +629,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       },
     },
     
-    ...popperProps,
+    ...externalForwardedProps?.popper,
     open: popupOpen,
     roles: { role: "presentation" },
     dismiss: {},
@@ -625,20 +639,24 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
   });
 
   const renderAutoSelectPopperChildren = (children) => (
-    <Popper {...createPopperProps()}>
-      <ThemeProvider theme={theme}>
-        <AutoSelectPanel as={PanelSlot} {...panelProps}>
-          {menuHeader && <AutoSelectMenuHeader onMouseDown={preventClick}>{menuHeader}</AutoSelectMenuHeader>}
-          {children}
-          {menuFooter && <AutoSelectMenuFooter onMouseDown={preventClick}>{menuFooter}</AutoSelectMenuFooter>}
-        </AutoSelectPanel>
-      </ThemeProvider>
-    </Popper>
+    disablePopper 
+    ? renderAutoSelectPanelChildren(children)
+    : <Popper {...createPopperProps()}>
+        {renderAutoSelectPanelChildren(children)}
+      </Popper>
+  );
+
+  const renderAutoSelectPanelChildren = (children) => (
+    <AutoSelectPanel as={PanelSlot} {...panelProps}>
+      {menuHeader && <AutoSelectMenuHeader onMouseDown={preventClick}>{menuHeader}</AutoSelectMenuHeader>}
+      {children}
+      {menuFooter && <AutoSelectMenuFooter onMouseDown={preventClick}>{menuFooter}</AutoSelectMenuFooter>}
+    </AutoSelectPanel>
   );
 
   let autoSelectPopper = null;
   if (popupOpen || openState) {
-    if (groupedOptions.length > 0) {
+    if (groupedOptions.length > 0 ) {
       autoSelectPopper = renderAutoSelectPopperChildren(
         <AutoSelectListbox as={ListboxSlot} {...listboxProps}>
           {groupedOptions.map((option, index) => {
@@ -661,7 +679,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
           {loadingText}
         </AutoSelectLoading>,
       );
-    } else if (groupedOptions.length === 0 && !freeSolo && !loading) {
+    } else if (groupedOptions.length === 0 && !loading) {
       autoSelectPopper = renderAutoSelectPopperChildren(
         <AutoSelectNoOptions
           className={classes.noOptions}
@@ -689,26 +707,23 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
         {...getRootProps(other)}
       >
         {renderInput({
-          id,
-          disabled,
+          disableBorder,
           fullWidth: true,
           size: size === 'md' ? 'md' : undefined,
           labelProps: getInputLabelProps(),
           label,
+          error,
+          shrink,
           rootProps: {
             ref: setAnchorEl,
-            className: classes.inputRoot,
-          },
-          componentsProps:{
-            //onKeyDown: getRootProps().onKeyDown
+            className: clsx(classes.inputRoot, 'max-w-inherit', multiple ? 'min-w-inherit' : 'min-w-[30px]'),
           },
           startAdornment,
           variant,
           className: classes.input,
-          readOnly,
           placeholder,
           name,
-          forceInline: multiple,
+          forceInline: multiple && (limitTags !== 0),
           required,
           ...getInputProps(),
           
@@ -752,7 +767,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
                     title={popupOpen ? closeText : openText}
                     ownerState={ownerState}
                     {...popupIndicatorSlotProps}
-                    //size={buttonSize}
+                    size={variant === 'standard' ? buttonSize : undefined}
                     className={clsx(classes.popupIndicator, popupIndicatorSlotProps?.className)}
                   >
                     {popupIcon}

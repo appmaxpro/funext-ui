@@ -20,7 +20,7 @@ const Menu: any = AxMenu;
 export const Basic = () => {
   return (
     <Menubar> 
-      <MenuButton content={<Button variant='text' color='default'>File</Button> }>
+      <MenuButton trigger={<Button variant='text' color='default'>File</Button> }>
           <MenuItem text="Share" />
           <MenuDivider />
           <MenuItem text="New" menu>
@@ -36,7 +36,7 @@ export const Basic = () => {
           <MenuDivider />
           <MenuItem text="Print" label="Ctrl+P" />
       </MenuButton>
-      <MenuButton content={<Button variant='text' color='default'>Edit</Button> }>
+      <MenuButton trigger={<Button variant='text' color='default'>Edit</Button> }>
         <MenuItem
           text="Undo"
           startIcon={BiArrowCounterclockwise}
@@ -48,7 +48,7 @@ export const Basic = () => {
         <MenuItem text="Copy" startIcon={BiClipboard} label="Ctrl+C" />
         <MenuItem text="Paste" startIcon={BiClipboardCheck} label="Ctrl+P" />
       </MenuButton>
-      <MenuButton  content={<Button variant='text' color='default'>View</Button> }>
+      <MenuButton  trigger={<Button variant='text' color='default'>View</Button> }>
         <MenuItem text="Print Layout" />
         <MenuDivider />
         <MenuItem text="Mode" menu>
@@ -68,7 +68,7 @@ export const Basic = () => {
           </MenuItem>
         </MenuItem>
       </MenuButton>
-      <MenuButton content={<Button variant='text' color='default'>Format</Button> }>
+      <MenuButton trigger={<Button variant='text' color='default'>Format</Button> }>
         <MenuItem label="Ctrl+B" text="Bold" />
         <MenuItem label="Ctrl+I" text="Italic" />
         <MenuItem label="Ctrl+U" text="Underline" />

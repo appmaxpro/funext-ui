@@ -10,6 +10,8 @@ import {
   SxThemeProps 
 } from "../../styles";
 
+import { ButtonBaseProps } from '../Button/ButtonBase';
+
 export interface ButtonGroupClasses {
   /** Styles applied to the root element. */
   root: string;
@@ -203,15 +205,15 @@ export interface ButtonGroupOwnProps {
    */
   disableElevation?: boolean;
   /**
-   * If `true`, the button keyboard focus ripple is disabled.
-   * @default false
+   * If `true`, the button keyboard focus ripple.
+   * @default true
    */
-  disableFocusRipple?: boolean;
+  focusRipple?: ButtonBaseProps['focusRipple'];
   /**
-   * If `true`, the button ripple effect is disabled.
-   * @default false
+   * If `true`, the button ripple effect.
+   * @default true
    */
-  disableRipple?: boolean;
+  ripple?: ButtonBaseProps['ripple'];
   /**
    * If `true`, the buttons will take up the full width of its container.
    * @default false

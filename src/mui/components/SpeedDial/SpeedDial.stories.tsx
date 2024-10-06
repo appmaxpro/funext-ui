@@ -32,7 +32,7 @@ const config = {
   component: SpeedDial,
   title: "Components/SpeedDial",
 };
-const addIcon = <MaterialIcon icon="add" className="transition-transform group-hover:rotate-45" />;
+const addIcon = <MaterialIcon icon="add" size={32} className="transition-transform group-hover:rotate-45" />;
 const homeIcon = <MaterialIcon icon="home" />;
 const settingsIcon = <MaterialIcon icon="settings" />;
 const imageIcon = <MaterialIcon icon="image" />;
@@ -43,18 +43,18 @@ export function DefaultSpeedDial() {
       <div className="absolute bottom-0 right-0">
         <SpeedDial>
           <SpeedDialHandler>
-            <IconButton size="lg" className="rounded-full" color="primary" variant="filled">
-              <MaterialIcon icon="add" className="transition-transform group-hover:rotate-45" />
+            <IconButton size="lg" className="fill-button-shadow" color="primary" variant="filled">
+            {addIcon}
             </IconButton>
           </SpeedDialHandler>
           <SpeedDialContent>
-            <SpeedDialAction>
+            <SpeedDialAction size="lg" className="fill-button-shadow">
               {homeIcon}
             </SpeedDialAction>
-            <SpeedDialAction>
+            <SpeedDialAction size="lg" className="fill-button-shadow">
               {settingsIcon}
             </SpeedDialAction>
-            <SpeedDialAction>
+            <SpeedDialAction size="lg" className="fill-button-shadow">
               {imageIcon}
             </SpeedDialAction>
           </SpeedDialContent>
@@ -78,7 +78,7 @@ export function SpeedDialWithTextOutside() {
       <div className="absolute bottom-0 right-0">
         <SpeedDial>
           <SpeedDialHandler>
-            <IconButton size="lg" className="rounded-full">
+            <IconButton size="lg" className="fill-button-shadow">
               {addIcon}
             </IconButton>
           </SpeedDialHandler>
@@ -109,7 +109,7 @@ export function CustomSpeedDial() {
       <div className="absolute bottom-0 right-0">
         <SpeedDial>
           <SpeedDialHandler>
-            <IconButton color="white" variant="filled" size="lg" className="rounded-full border border-slate-50 shadow-xl">
+            <IconButton color="white" variant="filled" size="lg" className="fill-button-shadow">
               {addIcon} 
             </IconButton>
           </SpeedDialHandler>
@@ -134,28 +134,28 @@ export function CustomSpeedDial() {
 
 export function SpeedDialWithTextInside() {
   return (
-    <div className="relative h-80 w-full">
-      <div className="absolute bottom-0 end-0 me-4">
+    <div className="relative h-screen w-full">
+      <div className="absolute bottom-10 end-0 me-4">
         <SpeedDial>
           <SpeedDialHandler>
-            <IconButton size="lg" className="rounded-full" onClick={()=>{}}>
+            <IconButton size="lg" className="fill-button-shadow" onClick={()=>{}}>
               {addIcon}
             </IconButton>
           </SpeedDialHandler>
           <SpeedDialContent>
-            <SpeedDialAction className="h-16 w-16">
+            <SpeedDialAction className="h-16 w-16 fill-button-shadow">
               {homeIcon}
               <Text color="slate" className="text-xs font-normal">
                 Home
               </Text>
             </SpeedDialAction>
-            <SpeedDialAction className="h-16 w-16">
+            <SpeedDialAction className="h-16 w-16 fill-button-shadow">
               {settingsIcon}
               <Text color="slate" className="text-xs font-normal">
                 Settings
               </Text>
             </SpeedDialAction>
-            <SpeedDialAction className="h-16 w-16">
+            <SpeedDialAction className="h-16 w-16 fill-button-shadow">
               {imageIcon}
               <Text color="slate" className="text-xs font-normal">
                 Pages

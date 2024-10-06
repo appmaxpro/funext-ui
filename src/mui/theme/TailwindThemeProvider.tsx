@@ -10,6 +10,9 @@ const TailwindThemeContext = createContext<TailwindTheme>(tailwindTheme);
 TailwindThemeContext.displayName = "TailwindThemeContext";
 
 
+export const tailwindThemeMerge =(tailwindTheme:TailwindTheme, value:any = {}) => 
+      merge(tailwindTheme, value, { arrayMerge: combineMerge })
+
 function TailwindThemeProvider({ value = {}, children }:any) {
   const mergedValue = merge(tailwindTheme, value, { arrayMerge: combineMerge });
 
@@ -18,9 +21,15 @@ function TailwindThemeProvider({ value = {}, children }:any) {
   );
 }
 
+function TailwindThemeProviderNoMerge({ value = {}, children }:any) {
+  return (
+    <TailwindThemeContext.Provider value={value}>{children}</TailwindThemeContext.Provider>
+  );
+}
+
 
 export function useTailwindTheme(): TailwindTheme {
   return useContext(TailwindThemeContext);
 }
 
-export { TailwindThemeContext, TailwindThemeProvider};
+export { TailwindThemeContext, TailwindThemeProvider, TailwindThemeProviderNoMerge};

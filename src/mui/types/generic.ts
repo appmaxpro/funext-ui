@@ -11,6 +11,7 @@ export type Colors =
   | "secondary"
   | "success"
   | "danger"
+  | "error"
   | "warning"
   | "info"
   | "slate"

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useMemo } from "react";
-import { Box, useClassNames, useRefs, clsx } from "../core";
+import { useClassNames } from "../core";
+import { useRefs, clsx,  Box} from "../mui";
 import { GridBody } from "./grid-body";
 import { GridDNDColumn } from "./grid-dnd-row";
 import { GridFooter } from "./grid-footer";
@@ -1394,7 +1395,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
               [styles.sticky]: stickyHeader,
               [styles.options]: allowColumnOptions,
               
-            }), 'bg-header-min')}
+            }))}
             groupBy={state.groupBy}
             orderBy={state.orderBy}
             columns={displayColumns}

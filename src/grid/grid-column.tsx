@@ -65,11 +65,7 @@ export const GridColumn = memo(function GridColumn(
           : { flex: 1 }
       }
     >
-      {children && typeof children === "object" ? (
-        children
-      ) : (
-        <span>{children}</span>
-      )}
+      {children}
     </ColumnComponent>
   );
 });

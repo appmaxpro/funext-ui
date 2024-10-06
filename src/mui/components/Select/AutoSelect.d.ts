@@ -18,7 +18,7 @@ import { ChipProps, ChipTypeMap } from '../Chip';
 import { PanelProps } from '../Panel';
 import { PopperProps } from '../Popper';
 import { AutoSelectClasses } from './autoSelectClasses';
-import { CreateSlotsAndSlotProps, SlotProps } from '@mui/material/utils/types';
+import { CreateSlotsAndSlotProps, SlotProps } from '../../props';
 
 export * from './autoSelectClasses';
 export {default as autoSelectClasses} from './autoSelectClasses';
@@ -163,12 +163,9 @@ export interface AutoSelectProps<
   ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
 > extends UseAutocompleteProps<Value, Multiple, DisableClearable, FreeSolo>,
     StandardProps<React.HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange' | 'children'>,
+    Pick<TextFieldProps, 'variant' | 'size' | 'placeholder' | 'name' | 'label' | 'required' | 'color' | 'error' | 'disableBorder'>,
     AutoSelectSlotsAndSlotProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent> {
-  /**
-   * Props applied to the [`Chip`](/material-ui/api/chip/) element.
-   * @deprecated Use `slotProps.chip` instead. This prop will be removed in v7. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  ChipProps?: ChipProps<ChipComponent>;
+
   /**
    * Override or extend the styles applied to the component.
    */
@@ -194,15 +191,6 @@ export interface AutoSelectProps<
   closeText?: string;
 
   /**
-   * The props used for each slot inside.
-   * @deprecated Use the `slotProps` prop instead. This prop will be removed in v7. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  componentsProps?: {
-    clearIndicator?: Partial<IconButtonProps>;
-    panel?: PanelProps;
-    popupIndicator?: Partial<IconButtonProps>;
-  };
-  /**
    * If `true`, the component is disabled.
    * @default false
    */
@@ -212,6 +200,7 @@ export interface AutoSelectProps<
    * @default false
    */
   disablePortal?: boolean;
+  disablePopper?: boolean;
   /**
    * Force the visibility display of the popup icon.
    * @default 'auto'
@@ -230,23 +219,7 @@ export interface AutoSelectProps<
    * @default (more) => `+${more}`
    */
   getLimitTagsText?: (more: number) => React.ReactNode;
-
-  popperProps?: Partial<Omit<PopperProps, 'children'>>;
   
-  /**
-   * The component used to render the listbox.
-   * @default 'ul'
-   * @deprecated Use `slots.listbox` instead. This prop will be removed in v7. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  ListboxComponent?: React.JSXElementConstructor<React.HTMLAttributes<HTMLElement>>;
-  /**
-   * Props applied to the Listbox element.
-   * @deprecated Use `slotProps.listbox` instead. This prop will be removed in v7. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  ListboxProps?: ReturnType<ReturnType<typeof useAutocomplete>['getListboxProps']> & {
-    sx?: SxThemeProps;
-    ref?: React.Ref<Element>;
-  };
   /**
    * If `true`, the component is in a loading state.
    * This shows the `loadingText` in place of suggestions (only if there are no suggestions to show, for example `options` are empty).
@@ -283,12 +256,6 @@ export interface AutoSelectProps<
    * @default 'Open'
    */
   openText?: string;
-  /**
-   * The component used to render the body of the popup.
-   * @default Panel
-   * @deprecated Use `slots.panel` instead. This prop will be removed in v7. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  PanelComponent?: React.JSXElementConstructor<React.HTMLAttributes<HTMLElement>>;
 
   /**
    * The icon to display in place of the default popup icon.
@@ -356,8 +323,6 @@ export interface AutoSelectProps<
   label?: TextFieldProps['label'],
   placeholder?: TextFieldProps['placeholder'],
   name?: TextFieldProps['name'],
-  required?: TextFieldProps['required'],
-  readOnly?: TextFieldProps['readOnly'],
   renderInput?: (params: AutoSelectRenderInputParams) => React.ReactNode;
 
   menuHeader?: React.ReactNode;
@@ -365,6 +330,8 @@ export interface AutoSelectProps<
   menuFooter?: React.ReactNode;
 
   extraAdornment?: React.ReactNode;
+
+  disablePopper?: boolean;
 }
 
 

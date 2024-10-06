@@ -1,7 +1,7 @@
 /**
  * @title Grouping
  */
-import { Box } from "../../core";
+import { Box } from "../..";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";
 import { columns, records } from "./demo-data";

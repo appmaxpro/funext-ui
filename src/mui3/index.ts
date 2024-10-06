@@ -13,10 +13,3 @@ export type{
   SideNavProps
 } from "./components/side-nav";
  */
-
-import {MaterialIcon} from './Icon'
-export {
-  MaterialIcon,
-  createMuiTheme,
-  type Theme
-};

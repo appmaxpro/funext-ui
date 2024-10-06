@@ -174,6 +174,9 @@ export interface UseAutocompleteProps<
   freeSolo?: FreeSolo;
 
   allowCreateOption?: boolean;
+
+  allowFilter?: boolean;
+  clearOnSelect?: boolean;
   /**
    * Used to determine the disabled state for a given option.
    *
@@ -358,7 +361,7 @@ export type AutocompleteInputChangeReason =
   | 'selectOption'
   | 'removeOption';
 
-export type AutocompleteGetTagProps = ({ index }: { index: number }) => {
+export type AutocompleteGetTagProps = (index: number) => {
   key: number;
   'data-tag-index': number;
   tabIndex: -1;

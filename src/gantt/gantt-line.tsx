@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import { DragSourceMonitor, useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
-import { useClassNames, useTheme } from "../core";
+import { useClassNames, useCoreTheme } from "../core";
 import { BootstrapIcon } from "../icons/bootstrap-icon";
 
 import * as TYPES from "./types";
@@ -89,7 +89,7 @@ export const GanttLine = React.memo(function GanttLine(props: {
     target?: TYPES.GanttVirtualLinePoint;
   } | null>(null);
 
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
 
   const {

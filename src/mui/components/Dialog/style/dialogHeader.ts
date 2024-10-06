@@ -8,6 +8,7 @@ export interface DialogHeaderStylesType {
   styles?: {
     base?: object;
     title?: object;
+    divider?: object;
   };
 }
 
@@ -19,18 +20,15 @@ export const dialogHeader: DialogHeaderStylesType = {
     base: {
       display: "flex flex-row flex-nowrap between",
       alignItems: "items-start",
-      p: "p-4",
+      p: "p-3",
     },
     title: {
       grow: "grow",
-      
-      color: "item-text-9",
-      fontSmoothing: "antialiased",
-      fontFamily: "font-sans",
-      fontSize: "text-2xl",
-      fontWeight: "font-semibold",
       lineHeight: "leading-snug",
-    }
+    },
+    divider: {
+      borderTop: "border-b"
+    },
   },
 };
 

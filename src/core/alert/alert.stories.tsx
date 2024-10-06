@@ -1,6 +1,6 @@
 import { MaterialIcon } from "../../icons/material-icon";
 import { Box } from "../box";
-import { AlertLink } from "../alert";
+import { AlertLink } from "./alert";
 import { Alert } from "../../mui";
 
 const config = {

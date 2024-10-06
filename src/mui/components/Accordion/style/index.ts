@@ -37,27 +37,19 @@ export const accordion: AccordionStylesType = {
         display: "block",
         position: "relative",
         width: "w-full",
-        color: "text-item-2",
       },
       header: {
         initial: {
-          display: "flex",
-          justifyContent: "justify-between",
-          alignItems: "items-center",
           width: "w-full",
           py: "py-4",
-          borderWidth: "border-b border-b-slate-100",
+          borderWidth: "border-b",
           fontSmoothing: "antialiased",
-          fontFamily: "font-sans",
-          fontSize: "text-xl",
           textAlign: "text-justify",
-          fontWeight: "font-semibold",
-          lineHeight: "leading-snug",
-          userSelect: "select-none",
-          hover: "hover:text-item",
           transition: "transition-colors",
         },
-        active: { color: "text-item" },
+        active: { 
+          color: "text-item" 
+        },
         icon: {
           ml: "ms-4",
         },
@@ -66,11 +58,6 @@ export const accordion: AccordionStylesType = {
         display: "block",
         width: "w-full",
         py: "py-4",
-        fontSmoothing: "antialiased",
-        fontFamily: "font-sans",
-        fontSize: "text-sm",
-        fontWeight: "font-light",
-        lineHeight: "leading-normal",
       },
       disabled: {
         pointerEvents: "pointer-events-none",

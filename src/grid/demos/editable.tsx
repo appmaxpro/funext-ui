@@ -2,7 +2,7 @@
  * @title Editable
  */
 import React from "react";
-import { Box, useClassNames } from "../../core";
+import { Box, useClassNames } from "../..";
 import { Button, FocusTrap, Input } from "../../mui";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";

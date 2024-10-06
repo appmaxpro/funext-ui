@@ -1,29 +1,23 @@
-import { MaterialSymbol } from "@material-symbols/font-400";
-import { forwardRef, useMemo } from "react";
+import { MaterialSymbol , type PolymorphicMaterialSymbolProps } from "react-material-symbols";
+import 'react-material-symbols/rounded';
 
-import { Box } from "../../core";
-import { TForeground } from "../../core/system";
-import { clsx } from "../../core/clsx";
+//import { TForeground } from "../../core";
+//import { clsx, Box } from "../../mui";
 
-import styles from "./material-icon.module.scss";
+///import styles from "./material-icon.module.scss";
 
-export interface MaterialIconProps {
-  icon: MaterialSymbol;
-  variant?: "outlined" | "rounded" | "sharp";
-  fill?: boolean;
-  fontSize?: number | string;
-  color?: TForeground;
-  className?: string;
-  onClick?: React.MouseEventHandler<HTMLSpanElement>;
+export type MaterialIconProps = PolymorphicMaterialSymbolProps<any>;
+export {
+  MaterialSymbol as MaterialIcon
 }
-
-const styleNames = ["fill", "fontSize"] as const;
+/*
+const styleNames = ["fill", "fontSize", "scale"] as const;
 
 const hasStyles = (props: Partial<MaterialIconProps>) => {
   return styleNames.some((name) => props[name] !== void 0);
 };
 
-const getStyles = ({ fill, fontSize }: Partial<MaterialIconProps>) => {
+const getStyles = ({ fill, fontSize, scale }: Partial<MaterialIconProps>) => {
   const fontVariationSettings = fill
     ? `"FILL" 1, "GRAD" 0, "wght" 400, "opsz" 48`
     : undefined;
@@ -31,6 +25,7 @@ const getStyles = ({ fill, fontSize }: Partial<MaterialIconProps>) => {
   return {
     fontVariationSettings,
     fontSize,
+    scale
   };
 };
 
@@ -44,14 +39,15 @@ export const  MaterialIcon = forwardRef<HTMLSpanElement, MaterialIconProps>(
       fontSize,
       color,
       onClick,
+      scale
     } = props;
 
     const cls = `material-symbols-${variant}`;
     const clsName = clsx(className, styles.icon, styles[cls], 'mt-icon');
     const style = useMemo(() => {
-      const props = { fill, fontSize };
+      const props = { fill, fontSize, scale };
       return hasStyles(props) ? getStyles(props) : undefined;
-    }, [fill, fontSize]);
+    }, [fill, fontSize, scale]);
 
     return (
       <Box
@@ -67,3 +63,4 @@ export const  MaterialIcon = forwardRef<HTMLSpanElement, MaterialIconProps>(
     );
   },
 );
+*/

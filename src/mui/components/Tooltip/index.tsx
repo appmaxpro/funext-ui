@@ -22,7 +22,8 @@ import {
   useMergeRefs,
   arrow,
   FloatingArrow,
-  safePolygon
+  safePolygon,
+  UseHoverProps
 } from "@floating-ui/react";
 
 // framer-motion
@@ -75,6 +76,7 @@ export type TooltipProps = SxComponentProps<'div'> & {
   target?: React.MutableRefObject<HTMLElement> | HTMLElement | null;
   tooltipProps?: SxComponentProps<'div'>;
   allowOverContent?: boolean;
+  hoverProps?: UseHoverProps;
 }
 
 export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
@@ -89,6 +91,7 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
       dismiss,
       arrow: arrowProps,
       showArrow = true,
+      hoverProps,
       animate,
       className,
       target,
@@ -139,30 +142,32 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
       placement,
     });
 
+    const isOpen = context.open;
+
     const { getReferenceProps, getFloatingProps } = useInteractions([
       useClick(context, {
         enabled: interactive,
       }),
       useFocus(context),
-      useHover(context, allowOverContent ? {
+      useHover(context, hoverProps ?? (allowOverContent ? {
         handleClose: safePolygon(),
-      } : undefined),
+      } : undefined)),
       useRole(context, { role: "tooltip" }),
       useDismiss(context, dismiss),
     ]);
 
     React.useEffect(() => {
-      if (refs.reference.current && refs.floating.current && open) {
+      if (refs.reference.current && refs.floating.current && isOpen) {
         return autoUpdate(refs.reference.current, refs.floating.current, update);
       }
-    }, [open, update, refs.reference, refs.floating]);
+    }, [isOpen, update, refs.reference, refs.floating]);
 
 
     React.useEffect(()=> {
-      if (context.open && !initialized) {
+      if (isOpen && !initialized) {
         setInitialized(true);
       }
-    }, [context.open]);
+    }, [isOpen]);
 
 
     const childMergedRef = useMergeRefs([ref, refs.setReference]);
@@ -198,13 +203,13 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
     }, [content] )
 
     useEffect(()=> {
-       if (!hasTarget && open && !contentRef.current) {
+       if (!hasTarget && isOpen && !contentRef.current) {
         contentRef.current = (typeof content === 'function' 
           ? (content as Function)() 
           : content
         );
        } 
-    }, [open])
+    }, [isOpen])
 
     if (!initialized) {
       return refChildren;
@@ -256,7 +261,7 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
         <LazyMotion features={domAnimation}>
           <FloatingPortal id="tooltip-portal">
             <NewAnimatePresence>
-              {open && (
+              {isOpen && (
                 <m.div
                   {...getFloatingProps({
                     ...other,
@@ -294,5 +299,5 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
 );
 
 Tooltip.displayName = "Mux.Tooltip";
-
+Object.assign(Tooltip, {safePolygon: safePolygon})
 export default Tooltip;

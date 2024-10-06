@@ -82,7 +82,7 @@ export const FlexConfig: Config<FlexProps> = {
   flexShrink: computeVar("", (val) => def('shrink', val)),
   flexWrap: computeVar("flex"),
   order: computeVar("order"),
-  justifyContent: computeVar("justify", (v) => v.replace('space-', '')),
+  justifyContent: computeVar("justify", (v) => v.replace('flex-', '').replace('content-', '')),
   alignContent: computeVar("content", replaceFlex),
   alignItems: computeVar("items", replaceFlex),
   alignSelf: computeVar("self"),
@@ -91,7 +91,7 @@ export const FlexConfig: Config<FlexProps> = {
   rowGap: computeVar("row-gap"),
   columnGap: computeVar("column-gap"),
   gap: computeVar("gap", val => {
-    console.log("computeVar gap:", val);
+    //console.log("computeVar gap:", val);
     return val;
   }),
   g: computeGap,

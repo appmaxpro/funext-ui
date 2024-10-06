@@ -14,7 +14,7 @@ function Search(
 ) {
   return (
     <div className="flex items-center gap-1.5 ps-3">
-      <MaterialIcon icon="search" fontSize={20} fill 
+      <MaterialIcon icon="search" size={28} fill
       className="pointer-events-none text-gray-400 dark:text-gray-600" />
 
       {prefix?.length

@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState, Fragment, useRef, forwardRef } from "react";
+import * as React from "react";
+import { useCallback, useMemo, useState, Fragment, useRef, forwardRef, FC } from "react";
+
 import { MaterialIcon, MaterialIconProps } from "../../icons/material-icon";
 //import { Button, ButtonProps } from "../button";
 //import { ButtonGroup } from "../button-group";
@@ -6,6 +8,7 @@ import { clsx } from "../clsx";
 import { Image } from "../image";
 import { 
   Menu, 
+  MenuProps,
   MenuItem, 
   styled, 
   ButtonGroup, 
@@ -15,10 +18,12 @@ import {
   Tooltip,
   MenuHandler,
   MenuList,
-  MenuDivider
+  MenuListProps,
+  MenuDivider,
+  TooltipProps,
+  Divider
 } from "../../mui";
 
-import Divider from "../../mui/components/Divider";
 
 import { useClassNames } from "../styles";
 
@@ -32,15 +37,12 @@ export interface CommandItemProps {
   subtext?: string;
   description?: string;
   color?: ButtonProps["color"];
-  menuProps?: { 
-    showArrow?: boolean; 
-    arrowSide?: "left" | "right" | "center";
-    menuSide?: "left" | "right" | "center";
-    rounded?: boolean;
-  };
+  menuProps?: Omit<MenuProps, 'children'>;
+  menuListProps?: Omit<MenuListProps, 'children'>;
   imageProps?: {
     src: string;
     alt: string;
+    className?: string;
   };
   icon?: (props?: { className?: string }) => JSX.Element | null;
   iconProps?: MaterialIconProps;
@@ -59,16 +61,22 @@ export interface CommandItemProps {
   
   showAsMenuItem?: boolean;
   className?: string;
-  render?: (props: CommandItemProps) => JSX.Element | null;
+  asSplit?: boolean;
+  outer?: FC<CommandItemProps>;
+  inner?: FC<Omit<CommandItemProps  & {children: React.ReactNode}, 'outer' | 'inner'>>;
+  props?: any;
+  size?: ButtonProps['size'];
+  variant?: ButtonProps['variant'];
 }
 
 export interface CommandBarProps {
   items: CommandItemProps[];
   className?: string;
-  menuProps?: { showArrow?: boolean; rounded?: boolean, side?: "left" | "right";};
+  menuProps?: Omit<MenuProps, 'children'>;
+  menuListProps?: Omit<MenuListProps, 'children'>;
   iconProps?: Omit<MaterialIconProps, "icon">;
   iconOnly?: boolean;
-  
+  //size?: 
 }
 
 export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(props, ref) {
@@ -77,7 +85,10 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
     subtext,
     description,
     color = "default",
+    size,
+    variant='text',
     menuProps,
+    menuListProps,
     imageProps,
     icon: Icon,
     iconProps,
@@ -87,25 +98,19 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
     disabled,
     divider,
     hidden,
-    render,
+    outer:OuterRender,
     onClick,
     items = [],
     showDownArrow = false,
     showAsMenuItem,
     className,
+    asSplit,
   } = props;
   const classNames = useClassNames();
   const [show, setShow] = useState(false);
   const anchorRef = useRef(null);
 
   const targetRef = useForwardedRef(ref);
-
-  const handleClick = useCallback(
-    (e: any) => {
-      if (onClick) onClick(e);
-    },
-    [onClick],
-  );
 
   const showMenu = useCallback(() => {
     console.log("showMenu");
@@ -119,10 +124,10 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
   const handleMenuClick = useCallback(
     (e: any, menu: CommandItemProps) => {
       hideMenu();
-      if (showAsMenuItem) handleClick(e);
+      if (showAsMenuItem) onClick?.(e);
       if (menu.onClick) menu.onClick(e);
     },
-    [showAsMenuItem, hideMenu, handleClick],
+    [showAsMenuItem, hideMenu, onClick],
   );
 
   const allItemsHidden = useMemo(
@@ -134,15 +139,16 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
     return null;
   }
 
-  if (render) {
-    return render({ ...props, render: undefined });
-  }
-
   if (divider) {
-    return <Divider vertical sx={{height: '70%'}}/>;
+    return <Divider vertical variant="middle" flexItem/>;
   }
 
-  const isSplit = onClick && items.length > 0 && !showAsMenuItem;
+  if (OuterRender) {
+    const {outer, inner, ...rest} = props;
+    return <OuterRender {...rest} ref={targetRef}/>;
+  }
+
+  const isSplit = asSplit ?? (onClick && items.length > 0 && !showAsMenuItem);
   const Wrapper = ButtonGroup;
 
   const showArrow = showDownArrow && !isSplit && items.length > 0;
@@ -150,7 +156,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
   const buttonProps =
     isSplit || items.length === 0
       ? {
-          onClick: disabled ? undefined : handleClick,
+          onClick: disabled ? undefined : onClick,
           ref: targetRef,
         }
       : {
@@ -160,10 +166,10 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
 
   const splitProps = {
     ref: targetRef,
-    onClick: showMenu,
+    onClick: asSplit ? (onClick ?? showMenu) : showMenu,
   };
 
-  const hasContent = !showAsMenuItem && (imageProps || Icon || iconProps || text || showArrow);
+  const hasContent = !asSplit && !showAsMenuItem && (imageProps || Icon || iconProps || text || showArrow);
   const useWrapperGroup = hasContent && isSplit;
   const useContent = (hasContent  && (isSplit || (text && !iconOnly)));
   const WrapperEl = useWrapperGroup ? Wrapper : Fragment;
@@ -176,16 +182,20 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
             ? <MaterialIcon {...iconProps} className={styles.icon}/>
             : imageProps?.src && 
                   <Image  {...imageProps} className={clsx(styles.image, imageProps.className)}/>)
-                   || null;  
+                   || undefined;  
 
   return (
     <>
       {showAsMenuItem ? (
         <SubMenuButton 
-        handleMenuClick={handleMenuClick} 
-        targetRef={targetRef} 
-        showAsMenuItem 
-        items={items} {...menuProps}>
+          handleMenuClick={handleMenuClick} 
+          targetRef={targetRef} 
+          showAsMenuItem 
+          items={items} 
+          item={props}
+          menuProps={menuProps} 
+          menuListProps={menuListProps}>
+
           <MenuItem 
              {...buttonProps} 
              disabled={disabled} 
@@ -207,9 +217,16 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
           </MenuItem>
         </SubMenuButton>  
       ) : (
-        <WrapperEl {...(useWrapperGroup && {className, color, variant:"text"})}>
+        <WrapperEl {...(useWrapperGroup && {className, color, variant})}>
           {hasContent && (
-            <SubMenuButton items={isSplit ? [] : items } handleMenuClick={handleMenuClick}  {...menuProps}>
+            <SubMenuButton 
+              items={isSplit ? [] : items } 
+              item={props}
+              handleMenuClick={handleMenuClick}  
+              menuProps={menuProps} 
+              menuListProps={menuListProps}
+              targetRef={buttonProps.ref}>
+
               <StyledButton 
                 useContent={useContent} 
                 color={color}
@@ -221,13 +238,13 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                   classNames({
                     active: checked,
                   }),
-                  buttonProps.className,
-                  'relative inline-flex item-center justify-between'
+                  'relative inline-flex item-center justify-between',
+                  className,
                 )}
                 disabled={disabled}
                 endIcon={
                   ((iconComp && iconSide === "end") || showArrow) && <>
-                      {iconComp}
+                      {iconSide === "end" ? iconComp : null}
                       {showArrow && <MaterialIcon
                         icon="arrow_drop_down"
                         className={ styles.arrowIcon}
@@ -240,26 +257,39 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                   : iconComp
                 }
                 text={text}
+                variant={variant}
+                size={size}
               > 
                 {!iconOnly ? text : null}
               </StyledButton>
             </SubMenuButton>
           )}
           {isSplit && (
-            <SubMenuButton items={items} handleMenuClick={handleMenuClick}  {...menuProps}>
+            <SubMenuButton 
+              items={items} 
+              item={props}
+              handleMenuClick={handleMenuClick}
+              menuProps={menuProps} 
+              menuListProps={menuListProps}>
               <StyledButton
                 useContent={useContent}
                 color={color}
                 aria-haspopup="true"
                 aria-expanded={show ? 'true' : undefined}
                 disabled={disabled}
-                className={clsx(styles.item, 'min-w-0')}
+                className={clsx(styles.item, 'min-w-0', className)}
                 showTip={!items.length}
                 {...splitProps}
-                endIcon={<MaterialIcon
-                  icon="arrow_drop_down"
-                  className={styles.arrowIcon}
-                />}
+                endIcon={
+                  (asSplit && iconComp)
+                  ? iconComp 
+                  : <MaterialIcon
+                    icon="arrow_drop_down"
+                    className={styles.arrowIcon}
+                  />
+                }
+                variant={variant}
+                size={size}
                 />
             
             </SubMenuButton>
@@ -273,25 +303,54 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
 });
 
 export function CommandBar(props: CommandBarProps) {
-  const { className, iconOnly, iconProps = {}, items = [] } = props;
+  const { className, iconOnly, iconProps = {}, items = [], menuListProps } = props;
   return (
     <div className={clsx(className, styles.bar)}>
-      {items.map(({ iconProps: icon, menuProps, ...item }) => (
-        <CommandItem
-          iconOnly={iconOnly}
-          iconProps={{ ...iconProps, ...icon } as MaterialIconProps}
-          menuProps={{
-            ...props.menuProps,
-            ...menuProps,
-          }}
-          {...item}
-        />
+      {items.map(({ iconProps: icon, hidden, menuProps, outer:OuterRender=CommandItem, divider, ...item }) => (
+
+       divider 
+        ? <Divider vertical variant="middle" flexItem/>
+        : hidden 
+          ? null
+          : <OuterRender
+              iconOnly={iconOnly}
+              iconProps={{ ...iconProps, ...icon } as MaterialIconProps}
+              menuListProps={menuListProps}
+              {...item}
+              menuProps={{
+                ...props.menuProps,
+                ...menuProps,
+              }}
+          />
       ))}
     </div>
   );
 }
 
-const StyledButton = forwardRef(({useContent, color='default', endIcon, title, text, showTip, ...props}:any, ref) => {
+let _hoverProps:TooltipProps['hoverProps'] = undefined;
+
+function getHoverProps() {
+  if(!_hoverProps) {
+    _hoverProps = {
+      delay: {
+        open: 2000,
+        close: 0
+      },
+      restMs: 1000
+    }
+  }
+  return _hoverProps;
+}
+
+const StyledButton = forwardRef(({
+  useContent, 
+  color='default', 
+  endIcon, 
+  title, 
+  text, 
+  showTip, 
+  ...props}:any, 
+  ref) => {
     let button;
     if (useContent) {
       button = (<Button  tabIndex={-1} color={color} {...props} 
@@ -308,25 +367,90 @@ const StyledButton = forwardRef(({useContent, color='default', endIcon, title, t
 
 
     if (showTip && (title || text)) {
-      return <Tooltip content={title || text}>
+      button = (<Tooltip content={title || text} hoverProps={getHoverProps()}>
         {button}
-      </Tooltip>
+      </Tooltip>)
     }
     return button;
 });
 
 
-const SubMenuButton = forwardRef(({items=[], handleMenuClick, targetRef, children, showAsMenuItem, ...props}:any, ref) => {
+
+const SubMenuButton = forwardRef(({
+  items=[], 
+  item,
+  handleMenuClick, 
+  targetRef, 
+  children, 
+  showAsMenuItem, 
+  menuProps,
+  menuListProps,
+  ...props
+}:any, ref) => {
   
-  if (!items.length) return children;
   
-  return (<Menu placement={!showAsMenuItem ? "bottom-end" : "right-start"} {...props} ref={ref} allowHover={!!showAsMenuItem}>
-    <MenuHandler ref={targetRef}>
-      {children}
-    </MenuHandler>
-    <MenuList>
+  
+  let itemProps = item;
+  let InnerRender;
+  if (item.inner) {
+    const {inner, outer, ...rest} = item;
+    InnerRender = inner;
+    itemProps =  rest;
+  }
+
+  if (!items.length) {
+    if (InnerRender) {
+      return <InnerRender {...itemProps}>{children}</InnerRender>
+    }
+
+    return children;
+  }
+
+  const placement = menuProps?.placement ?? showAsMenuItem ? "right-start" : "bottom-end";
+  const [side1, side2] = placement.split('-');
+  const isTopOrBottom = !showAsMenuItem && (side1 === 'bottom' || side1 === 'top');
+
+  const childPlacement = 
+    isTopOrBottom && (side2 === 'end' || side2 === 'start')
+    ? side2 === 'end'
+      ? 'right-start'
+      : 'left-end'
+    : placement;
+  
+  let handler = (<MenuHandler ref={targetRef}>
+          {children}
+        </MenuHandler>);
+
+
+  if (item.iconOnly) {
+    const tip = item.title ?? item.text;
+    if (tip) {
+      const btn = handler;
+      handler = (
+        <Tooltip 
+          content={tip}
+          hoverProps={getHoverProps()}
+        >
+          {btn}
+        </Tooltip>);
+    }
+  }
+
+  if (InnerRender) {
+    const btn = handler;
+    handler = <InnerRender {...itemProps}>{btn}</InnerRender> 
+  }
+
+  return (<Menu 
+    placement={!showAsMenuItem ? "bottom-start" : "right-start"}
+    strategy="fixed"
+    {...menuProps} 
+    ref={ref}
+    allowHover={!!showAsMenuItem}>
+    {handler}
+    <MenuList {...menuListProps}>
       {items.map((item:any) => {
-        const { key, divider, hidden, render } = item;
+        const { key, divider, hidden, outer:OuterRender, ...rest } = item;
 
         if (hidden) {
           return null;
@@ -336,14 +460,19 @@ const SubMenuButton = forwardRef(({items=[], handleMenuClick, targetRef, childre
         }
 
         const itemProps = {
-          ...item,
+          menuListProps: (item.items?.length ?? 0) > 0 ? menuListProps : undefined,
+          menuProps: (item.items?.length ?? 0) > 0 ? {
+            ...menuProps,
+            placement: childPlacement
+          } : undefined,
+          ...rest,
           showAsMenuItem: true,
           role: 'menuitem',
           onClick: (e: any) => handleMenuClick(e, item),
         };
 
-        if (render) {
-          return render({ ...itemProps, render: undefined });
+        if (OuterRender) {
+          return <OuterRender { ...itemProps}/>;
         }
 
         return <CommandItem {...itemProps} />;

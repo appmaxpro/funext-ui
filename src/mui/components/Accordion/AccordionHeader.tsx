@@ -48,9 +48,10 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
 
     // 3. set styles
     const buttonStyles = twMerge(
-      classnames(objectsToString(base.header.initial), {
-        [objectsToString(base.header.active)]: open,
-      }),
+      classnames(
+        objectsToString(base.header.initial),
+        open && objectsToString(base.header.active)
+      ),
       className,
     );
     const iconClasses = classnames(objectsToString(base.header.icon), iconClass);

@@ -1,25 +1,23 @@
 // types
+//import { Transition } from "framer-motion";
 import type {
-  size,
-  overlay,
-  placement,
-  overlayProps,
-  className,
-  dismiss,
+  Placement,
+  OverlayProps,
+  DismissProps,
   onClose,
-  transition,
+  Transition,
 } from "../../../types/components/drawer";
 
 export interface DrawerStylesType {
   defaultProps?: {
-    size?: size;
-    overlay?: overlay;
-    placement?: placement;
-    overlayProps?: overlayProps;
-    className?: className;
-    dismiss?: dismiss;
+    size?: number;
+    overlay?: boolean;
+    placement?: Placement;
+    overlayProps?: OverlayProps;
+    className?: string;
+    dismiss?: DismissProps;
     onClose?: onClose;
-    transition?: transition;
+    transition?: Transition;
   };
   styles?: {
     base?: {
@@ -40,19 +38,16 @@ export const drawer: DrawerStylesType = {
     dismiss: undefined,
     onClose: undefined,
     transition: {
-      type: "tween",
+      type: 'tween',
+      ease: [0, 0, 0.2, 1],
       duration: 0.3,
     },
   },
   styles: {
     base: {
       drawer: {
-        position: "fixed",
-        zIndex: "z-[9999]",
         pointerEvents: "pointer-events-auto",
-        backgroundColor: "bg-white",
         boxSizing: "box-border",
-        width: "w-full",
         boxShadow: "shadow-2xl shadow-slate-900/10",
       },
       overlay: {
@@ -61,7 +56,6 @@ export const drawer: DrawerStylesType = {
         width: "w-full",
         height: "h-full",
         pointerEvents: "pointer-events-auto",
-        zIndex: "z-[9995]",
         backgroundColor: "bg-black",
         backgroundOpacity: "bg-opacity-60",
         backdropBlur: "backdrop-blur-sm",

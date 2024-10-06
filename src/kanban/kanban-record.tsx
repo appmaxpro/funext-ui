@@ -1,4 +1,4 @@
-import { Box } from "../core";
+import { Box } from "../mui";
 import { Draggable } from "react-beautiful-dnd";
 
 import { Column, Record } from "./types";

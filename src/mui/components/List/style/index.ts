@@ -43,12 +43,9 @@ export const list: ListStylesType = {
       list: {
         display: "flex",
         flexDirection: "flex-col",
-        gap: "gap-1",
-        minWidth: "min-w-[240px]",
-        padding: "py-2",
-        fontFamily: "font-sans",
-        fontSize: "text-base",
-        fontWeight: "font-normal",
+        //gap: "gap-1",
+        minWidth: "min-w-[160px]",
+        //padding: "py-2",
       },
       navList: {
         display: "flex",
@@ -87,13 +84,13 @@ export const list: ListStylesType = {
         },
       },
       itemPrefix: {
-        display: "grid",
-        placeItems: "place-items-center",
+        display: "flex",
+        placeItems: "items-center justify-center",
         marginRight: "me-4",
       },
       itemSuffix: {
-        display: "grid",
-        placeItems: "place-items-center",
+        display: "flex",
+        placeItems: "items-center justify-center",
         marginRight: "ms-auto justify-self-end",
       },
     },

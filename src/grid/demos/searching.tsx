@@ -2,7 +2,7 @@
  * @title Searching
  */
 import React from "react";
-import { Box, Input } from "../../core";
+import { Box, Input } from "../..";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";
 import { GridColumn } from "../types";

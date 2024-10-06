@@ -5,7 +5,7 @@ import { Box } from "../box";
 import { Fade } from "../fade";
 import { Portal } from "../portal";
 
-import { useClassNames, useTheme } from "../styles";
+import { useClassNames, useCoreTheme } from "../styles";
 import { TBackground, TForeground } from "../system";
 import { TransitionProps } from "../transitions";
 
@@ -135,7 +135,7 @@ const PopperWrapper = ({
 }: PopperProps) => {
   const instance = useRef<Instance | null>(null);
   const [wrapperEl, setWrapperEl] = useState<HTMLDivElement | null>(null);
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
 
   const placement = PlacementMapping[popperPlacement];
   const [skidding = 0, distance = 0] = offset || [];

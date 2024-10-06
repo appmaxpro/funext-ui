@@ -9,7 +9,7 @@ export const isValidItemType = (comp:any) =>  _validTypes.includes(comp.type);
 
 export const isMenuItemValid = (comp: any) => {
   const valid = !isMenuItemDisabled(comp) && (isValidItemType(comp) || comp.props?.role === 'menuitem');
-  console.log("isMenuItemValid not Disabled:", !isMenuItemDisabled(comp),  ",menuitem:", comp.props?.role === 'menuitem', ", valid:", valid, ', type:', comp.type);
+  //console.log("isMenuItemValid not Disabled:", !isMenuItemDisabled(comp),  ",menuitem:", comp.props?.role === 'menuitem', ", valid:", valid, ', type:', comp.type);
 
   return valid;
 }

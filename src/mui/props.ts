@@ -212,9 +212,66 @@ export type SystemStyleObject<Theme extends object = {}> =
 /**
  * The `SxProps` can be either object or function
  */
-export type SxProps<Theme extends object = {}> =
+export type SxPProps<Theme extends object = {}> =
   | SystemStyleObject<Theme>
   | ((theme: Theme) => SystemStyleObject<Theme>)
   | ReadonlyArray<
       boolean | SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>)
     >;
+
+export type EventHandlers = Record<string, React.EventHandler<any>>;
+
+export type WithOptionalOwnerState<Props extends { ownerState: unknown }> = Omit<
+  Props,
+  'ownerState'
+> &
+  Partial<Pick<Props, 'ownerState'>>;
+
+export type SlotComponentProps<TSlotComponent extends React.ElementType, TOverrides, TOwnerState> =
+  | (Partial<React.ComponentPropsWithRef<TSlotComponent>> & TOverrides)
+  | ((
+      ownerState: TOwnerState,
+    ) => Partial<React.ComponentPropsWithRef<TSlotComponent>> & TOverrides);
+
+export type SlotComponentPropsWithSlotState<
+  TSlotComponent extends React.ElementType,
+  TOverrides,
+  TOwnerState,
+  TSlotState,
+> =
+  | (Partial<React.ComponentPropsWithRef<TSlotComponent>> & TOverrides)
+  | ((
+      ownerState: TOwnerState,
+      slotState: TSlotState,
+    ) => Partial<React.ComponentPropsWithRef<TSlotComponent>> & TOverrides);
+
+export type SlotCommonProps = {
+  component?: React.ElementType;
+  sx?: SxPProps<Theme>;
+};
+
+export type SlotProps<
+  TSlotComponent extends React.ElementType,
+  TOverrides,
+  TOwnerState,
+> = SlotComponentProps<TSlotComponent, SlotCommonProps & TOverrides, TOwnerState>;
+
+/**
+ * Use the keys of `Slots` to make sure that K contains all of the keys
+ *
+ * @example CreateSlotsAndSlotProps<{ root: React.ElementType, decorator: React.ElementType }, { root: ..., decorator: ... }>
+ */
+export type CreateSlotsAndSlotProps<Slots, K extends Record<keyof Slots, any>> = {
+  /**
+   * The components used for each slot inside.
+   * @default {}
+   */
+  slots?: Partial<Slots>;
+  /**
+   * The props used for each slot inside.
+   * @default {}
+   */
+  slotProps?: {
+    [P in keyof K]?: K[P];
+  };
+};

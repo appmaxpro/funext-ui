@@ -3,7 +3,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { GridRow } from "..";
-import { Box, Collapse } from "../../core";
+import { Box, Collapse } from "../..";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";
 import { records } from "./demo-data";

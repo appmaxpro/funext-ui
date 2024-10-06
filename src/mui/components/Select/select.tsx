@@ -20,8 +20,7 @@ import {
 import { OverridableStringUnion } from "../../props";
 
 import { MaterialIcon } from "../../../icons/material-icon";
-import { useControlled, useRefs } from "../../../core/hooks";
-import { Chevron } from "../../../core/common";
+import { useControlled, useRefs } from "../../hooks";
 import { styled, clsx, type Theme } from "../../styles";
 import { IconButton } from "../IconButton";
 import Chip from "../Chip";
@@ -35,7 +34,7 @@ import {
 } from "../Popper";
 import { Panel, PanelRoot, type PanelProps } from "../Panel";
 import { List, ListItem, ListItemProps, type ListProps } from "../List";
-import { usePrevious } from "./SelectContext";
+import usePrevious  from "../../hooks/usePrevious";
 
 //console.log("Select styles:", styles);
 const isElementInListbox = (listboxRef:any) =>
@@ -806,18 +805,8 @@ export const Select = forwardRef(function Select<
     placement: "bottom-start",
     offset: menuOptions?.offset ?? 6,
     autoFlip: { padding: menuOptions?.padding ?? 10 },
-    animate: false,
     target: rootRef,
     strategy: 'fixed',
-    focusProps:{
-      //key: hasDropdownOpen ? "opened" : "closed",
-      initialFocus: -1,
-      visuallyHiddenDismiss: true,
-      returnFocus: true,
-      //guards: false
-      //modal: false,
-
-    },
     autoSize: {
       padding: menuOptions?.sizePadding ?? 10,
       apply({ rects, availableHeight, elements }: any) {
@@ -1101,9 +1090,16 @@ export const Select = forwardRef(function Select<
       {open  && (
         <PopperPortal
           disablePortal={disablePortal}
-          lazy={false}
+          keepMounted
           context={contextValue}
           renderContent={false}
+          focusProps={{
+            //key: hasDropdownOpen ? "opened" : "closed",
+            initialFocus: -1,
+            visuallyHiddenDismiss: true,
+            returnFocus: true,
+      
+          }}
         >
           <PopperContent animation={animation} >
             <PanelSelectRoot 

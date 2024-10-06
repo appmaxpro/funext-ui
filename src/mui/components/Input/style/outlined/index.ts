@@ -1,13 +1,7 @@
-import inputOutlinedLabel from "./inputOutlinedLabel";
-import inputOutlinedColors from "./inputOutlinedColors";
-import inputOutlinedLabelColors from "./inputOutlinedLabelColors";
+import inputOutlinedLabel from "./label";
+import inputOutlinedColors from "./colors";
+import inputOutlinedLabelColors from "./labelColors";
 import styles from './outline.module.scss';
-
-console.log("outline-module.css:", styles);
-
-const inputColor:any = Object.keys(inputOutlinedColors)
-        .map(k => ({[k]: {color: inputOutlinedColors[k].color}}))
-        .reduce((input:any, prev:any) => ({...input, ...prev}), {})
 
 
 const notchedColor:any = Object.keys(inputOutlinedColors)
@@ -17,17 +11,10 @@ const notchedColor:any = Object.keys(inputOutlinedColors)
         }}))
         .reduce((input:any, prev:any) => ({...input, ...prev}), {})
 
-const notchedFocusColor:any = Object.keys(inputOutlinedColors)
-        .map(k => ({[k]: {
-          borderColor: inputOutlinedColors[k].borderColorFocused?.substring("peer-focus:".length),
-        }}))
-        .reduce((input:any, prev:any) => ({...input, ...prev}), {})
-
-
 const inputOutlined = {
   styles,
   base: {
-    container: {
+    root: {
       add: styles['in-outline']
     },
     input: {
@@ -35,7 +22,7 @@ const inputOutlined = {
       borderColor: "border-inherit",
     },
     native:{
-      placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100 group-[.is-shrink]:placeholder:opacity-100",
+      //placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100 group-[.is-shrink]:placeholder:opacity-100",
       
     },
     label: {
@@ -90,6 +77,7 @@ const inputOutlined = {
     notched: notchedColor 
   },
   error: {
+
     input: {
       borderColor: "border-red-500 focus-within:border-red-500",
     },
@@ -97,7 +85,7 @@ const inputOutlined = {
       color: "text-red-500 peer-focus-within:text-red-500"
     },
     native:{
-      placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100",
+      //placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100",
     }
   },
   success: {

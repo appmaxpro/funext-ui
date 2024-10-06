@@ -33,10 +33,18 @@ $width: 6px;
 .scrollable {
   --scrollbar-color: var(
     --ax-theme-shell-scrollbar-color,
-    var(--bs-border-color)
+    var(--tw-header-min)
+  );
+  --scrollbar-hover-color: var(
+    --ax-theme-shell-scrollbar-hover-color,
+    var(--tw-header-med)
+  );
+  --scrollbar-active-color: var(
+    --ax-theme-shell-scrollbar-active-color,
+    var(--tw-header-max)
   );
   scrollbar-color: var(--scrollbar-color) transparent;
-  scrollbar-width: auto;
+  scrollbar-width: thin;
   &::-webkit-scrollbar {
     width: $width;
     height: $width;
@@ -44,14 +52,46 @@ $width: 6px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-color);
+    border-radius: 9px;
+    border-style: dashed;
+    background-color: var(--scrollbar-color);
+    border-color: transparent;
+    border-left-width: 6px;
+    border-right-width: 6px;
+    border-top-width: 6px;
+    border-bottom-width: 6px;
     background-clip: padding-box;
-    border: 0;
-    border-radius: calc(($width / 3) * 2);
-    box-shadow: none;
-    min-height: 50px;
+    min-height: 30px;
+    min-width: 30px;
+    -webkit-border-radius: 1ex;
+    -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
   }
 
+  &::-webkit-scrollbar-thumb:hover {
+    border-radius: 9px;
+    background-color: var(--scrollbar-hover-color);
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-color: transparent
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    border-radius: 9px;
+    background-color: var(--scrollbar-active-color);
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-color: transparent
+  }
+
+  &::-webkit-scrollbar-corner {
+      background: #000;
+  }
+
+  /*
   &::-webkit-scrollbar-track,
   &::-webkit-scrollbar-track:hover {
     background: none;
@@ -63,5 +103,5 @@ $width: 6px;
       background-color: transparent;
     }
     scrollbar-color: transparent transparent;
-  }
+  }*/
 }

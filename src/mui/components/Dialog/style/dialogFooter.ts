@@ -7,6 +7,7 @@ export interface DialogFooterStylesType {
   };
   styles?: {
     base?: object;
+    divider?: object;
   };
 }
 
@@ -21,8 +22,11 @@ export const dialogFooter: DialogFooterStylesType = {
       justifyContent: "justify-end",
       flexShrink: "shrink-0",
       flexWrap: "flex-wrap",
-      p: "p-4",
+      p: "p-3",
       color: "text-slate",
+    },
+    divider: {
+      borderTop: "border-t"
     },
   },
 };

@@ -5,7 +5,7 @@ import { FocusTrap } from "../focus-trap";
 import { Popper, PopperProps } from "../popper/popper";
 import styled, { withStyled } from "../styled";
 import styles from "./menu.module.css";
-import {useRtl} from "../styles";
+import {useRtl} from "../../mui";
 
 export interface MenuProps
   extends Pick<

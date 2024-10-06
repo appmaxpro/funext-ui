@@ -1,4 +1,4 @@
-import { Box } from "../core";
+import { Box } from "../mui";
 
 import styles from "./kanban.module.css";
 import { ColumnRenderer, RecordRenderer } from "./types";

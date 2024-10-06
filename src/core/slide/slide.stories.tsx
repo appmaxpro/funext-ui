@@ -6,6 +6,7 @@ import { Input } from "../input";
 import { InputLabel, TextLabel } from "../input-label";
 import {Fade} from '../fade';
 import { Slide } from "./slide";
+import { Checkbox } from "../../mui";
 
 const config = {
   component: Slide,
@@ -23,64 +24,55 @@ export const Basic = function () {
   return (
     <Box>
       <Box d="flex" alignItems="center">
-        <Button variant="primary" onClick={toggle}>
+        <Button color="primary" onClick={toggle}>
           Toggle
         </Button>
-        <InputLabel m={0} ms={2}>
-          <Input
-            me={1}
-            type="checkbox"
+        <Box m={0} ms={2}>
+          <Checkbox
+            className="me-1"
             value="start"
+            label="Start"
             checked={direction === "start"}
             onChange={(e) => setDirection("start")}
           />
-          Start
-        </InputLabel>
-        <InputLabel m={0} ms={2}>
-          <Input
-            me={1}
-            type="checkbox"
+        </Box>
+        <Box m={0} ms={2}>
+          <Checkbox
+            className="me-1"
             value="end"
+            label="End"
             checked={direction === "end"}
             onChange={(e) => setDirection("end")}
           />
-          End
-        </InputLabel>
-        <InputLabel m={0} ms={2}>
-          <Input
-            me={1}
-            type="checkbox"
+        </Box>
+        <Box m={0} ms={2}>
+          <Checkbox
+            className="me-1"
             value="up"
+            label="Up"
             checked={direction === "up"}
             onChange={(e) => setDirection("up")}
           />
-          Up
-        </InputLabel>
+        </Box>
         
         <Box m={0} ms={2}>
-           
-          <Input
-            me={1}
-            type="checkbox"
+          <Checkbox
+            className="me-1"
             value="down"
-            label={<TextLabel ms={1}>Down</TextLabel>}
+            label="Down"
             checked={direction === "down"}
             onChange={(e) => setDirection("down")}
           />
         </Box>
       </Box>
-      <Fade in={show}>
-        <Slide in={show} direction="down">
-          <Slide in={show} direction={direction}>
-            <Box
-              mt={2}
-              rounded
-              bg="secondary"
-              style={{ width: 300, height: 100 }}
-            ></Box>
-          </Slide>
-        </Slide>
-      </Fade>
+      <Slide in={show} direction={direction}>
+        <Box
+          mt={2}
+          rounded
+          bg="secondary"
+          style={{ width: 300, height: 100 }}
+        ></Box>
+      </Slide>
     </Box>
   );
 };

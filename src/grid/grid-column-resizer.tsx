@@ -1,6 +1,6 @@
 import React from "react";
 import { useDrag } from "react-dnd";
-import { Divider } from "../core";
+import { Divider } from "../mui";
 
 export function GridColumResizer(props: React.HTMLAttributes<HTMLSpanElement>) {
   const [, drag, preview] = useDrag(

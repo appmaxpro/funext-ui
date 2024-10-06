@@ -35,7 +35,7 @@ import objectsToString from "../../utils/objectsToString";
 
 // context
 import { useTailwindTheme } from "../../theme";
-import { SelectContextProvider, usePrevious, useSelect } from "./SelectContext";
+import { SelectContextProvider , useSelect } from "./SelectContext";
 
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
@@ -65,6 +65,7 @@ import type {
 
 // select components
 import { SelectOption, SelectOptionProps } from "./SelectOption";
+import usePrevious from "../../hooks/usePrevious";
 
 //export * from './AutoSelect';
 //export * from './autoSelectClasses';

@@ -11,6 +11,7 @@ import {
 }from '../../styles';
 import ButtonGroupProps, { getButtonGroupUtilityClass, buttonGroupClasses } from './ButtonGroupType';
 import ButtonGroupContext, {ButtonGroupButtonContext} from './ButtonGroupContext';
+
 import { capitalize } from '../../utils';
 
 export * from './ButtonGroupType';
@@ -311,8 +312,8 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
     component = 'div',
     disabled = false,
     disableElevation = false,
-    disableFocusRipple = false,
-    disableRipple = false,
+    focusRipple = true,
+    ripple = true,
     fullWidth = false,
     vertical,
     orientation = vertical ? 'vertical' : 'horizontal',
@@ -327,8 +328,8 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
     component,
     disabled,
     disableElevation,
-    disableFocusRipple,
-    disableRipple,
+    focusRipple,
+    ripple,
     fullWidth,
     orientation,
     size,
@@ -343,8 +344,8 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
       color,
       disabled,
       disableElevation,
-      disableFocusRipple,
-      disableRipple,
+      focusRipple,
+      ripple,
       fullWidth,
       size,
       variant,
@@ -353,8 +354,8 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
       color,
       disabled,
       disableElevation,
-      disableFocusRipple,
-      disableRipple,
+      focusRipple,
+      ripple,
       fullWidth,
       size,
       variant,

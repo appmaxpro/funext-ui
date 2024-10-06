@@ -12,10 +12,10 @@ const config = {
   title: "Components/Input",
   decorators: [
     (Story) => (
-      <Box style={{ width: 400 }}>
+      <Box style={{ minWidth: 400, maxWidth: 600 }}>
         <Story />
       </Box>
-    ),
+    ), 
   ],
 } as Meta;
 
@@ -23,26 +23,26 @@ export const Basic = () => {
   const [value, setValue] = useState("");
 
   return (
-    <Input value={value} onChange={(e: any) => setValue(e.target.value)} />
+    <MuiInput value={value} onChange={(e: any) => setValue(e.target.value)} />
   );
 };
 
 export const Disabled = () => {
-  return <Input disabled />;
+  return <MuiInput disabled />;
 };
 
 export const Invalid = () => {
-  return <Input invalid />;
+  return <MuiInput invalid />;
 };
 
 export const Placeholder = () => {
-  return <Input placeholder="Placeholder" />;
+  return <MuiInput placeholder="Placeholder" />;
 };
 
 export const Readonly = () => {
   return (
     <Box>
-      <Input value="Readonly" readOnly />
+      <MuiInput value="Readonly" readOnly />
     </Box>
   );
 };
@@ -90,24 +90,18 @@ const Checkbox = withStyled(Input)((props, ref) => {
 export const Sizing = () => {
   const [value, setValue] = useState("");
   return (<>
-    <Box display="flex" flexDirection="column" g={2}>
+    <Box display="flex" flexDirection="column" g={4}>
       <MuiInput
         value={value}
         onChange={(e: any) => setValue(e.target.value)}
         placeholder="large"
         label="large"
-        containerProps={{
-          className: "mt-4"
-        }}
       />
       <MuiInput
         value={value}
         onChange={(e: any) => setValue(e.target.value)}
         placeholder="default"
         label="default"
-        containerProps={{
-          className: "mt-4"
-        }}
         size="lg" 
       />
       <MuiInput
@@ -115,9 +109,6 @@ export const Sizing = () => {
         onChange={(e: any) => setValue(e.target.value)}
         placeholder="small"
         label="small"
-        containerProps={{
-          className: "mt-4"
-        }}
         shrink
       />
 
@@ -126,9 +117,6 @@ export const Sizing = () => {
         onChange={(e: any) => setValue(e.target.value)}
         placeholder="placeholder"
         label="Adornment md"
-        containerProps={{
-          className: "mt-4"
-        }}
         startAdornment= {
           <IconButton onClick={()=>{}} size="sm" variant="text" className="p-[6px]">
             <MaterialIcon icon="close"/>
@@ -148,9 +136,6 @@ export const Sizing = () => {
         placeholder="placeholder"
         label="Adornment lg"
         size="lg"
-        containerProps={{
-          className: "mt-4"
-        }}
         startAdornment= {
           <IconButton onClick={()=>{}} size="md" variant="text">
             <MaterialIcon icon="close"/>
@@ -170,9 +155,6 @@ export const Sizing = () => {
         placeholder="standard"
         label="standard"
         variant="standard"
-        containerProps={{
-          className: "mt-4"
-        }}
       />
 
       <MuiInput
@@ -183,9 +165,6 @@ export const Sizing = () => {
         variant="standard"
         shrink
         size="lg"
-        containerProps={{
-          className: "mt-4"
-        }}
         startAdornment= {
           <IconButton onClick={()=>{}} size="md" variant="text">
             <MaterialIcon icon="close"/>
@@ -197,6 +176,273 @@ export const Sizing = () => {
     <Attrs/></>
   );
 };
+
+export const Filled = () => {
+  const [value, setValue] = useState("");
+  const [variant, setVariant] = useState("filled");
+  const setChecked = (e) => setVariant(e.target.value);
+  return  <Box className="flex flex-row">
+  <Box display="flex" flexDirection="column" g={8} className="p-10 justify-center">
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Size md"
+        label="Size md"
+        variant={variant}
+      />
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Size lg"
+        label="Size lg"
+        size="lg" 
+        variant={variant}
+      />
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Size md shrink"
+        label="Size md shrink"
+        shrink
+        variant={variant}
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Size lg shrink"
+        label="Size lg shrink"
+        shrink
+        variant={variant}
+        size="lg"
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="placeholder"
+        label="Adornment md"
+        variant={variant}
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="placeholder"
+        label="Adornment lg"
+        variant={variant}
+        size="lg"
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+    <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No border"
+        label="No border"
+        shrink
+        variant={variant}
+        disableBorder 
+      />
+
+    <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No border"
+        label="No border"
+        variant={variant}
+        disableBorder 
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No border lg"
+        label="No border lg"
+        size="lg" 
+        variant={variant}
+        disableBorder 
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Custom md"
+        label="Custom md"
+        variant={variant}
+        as="div"
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Custom lg"
+        label="Custom lg"
+        size="lg" 
+        variant={variant}
+        as="div"
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Custom md"
+        label="Custom md"
+        variant={variant}
+        as="div"
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="sm" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="Custom lg"
+        label="Custom lg"
+        variant={variant}
+        size="lg"
+        as="div"
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No label lg"
+        variant={variant}
+        size="lg"/>
+
+<MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No label md"
+        variant={variant}
+        size="md"/>
+        
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No label md"
+        variant={variant}
+        size="md"
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+      <MuiInput
+        value={value}
+        onChange={(e: any) => setValue(e.target.value)}
+        placeholder="No label lg"
+        variant={variant}
+        size="lg"
+        startAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text" className="p-[6px]">
+            <MaterialIcon icon="close"/>
+          </IconButton>
+        }
+
+        endAdornment= {
+          <IconButton onClick={()=>{}} size="md" variant="text">
+            <MaterialIcon icon="alarm"/>
+          </IconButton>
+        }
+      />
+      </Box>
+      <Box className="flex flex-col">
+      <div className="mt-4 -mb-3">
+      <div className="not-prose relative bg-slate-50 rounded-xl overflow-hidden dark:bg-slate-800/25">
+      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]"
+       style={{backgroundPosition: '10px 10px'}}>
+
+       </div>
+      <div className="relative rounded-xl overflow-auto">
+        <div className="max-w-md mx-auto bg-white shadow py-6 px-4">
+          <fieldset>
+            <legend className="text-base font-semibold text-slate-900 dark:text-slate-200">Payment method</legend>
+            <div className="mt-4 space-y-2">
+              <label for="apple" className="text-slate-700 has-[:checked]:ring-indigo-200 has-[:checked]:text-indigo-900 has-[:checked]:bg-indigo-50 grid grid-cols-[24px_1fr_auto] items-center gap-6 rounded-lg p-4 ring-1 ring-transparent hover:bg-slate-100">
+                <span className="w-8 mt-1"/>
+                Outlined
+                <input name="variant" checked={variant==='outlined'} onChange={setChecked} id="apple" value="outlined" type="radio" className="box-content h-1.5 w-1.5 appearance-none rounded-full border-[5px] border-white bg-white bg-clip-padding outline-none ring-1 ring-gray-950/10 checked:border-indigo-500 checked:ring-indigo-500"/>
+              </label>
+              <label for="google" className="text-slate-700 has-[:checked]:ring-indigo-200 has-[:checked]:text-indigo-800 has-[:checked]:bg-indigo-50 grid grid-cols-[24px_1fr_auto] items-center gap-6 rounded-lg p-4 ring-1 ring-transparent hover:bg-slate-100">
+                <span className="w-8 mt-1"/>
+                Standard
+                <input name="variant" checked={variant==='standard'} onChange={setChecked} id="google" value="standard" type="radio" className="box-content h-1.5 w-1.5 appearance-none rounded-full border-[5px] border-white bg-white bg-clip-padding outline-none ring-1 ring-gray-950/10 checked:border-indigo-500 checked:ring-indigo-500"/>
+              </label>
+              <label for="credit-card" className="text-slate-700 has-[:checked]:ring-indigo-200 has-[:checked]:text-indigo-800 has-[:checked]:bg-indigo-50 grid grid-cols-[24px_1fr_auto] items-center gap-6 rounded-lg p-4 ring-1 ring-transparent hover:bg-slate-100">
+                <span className="w-8 mt-1"/>
+                Filled
+                <input name="variant" checked={variant==='filled'} onChange={setChecked} id="credit-card" value="filled" type="radio" className="box-content h-1.5 w-1.5 appearance-none rounded-full border-[5px] border-white bg-white bg-clip-padding outline-none ring-1 ring-gray-950/10 checked:border-indigo-500 checked:ring-indigo-500"/>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+    </div>
+    <div className="absolute inset-0 pointer-events-none border border-black/5 rounded-xl dark:border-white/5"></div>
+    </div>
+</div>
+      </Box>
+    </Box>
+
+}
 
 function FormControl({ label, children }: any) {
   return (

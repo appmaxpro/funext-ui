@@ -37,7 +37,7 @@ export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const dialogFooterClasses = twMerge(classnames(objectsToString(base), divider && 'border-t'), className);
+    const dialogFooterClasses = twMerge(classnames(objectsToString(base), divider && base.divider), className);
 
     // 4. return
     return (

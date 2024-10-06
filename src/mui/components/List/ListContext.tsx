@@ -107,7 +107,7 @@ export const ListContextProvider = ({ value, children }: ListContextProviderProp
     const defaultItemDisabled = {
       ...styleItem?.initial,
       ...styleItem?.disabled,
-      ...otherItem,
+      ...otherItem.initial,
       ...createItemInteractive('disabled', asObject(itemDisabled) ?? interactiveStyles?.disabled ?? {}),
     };
 
@@ -124,7 +124,7 @@ export const ListContextProvider = ({ value, children }: ListContextProviderProp
     
     const initial = twMerge(objectsToString({
         ...styleItem?.initial,
-        ...otherItem
+        ...otherItem.initial,
       })
     );
     const initialDefault = twMerge(initial, className);

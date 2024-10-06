@@ -12,6 +12,7 @@ import { getRGB } from "./utils";
 import styles from "./nav-menu.module.scss";
 import { Popper, usePopperTrigger } from "../popper";
 import { Box } from "../box";
+import {Popover, List, Tooltip, ListProps} from "../..";
 
 export interface NavMenuItem {
   /**
@@ -105,6 +106,8 @@ export interface NavMenuProps {
    */
   onItemClick?: (item: NavMenuItem) => void;
 
+  listProps?: Omit<ListProps, 'children'>
+
   /**
    * Menu search options.
    */
@@ -149,6 +152,8 @@ export interface NavMenuProps {
   style?: React.CSSProperties;
 
   className?: string;
+
+
 }
 
 export function NavMenu({
@@ -162,6 +167,7 @@ export function NavMenu({
   searchOptions,
   searchActive,
   onItemClick,
+  listProps,
 }: NavMenuProps) {
   const menus = useMemo(() => items.map((item) => walk(item)), [items]);
   const showIcons = mode === "icons";
@@ -185,6 +191,7 @@ export function NavMenu({
         searchOptions={searchOptions}
         searchActive={searchActive}
         onItemClick={onItemClick}
+        listProps={listProps}
       />
     </div>
   );
@@ -379,7 +386,7 @@ function Accordion(props: VariantProps) {
   } = useNavMenu(props);
 
   const { lookup } = state;
-  const { header, headerSmall, searchOptions } = props;
+  const { header, headerSmall, searchOptions, listProps } = props;
 
   return (
     <ClickAwayListener onClickAway={handleLeave}>
@@ -418,20 +425,42 @@ function Accordion(props: VariantProps) {
                 className={clsx(styles.item, styles.searchItem)}
                 onClick={handleSearchClick}
               >
-                <div className={styles.title}>
+                <div className="flex justify-start items-center gap-2">
                   <MenuIcon item={searchItem} state={{}} />
                   <div className={styles.text}>{searchItem.title}</div>
                 </div>
               </div>
             )}
-            {items.map((item) => (
-              <MenuItem
-                key={item.id}
-                item={item}
-                state={state}
-                onItemClick={handleItemClick}
-              />
-            ))}
+            <List
+              hover
+              active
+              focus
+              select
+              listStyle={{
+                className: 'text-base font-normal'
+              }}
+              itemStyle={{
+                rippleClassName: 'bg-primary/40',
+                className: 'rounded-lg px-2 py-1.5',
+                hover: 'hover:bg-primary/10 hover:text-primary-600',
+                selected: 'bg-primary/15 text-primary-600 fw5',
+                active: 'hover:bg-hd-sm',
+                initial:{
+                  transition: ''
+                }
+              }}
+              {...listProps}
+            >
+              {items.map((item) => (
+                <MenuItem
+                  key={item.id}
+                  item={item}
+                  state={state}
+                  onItemClick={handleItemClick}
+                />
+              ))}
+            </List>
+            
           </Scrollable>
         </div>
       </div>
@@ -626,43 +655,62 @@ function MenuItem({ item, state, onItemClick }: ItemProps) {
     setOpen(false);
   }, [active]);
 
-  return (
-    <div
+  let itemButton = (
+    <List.ItemButton
       className={clsx(styles.item, {
         [styles.open]: open,
         [styles.selected]: selected,
       })}
+      selected={selected}
+      active={active}
+      startIcon={
+        hasIcon
+          ? <MenuIcon item={item} state={state} />
+          : <div className={styles.icon}></div>
+      }
+      endIcon={
+        (Tag || hasItems) 
+        ? <>
+          {Tag && (
+            <div className={styles.tag}>
+              <Tag color={tagColor} />
+            </div>
+          )}
+          {hasItems && <MaterialIcon className={styles.expand} fill icon="keyboard_arrow_down" />}
+        </>
+        : undefined
+      }
+      onClick={handleClick} 
     >
-      <div className={styles.title} onClick={handleClick} ref={setTargetEl}>
-        {hasIcon && <MenuIcon item={item} state={state} />}
-        {hasIcon || <div className={styles.icon}></div>}
-        <div className={styles.text}>{title}</div>
-        {Tag && (
-          <div className={styles.tag}>
-            <Tag color={tagColor} />
-          </div>
-        )}
-        <div className={styles.expand}>
-          {hasItems && <MaterialIcon icon="keyboard_arrow_down" />}
-        </div>
-      </div>
-      {help && (
-        <Popper
-          open={popperOpen}
-          target={targetEl}
-          offset={[7, 0]}
-          className={styles.helpPopover}
-          arrow
-          shadow
-          rounded
-          placement="end"
-        >
-          <Box p={2} style={{ maxWidth: 320 }}>
-            <span dangerouslySetInnerHTML={{ __html: help }} />
-          </Box>
-        </Popper>
-      )}
-      {hasItems && (
+      <div className={styles.text}>{title}</div>
+    </List.ItemButton>
+  );
+
+  if(help) {
+    itemButton = (
+      <Tooltip
+        offset={{
+          mainAxis: 7
+        }}
+        placement="left"
+        content={help}
+        allowOverContent
+        hoverProps={{
+          delay:{
+            close: 100,
+            open: 500  
+          }
+        }}
+      >
+        {itemButton}    
+      </Tooltip>
+    );
+  } 
+
+  if (hasItems) {
+    itemButton = (
+      <>
+        {itemButton}
         <Collapse in={open} mountOnEnter unmountOnExit>
           <MenuItems
             item={item}
@@ -671,15 +719,18 @@ function MenuItem({ item, state, onItemClick }: ItemProps) {
             isSubItems
           />
         </Collapse>
-      )}
-    </div>
-  );
+      </>
+    );
+  }
+
+  return itemButton;
 }
 
 function MenuItems({ item, state, onItemClick, isSubItems }: ItemProps) {
   const { items = [] } = item;
   return (
-    <div className={clsx(styles.items, { [styles.subItems]: isSubItems })}>
+    <List 
+      className={clsx(styles.items, { [styles.subItems]: isSubItems })}>
       {items.map((item) => (
         <MenuItem
           key={item.id}
@@ -688,7 +739,7 @@ function MenuItems({ item, state, onItemClick, isSubItems }: ItemProps) {
           onItemClick={onItemClick}
         />
       ))}
-    </div>
+    </List>
   );
 }
 
@@ -830,12 +881,14 @@ function SearchMenu({
                   [styles.active]: index === cursor,
                 })}
               >
-                <MenuItem
-                  key={item.id}
-                  item={item}
-                  state={{}}
-                  onItemClick={onItemClick}
-                />
+                <List>
+                  <MenuItem
+                    key={item.id}
+                    item={item}
+                    state={{}}
+                    onItemClick={onItemClick}
+                  />
+                </List>
               </div>
             ))}
           </Scrollable>

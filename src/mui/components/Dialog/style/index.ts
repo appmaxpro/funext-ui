@@ -15,6 +15,7 @@ export interface DialogStylesType {
   styles?: {
     base?: {
       backdrop?: object;
+      dialog?: object;
       container?: object;
     };
     sizes?: {
@@ -44,27 +45,27 @@ export const dialog: DialogStylesType = {
   styles: {
     base: {
       backdrop: {
-        display: "grid",
-        placeItems: "place-items-center",
-        position: "fixed",
+        display: "flex",
+        placeItems: "items-center justify-center",
         width: "w-screen",
         height: "h-screen",
         backgroundColor: "bg-black",
         backgroundOpacity: "bg-opacity-60",
-        backdropFilter: "backdrop-blur-sm",
+        backdropFilter: "backdrop-blur-[2px]",
+      },
+      dialog:{
+          display: "flex",
+          placeItems: "items-center justify-center",
+          height: 'h-full'
       },
       container: {
         position: "relative",
-        bg: "bg-white",
-        m: "m-4",
+        bg: "bg-body",
         borderRadius: "rounded-lg",
         boxShadow: "shadow-2xl",
-        color: "text-slate",
-        fontSmoothing: "antialiased",
-        fontFamily: "font-sans",
-        fontSize: "text-base",
-        fontWeight: "font-light",
-        lineHeight: "leading-relaxed",
+        display: "flex flex-col",
+        w: 'max-w-full w-full',
+        h: 'max-h-full'
       },
     },
     sizes: {
@@ -102,7 +103,6 @@ export const dialog: DialogStylesType = {
         height: "h-screen",
         minHeight: "min-h-[100vh]",
         maxHeight: "max-h-[100vh]",
-        m: "m-0",
         borderRadius: "rounded-none",
       },
     },

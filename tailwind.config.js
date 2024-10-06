@@ -1,11 +1,10 @@
 const colors = require("tailwindcss/colors");
 
 console.log("__filename ", __filename);
-const withMT = require("./src/mui/utils/withMTs");
+const withMT = require("./src/mui/theme/tw/withMT");
 
-console.log("===================================");
 
-module.exports = withMT({
+const tw = withMT({
   content: [
     "./src/mui/components/**/*.{js,ts,jsx,tsx}",
     "./src/mui/theme/components/**/*.{js,ts,jsx,tsx}",
@@ -13,15 +12,7 @@ module.exports = withMT({
     "./src/**/*.{js,ts,jsx,tsx}",
     "./docs/html/**/*.{js,ts,jsx,tsx,html}"
   ],
-  theme: {
-    extend: {
-      colors: {
-        secondary: colors.slate,
-      },
-      fontSize: {
-        "3xl": "1.75rem",
-      }
-    },
-  },
-  plugins: []
 });
+console.log("===================================");
+console.log("tw.content", tw.theme);
+module.exports = tw;

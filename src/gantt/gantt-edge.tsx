@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Icon, useClassNames, useTheme } from "../core";
+import { Icon, useClassNames, useCoreTheme } from "../core";
 
 import BiCaretLeftFill from "bootstrap-icons/icons/caret-left-fill.svg?react";
 import BiCaretRightFill from "bootstrap-icons/icons/caret-right-fill.svg?react";
@@ -35,7 +35,7 @@ const Line = React.memo<{
   const width = x1 !== x2 ? Math.abs(x1 - x2) : 0;
   const height = y1 !== y2 ? Math.abs(y1 - y2) : 0;
 
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
 
   const classNames = useClassNames();

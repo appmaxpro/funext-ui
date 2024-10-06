@@ -87,14 +87,18 @@ export function useAutocomplete(props) {
     unstable_classNamePrefix = 'Mux',
     itemFocusClassName,
     itemFocusVisibleClassName,
+    freeSolo = false,
+    allowCreateOption = freeSolo,
     autoComplete = false,
     autoHighlight = false,
     autoSelect = false,
     blurOnSelect = false,
-    clearOnBlur = !props.freeSolo,
+    clearOnBlur = !freeSolo,
+    clearOnSelect = !!freeSolo && clearOnBlur,
     clearOnEscape = false,
     componentName = 'useAutocomplete',
-    defaultValue = props.multiple ? MULTIPLE_DEFAULT_VALUE : null,
+    multiple = false,
+    defaultValue = multiple ? MULTIPLE_DEFAULT_VALUE : null,
     disableClearable = false,
     disableCloseOnSelect = false,
     disabled: disabledProp,
@@ -105,20 +109,20 @@ export function useAutocomplete(props) {
           ? createFilterOptions({matches:optionMatches}) 
           : defaultFilterOptions,
     filterSelectedOptions = false,
-    freeSolo = false,
-    allowCreateOption = freeSolo,
+    allowFilter = true,
+    
     getOptionDisabled,
     getOptionKey,
     getOptionLabel: getOptionLabelProp = (option) => option.label ?? option,
     groupBy,
-    handleHomeEndKeys = !props.freeSolo,
+    handleHomeEndKeys = !freeSolo,
     id: idProp,
     includeInputInList = false,
     inputValue: inputValueProp,
-    optionEquals = (option, value) => getOptionKey 
+    optionEquals:isEquals = (option, value) => getOptionKey 
       ? getOptionKey(option) === getOptionKey(value) 
       : option === value,
-    multiple = false,
+      
     onChange,
     onClose,
     onHighlightChange,
@@ -128,7 +132,7 @@ export function useAutocomplete(props) {
     openOnFocus = false,
     options,
     readOnly = false,
-    selectOnFocus = !props.freeSolo,
+    selectOnFocus = !freeSolo,
     value: valueProp,
     action,
     inOpen
@@ -138,7 +142,11 @@ export function useAutocomplete(props) {
 
   let getOptionLabel = getOptionLabelProp;
 
-  
+  const optionEquals = (opt1, opt2) =>{
+    if (opt1 === opt2) return true;
+    if (!opt1 || !opt2) return false;
+    return isEquals(opt1, opt2);
+  }
 
   getOptionLabel = (option) => {
     const optionLabel = getOptionLabelProp(option) || '';
@@ -191,7 +199,7 @@ export function useAutocomplete(props) {
         return;
       }
       let newInputValue;
-      if (multiple) {
+      if (multiple || clearOnSelect) {
         newInputValue = '';
       } else if (newValue == null) {
         newInputValue = '';
@@ -225,29 +233,30 @@ export function useAutocomplete(props) {
   const inputValueIsSelectedValue =
     !multiple && value != null && inputValue === getOptionLabel(value);
 
-  
+  /*
+  console.log("inputValueIsSelectedValue:", inputValueIsSelectedValue,
+     ", inputValue:", inputValue, ", value:", value, ", inputPristine:", inputPristine)
+  */
   const popupOpen = (open || openProp) && !readOnly;
   
   const filteredOptions = (popupOpen || inOpen)
-    ? filterOptions(
-        options.filter((option) => {
-          if (
-            filterSelectedOptions &&
-            (multiple ? value : [value]).some(
-              (value2) => value2 !== null && optionEquals(option, value2),
-            )
-          ) {
-            return false;
-          }
-          return true;
-        }),
-        // we use the empty string to manipulate `filterOptions` to not filter any options
-        // i.e. the filter predicate always returns true
-        
-        inputValueIsSelectedValue && inputPristine ? '' : inputValue,
-        getOptionLabel,
-        
-      )
+    ? allowFilter 
+      ? filterOptions(
+          filterSelectedOptions
+          ? options.filter((option) => {
+              return !(multiple ? value : [value]).some(
+                (value2) => value2 !== null && optionEquals(option, value2),
+              );
+            })
+          : options,
+          // we use the empty string to manipulate `filterOptions` to not filter any options
+          // i.e. the filter predicate always returns true
+          
+          (inputValueIsSelectedValue && inputPristine)? '' : inputValue,
+          getOptionLabel,
+          
+        )
+      : options
     : [];
   
   
@@ -269,6 +278,7 @@ export function useAutocomplete(props) {
 
     // Only reset the input's value when freeSolo if the component's value changes.
     if (freeSolo && !valueChange) {
+
       return;
     }
 
@@ -676,6 +686,7 @@ export function useAutocomplete(props) {
 
   const handleOpen = (event) => {
     if (open) {
+      setInputPristine(true);
       return;
     }
 
@@ -702,6 +713,11 @@ export function useAutocomplete(props) {
   React.useImperativeHandle(action, ()=> ({handleOpen, handleClose}));
 
   const handleValue = (event, newValue, reason, details) => {
+    if (disabledProp || readOnly) {
+      event && event.preventDefault();
+      return;
+    }
+
     if (multiple) {
       if (value.length === newValue.length && value.every((val, i) => val === newValue[i])) {
         return;
@@ -720,6 +736,14 @@ export function useAutocomplete(props) {
   const isTouch = React.useRef(false);
 
   const selectNewValue = (event, option, reasonProp = 'selectOption', origin = 'options') => {
+    if (disabledProp || readOnly) {
+      event && event.preventDefault();
+      if (popupOpen){
+        handleClose(event, 'escape');
+      }
+      return;
+    }
+
     let reason = reasonProp;
     let newValue = option;
 
@@ -916,6 +940,11 @@ export function useAutocomplete(props) {
           handleFocusTag(event, 'next');
           break;
         case 'Enter':
+          if (disabledProp || readOnly) {
+            event.preventDefault();
+            handleClose(event, 'escape');
+            return;
+          }
           if (highlightedIndexRef.current !== -1 && popupOpen) {
             const option = filteredOptions[highlightedIndexRef.current];
             const disabled = getOptionDisabled ? getOptionDisabled(option) : false;
@@ -947,6 +976,7 @@ export function useAutocomplete(props) {
           }
           break;
         case 'Escape':
+          
           if (popupOpen) {
             // Avoid Opera to exit fullscreen mode.
             event.preventDefault();
@@ -958,10 +988,16 @@ export function useAutocomplete(props) {
             event.preventDefault();
             // Avoid the Modal to handle the event.
             event.stopPropagation();
+
             handleClear(event);
           }
           break;
         case 'Backspace':
+          if (disabledProp || readOnly) {
+            event.preventDefault();
+            popupOpen && handleClose(event, 'escape');
+            return;
+          }
           // Remove the value on the left of the "cursor"
           if (multiple && !readOnly && inputValue === '' && value.length > 0) {
             const index = focusedTag === -1 ? value.length - 1 : focusedTag;
@@ -973,6 +1009,11 @@ export function useAutocomplete(props) {
           }
           break;
         case 'Delete':
+          if (disabledProp || readOnly) {
+            event.preventDefault();
+            popupOpen && handleClose(event, 'escape');
+            return;
+          }
           // Remove the value on the right of the "cursor"
           if (multiple && !readOnly && inputValue === '' && value.length > 0 && focusedTag !== -1) {
             const index = focusedTag;
@@ -992,6 +1033,7 @@ export function useAutocomplete(props) {
     setFocused(true);
 
     if (openOnFocus && !ignoreFocus.current) {
+      console.log("handleFocus handleOpen")
       handleOpen(event);
     }
   };
@@ -1060,6 +1102,9 @@ export function useAutocomplete(props) {
   };
 
   const handleOptionClick = (event) => {
+    if (readOnly || disabledProp) {
+      return;
+    }
     const index = Number(event.currentTarget.getAttribute('data-option-index'));
     selectNewValue(event, filteredOptions[index], 'selectOption');
 
@@ -1067,6 +1112,9 @@ export function useAutocomplete(props) {
   };
 
   const handleTagDelete = (index) => (event) => {
+    if (readOnly || disabledProp) {
+      return;
+    }
     const newValue = value.slice();
     newValue.splice(index, 1);
     handleValue(event, newValue, 'removeOption', {
@@ -1113,7 +1161,7 @@ export function useAutocomplete(props) {
   };
 
   const handleInputMouseDown = (event) => {
-    if (!disabledProp && (inputValue === '' || !open)) {
+    if ((!disabledProp && !readOnly) && (inputValue === '' || !open)) {
       handlePopupIndicator(event);
     }
   };
@@ -1192,7 +1240,9 @@ export function useAutocomplete(props) {
       autoCapitalize: 'none',
       spellCheck: 'false',
       role: 'combobox',
+      type: 'text',
       disabled: disabledProp,
+      readOnly: (readOnly || !allowFilter)
     }),
     getClearProps: () => ({
       tabIndex: -1,
@@ -1204,7 +1254,7 @@ export function useAutocomplete(props) {
       type: 'button',
       onClick: handlePopupIndicator,
     }),
-    getTagProps: ({ index }) => ({
+    getTagProps: (index) => ({
       key: index,
       'data-tag-index': index,
       tabIndex: -1,
@@ -1234,9 +1284,9 @@ export function useAutocomplete(props) {
         tabIndex: -1,
         role: 'option',
         id: `${id}-option-${index}`,
-        onMouseMove: handleOptionMouseMove,
-        onClick: handleOptionClick,
-        onTouchStart: handleOptionTouchStart,
+        onMouseMove: !disabled ? handleOptionMouseMove : undefined,
+        onClick: !disabled ? handleOptionClick : undefined,
+        onTouchStart: !disabled ? handleOptionTouchStart : undefined,
         'data-option-index': index,
         'aria-disabled': disabled,
         'aria-selected': selected,

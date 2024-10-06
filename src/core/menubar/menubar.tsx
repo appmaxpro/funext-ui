@@ -16,7 +16,7 @@ import { Box } from "../box";
 import { Menu as AxMenu, MenuHandler, MenuList, MenuButton, useSubMenu} from "../../mui";
 import { MenuItem as AxMenuItem, Button } from "../../mui";
 import { withStyled } from "../styled";
-import { useClassNames, useTheme } from "../styles";
+import { useClassNames, useCoreTheme } from "../styles";
 import { tryFocus } from "./utils";
 
 import { useForwardedRef } from "../hooks";
@@ -43,7 +43,7 @@ export const Menubar = withStyled(Box)((props, ref) => {
   const [show, setShow] = useState<boolean>(false);
   const { children } = props;
 
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
 
   const [beforeElements, menus, afterElements] = useMemo(() => {

@@ -1,5 +1,4 @@
-
-const color = require("color");
+import color from "color";
 
 const plugins = {
   colorVars: function({ addBase, theme }) {
@@ -47,8 +46,8 @@ const plugins = {
     var defaults = {};
     var white = defaults['white'] || '#ffffff';
     var black = defaults['black'] || '#000000'; 
-    var dark = defaults['dark'] || colors['--tw-slate-900']; 
-    var light = defaults['light'] || colors['--tw-slate-100'];
+    var dark = defaults['dark'] || colors['--tw-slate-950']; 
+    var light = defaults['light'] || colors['--tw-slate-50'];
 
     const lightScheme = {
       body_color: dark,
@@ -67,6 +66,12 @@ const plugins = {
       header_min: colors['--tw-slate-50'],
       header_med: colors['--tw-slate-100'],
       header_max: colors['--tw-slate-200'],
+
+      hd_sx: colors['--tw-slate-50'],
+      hd_sm: '#F3F6F9', //#f6f8fa
+      hd_md: colors['--tw-slate-200'],
+      hd_lg: colors['--tw-slate-300'],
+      hd_xl: colors['--tw-slate-400'],
 
       divide: colors['--tw-slate-300'],
 
@@ -96,6 +101,12 @@ const plugins = {
       header_med: colors['--tw-slate-800'],
       header_max: colors['--tw-slate-700'],
 
+      hd_sx: colors['--tw-slate-950'],
+      hd_sm: colors['--tw-slate-900'],
+      hd_md: colors['--tw-slate-800'],
+      hd_lg: colors['--tw-slate-700'],
+      hd_xl: colors['--tw-slate-600'],
+
       white: black,
       black: white,
       light: dark,
@@ -122,8 +133,8 @@ const plugins = {
     
     addBase({
       ':root': colors,
-      ':root, [data-bs-theme=light]': makeScheme(lightScheme),
-      '[data-bs-theme=dark]':makeScheme(darkScheme),
+      ':root, [data-theme=light]': makeScheme(lightScheme),
+      '[data-theme=dark]':makeScheme(darkScheme),
     });
   },
 
@@ -143,7 +154,6 @@ const plugins = {
     });
 
   }
-
 }
-
-module.exports = plugins;
+export default plugins;
+//module.exports = plugins;

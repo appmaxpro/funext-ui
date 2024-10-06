@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState } from "react";
-import { Box } from "../box";
 import {
   Input,
   Button,
@@ -22,8 +21,8 @@ import {
   TimelineIcon,
   TimelineBody,
   //DialogTitle,
-} from "../../mui";
-import { MaterialIcon } from "../../icons/material-icon";
+} from "../..";
+import { MaterialIcon } from "../../../icons/material-icon";
 
 const config = {
   component: Dialog,
@@ -37,7 +36,7 @@ export function DialogDefault() {
  
   return (
     <>
-      <Button onClick={handleOpen} variant="gradient">
+      <Button onClick={handleOpen} >
         Open Dialog
       </Button>
       <Dialog open={open} handler={handleOpen}>
@@ -57,7 +56,7 @@ export function DialogDefault() {
           >
             <span>Cancel</span>
           </Button>
-          <Button variant="gradient" color="green" onClick={handleOpen}>
+          <Button  color="green" onClick={handleOpen}>
             <span>Confirm</span>
           </Button>
         </DialogFooter>
@@ -73,7 +72,7 @@ export function DialogCustomAnimation() {
  
   return (
     <>
-      <Button onClick={handleOpen} variant="gradient">
+      <Button onClick={handleOpen} >
         Open Dialog
       </Button>
       <Dialog
@@ -100,7 +99,7 @@ export function DialogCustomAnimation() {
           >
             <span>Cancel</span>
           </Button>
-          <Button variant="gradient" color="green" onClick={handleOpen}>
+          <Button  color="green" onClick={handleOpen}>
             <span>Confirm</span>
           </Button>
         </DialogFooter>
@@ -117,24 +116,24 @@ export function DialogSizes() {
   return (
     <>
       <div className="mb-3 flex gap-3">
-        <Button onClick={() => handleOpen("xs")} variant="gradient">
+        <Button onClick={() => handleOpen("xs")} >
           Open Dialog XS
         </Button>
-        <Button onClick={() => handleOpen("sm")} variant="gradient">
+        <Button onClick={() => handleOpen("sm")} >
           Open Dialog SM
         </Button>
-        <Button onClick={() => handleOpen("md")} variant="gradient">
+        <Button onClick={() => handleOpen("md")} >
           Open Dialog MD
         </Button>
       </div>
       <div className="flex gap-3">
-        <Button onClick={() => handleOpen("lg")} variant="gradient">
+        <Button onClick={() => handleOpen("lg")} >
           Open Dialog LG
         </Button>
-        <Button onClick={() => handleOpen("xl")} variant="gradient">
+        <Button onClick={() => handleOpen("xl")} >
           Open Dialog XL
         </Button>
-        <Button onClick={() => handleOpen("xxl")} variant="gradient">
+        <Button onClick={() => handleOpen("xxl")} >
           Open Dialog XXL
         </Button>
       </div>
@@ -167,7 +166,7 @@ export function DialogSizes() {
             <span>Cancel</span>
           </Button>
           <Button
-            variant="gradient"
+            
             color="green"
             onClick={() => handleOpen(null)}
           >
@@ -218,7 +217,7 @@ export function DialogWithForm() {
             </div>
           </CardBody>
           <CardFooter className="pt-0">
-            <Button variant="gradient" onClick={handleOpen} fullWidth>
+            <Button  onClick={handleOpen} fullWidth>
               Sign In
             </Button>
             <Text variant="small" className="mt-4 flex justify-center">
@@ -249,7 +248,7 @@ export function SelectCategoriesDialog() {
 
   return (
     <>
-      <Button onClick={handleOpen} variant="gradient">
+      <Button onClick={handleOpen} >
         Select Categories Dialog
       </Button>
       <Dialog size="sm" open={open} handler={handleOpen} className="p-4">
@@ -270,7 +269,8 @@ export function SelectCategoriesDialog() {
             <MaterialIcon className="h-4 w-4 stroke-2" icon="close"/>
           </IconButton>
         </DialogHeader>
-        <DialogBody className="space-y-4 px-2">
+        <DialogBody 
+        className="space-y-4 px-2">
           <Checkbox
             label={
               <div>
@@ -348,7 +348,7 @@ export function DeliveryMethodDialog() {
  
   return (
     <>
-      <Button onClick={handleOpen} variant="gradient">
+      <Button onClick={handleOpen} >
         Delivery Method Dialog
       </Button>
       <Dialog size="sm" open={open} handler={handleOpen} className="p-4">
@@ -453,7 +453,7 @@ export function OrderDetailsDialog() {
  
   return (
     <>
-      <Button onClick={handleOpen} variant="gradient">
+      <Button onClick={handleOpen} >
         Order Details Dialog
       </Button>
       <Dialog size="sm" open={open} handler={handleOpen} >

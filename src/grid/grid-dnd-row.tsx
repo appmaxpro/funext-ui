@@ -4,7 +4,7 @@
 import React, { useEffect } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
-import { Box, clsx } from "../core";
+import { Box, clsx } from "../mui";
 import { MaterialIcon } from "../icons/material-icon";
 
 import * as TYPES from "./types";

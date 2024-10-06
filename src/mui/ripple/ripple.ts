@@ -174,7 +174,7 @@ export class Ripple implements EventListenerObject {
       ripple.style.backgroundColor = config.color;
     } 
     else if (!config.className){
-      ripple.style.backgroundColor =  'rgba(0,0,0, 0.1)';
+      ripple.style.backgroundColor =  'rgb(var(--tw-slate-950-rgb) / 10%)';
     }
 
     if (config.className){

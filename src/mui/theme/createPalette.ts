@@ -250,7 +250,7 @@ export default function createPalette(palette:any) {
 
     if (process.env.NODE_ENV !== 'production') {
       const contrast = getContrastRatio(background, contrastText);
-      if (contrast < 3) {
+      if (contrast < 3 && false) {
         console.error(
           [
             `MUI: The contrast ratio of ${contrast}:1 for ${contrastText} on ${background}`,

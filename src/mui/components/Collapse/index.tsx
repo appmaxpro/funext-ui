@@ -1,3 +1,4 @@
+'use client';
 import React from "react";
 
 // framer-motion components
@@ -24,26 +25,36 @@ import { useTailwindTheme } from "../../theme";
 
 // types
 import {
-  open,
-  animate,
-  className,
-  children,
+  AnimationProps,
 } from "../../types/components/collapse";
+import {styled, SxComponentProps} from "../../styles";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 
-export interface CollapseProps extends Omit<MotionProps, "animate"> {
-  open: open;
-  animate?: animate;
-  className?: className;
-  children: children;
-  horizontal?:boolean;
+
+const CollapseRoot = styled('div', {
+  name: "MuxCollapse",
+  slot: "Root",
+  overridesResolver: (props, styles) => styles.root,
+})('');
+
+export interface CollapseProps extends SxComponentProps<'div'> {
+  open: boolean;
+  animate?: AnimationProps;
+  horizontal?: boolean;
+  keepMounted?: boolean;
+  motionProps?: MotionProps;
 }
 
-interface NewAnimatePresenceProps extends Omit<AnimatePresenceProps, "children"> {
+interface NewAnimatePresenceProps
+  extends Omit<AnimatePresenceProps, "children"> {
   children: React.ReactNode;
 }
 
 export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(
-  ({ open, animate, className, horizontal, children, ...rest }, ref) => {
+  (
+    { open, animate, className, horizontal, keepMounted, motionProps, children, ...rest },
+    ref,
+  ) => {
     // 1. init
     const mobileNavRef = React.useRef(null);
     const { collapse } = useTailwindTheme();
@@ -54,7 +65,7 @@ export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(
     animate = animate ?? {};
     className = className ?? "";
 
-    const direction = horizontal ? 'width' : 'height';
+    const direction = horizontal ? "width" : "height";
 
     // 3. set styles
     const classes = twMerge(classnames(objectsToString(base)), className);
@@ -63,43 +74,55 @@ export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(
     const mainAnimation = {
       unmount: {
         [direction]: "0px",
-        transition: { duration: 0.3, times: [0.4, 0, 0.2, 1] },
+        //transform: `scale(${horizontal ? .8 : 1}, ${horizontal ? 1 : .8})`,
+        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
       },
       mount: {
         [direction]: "auto",
-        transition: { duration: 0.3, times: [0.4, 0, 0.2, 1] },
+        //transform: 'scale(1, 1)',
+        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
       },
     };
 
     const appliedAnimation = merge(mainAnimation, animate);
-    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
+    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> =
+      AnimatePresence;
 
     // 5. set refs
     const mergedRef = useMergeRefs([ref, mobileNavRef]);
-
+    const ownerState = {
+      open,
+      keepMounted
+    }
     // 6. return
     return (
       <LazyMotion features={domAnimation}>
-        <NewAnimatePresence>
-          <m.div
-            {...rest}
-            ref={mergedRef}
+        <CollapseRoot 
+            aria-expanded={open ? 'true' : 'false'} 
+            ownerState={ownerState}
             className={classes}
-            initial="unmount"
-            exit="unmount"
-            animate={open ? "mount" : "unmount"}
-            variants={appliedAnimation}
-            
-          >
-            {children}
-          </m.div>
-        </NewAnimatePresence>
+            {...rest}
+            ref={mergedRef}>
+          <NewAnimatePresence initial={false}>
+            {keepMounted || open ? (
+              <m.div
+                initial="unmount"
+                exit="unmount"
+                animate={open ? "mount" : "unmount"}
+                variants={appliedAnimation}
+                className="overflow-hidden"
+                {...motionProps}
+              >
+                {children}
+              </m.div>
+            ) : null}
+          </NewAnimatePresence>
+        </CollapseRoot>
       </LazyMotion>
     );
   },
 );
 
 Collapse.displayName = "Mux.Collapse";
-
 
 export default Collapse;

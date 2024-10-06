@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
-import { Box, clsx } from "../core";
 import { useClassNames } from "../core";
-import { Checkbox, Radio } from "../mui";
+import { Checkbox, Radio, Box, clsx } from "../mui";
 
 import { GridColumn } from "./grid-column";
 import { isRowCheck, isRowExpand } from "./utils";

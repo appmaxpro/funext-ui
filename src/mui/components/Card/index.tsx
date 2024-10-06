@@ -14,16 +14,11 @@ import {
   getOverlayAlpha,
   composeClasses,
   alpha,
-  type StyledComponent
+  type StyledComponent,
+  generateUtilityClasses,
+  generateUtilityClass
 } 
 from '../../styles';
-
-import { 
-  getCardUtilityClass, 
-  type CardClasses,
-  type CardClassKey 
-
-} from './style/cardClasses';
 
 import { CardProps, CardOwnProps } from '../../types/components/card';
 import Panel, {PanelRoot} from "../Panel";
@@ -33,6 +28,27 @@ import { CardHeader, CardHeaderProps } from "./CardHeader";
 import { CardBody, CardBodyProps } from "./CardBody";
 import { CardFooter, CardFooterProps } from "./CardFooter";
 import { useColorClass, useThemeColor } from "../../hooks";
+import { CardMedia } from "./CardMedia";
+import { CardActions } from "./CardActions";
+
+export * from "./CardBody";
+export * from "./CardHeader";
+export * from "./CardFooter";
+export * from "./CardMedia";
+export * from "./CardActions";
+export interface CardClasses {
+  /** Styles applied to the root element. */
+  root: string;
+}
+
+export type CardClassKey = keyof CardClasses;
+
+export function getCardUtilityClass(slot: string): string {
+  return generateUtilityClass('MuxCard', slot);
+}
+
+const cardClasses: CardClasses = generateUtilityClasses('MuxCard', ['root']);
+
 
 const useUtilityClasses = (ownerState:any) => {
   const { classes } = ownerState;
@@ -84,7 +100,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
   }
 }
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   (inProps, ref) => {
   
   const props = useDefaultProps({ 
@@ -164,18 +180,11 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = "Mux.Card";
 
-export type { 
-  CardHeaderProps, 
-  CardBodyProps, 
-  CardFooterProps ,
-  CardProps, 
-  CardOwnProps,
-  CardClasses,
-  CardClassKey
-};
-export { Card, CardHeader, CardBody, CardFooter };
 export default Object.assign(Card, {
   Header: CardHeader,
   Body: CardBody,
+  Content: CardBody,
   Footer: CardFooter,
+  Media: CardMedia,
+  Actions: CardActions
 });

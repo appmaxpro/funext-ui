@@ -3,7 +3,7 @@ import BiHeartFill from "bootstrap-icons/icons/heart-fill.svg?react";
 import BiShop from "bootstrap-icons/icons/shop.svg?react";
 import BiToggles from "bootstrap-icons/icons/toggles.svg?react";
 
-import { Box } from "../../core";
+import { Box } from "../..";
 import { SvgIcon } from "./svg-icon";
 
 const config = {

@@ -48,7 +48,7 @@ const preview:Preview = {
         dark: 'dark',
       },
       defaultTheme: 'light',
-      attributeName: 'data-bs-theme',
+      attributeName: 'data-theme',
     }),
     WithTheme
   ],

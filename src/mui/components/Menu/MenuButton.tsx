@@ -5,20 +5,22 @@ import { Menu, type MenuProps } from "./Menu";
 import { MenuHandler } from "./MenuHandler";
 import { MenuItem } from "./MenuItem";
 
-export interface MenuButtonProps extends MenuProps {
-  content: React.ReactNode;
-  listProps?: any,
-  ListComp?: React.ComponentType | string
+export interface MenuButtonProps extends React.ComponentProps<any> {
+  trigger: React.ReactNode;
+  listProps?: any;
+  ListComp?: React.ComponentType | string;
+  menuProps?: MenuProps;
 }
 
 export const MenuButton = React.forwardRef<
   HTMLButtonElement,
   MenuButtonProps
 >(({ 
-  content,
+  trigger,
   children,
   ListComp= (Menu as any).List,
   listProps,
+  menuProps,
    ...rest 
   }, ref) => {
   
@@ -30,11 +32,9 @@ export const MenuButton = React.forwardRef<
 
   // 4. return
   return (
-    <Menu {...rest}>
-      <MenuHandler
-          ref={ref} 
-          role="menuitem">
-        {content}
+    <Menu placement="top-end" {...menuProps}>
+      <MenuHandler role="menuitem" {...rest} ref={ref}>
+        {trigger}
       </MenuHandler>
       <ListComp {...listProps}>
         {children}

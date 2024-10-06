@@ -7,12 +7,11 @@ import React, {
   useState,
 } from "react";
 import {
-  Box,
-  useClassNames,
-  clsx
+  useClassNames
 } from "../core";
 
 import {
+  Box,
   Divider,
   Input,
   Checkbox,
@@ -20,6 +19,7 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  clsx
 } from "../mui";
 
 import { MaterialIcon } from "../icons/material-icon";

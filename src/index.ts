@@ -1,6 +1,7 @@
 //export * './global.css';
 export * from "./core";
+export * from "./mui";
 
-import * as mui from "./mui3";
-import * as mui2 from "./mui";
-export {mui, mui2}
+import * as mui from "./mui";
+
+export {mui}

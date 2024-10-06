@@ -22,7 +22,7 @@ const ListRoot = styled('ul', {
 })('');
 
 export interface ListProps extends SxComponentProps<"ul"> {
-  listStyle?: ListContextValues['list'],
+  listStyle?: ListContextValues['list'] & {className?: string},
   itemStyle?: ListContextValues['item'],
   hover?:boolean;
   select?:boolean;

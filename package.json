@@ -1,7 +1,7 @@
 {
   "name": "@funext/ui",
   "version": "0.1.8",
-  "author": "Axelor",
+  "author": "Funext",
   "license": "AGPL-3.0-only",
   "keywords": [
     "react",
@@ -19,7 +19,9 @@
     ".": "./src/index.ts",
     "./*": "./src/*/index.ts",
     "./core/*": "./src/core/*/index.ts",
-    "./icons/*": "./src/icons/*/index.ts"
+    "./icons/*": "./src/icons/*/index.ts",
+    "./mui/*": "./src/mui/*/index.ts",
+    "./mui/themes/tw/withMT": "./src/mui/utils/withMT.js"
   },
   "scripts": {
     "preinstall": "node scripts/check-pnpm.js",
@@ -31,7 +33,7 @@
     "lint": "eslint src",
     "build:react": "pnpm --filter ./packages/material-tailwind-react build",
     "tw": "npx tailwindcss -i ./src/global.css -o ./dist/global.css",
-    "build-tailwind": "NODE_ENV=production npx tailwindcss -i tailwind.css -o ./dist/cmdk.css --postcss --minify"
+    "build-tailwind": "NODE_ENV=production npx tailwindcss -i ./src/global.css -o ./dist/global.css --postcss --minify"
   },
   "peerDependencies": {
     "@emotion/react": "^11.5.0",
@@ -50,9 +52,9 @@
     "@fontsource/roboto": "^5.0.13",
     "@material-symbols/font-400": "^0.17.1",
     "@material-symbols/metadata": "^0.17.1",
-    "@mui/base": "next",
-    "@mui/system": "next",
-    "@mui/utils": "next",
+    "@mui/base": "5.0.0-beta.58",
+    "@mui/system": "6.1.1",
+    "@mui/utils": "6.1.1",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
@@ -69,6 +71,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-is": "^18.3.1",
+    "react-material-symbols": "^4.4.0",
     "react-transition-group": "^4.4.5",
     "stylis": "^4.3.2",
     "stylis-plugin-rtl": "^2.1.1",

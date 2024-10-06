@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Input, InputLabel } from "../../core";
+import { Box, Input, InputLabel } from "../..";
 import { MaterialIcon, MaterialIconProps } from "./material-icon";
 
 const config = {
@@ -19,7 +19,7 @@ const IconBox = (props: MaterialIconProps) => {
       g={1}
       p={3}
     >
-      <MaterialIcon {...props} fontSize={24} />
+      <MaterialIcon {...props} size={24} />
       <span>{icon}</span>
     </Box>
   );
@@ -47,7 +47,7 @@ export const Basic = () => {
         <IconBox icon="close" fill={fill} />
         <IconBox icon="settings" fill={fill} />
         <IconBox icon="expand_more" fill={fill} />
-        <IconBox icon="done" fill={fill} />
+        <IconBox icon="don" fill={fill} />
       </Box>
       <Box d="flex" g={2}>
         <Input

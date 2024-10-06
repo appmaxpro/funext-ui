@@ -53,12 +53,11 @@ export const menu: MenuStylesType = {
         outline: "focus:outline-none",
       },
       panel: {
-        minWidth: "min-w-[180px]",
-        fontFamily: "font-sans",
-        fontSize: "text-sm",
-        fontWeight: "font-normal",
+        minWidth: "min-w-[200px]",
         bg: 'bg-body',
-        text:"text-body"
+        text:"text-body",
+        shadow: "shadow-menu",
+        rounded: "rounded-xl"
       },
       defaultArrow: {
         props: {
@@ -75,8 +74,8 @@ export const menu: MenuStylesType = {
       },
       item: {
         initial: {
-          py: 'py-2.5',
-          px: 'px-2',
+          py: 'py-2',
+          px: 'px-2.5',
         },
         disabled: {
           opacity: "opacity-60",

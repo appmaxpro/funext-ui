@@ -89,7 +89,7 @@ export const SplitButton = () => {
           <BootstrapIcon icon="caret-down-fill" />
         </Button>
       </ButtonGroup>
-      <Menu navigation target={target} show={show} onHide={hideMenu}>
+      <Menu target={target} show={show} onHide={hideMenu}>
         <MenuItem onClick={hideMenu}>Option 1</MenuItem>
         <MenuItem onClick={hideMenu}>Option 2</MenuItem>
         <MenuItem onClick={hideMenu}>Option 3</MenuItem>

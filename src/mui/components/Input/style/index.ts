@@ -1,7 +1,7 @@
 import styles from './input.module.scss';
-import inputOutlined from "./inputOutlined";
-import inputStandard from "./inputStandard";
-import inputStatic from "./inputStatic";
+import inputOutlined from "./outlined";
+import inputStandard from "./standard";
+import inputFilled from "./filled";
 
 // types
 import type {
@@ -11,8 +11,6 @@ import type {
 } from "../../../types/components/input";
 import { propTypesVariant, propTypesSize, propTypesColor } from "../../../types/components/input";
 import { ReactNode } from 'react';
-
-
 
 export interface InputSizeStylesType {
   container?: object;
@@ -61,6 +59,7 @@ export interface InputStylesType {
     rootProps?: any;
     shrink?: boolean;
     className?: string;
+    disableBorder?:boolean
     
   };
   valid?: {
@@ -70,7 +69,7 @@ export interface InputStylesType {
   };
   styles?: {
     base?: {
-      container?: object;
+      root?: object;
       input?: object;
       label?: object;
       native?: object;
@@ -87,7 +86,7 @@ export interface InputStylesType {
     variants?: {
       outlined: InputVariantStylesType;
       standard: InputVariantStylesType;
-      static: InputVariantStylesType;
+      filled: InputVariantStylesType;
     };
   };
 }
@@ -102,6 +101,7 @@ export const input: InputStylesType = {
     success: false,
     shrink: false,
     className: "",
+    disableBorder: false
   },
   valid: {
     variants: propTypesVariant,
@@ -110,10 +110,10 @@ export const input: InputStylesType = {
   },
   styles: {
     base: {
-      container: {
+      root: {
         position: "relative",
         width: "w-full",
-        minWidth: "min-w-[200px]",
+        minWidth: "min-w-[120px]",
       },
       input: {
         width: "w-full",
@@ -153,7 +153,7 @@ export const input: InputStylesType = {
     variants: {
       outlined: inputOutlined,
       standard: inputStandard,
-      static: inputStatic,
+      filled: inputFilled,
     },
   },
 };

@@ -1,7 +1,7 @@
 /**
  * @title Custom Renderer
  */
-import { Box } from "../../core";
+import { Box } from "../..";
 import { Grid } from "../grid";
 import { columns, records } from "./demo-data";
 import useGridState from "./useGridState";

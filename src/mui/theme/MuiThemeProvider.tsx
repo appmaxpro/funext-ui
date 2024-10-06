@@ -15,7 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import '../../global.css';
+//import '../../global.css';
 
 //import '../../global.css';
 
@@ -43,12 +43,12 @@ export interface CssBaselineProps  {
 // It allows developers to easily override MUI styles with other styling solutions, like CSS modules.
 
 const cache = createCache({
-    key: 'mux',
+    key: 'mx',
     prepend: true
 });
 
 const rtlCache = createCache({
-  key: 'muxrtl',
+  key: 'mxr',
   prepend: true,
   stylisPlugins: [prefixer, rtlPlugin],
 });

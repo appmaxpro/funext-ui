@@ -9,7 +9,7 @@ import { propTypesColors } from "../generic";
  */
 
 // typescript types
-export type variantType = "standard" | "outlined" | "static";
+export type variantType = "standard" | "outlined" | "filled";
 export type sizeType = "md" | "lg";
 export type InputColorType = "black" | "white" | Colors;
 export type labelProps = {
@@ -22,6 +22,6 @@ export type shrink = boolean;
 export type className = string;
 
 // javascript prop-types
-export const propTypesVariant: any = ["standard", "outlined", "static"];
+export const propTypesVariant: any = ["standard", "outlined", "filled"];
 export const propTypesSize: any = ["md", "lg"];
 export const propTypesColor: any = ["black", "white", ...propTypesColors];

@@ -12,7 +12,7 @@ import {
 
 import { MaterialIcon } from "../../icons/material-icon";
 import { clsx } from "../clsx";
-import { useTheme } from "../styles";
+import { useCoreTheme } from "../styles";
 import { getRGB } from "./utils";
 
 import styles from "./nav-tabs.module.scss";

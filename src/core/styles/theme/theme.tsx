@@ -25,7 +25,7 @@ import {themeZIndex, type ZIndex} from './mui';
 import stylesLtr from "../styles.module.scss";
 import stylesRtl from "../styles.rtl.module.scss";
 import MuiThemeProvider from "../../../mui/theme/MuiThemeProvider";
-import { useMedia } from "../../../mui/utils";
+import { useMediaQuery } from "../../../mui/hooks";
 
 /*
 // XXX(epurkhiser): We create our own emotion cache object to disable the
@@ -43,28 +43,28 @@ const STYLES: Record<string, CSSModuleClasses> = {
   rtl: stylesRtl,
 };
 
-export interface ThemeContextValue {
+export interface CoreThemeContextValue {
   dir?: string;
   theme?: "light" | "dark";
   options?: ResponsiveThemeOptions;
   muiTheme?: Theme
 }
 
-export interface ThemeProviderProps extends Partial<ThemeContextValue> {
+export interface CoreThemeProviderProps extends Partial<CoreThemeContextValue> {
   children: React.ReactElement;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({});
+const ThemeContext = createContext<CoreThemeContextValue>({});
 
 
 
-export function ThemeProvider({
+export function CoreThemeProvider({
   dir,
   theme,
   muiTheme,
   options = {},
   children,
-}: ThemeProviderProps) {
+}: CoreThemeProviderProps) {
   const curr = useContext(ThemeContext);
 
   const value = useMemo(() => {
@@ -96,7 +96,7 @@ export function ThemeProvider({
 
   useEffect(() => adoptStyleSheet(options, classes), [classes, dir, options]);
   const isDark = theme === 'dark';
-  const isSystemDark = useMedia('(prefers-color-scheme: dark)');
+  const isSystemDark = useMediaQuery('(prefers-color-scheme: dark)');
   
   useEffect(() => {
     if (isSystemDark && !isDark) {
@@ -156,12 +156,12 @@ export function ThemeProvider({
   );
 }
 
-export function useTheme() {
+export function useCoreTheme() {
   return useContext(ThemeContext);
 }
 
 export function useStyles() {
-  const theme = useTheme();
+  const theme = useCoreTheme();
   const dir = theme.dir;
   if (dir && dir in STYLES) {
     return STYLES[dir];
@@ -186,12 +186,6 @@ export function useClasses(...args: ClassValue[]) {
 
   return className;
 }
-
-
-export const useRtl = () => {
-  const theme = useTheme()
-  return theme.dir === 'rtl';
-};
 
 export const DEFAULT_MODE_STORAGE_KEY = 'mode';
 export const DEFAULT_COLOR_SCHEME_STORAGE_KEY = 'color-scheme';

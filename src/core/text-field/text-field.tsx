@@ -3,9 +3,9 @@ import { MaterialIcon, MaterialIconProps } from "../../icons/material-icon";
 import { Input, type InputProps } from "../../mui";
 import { InputFeedback } from "../input-feedback";
 import { InputLabel } from "../input-label";
-import { Stack } from "../stack";
+import { Stack } from "../../mui/components/Stack";
 import { withStyled } from "../styled";
-import { useClassNames, useTheme } from "../styles";
+import { useClassNames, useCoreTheme } from "../styles";
 import styles from "./text-field.module.scss";
 
 export interface TextFieldProps extends InputProps {

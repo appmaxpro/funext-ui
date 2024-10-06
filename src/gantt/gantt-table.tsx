@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "../core";
+import { Box } from "../mui";
 import { useClassNames } from "../core";
 import * as TYPES from "./types";
 import classes from "./gantt.module.scss";

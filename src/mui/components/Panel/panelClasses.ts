@@ -1,5 +1,4 @@
-import generateUtilityClasses from '@mui/utils/generateUtilityClasses';
-import generateUtilityClass from '@mui/utils/generateUtilityClass';
+import { generateUtilityClass, generateUtilityClasses } from "../../styles";
 
 export interface PanelClasses {
   /** Styles applied to the root element. */

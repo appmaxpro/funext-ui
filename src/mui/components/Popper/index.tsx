@@ -40,6 +40,7 @@ import type {
   ElementProps,
   MiddlewareState,
   Middleware,
+  FloatingOverlayProps
 } from "@floating-ui/react";
 
 // framer-motion
@@ -57,9 +58,11 @@ import type {
   OffsetProps,
   AnimationProps,
 } from "../../types/generic";
-import { isElement } from "../../../core";
 import { json } from "stream/consumers";
 import { SxComponentProps, clsx, styled, StyledComponent } from "../../styles";
+import { isElement } from "../../utils";
+import { HtmlAttributes } from "csstype";
+import { useControlled } from "../../hooks";
 
 export declare type Derivable<T> = (state: MiddlewareState) => T;
 
@@ -134,15 +137,13 @@ const animation = {
 
 export declare type Backdrop = {
   className?: string;
-  animate?: AnimationProps;
+  animate?: AnimationProps | false;
   duration?: number;
   style?: React.CSSProperties;
+
 };
 
-export declare type Overlay = {
-  lockScroll?: boolean;
-  zIndex?: number;
-};
+export declare type Overlay = FloatingOverlayProps;
 
 export interface PopperFocusProps
   extends Omit<FloatingFocusManagerProps, "children" | "context"> {
@@ -187,8 +188,8 @@ export function usePopper(): PopperContextValue {
   return context;
 }
 export interface PopperContextProps<T = HTMLElement | null> {
-  open: boolean;
-  handler: UseFloatingOptions["onOpenChange"];
+  open?: boolean;
+  handler?: UseFloatingOptions["onOpenChange"];
   onCompleteState?: (open:boolean) => void;
   
   strategy?: Strategy;
@@ -197,7 +198,7 @@ export interface PopperContextProps<T = HTMLElement | null> {
   autoFlip?: FlipOptions | Derivable<FlipOptions>;
   autoShift?: ShiftOptions | Derivable<ShiftOptions>;
   autoSize?: SizeOptions | Derivable<SizeOptions>;
-  arrow?: ArrowProps;
+  arrow?: ArrowProps ;
   roles?: UseRoleProps;
   dismiss?: DismissProps;
   middleware?: Array<Middleware | null | undefined | false>;
@@ -221,13 +222,14 @@ export interface PopperProps<T = HTMLElement | null>
   renderContent?: boolean;
   disablePortal?: boolean;
   keepMounted?: boolean;
+  trigger?: React.ReactNode;
 }
 
 export function usePopperContext(
   props: PopperContextProps,
 ): PopperContextValue {
   const {
-    open,
+    open:openProps,
     handler,
     dismiss,
     roles,
@@ -247,13 +249,28 @@ export function usePopperContext(
 
   // 1. init
   const arrowRef = useRef(null);
-  const [openState, setOpenState] = useState(open);
+  
   const stateRef = useRef([]);
+  const [open, setOpen] = useControlled<boolean>({
+    name: 'open',
+    state: openProps,
+    defaultState: false,
+    prop: 'OpenPopper'
+  });
+
+  const [openState, setOpenState] = useState(open ?? false);
+
+  const handleOpenSate = (open: boolean, event?: Event, reason?: OpenChangeReason) => {
+      handler?.(open, event, reason);
+      if (openProps === undefined) {
+        setOpen(open);
+      }
+  }
  
   // 2. set @floating-ui
   const floating = useFloating<HTMLElement>({
-    open:open,
-    onOpenChange: handler,
+    open,
+    onOpenChange: handleOpenSate,
     whileElementsMounted: autoUpdate,
     strategy: strategy,
     placement: placement,
@@ -308,7 +325,7 @@ export function usePopperContext(
   const contextValue = React.useMemo(
     () => ({
       ...rest,
-      open: floating.context.open,
+      open:open!,
       floating,
       getFloatingProps,
       getReferenceProps,
@@ -317,7 +334,7 @@ export function usePopperContext(
       descriptionId,
       arrowRef,
       arrow,
-      handler,
+      handler:handleOpenSate,
       setOpenState,
       openState
     }),
@@ -333,7 +350,6 @@ export function usePopperContext(
       getReferenceProps,
       labelId,
       descriptionId,
-      handler,
       openState,
       setOpenState,
       JSON.stringify(arrow),
@@ -390,6 +406,7 @@ export interface PopperPortalProps extends React.ComponentProps<"div">, SharedPo
   disablePortal?: boolean;
   keepMounted?: boolean;
   context:PopperContextValue;
+  trigger?: React.ReactNode;
 }
 
 export const PopperPortal = ({
@@ -401,6 +418,7 @@ export const PopperPortal = ({
   disablePortal,
   keepMounted,
   focusProps,
+  trigger,
   ...rest
 }:PopperPortalProps) => {
 
@@ -417,7 +435,7 @@ export const PopperPortal = ({
   // 3. Create an instance of AnimatePresence because of the types issue with the children
   const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
 
-  if (!initialized && !keepMounted) {
+  if (!initialized && !keepMounted && !trigger) {
     return null;
   }
 
@@ -426,8 +444,10 @@ export const PopperPortal = ({
   // 7. return
   return (
     <LazyMotion features={domAnimation}>
+      
       {disablePortal ? (
         <PopperContext.Provider value={context}>
+          {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
           <NewAnimatePresence>
             {shouldOpen ? (
               renderContent ? (
@@ -441,6 +461,7 @@ export const PopperPortal = ({
       ) : (
         <FloatingPortal root={root} id={id}>
           <PopperContext.Provider value={context}>
+            {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
             <NewAnimatePresence>
               {shouldOpen ? (
                 renderContent ? (
@@ -570,6 +591,7 @@ export const PopperContent = React.forwardRef<
     () =>
       !disableAnimation &&
       backdrop &&
+      (backdrop.animate !== false) &&
       merge({
         unmount: {
           opacity: 0,
@@ -586,7 +608,7 @@ export const PopperContent = React.forwardRef<
 
   const backdropContent = backdrop 
     ? (
-      disableAnimation ? (
+      (disableAnimation || backdrop.animate === false) ? (
         <div
           className={
             backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"
@@ -630,10 +652,7 @@ export const PopperContent = React.forwardRef<
   return overlay 
     ? (
       <FloatingOverlay
-        style={{
-          zIndex: overlay.zIndex ?? 9999,
-        }}
-        lockScroll={overlay.lockScroll}
+        {...overlay}
       >
         {focusContent}
       </FloatingOverlay>

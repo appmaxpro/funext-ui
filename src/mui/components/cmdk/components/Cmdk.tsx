@@ -15,23 +15,26 @@ import {
 import { RenderLink } from "../types";
 import Popper from "../../Popper";
 import { twMerge } from "tailwind-merge";
+import { transform } from "framer-motion";
 
 
 const animation = {
   unmount: {
     opacity: 0,
-    scale: .95,
+    transform: 'scale(.9)',
     transition: {
-      duration: 0.2,
-      ease: 'easeOut'
+      duration: 2,
+      ease: 'easeOut',
+      delay: 0
     },
   },
   mount: {
     opacity: 1,
-    scale: 1,
+    transform: 'scale(1)',
     transition: {
-      duration: 0.3,
-      ease: 'easeIn'
+      duration: 0.5,
+      ease: 'easeIn',
+      delay: .6
     },
   },
 };
@@ -47,7 +50,7 @@ const backdropAnimation = {
   mount: {
     opacity: 1,
     transition: {
-      delay: 0.3,
+      delay: 0,
       ease: 'easeIn'
     },
   },
@@ -168,7 +171,8 @@ function Cmdk({
   const classes = twMerge('cmdk-palette fixed inset-0 top-[20px]', className);
 
   return (
-    <div
+    <div 
+      className="'MuxCmdk-root',"
       onKeyDown={(e) => {
         if (
           e.key === "ArrowDown" ||
@@ -215,7 +219,9 @@ function Cmdk({
           animate={animation}
           overlay={{
             lockScroll: true,
-            zIndex: 10000
+            style:{
+              zIndex: 10000
+            }
           }}
           aria-modal="true"
           roles={{role:"dialog"}}
@@ -224,7 +230,7 @@ function Cmdk({
 
             <div className="overflow-y-auto flex items-center justify-center">
               <div className="flex w-full h-[450px] items-start justify-center p-4">
-                <div className="w-full max-h-full bg-white dark:bg-gray-900 shadow-lg rounded-lg max-w-xl flex flex-col overflow-hidden divide-y dark:divide-gray-800">
+                <div className="w-full max-h-full bg-body shadow-lg rounded-lg max-w-xl flex flex-col overflow-hidden divide-y">
                     <PageContext.Provider
                       value={{
                         setSearchPrefix,

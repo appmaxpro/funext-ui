@@ -11,7 +11,7 @@ import type{
   OverridableStringUnion
 } from '../../uprops';
 
-import type{ PanelClasses } from '../../components/Panel/style/panelClasses';
+import type{ PanelClasses } from '../../components/Panel/panelClasses';
 import type { Colors } from "../generic";
 import { propTypesColors } from "../generic";
 /**

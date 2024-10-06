@@ -1,7 +1,7 @@
-import inputStandardLabel from "./inputStandardLabel";
-import inputStandardColors from "./inputStandardColors";
-import inputStandardLabelColors from "./inputStandardLabelColors";
-import styles from './st.module.scss';
+import inputStandardLabel from "./label";
+import inputStandardColors from "./colors";
+import inputStandardLabelColors from "./labelColors";
+import styles from './standard.module.scss';
 
 const inputStandard = {
   base: {
@@ -10,8 +10,8 @@ const inputStandard = {
       borderY: 'divide-current divide-y'
     },
     native: {
-      borderColor: "placeholder-shown:border",
-      placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100",
+      //borderColor: "placeholder-shown:border",
+      //placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100",
       add: styles['std-native']
     },
     label: {

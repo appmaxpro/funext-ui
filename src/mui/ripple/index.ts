@@ -2,7 +2,7 @@
 import { RippleConfig, RippleRef } from './ripple-ref';
 import {Ripple, RippleTarget} from './ripple';
 
-import { useForwardedRef } from '../../core/hooks/use-refs';
+import { useForwardedRef } from '../hooks/use-refs';
 import { useState, ForwardedRef, useEffect, useRef, useCallback } from 'react';
 
 // @floating-ui

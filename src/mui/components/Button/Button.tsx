@@ -8,7 +8,8 @@ import {
   clsx,
   composeClasses,
   alpha,
-  lighten
+  lighten,
+  useTailwindTheme
 } from '../../styles';
 import ButtonBase from './ButtonBase';
 
@@ -441,12 +442,14 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
   const buttonGroupButtonContextPositionClassName = React.useContext(ButtonGroupButtonContext);
   const resolvedProps = resolveProps(contextProps as any, inProps);
   const props = useMuiDefaultProps({ props: resolvedProps, name: 'MuxButton' });
+  const { button: { defaultProps }} = useTailwindTheme();
+    
   const {
     children,
-    color = 'primary',
+    color = defaultProps.color,
     component = 'button',
     variant = 'text',
-    size = 'md',
+    size = defaultProps.size,
     className,
     disabled = false,
     disableElevation = false,

@@ -4,7 +4,16 @@ const colors = {
   transparent: "transparent",
   white: "#ffffff",
   black: "#000000",
+
+  'hd-sx': 'rgb(var(--tw-hd-sx-rgb) / <alpha-value>)',
+  'hd-sm': 'rgb(var(--tw-hd-sm-rgb) / <alpha-value>)',
+  'hd-md': 'rgb(var(--tw-hd-md-rgb) / <alpha-value>)',
+  'hd-lg': 'rgb(var(--tw-hd-lg-rgb) / <alpha-value>)',
+  'hd-xl': 'rgb(var(--tw-hd-xl-rgb) / <alpha-value>)',
+  'body-text': 'rgb(var(--tw-body-color-rgb) / <alpha-value>)',
   
+  ringColor: 'rgb(var(--tw-primary-700-rgb) / <alpha-value>)',
+
   primary: {  
     DEFAULT: "#635bff",  
     50: "#eef2ff",

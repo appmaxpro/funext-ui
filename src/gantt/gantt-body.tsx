@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useTheme, useClassNames, Box } from "../core";
+import { useCoreTheme, useClassNames } from "../core";
+import { Box } from "../mui";
 import { useDrop } from "react-dnd";
 
 import * as TYPES from "./types";
@@ -70,7 +71,7 @@ export function GanttBody({
   items: TYPES.GanttHeaderItem[];
 }) {
   const bodyRef = React.useRef<HTMLDivElement>(null);
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
 
   const [, drop] = useDrop({

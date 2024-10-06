@@ -16,6 +16,8 @@ import { MaterialIcon } from "../../../icons/material-icon";
 export interface DialogHeaderProps extends SxComponentProps<"div"> {
   onClose?: ()=> void;
   titleClassName?: string;
+  actions?: React.ReactNode;
+  divider?: boolean;
 }
 
 const DialogHeaderRoot = styled('div', {
@@ -24,7 +26,7 @@ const DialogHeaderRoot = styled('div', {
 })<SxComponentProps<any>>('');
 
 export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
-  ({ className, titleClassName, children, onClose, ...rest }, ref) => {
+  ({ className, titleClassName, children, onClose, actions, divider, ...rest }, ref) => {
     // 1. init
     const { dialogHeader } = useTailwindTheme();
     const {
@@ -36,7 +38,7 @@ export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const dialogHeaderClasses = twMerge(classnames(objectsToString(base)), className);
+    const dialogHeaderClasses = twMerge(classnames(objectsToString(base), divider && base.divider), className);
     const dialogHeaderTitleClasses = twMerge(classnames(objectsToString(title)), titleClassName);
 
     // 4. return
@@ -45,6 +47,7 @@ export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
         <div className={dialogHeaderTitleClasses}>
           {children}
         </div>
+        {actions}
         {onClose && <IconButton onClick={onClose}><MaterialIcon icon="close"/></IconButton>}
          
       </DialogHeaderRoot>

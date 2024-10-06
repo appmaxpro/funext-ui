@@ -24,18 +24,11 @@ export const dialogBody: DialogBodyStylesType = {
       initial: {
         position: "relative",
         p: "p-4",
-        color: "text-slate",
-        fontSmoothing: "antialiased",
-        fontFamily: "font-sans",
-        fontSize: "text-base",
-        fontWeight: "font-light",
-        lineHeight: "leading-relaxed",
+        overflowY: "overflow-y-auto",
+        grow: 'grow'
       },
       divider: {
-        borderTop: "border-t",
-        borderTopColor: "border-t-slate-100",
-        borderBottom: "border-b",
-        borderBottomColor: "border-b-slate-100",
+        borderTop: "border-y"
       },
     },
   },

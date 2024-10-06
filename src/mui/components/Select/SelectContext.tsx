@@ -28,15 +28,6 @@ export function useSelect() {
   return context;
 }
 
-export function usePrevious<T>(value: T) {
-  const ref = React.useRef<T>();
-
-  useIsomorphicLayoutEffect(() => {
-    ref.current = value;
-  }, [value]);
-
-  return ref.current;
-}
 
 export const SelectContextProvider = ({ value, children }: SelectContextProviderProps) => {
   return <SelectContext.Provider value={value}>{children}</SelectContext.Provider>;

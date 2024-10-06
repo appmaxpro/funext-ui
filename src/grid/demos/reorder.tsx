@@ -2,7 +2,7 @@
  * @title Row Reorder
  */
 import React from "react";
-import { Button } from "../../core";
+import { Button } from "../..";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";
 import { columns, records } from "../demos/demo-data";

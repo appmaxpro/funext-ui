@@ -61,7 +61,7 @@
     cursor: text;
     -webkit-box-align: center;
     height: 11px;
-    & span {
+    & > span {
       padding-left: 5px;
       padding-right: 5px;
       display: inline-block;
@@ -93,7 +93,6 @@
         transform: translate(20px, -12px) scale(0.75);
       }
     }
-    
   }
 }
 
@@ -126,10 +125,3 @@
     }
   }
 }
-
-
-.otl-native{
-  padding: 8.5px 10px;
-}
-
-

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 
 // framer-motion
 import { AnimatePresence, m, MotionProps, domAnimation, LazyMotion } from "framer-motion";
@@ -12,7 +12,7 @@ import objectsToString from "../../utils/objectsToString";
 
 // context
 import { useTailwindTheme } from "../../theme";
-
+import { styled, SxComponentProps } from "../../styles";
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
 import type {
@@ -31,7 +31,18 @@ import IconButton from "../IconButton";
 import Text from "../Text";
 import { useThemeColor } from "../../hooks";
 
-export interface AlertProps extends Omit<MotionProps, "animate"> {
+
+const AlertRoot = styled(m.div, {
+  name: 'MuxAlert',
+  slot: 'Root',
+})('');
+
+const AlertDivRoot = styled(m.div, {
+  name: 'MuxAlert',
+  slot: 'Root',
+})('');
+
+export interface AlertProps extends SxComponentProps<"div"> {
   variant?: variant;
   color?: color;
   icon?: icon;
@@ -39,10 +50,7 @@ export interface AlertProps extends Omit<MotionProps, "animate"> {
   onClose?: onClose;
   action?: action;
   animate?: animate;
-  className?: className;
-  children: children;
   title?: children;
-
 }
 
 export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
@@ -55,8 +63,15 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     color = useThemeColor(color, defaultProps.color);
-    animate = animate ?? defaultProps.animate;
+    if (animate === true)
+        animate =animate === true ?  defaultProps.animate : animate ?? defaultProps.animate;
     open = open ?? defaultProps.open;
+
+    if (!animate && !open) {
+      return null;
+    }
+
+
     action = action ?? defaultProps.action;
     onClose = onClose ?? defaultProps.onClose;
     className = twMerge(defaultProps.className || "", className);
@@ -78,7 +93,54 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     const classes = twMerge(classnames(alertBase, alertVariant), className);
     const actionClasses = classnames(alertAction);
 
-    // 4. set animation
+     // // 4. icon template
+    const iconTemplate = <div className="shrink-0">{icon}</div>;
+
+    //let Comp = animate ? Fragment : 
+    
+    const child = open && (
+      <>
+        {icon && iconTemplate}
+        <div className={`${icon ? "ms-3" : ""} me-12${title ? " flex flex-col" : ""}`}>
+           {typeof title === 'string' ? <Text variant="h4">{title}</Text> : title}
+           {children}
+        </div>
+        {onClose && !action && (
+          <IconButton
+            onClick={onClose}
+            size="sm"
+            color={variant === "outlined" || variant === "ghost" ? color : "transparent"}
+            rippleClassName={rippleColorClass}
+            className={actionClasses}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="h-6 w-6"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </IconButton>
+        )}
+        {action || null}
+      </>
+    );
+
+    if (!animate){
+      return (<AlertDivRoot
+        {...rest}
+        ref={ref}
+        role="alert"
+        className={classes}>
+        {child}
+      </AlertDivRoot>);
+    }
+
+
+    // 5. set animation
     const mainAnimation = {
       unmount: {
         opacity: 0,
@@ -87,10 +149,8 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         opacity: 1,
       },
     };
-    const appliedAnimation = merge(mainAnimation, animate as any);
 
-    // // 5. icon template
-    const iconTemplate = <div className="shrink-0">{icon}</div>;
+    const appliedAnimation = merge(mainAnimation, animate as any);
 
     // 6. Create an instance of AnimatePresence because of the types issue with the children
     const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
@@ -100,7 +160,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       <LazyMotion features={domAnimation}>
         <NewAnimatePresence>
           {open && (
-            <m.div
+            <AlertRoot
               {...rest}
               ref={ref}
               role="alert"
@@ -110,33 +170,9 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
               animate={open ? "mount" : "unmount"}
               variants={appliedAnimation}
             >
-              {icon && iconTemplate}
-              <div className={`${icon ? "ms-3" : ""} me-12${title ? " flex flex-col" : ""}`}>
-                 {typeof title === 'string' ? <Text variant="h4">{title}</Text> : title}
-                 {children}
-              </div>
-              {onClose && !action && (
-                <IconButton
-                  onClick={onClose}
-                  size="sm"
-                  color={variant === "outlined" || variant === "ghost" ? color : "tra"}
-                  rippleClass={rippleColorClass}
-                  className={actionClasses}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="h-6 w-6"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </IconButton>
-              )}
-              {action || null}
-            </m.div>
+              
+              {child}
+            </AlertRoot>
           )}
         </NewAnimatePresence>
       </LazyMotion>

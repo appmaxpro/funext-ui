@@ -180,7 +180,7 @@ export const select: SelectStylesType = {
       container: {
         position: "relative",
         width: "w-full",
-        minWidth: "min-w-[200px]",
+        minWidth: "min-w-[120px]",
       },
       select: {
         peer: "peer",

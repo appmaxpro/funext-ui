@@ -3,7 +3,7 @@ import { useDrag, useDrop } from "react-dnd";
 
 import { Box } from "../box";
 import { TreeColumn } from "./tree-column";
-import { useClassNames, useTheme } from "../styles";
+import { useClassNames, useCoreTheme } from "../styles";
 import { MaterialIcon } from "../../icons/material-icon";
 import * as TYPES from "./types";
 import styles from "./tree.module.scss";
@@ -16,7 +16,7 @@ const TreeNodeContent = React.forwardRef<
   TYPES.TreeChildContentProps
 >((props, ref) => {
   const { columns, data, textRenderer } = props;
-  const { dir } = useTheme();
+  const { dir } = useCoreTheme();
   const rtl = dir === "rtl";
 
   function render(column: TYPES.TreeColumn) {

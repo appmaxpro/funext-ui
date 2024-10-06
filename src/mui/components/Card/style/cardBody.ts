@@ -16,7 +16,6 @@ export const cardBody: CardBodyStylesType = {
   },
   styles: {
     base: {
-      p: "p-6",
     },
   },
 };
