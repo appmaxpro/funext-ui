@@ -340,10 +340,17 @@ export default function createPalette(palette:any) {
       info: augmentColor({ color: info, name: 'info' }),
       // The colors used to indicate the successful completion of an action that user triggered.
       success: augmentColor({ color: success, name: 'success' }),
-      light: augmentColor({ color: lightCp, name: 'light', mainShade:'A400', lightShade: 'A200', darkShade: '950' }),
-      dark: augmentColor({ color: darkCp, name: 'dark', mainShade:'A700', lightShade: 'A400', darkShade: '900'  }),
+      light: augmentColor({ color: lightCp, name: 'light', mainShade:'400', lightShade: '200', darkShade: '950' }),
+      dark: augmentColor({ color: darkCp, name: 'dark', mainShade:'900', lightShade: '400', darkShade: '950'  }),
       // The grey colors.
-      grey: colors.gray,
+      grey: {
+        ...colors.gray,
+        A100: '#f5f5f5',
+        A200: '#eeeeee',
+        A400: '#bdbdbd',
+        A700: '#616161',
+      },
+      slate: colors.slate,
       // Used by `getContrastText()` to maximize the contrast between
       // the background and the text.
       contrastThreshold,

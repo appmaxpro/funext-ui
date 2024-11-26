@@ -18,7 +18,7 @@ import type {
 } from "../../types/generic";
 
 
-export type ContextProps< T extends HTMLElement = HTMLButtonElement>  = {
+export type MenuContextProps< T extends HTMLElement = HTMLButtonElement>  = {
   open: boolean;
   handler?: Handler;
   setInternalOpen: Handler;
@@ -45,14 +45,15 @@ export type ContextProps< T extends HTMLElement = HTMLButtonElement>  = {
   arrowRef?: ArrowOptions['element'];
   disablePortal?:boolean;
   rtl?: boolean;
+  nav?: boolean;
 };
 
 export interface MenuContextProviderProps {
-  value: ContextProps;
+  value: MenuContextProps;
   children: React.ReactNode;
 }
 
-export const MenuContext = React.createContext<null | ContextProps>(null);
+export const MenuContext = React.createContext<null | MenuContextProps>(null);
 MenuContext.displayName = "Mux.MenuContext";
 
 export function useMenu() {

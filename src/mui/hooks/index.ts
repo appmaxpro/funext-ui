@@ -2,6 +2,8 @@ export * from "./use-refs";
 export * from "./useColorClass";
 export * from "./useMapColor";
 export * from "./use-controlled";
+export * from "./use-copy-to-clipboard";
+export * from "./use-latest-value";
 export {default as useLazyRef} from "./use-lazy-ref";
 export {default as useEnhancedEffect} from "./useEnhancedEffect";
 export {default as useEventCallback} from "./useEventCallback";

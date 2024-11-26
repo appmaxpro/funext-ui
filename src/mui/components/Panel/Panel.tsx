@@ -30,7 +30,6 @@ import { PanelProps, PanelOwnProps } from '../../types/components/panel';
 import { twMerge } from 'tailwind-merge';
 import { TailwindTheme } from '../../components';
 import { useColorClass, useThemeColor } from '../../hooks';
-import { isNumeric } from '@/core/system/utils';
 
 
 const useUtilityClasses = (ownerState:PanelOwnProps) => {
@@ -65,15 +64,19 @@ export const PanelRoot = styled('div', {
   transition: theme.transitions.create('box-shadow'),
   variants: [
     {
-      props: ({ ownerState }:any) => !ownerState.hasBg,
+      props: {
+        hasBg: true
+      },
       style: {
-        backgroundColor: (theme.vars || theme).palette.background?.paper,
+        backgroundColor: 'var(--tw-body-bg)',
       },
     },
     {
-      props: ({ ownerState }:any) => !ownerState.hasColor,
+      props: {
+        hasColor: true
+      },
       style: {
-        color: (theme.vars || theme).palette.text?.primary,
+        color: 'var(--tw-body-color)',
       },
     },
     {
@@ -132,7 +135,7 @@ const resolvePanelProps = (props:PanelProps, theme: TailwindTheme) =>  {
   }
 }
 
-export const Panel = React.forwardRef<HTMLElement, PanelProps>(function Panel(inProps, ref) {
+export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel(inProps, ref) {
   const props = useDefaultProps({ props: inProps, name: 'MuxPanel', resolve: resolvePanelProps }) as PanelProps;
     
   const theme = useTheme();
@@ -147,6 +150,8 @@ export const Panel = React.forwardRef<HTMLElement, PanelProps>(function Panel(in
     square = className.includes('rounded'),
     color,
     className:inClassName,
+    fill,
+    border,
     ...other
   } = props;
 
@@ -158,18 +163,18 @@ export const Panel = React.forwardRef<HTMLElement, PanelProps>(function Panel(in
     square,
     variant,
     hasShadow: !!elevation,
-    hasBg: className.includes('bg-'),
-    hasBorder: className.includes('border-'),
-    hasText: className.includes('text-'),
+    hasBg: !className.includes('bg-') && (variant === 'filled' || fill),
+    hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
+    hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };
 
   const classes = useUtilityClasses(ownerState);
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (theme.shadows[elevation] === undefined) {
+  if (process.env.NODE_ENV !== 'production' && elevation) {
+    if (theme.shadows[elevation as number] === undefined) {
       console.error(
         [
-          `MUI: The elevation provided <Panel elevation={${elevation}}> is not available in the theme.`,
+          `MUX: The elevation provided <Panel elevation={${elevation}}> is not available in the theme.`,
           `Please make sure that \`theme.shadows[${elevation}]\` is defined.`,
         ].join('\n'),
       );
@@ -183,7 +188,7 @@ export const Panel = React.forwardRef<HTMLElement, PanelProps>(function Panel(in
       ownerState={ownerState}
       className={clsx(classes.root, className)}
       ref={ref as any}
-      {...other}
+      {...(other as any)}
       style={{
         ...(elevation && {
           '--panel-shadow': (theme.vars || theme).shadows[elevation],
@@ -196,10 +201,10 @@ export const Panel = React.forwardRef<HTMLElement, PanelProps>(function Panel(in
                 '#fff',
                 getOverlayAlpha(elevation),
               )}, ${alpha('#fff', getOverlayAlpha(elevation))})`,
-            }),
+            }) as any,
         }),
         ...other.style,
-      }}
+      } as any}
     />
   );
 });

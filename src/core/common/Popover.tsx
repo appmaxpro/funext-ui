@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 import * as React from 'react';
 import {
   arrow,
@@ -24,7 +24,7 @@ import {
 
 import PanelProvider from './PanelProvider';
 
-import {remToPx, type ComponentProps} from '../../mui/utils';
+import {remToPx, type ComponentProps} from '../../../mui';
 import {space} from '../styles';
 import { Overlay, PositionWrapper } from './overlay';
 import type {UseHoverOverlayProps} from './overlay';

@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -9,9 +8,8 @@ import { propTypesColors } from "../generic";
  */
 
 // typescript types
-export type color = Colors;
+export type color = Colors | "white" | "black" | "current";
 export type className = string;
 
 // javascript prop-types
-export const propTypesColor: any = ["white", ...propTypesColors];
-export const propTypesClassName: any = PropTypes.string;
+export const propTypesColor: any = ["white", "black", "current", ...propTypesColors];

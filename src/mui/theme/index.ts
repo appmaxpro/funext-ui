@@ -11,6 +11,8 @@ import { StyledComponent as SStyledComponent, StyledOptions } from '@emotion/sty
 
 import {Theme as MuxTheme} from './theme';
 
+export  {default as THEME_ID} from './identifier';
+
 declare module '@emotion/react' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface Theme extends MuxTheme {}
@@ -21,5 +23,8 @@ declare module '@mui/system' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface MUIStyledCommonProps{
     ownerState?: any;
+  }
+  interface BreakpointOverrides {
+    xxl: true;
   }
 }

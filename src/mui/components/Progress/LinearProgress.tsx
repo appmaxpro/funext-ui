@@ -147,25 +147,6 @@ const useUtilityClasses = (ownerState:any) => {
   return composeClasses(slots, getLinearProgressUtilityClass, classes);
 };
 
-const getColorShade = (theme:Theme, color:string) => {
-  if (theme.vars) {
-    return theme.vars.palette.LinearProgress[`${color}Bg`];
-  }
-  
-  if (propTypesColors.includes(color)) {
-    return theme.palette.mode === 'light' 
-        ? `var(--tw-${color}-100)`
-        : `var(--tw-${color}-100)`;
-    /*
-    return theme.palette.mode === 'light'
-      ? Color(theme.palette[color].main).lighten(.62)
-      : darken(theme.palette[color].main, 0.5);
-    */
-  }  
-  
-  return color;
-};
-
 const LinearProgressRoot = styled('span', {
   name: 'MuxLinearProgress',
   slot: 'Root',
@@ -213,6 +194,7 @@ const LinearProgressRoot = styled('span', {
       props: { variant: 'query' },
       style: { transform: 'rotate(180deg)' },
     },
+
   ],
 }));
 
@@ -261,6 +243,7 @@ const LinearProgressBar1 = styled('span', {
         styles.bar1Indeterminate,
       ownerState.variant === 'determinate' && styles.bar1Determinate,
       ownerState.variant === 'buffer' && styles.bar1Buffer,
+      ownerState.variant === 'striped',
     ];
   },
 })((props:any) => ({
@@ -310,6 +293,13 @@ const LinearProgressBar1 = styled('span', {
         ownerState.variant === 'indeterminate' || ownerState.variant === 'query',
       style: indeterminate1Animation || {
         animation: `${indeterminate1Keyframe} 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite`,
+      },
+    },
+    {
+      props: ({ ownerState }:any) =>
+        ownerState.variant === 'striped',
+      style: {
+        backgroundImage: 'linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)',
       },
     },
   ],
@@ -366,6 +356,7 @@ const LinearProgressBar2 = styled('span', {
         animation: `${indeterminate2Keyframe} 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite`,
       },
     },
+    
   ],
 }));
 
@@ -375,7 +366,7 @@ export interface LinearProgressPropsColorOverrides {}
 export interface LinearProgressProps
   extends StandardProps<React.HTMLAttributes<HTMLSpanElement>, 'children'> {
 
-  barProps: {
+  barProps?: {
     [key: string]: any;
   };
   label?: label;
@@ -413,7 +404,8 @@ export interface LinearProgressProps
    * Use indeterminate or query when there is no progress value.
    * @default 'indeterminate'
    */
-  variant?: 'determinate' | 'indeterminate' | 'buffer' | 'query';
+  variant?: 'determinate' | 'indeterminate' | 'buffer' | 'query' | 'striped';
+
 }
 
 const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
@@ -451,7 +443,7 @@ const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
     const rootProps:any = {};
     const inlineStyles:any = { bar1: {}, bar2: {} };
   
-    if (variant === 'determinate' || variant === 'buffer') {
+    if (variant === 'determinate' || variant === 'buffer' || variant === 'striped') {
       if (value !== undefined) {
         rootProps['aria-valuenow'] = Math.round(value);
         rootProps['aria-valuemin'] = 0;
@@ -516,7 +508,7 @@ const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
         ref={ref}
         {...other}
         style={{
-          '--progress-bg': hasThemeColor ? `rgb(var(--tw-${ownerState.color}-rgb / 40%))`: `var(--tw-header1)`,
+          '--progress-bg': hasThemeColor ? `rgb(var(--tw-${ownerState.color}-rgb / 40%))`: `var(--tw-hd-sm)`,
           '--progress-color': hasThemeColor ? `var(--tw-${ownerState.color})` :  ownerState.color,
           '--progress-color2': hasThemeColor ? `var(--tw-${ownerState.color}-900)` :  ownerState.color,
           ...other.style

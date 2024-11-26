@@ -32,6 +32,7 @@ export function Kanban({
 
   const handleDragEnd = useCallback(
     (result: DropResult) => {
+      
       const { source, destination, type } = result;
       if (!destination) {
         return;

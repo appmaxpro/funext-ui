@@ -31,7 +31,7 @@ const inputStandard = {
         fontSize: "text-base"
       },
       adornments: {
-        py: "py-.5"
+        py: "py-0.5"
       }
     },
     lg: {

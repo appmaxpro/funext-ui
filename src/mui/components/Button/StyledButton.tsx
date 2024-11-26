@@ -28,7 +28,7 @@ import { styled } from "../../styles";
 import { useThemeColor } from "../../hooks";
 import {ButtonBase, ButtonBaseProps} from './ButtonBase';
 
-export const ButtonRoot = styled(ButtonBase, {
+const ButtonRoot = styled(ButtonBase, {
   name: 'MuxStyledButton',
   slot: 'Root',
   overridesResolver: (props:any, styles:any) => styles.root,  

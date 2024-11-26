@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import {space} from '../styles/space';
 import React from 'react';
-import { ComponentProps } from '../../mui/utils';
+import { ComponentProps } from '../../mui';
 
 export type LinkType = React.ComponentType<ComponentProps>;  
 
@@ -160,7 +160,7 @@ function MenuItem({
   const newProps:Partial<Props> = {};
   for (const key of Object.keys(props)) {
       if (!['href', 'title', 'onSelect', 'eventKey', 'to', 'as'].includes(key)) {
-        //@ts-expect-error no thing
+        //@ts-ignore
         newProps[key] = props[key];
       }
   }
@@ -201,7 +201,6 @@ function getListItemStyles(props: MenuListItemProps & {theme: Theme}) {
   if (props.disabled) {
     return `
       ${common}
-      color: ${props.theme.disabled};
       background: transparent;
       cursor: not-allowed;
     `;
@@ -210,11 +209,9 @@ function getListItemStyles(props: MenuListItemProps & {theme: Theme}) {
   if (props.isActive) {
     return `
       ${common}
-      color: ${props.theme.white};
-      background: ${props.theme.active};
+
 
       &:hover {
-        background: ${props.theme.activeHover};
       }
     `;
   }
@@ -223,7 +220,6 @@ function getListItemStyles(props: MenuListItemProps & {theme: Theme}) {
     ${common}
 
     &:hover {
-      background: ${props.theme.hover};
     }
   `;
 }
@@ -253,8 +249,6 @@ const MenuListItem = styled('li')<MenuListItemProps>`
   ${p =>
     p.withBorder &&
     `
-    border-bottom: 1px solid ${p.theme.innerBorder};
-
     &:last-child {
       border-bottom: none;
     }
@@ -265,15 +259,13 @@ const MenuListItem = styled('li')<MenuListItemProps>`
     height: 1px;
     margin: ${space(0.5)} 0;
     overflow: hidden;
-    background-color: ${p.theme.innerBorder};
   `}
   ${p =>
     p.header &&
     `
     padding: ${space(0.25)} ${space(0.5)};
-    font-size: ${p.theme.fontSizeSmall};
+    font-size: ${p.theme.typography.body1};
     line-height: 1.4;
-    color: ${p.theme.gray300};
   `}
 
   ${getChildStyles}

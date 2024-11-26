@@ -1,5 +1,6 @@
-import React, { forwardRef, Fragment, Ref } from "react";
+import React, { forwardRef, Fragment, Ref, useRef } from "react";
 import { MaterialIcon } from "../../../../icons/material-icon";
+import { useRefs } from "../../../hooks";
 
 interface SearchProps {
   onChange: (value: string) => void;
@@ -12,6 +13,8 @@ function Search(
   { onChange, placeholder, prefix, value }: SearchProps,
   ref: Ref<HTMLInputElement>
 ) {
+  const inputRef = useRefs(ref, useRef<HTMLInputElement>());
+
   return (
     <div className="flex items-center gap-1.5 ps-3">
       <MaterialIcon icon="search" size={28} fill
@@ -30,7 +33,7 @@ function Search(
 
       <div className="flex-1 relative inline-flex items-center pe-2">
         <input
-          ref={ref}
+          ref={inputRef}
           spellCheck={false}
           autoComplete="off"
           autoCapitalize="off"
@@ -62,18 +65,20 @@ function Search(
             tabIndex={-1}
             onClick={() => {
               onChange("");
+              inputRef.current?.focus();
+              /*
               const inputElement = document.getElementById(
                 "command-palette-search-input"
               );
               if (inputElement) {
                 inputElement.focus();
-              }
+              }*/
             }}
           >
             <MaterialIcon icon="cancel" 
                 fontSize={20} 
                 fill
-                className="w-5 text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-300 transition transform" />
+                className="text-hd-md hover:text-hd-lg transition" />
           </button>
         )}
       </div>

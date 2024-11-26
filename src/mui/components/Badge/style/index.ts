@@ -55,6 +55,14 @@ export interface BadgeStyleTypes {
         square?: object;
         circular?: object;
       };
+      "center-start"?: {
+        square?: object;
+        circular?: object;
+      };
+      "center-end"?: {
+        square?: object;
+        circular?: object;
+      };
     };
     colors?: typeof badgeColors;
   };
@@ -91,7 +99,6 @@ export const badge: BadgeStyleTypes = {
           paddingY: "py-1",
           paddingX: "px-1",
           fontSize: "text-xs",
-          fontWeight: "font-medium",
           content: "content-['']",
           lineHeight: "leading-none",
           display: "grid",
@@ -160,6 +167,34 @@ export const badge: BadgeStyleTypes = {
         circular: {
           bottom: "bottom-[14%]",
           right: "end-[14%]",
+          translateX: "translate-x-2/4",
+          translateY: "translate-y-2/4",
+        },
+      },
+      "center-start": {
+        square: {
+          top: "top-1/2",
+          start: "start-[2%]",
+          translateX: "translate-x-2/4",
+          translateY: "translate-y-2/4",
+        },
+        circular: {
+          top: "top-1/2",
+          start: "start-[14%]",
+          translateX: "translate-x-2/4",
+          translateY: "translate-y-2/4",
+        },
+      },
+      "center-end": {
+        square: {
+          top: "top-1/2",
+          end: "end-[2%]",
+          translateX: "translate-x-2/4",
+          translateY: "translate-y-2/4",
+        },
+        circular: {
+          top: "top-1/2",
+          end: "end-[14%]",
           translateX: "translate-x-2/4",
           translateY: "translate-y-2/4",
         },

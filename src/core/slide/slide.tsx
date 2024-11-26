@@ -9,6 +9,7 @@ import {
   getTransitionStyle,
   reflow,
 } from "../transitions/utils";
+import { useRtl } from "../../mui";
 
 type Direction = "start" | "end" | "up" | "down";
 
@@ -28,8 +29,8 @@ const ownerWindow = (node: HTMLElement) => {
   return (node.ownerDocument || document).defaultView || window;
 };
 
-const getDirection = (direction: Direction, dir?: string) => {
-  if (dir === "rtl") {
+const getDirection = (direction: Direction, rtl: boolean) => {
+  if (rtl) {
     if (direction === "start") return "end";
     if (direction === "end") return "start";
   }
@@ -39,11 +40,11 @@ const getDirection = (direction: Direction, dir?: string) => {
 const getTranslateValue = (
   node: HTMLElement,
   directionGiven: Direction,
-  dir?: string,
+  rtl: boolean,
 ) => {
   const view = ownerWindow(node);
   const rect = node.getBoundingClientRect();
-  const direction = getDirection(directionGiven, dir);
+  const direction = getDirection(directionGiven, rtl);
 
   const computedStyle = view.getComputedStyle(node);
   const transform =
@@ -95,11 +96,11 @@ export const Slide = forwardRef<HTMLElement, SlideProps>(
     }: SlideProps,
     ref,
   ) => {
-    const { dir } = useCoreTheme();
+    const rtl = useRtl();
     const nodeRef = useForwardedRef<any>(ref);
     const handleEnter = (isAppearing: boolean) => {
       const node: HTMLElement = nodeRef.current!;
-      node.style.transform = getTranslateValue(node, direction, dir);
+      node.style.transform = getTranslateValue(node, direction, rtl);
 
       reflow(node);
 
@@ -131,7 +132,7 @@ export const Slide = forwardRef<HTMLElement, SlideProps>(
 
     const handleExit = () => {
       const node: HTMLElement = nodeRef.current!;
-      node.style.transform = getTranslateValue(node, direction, dir);
+      node.style.transform = getTranslateValue(node, direction, rtl);
       if (onExit) {
         onExit(node);
       }
@@ -151,7 +152,20 @@ export const Slide = forwardRef<HTMLElement, SlideProps>(
 
     const handleExited = () => {
       const node: HTMLElement = nodeRef.current!;
-      node.style.transform = "translateX(-100000px)";
+      switch(direction){
+        case 'start':
+          node.style.transform = 'translateX(-100000px)';
+          break;
+        case 'end':
+          node.style.transform = 'translateX(100000px)';
+          break;
+        case 'up':
+          node.style.transform = 'translateX(-100000px)';
+          break;
+        case 'down':
+          node.style.transform = 'translateY(100000px)';
+          break;
+      }
       node.style.transition = "";
       node.style.visibility = "hidden";
       if (onExited) {

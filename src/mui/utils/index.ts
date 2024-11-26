@@ -2,10 +2,12 @@ import Color from 'color';
 export {default as withMT} from '../theme/tw/withMT';
 export * from './cn';
 export * from './objectsToString';
+export {default as debounce} from "@mui/utils/debounce";
 
 export function intcomma(x: number): string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+
 
 
 /**
@@ -158,3 +160,6 @@ export function capitalize(string?: string, safe:boolean = true): string | undef
 
 export const alpha = (color:any, alpha:number) => Color(color).alpha(alpha).string();
  
+
+export const isBrowser = typeof window !== 'undefined';
+export const isDevelopment = process.env.NODE_ENV !== 'production';

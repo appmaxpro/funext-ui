@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+"use client";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 
 // @floating-ui
@@ -22,7 +29,7 @@ import {
   flip,
   shift,
   limitShift,
-  OpenChangeReason
+  OpenChangeReason,
 } from "@floating-ui/react";
 
 // @floating-ui props
@@ -40,11 +47,17 @@ import type {
   ElementProps,
   MiddlewareState,
   Middleware,
-  FloatingOverlayProps
+  FloatingOverlayProps,
 } from "@floating-ui/react";
 
 // framer-motion
-import { AnimatePresence, m, domAnimation, LazyMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  m,
+  domAnimation,
+  LazyMotion,
+  useIsPresent,
+} from "framer-motion";
 // utils
 import merge from "deepmerge";
 import { useTailwindTheme } from "../../theme";
@@ -140,10 +153,12 @@ export declare type Backdrop = {
   animate?: AnimationProps | false;
   duration?: number;
   style?: React.CSSProperties;
-
 };
 
-export declare type Overlay = FloatingOverlayProps;
+export declare type Overlay = FloatingOverlayProps & {
+  style?: any;
+  className?: string;
+};
 
 export interface PopperFocusProps
   extends Omit<FloatingFocusManagerProps, "children" | "context"> {
@@ -164,11 +179,10 @@ interface PopperContextValue extends React.ComponentProps<"div"> {
   className?: string;
   open: boolean;
   openState: boolean;
-  setOpenState: (open:boolean) => void;
+  setOpenState: (open: boolean) => void;
   labelId: string;
   descriptionId: string;
   handler: UseFloatingOptions["onOpenChange"];
-
 }
 
 export const PopperContext = React.createContext<PopperContextValue | null>(
@@ -190,15 +204,15 @@ export function usePopper(): PopperContextValue {
 export interface PopperContextProps<T = HTMLElement | null> {
   open?: boolean;
   handler?: UseFloatingOptions["onOpenChange"];
-  onCompleteState?: (open:boolean) => void;
-  
+  onCompleteState?: (open: boolean) => void;
+
   strategy?: Strategy;
   placement?: Placement;
   offset?: OffsetProps;
   autoFlip?: FlipOptions | Derivable<FlipOptions>;
   autoShift?: ShiftOptions | Derivable<ShiftOptions>;
   autoSize?: SizeOptions | Derivable<SizeOptions>;
-  arrow?: ArrowProps ;
+  arrow?: ArrowProps;
   roles?: UseRoleProps;
   dismiss?: DismissProps;
   middleware?: Array<Middleware | null | undefined | false>;
@@ -211,11 +225,13 @@ export interface SharedPopperProps {
   animate?: AnimationProps | boolean;
   backdrop?: Backdrop;
   overlay?: Overlay;
+  contentProps?: SxComponentProps;
 }
 
 export interface PopperProps<T = HTMLElement | null>
-  extends PopperContextProps<T>, SharedPopperProps,
-    React.ComponentProps<"div"> {  
+  extends PopperContextProps<T>,
+    SharedPopperProps,
+    Omit<React.ComponentProps<"div">, 'style'> {
   className?: string;
   id?: string;
   root?: HTMLElement | null | React.MutableRefObject<HTMLElement | null>;
@@ -223,13 +239,14 @@ export interface PopperProps<T = HTMLElement | null>
   disablePortal?: boolean;
   keepMounted?: boolean;
   trigger?: React.ReactNode;
+  style?: PopperContentProps['style']
 }
 
 export function usePopperContext(
   props: PopperContextProps,
 ): PopperContextValue {
   const {
-    open:openProps,
+    open: openProps,
     handler,
     dismiss,
     roles,
@@ -249,24 +266,28 @@ export function usePopperContext(
 
   // 1. init
   const arrowRef = useRef(null);
-  
+
   const stateRef = useRef([]);
   const [open, setOpen] = useControlled<boolean>({
-    name: 'open',
+    name: "open",
     state: openProps,
     defaultState: false,
-    prop: 'OpenPopper'
+    prop: "OpenPopper",
   });
 
   const [openState, setOpenState] = useState(open ?? false);
 
-  const handleOpenSate = (open: boolean, event?: Event, reason?: OpenChangeReason) => {
-      handler?.(open, event, reason);
-      if (openProps === undefined) {
-        setOpen(open);
-      }
-  }
- 
+  const handleOpenSate = (
+    open: boolean,
+    event?: Event,
+    reason?: OpenChangeReason,
+  ) => {
+    handler?.(open, event, reason);
+    if (openProps === undefined) {
+      setOpen(open);
+    }
+  };
+
   // 2. set @floating-ui
   const floating = useFloating<HTMLElement>({
     open,
@@ -274,9 +295,11 @@ export function usePopperContext(
     whileElementsMounted: autoUpdate,
     strategy: strategy,
     placement: placement,
-    elements: target ? {
-      reference: isElement(target) ? target : target?.current
-    } : undefined,
+    elements: target
+      ? {
+          reference: isElement(target) ? target : target?.current,
+        }
+      : undefined,
     middleware: [
       offset && fuOffset(offset),
       autoFlip && flip(autoFlip),
@@ -303,8 +326,7 @@ export function usePopperContext(
 
   React.useEffect(() => {
     onCompleteState?.(openState);
-  }, [openState, onCompleteState])
-  
+  }, [openState, onCompleteState]);
 
   React.useEffect(() => {
     const el = isElement(target) ? target : target?.current;
@@ -312,7 +334,6 @@ export function usePopperContext(
       floating.refs.setReference(el as any);
     }
   }, [floating.refs.setReference, target]);
-  
 
   const id = useId();
   const labelId = `${id}-label`;
@@ -325,7 +346,7 @@ export function usePopperContext(
   const contextValue = React.useMemo(
     () => ({
       ...rest,
-      open:open!,
+      open: open!,
       floating,
       getFloatingProps,
       getReferenceProps,
@@ -334,14 +355,14 @@ export function usePopperContext(
       descriptionId,
       arrowRef,
       arrow,
-      handler:handleOpenSate,
+      handler: handleOpenSate,
       setOpenState,
-      openState
+      openState,
     }),
     [
       open,
       floating.refs.setFloating,
-      floating.refs.setFloating,
+      floating.refs.setReference,
       floating.x,
       floating.y,
       floating.placement,
@@ -396,33 +417,35 @@ export const Popper = ({
   });
 
   // 7. return
-  return <PopperPortal  context={contextValue}  {...rest}/>;
+  return <PopperPortal context={contextValue} {...rest} />;
 };
 
-export interface PopperPortalProps extends React.ComponentProps<"div">, SharedPopperProps {
+export interface PopperPortalProps
+  extends Omit<React.ComponentProps<"div">, 'style'>,
+    SharedPopperProps {
   id?: string;
   root?: HTMLElement | null | React.MutableRefObject<HTMLElement | null>;
   renderContent?: boolean;
   disablePortal?: boolean;
   keepMounted?: boolean;
-  context:PopperContextValue;
+  context: PopperContextValue;
   trigger?: React.ReactNode;
+  style?: PopperContentProps['style'];
 }
 
 export const PopperPortal = ({
-  context, 
+  context,
   id,
   root,
   children,
-  renderContent = (children as any).type !== PopperContent,
+  renderContent = !children || (children as any).type !== PopperContent,
   disablePortal,
   keepMounted,
   focusProps,
   trigger,
   ...rest
-}:PopperPortalProps) => {
-
-  const { open, openState } = context;
+}: PopperPortalProps) => {
+  const { open, openState, setOpenState } = context;
 
   const [initialized, setInitialized] = useState(false);
 
@@ -436,6 +459,7 @@ export const PopperPortal = ({
   const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
 
   if (!initialized && !keepMounted && !trigger) {
+    //console.log("Portal:", id, ", not mounted")
     return null;
   }
 
@@ -444,14 +468,21 @@ export const PopperPortal = ({
   // 7. return
   return (
     <LazyMotion features={domAnimation}>
-      
       {disablePortal ? (
         <PopperContext.Provider value={context}>
           {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
-          <NewAnimatePresence>
+          <NewAnimatePresence
+            presenceAffectsLayout={false}
+            onExitComplete={() => {
+              console.log("AnimatePresence:onExitComplete");
+              setOpenState(false);
+            }}
+          >
             {shouldOpen ? (
               renderContent ? (
-                <PopperContent {...rest} internal>{children}</PopperContent>
+                <PopperContent {...rest} internal>
+                  {children}
+                </PopperContent>
               ) : (
                 children
               )
@@ -459,124 +490,134 @@ export const PopperPortal = ({
           </NewAnimatePresence>
         </PopperContext.Provider>
       ) : (
-        <FloatingPortal root={root} id={id}>
-          <PopperContext.Provider value={context}>
-            {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
-            <NewAnimatePresence>
+        <PopperContext.Provider value={context}>
+          {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
+          <FloatingPortal root={root} id={id}>
+            <NewAnimatePresence
+              presenceAffectsLayout={false}
+              onExitComplete={() => {
+                setOpenState(false);
+              }}
+            >
               {shouldOpen ? (
                 renderContent ? (
-                  <PopperContent {...rest} internal>{children}</PopperContent>
+                  <PopperContent {...rest} internal>
+                    {children}
+                  </PopperContent>
                 ) : (
                   children
                 )
               ) : null}
             </NewAnimatePresence>
-          </PopperContext.Provider>
-        </FloatingPortal>
+          </FloatingPortal>
+        </PopperContext.Provider>
       )}
     </LazyMotion>
   );
-}
+};
 
 Popper.displayName = "Mux.Popper";
 
-
-export interface PopperContentProps extends SxComponentProps<"div">, SharedPopperProps {
+export interface PopperContentProps
+  extends Omit<SxComponentProps<"div">, 'style'>,
+    SharedPopperProps {
   internal?: boolean;
-  [key:string]: any;
+  style?: ((context: UseFloatingReturn) => React.CSSProperties | null) | React.CSSProperties | undefined;
+  [key: string]: any;
 }
 
-const PopperContentRoot = styled("div", {
-  name: "PopperContent",
+const PopperRoot = styled("div", {
+  name: "MuxPopper",
   slot: "Root",
 })("");
 
+const PopperBackdrop = styled("div", {
+  name: "MuxPopperBackdrop",
+  slot: "Root",
+})<SxComponentProps<any>>("");
+
+const PopperContentRoot = styled("div", {
+  name: "MuxPopperContent",
+  slot: "Root",
+})("");
 
 export const PopperContent = React.forwardRef<
   HTMLDivElement,
   PopperContentProps
->(({ 
-  animate, 
-  focusProps,
-  overlay,
-  backdrop,
-  internal,
-  children, 
-  sx,
-  ...props 
-}, ref) => {
-  const {
-    getFloatingProps,
-    floating,
-    arrowRef,
-    arrow,
-    open,
-    labelId,
-    descriptionId,
-    openState,
-    setOpenState,
-  } = usePopper();
+>(
+  (
+    {
+      animate,
+      focusProps,
+      overlay,
+      backdrop,
+      internal,
+      children,
+      contentProps,
+      sx,
+      ...props
+    },
+    ref,
+  ) => {
+    const {
+      getFloatingProps,
+      floating,
+      arrowRef,
+      arrow,
+      open,
+      labelId,
+      descriptionId,
+      openState,
+      setOpenState,
+    } = usePopper();
+    const isPresent = useIsPresent();
+    //const [isPresent, safeToRemove] = usePresence()
+    const { refs, context, x, y, strategy } = floating;
 
-  const { refs, context, x, y, strategy } = floating;
+    const mergedRef = useMergeRefs([ref, refs.setFloating]);
+    const disableAnimation = typeof animate === "boolean" ? !animate : false;
+    const animation = !disableAnimation ? animate : undefined;
 
-  const mergedRef = useMergeRefs([ref, refs.setFloating]);
-  const disableAnimation = typeof animate === 'boolean' ? !animate : false;
-  const animation = !disableAnimation ? animate : undefined;
+    useEffect(() => {
+      if (!animation || isPresent) {
+        setOpenState(!animation ? false : isPresent);
+      }
+    }, [animation, isPresent, setOpenState]);
 
-  useEffect(()=> {
-    if (!animation && openState != open) {
-      setOpenState(open);
-    }
-  }, [animation, open])
-
-  const content = !animation 
-    ? (<div
-          {...getFloatingProps({
-            ...props,
-            ref: mergedRef,
-            style: {
-              position: strategy,
-              top: y ?? "",
-              left: x ?? "",
-              ...props.style
-            },
-            "aria-labelledby": labelId,
-            "aria-describedby": descriptionId,
-          } as any)}
-        >
-          <PopperContentRoot>{children}</PopperContentRoot>
-          {arrow ? (
-            <FloatingArrow
-              {...arrow.props}
-              ref={arrowRef as any}
-              context={context}
-            />
-          ) : null}
-        </div>
-    ) : (
-      <m.div
+    const content = (
+      <PopperRoot
+        {...(props as any)}
         {...getFloatingProps({
-          ...props,
           ref: mergedRef,
-          style: {
+          style: typeof props.style === 'function' 
+          ? props.style(floating)
+          :{
             position: strategy,
             top: y ?? "",
             left: x ?? "",
-            ...props.style
+            ...props.style,
           },
-          "aria-labelledby": labelId,
-          "aria-describedby": descriptionId,
         } as any)}
-        onAnimationComplete={()=> {
-          console.log(`---------onAnimationComplete(open:${open}, openState:${openState})-------------`);
-          setOpenState(open);
-        }}
-        initial="unmount"
-        exit="unmount"
-        animate={open ? "mount" : "unmount"}
-        variants={animation as AnimationProps}
+        key={"content-" + labelId}
+        aria-labelledby={labelId}
+        aria-describedby={descriptionId}
+        {...(animation
+          ? {
+              onAnimationComplete: () => {
+                console.log(
+                  `---------onAnimationComplete(open:${open}, openState:${openState})-------------`,
+                );
+                setOpenState(open);
+              },
+              initial: "unmount",
+              exit: "unmount",
+              animate: open ? "mount" : "unmount",
+              variants: animation,
+              as: m.div,
+            }
+          : undefined)}
       >
-        <PopperContentRoot>{children}</PopperContentRoot>
+        <PopperContentRoot {...contentProps}>{children}</PopperContentRoot>
         {arrow ? (
           <FloatingArrow
             {...arrow.props}
@@ -584,82 +625,70 @@ export const PopperContent = React.forwardRef<
             context={context}
           />
         ) : null}
-      </m.div>
-  );
+      </PopperRoot>
+    );
 
-  const backdropAnimate = useMemo(
-    () =>
-      !disableAnimation &&
-      backdrop &&
-      (backdrop.animate !== false) &&
-      merge({
-        unmount: {
-          opacity: 0,
-          transition: {
-            delay: 0.2,
+    const backdropAnimate = useMemo(
+      () =>
+        !disableAnimation &&
+        backdrop &&
+        backdrop.animate !== false &&
+        merge(
+          {
+            unmount: {
+              opacity: 0,
+              transition: {
+                delay: 0.2,
+              },
+            },
+            mount: {
+              opacity: 1,
+            },
           },
-        },
-        mount: {
-          opacity: 1,
-        },
-      }, backdrop!.animate || ({} as any)),
-    [backdrop],
-  );
+          backdrop!.animate || ({} as any),
+        ),
+      [backdrop],
+    );
 
-  const backdropContent = backdrop 
-    ? (
-      (disableAnimation || backdrop.animate === false) ? (
-        <div
-          className={
-            backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"
-          }
-          style= {{
-            position: strategy,
-            ...backdrop.style,
-          }}
-        >
-          {content}
-        </div>
-      ) : (
-        <m.div
-          className={
-            backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"
-          }
-          initial={"unmount"}
-          exit="unmount"
-          animate={open ? "mount" : "unmount"}
-          variants={backdropAnimate as any}
-          transition={{ duration: backdrop.duration ?? 0.2 }}
-          style= {{
-            position: strategy,
-            ...backdrop.style,
-          }}
-        >
-          {content}
-        </m.div>
-      )
-    ) 
-    : content;
+    const backdropContent = backdrop ? (
+      <PopperBackdrop
+        key={"backdrop-" + labelId}
+        className={
+          backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"
+        }
+        style={{
+          position: strategy,
+          ...backdrop.style,
+        }}
+        {...(backdropAnimate && {
+          initial: "unmount",
+          exit: "unmount",
+          variants: backdropAnimate,
+          duration: backdrop.duration ?? 0.2,
+          animate: open ? "mount" : "unmount",
+        })}
+      >
+        {content}
+      </PopperBackdrop>
+    ) : (
+      content
+    );
 
-  const focusContent = focusProps 
-    ? (
+    const focusContent = focusProps ? (
       <FloatingFocusManager {...focusProps} context={context}>
         {backdropContent}
       </FloatingFocusManager>
-    ) 
-    : backdropContent;
+    ) : (
+      backdropContent
+    );
 
-  return overlay 
-    ? (
-      <FloatingOverlay
-        {...overlay}
-      >
-        {focusContent}
-      </FloatingOverlay>
-    ) 
-    : focusContent;
-
-});
+    return overlay ? (
+      <FloatingOverlay {...overlay}>{focusContent}</FloatingOverlay>
+    ) : (
+      focusContent
+    );
+  },
+);
 
 PopperContent.displayName = "Mux.PopperContent";
 

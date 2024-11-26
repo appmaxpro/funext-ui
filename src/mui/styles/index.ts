@@ -7,7 +7,7 @@ import type{
   ReactNode
 } from 'react';
 import extendSxProp from '../theme/extendSxProp';
-import type { SxProps, SystemProps } from '@mui/system';
+import type { Interpolation, SxProps, SystemProps } from '@mui/system';
 export {default as composeClasses} from '@mui/utils/composeClasses';
 import type { StyledComponent } from '@emotion/styled';
 
@@ -25,6 +25,7 @@ export {default as generateUtilityClasses} from './generateUtilityClasses';
 export {default as generateUtilityClass} from './generateUtilityClass';
 export { getPath } from '@mui/system/style';
 export { alpha } from '../utils';
+export * from './globalCss';
 
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -91,3 +92,4 @@ export {
   useTheme, 
   extendSxProp, 
 };
+

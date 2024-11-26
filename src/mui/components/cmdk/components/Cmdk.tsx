@@ -11,6 +11,8 @@ import {
   RenderLinkContext,
   SearchContext,
   SelectContext,
+  CmdkContextProps,
+  CmdkContext
 } from "../lib/context";
 import { RenderLink } from "../types";
 import Popper from "../../Popper";
@@ -219,9 +221,6 @@ function Cmdk({
           animate={animation}
           overlay={{
             lockScroll: true,
-            style:{
-              zIndex: 10000
-            }
           }}
           aria-modal="true"
           roles={{role:"dialog"}}

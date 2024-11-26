@@ -19,7 +19,7 @@ export const dialogHeader: DialogHeaderStylesType = {
   styles: {
     base: {
       display: "flex flex-row flex-nowrap between",
-      alignItems: "items-start",
+      alignItems: "items-center",
       p: "p-3",
     },
     title: {

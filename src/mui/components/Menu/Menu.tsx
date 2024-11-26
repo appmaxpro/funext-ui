@@ -118,7 +118,7 @@ export const MenuCore = React.forwardRef<
       arrow = false, 
       target,
       strategy:strategyProp="fixed",
-      nav,
+      nav = true,
       disablePortal,
       children ,
 
@@ -222,23 +222,26 @@ export const MenuCore = React.forwardRef<
       }),
       useClick(context, {
         toggle: !nested || !internalAllowHover,
-        event: "mousedown",
+        event: !nested ? "click" : "mousedown",
         ignoreMouse: nested,
       }),
       useRole(context, { role: "menu" }),
       useDismiss(context, dismiss),
-      useListNavigation(context, {
+      nav 
+      ? useListNavigation(context, {
         listRef: listItemsRef,
         activeIndex,
         nested,
         onNavigate: setActiveIndex,
         rtl
-      }),
-      useTypeahead(context, {
+      }) : undefined,
+      nav
+      ? useTypeahead(context, {
         listRef: listContentRef,
         onMatch: open ? setActiveIndex : undefined,
         activeIndex,
-      }),
+      })
+      : undefined,
     ]);
 
     React.useEffect(() => {
@@ -324,7 +327,9 @@ export const MenuCore = React.forwardRef<
         rtl,
         placement,
         arrow: arrowProps,
-        arrowRef
+        arrowRef,
+        disablePortal,
+        nav
       }),
       [
         open,
@@ -339,7 +344,6 @@ export const MenuCore = React.forwardRef<
         getFloatingProps,
         getItemProps,
         appliedAnimation,
-        lockScroll,
         context,
         activeIndex,
         tree,

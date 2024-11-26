@@ -14,8 +14,6 @@ import styles from "./tree.module.scss";
 
 function toNode({
   $key,
-  _draggable,
-  _droppable,
   ...record
 }: any): TYPES.TreeNode {
   return {
@@ -23,8 +21,6 @@ function toNode({
     id: record.id,
     data: record,
     children: record._children,
-    draggable: _draggable,
-    droppable: _droppable,
     level: 0,
   };
 }
@@ -66,24 +62,15 @@ export function Tree(props: TYPES.TreeProps) {
   const {
     className,
     sortable,
-    droppable,
-    droppableText,
     onLoad,
     onSort,
-    onNodeMove,
-    onNodeEdit,
-    onNodeSave,
-    onNodeDiscard,
     columns,
     records,
     nodeRenderer,
-    textRenderer,
-    editNodeRenderer,
-    showHeader = true,
+    textRenderer
   } = props;
   const [data, setData] = useState<TYPES.TreeNode[]>([]);
   const [loading, setLoading] = useState(false);
-  const [editNode, setEditNode] = useState<TYPES.TreeNode | null>(null);
   const [sortColumns, setSortColumns] = useState<TYPES.TreeSortColumn[] | null>(
     null,
   );
@@ -178,7 +165,6 @@ export function Tree(props: TYPES.TreeProps) {
 
   const handleSelect = useCallback(
     async function handleSelect(_: any, record: any, index: number) {
-      setEditNode(null);
       if (record.children) {
         await handleToggle(record, index);
       } else {
@@ -188,92 +174,6 @@ export function Tree(props: TYPES.TreeProps) {
     [handleToggle, selectRow],
   );
 
-  const handleDrop = useCallback(
-    async function handleDrop(
-      { data: dragItem }: { data: TYPES.TreeNode },
-      { data: hoverItem }: { data: TYPES.TreeNode },
-    ) {
-      setLoading(true);
-      try {
-        const hoverParent = hoverItem;
-        const hasDroppedOnRoot = droppable && hoverItem.data === null;
-
-        let updatedNode = { ...dragItem };
-        if (hoverParent.$key !== dragItem.parent && onNodeMove) {
-          updatedNode = await onNodeMove(
-            dragItem,
-            hoverParent as TYPES.TreeNode,
-          );
-        }
-        setData((data) => {
-          const dragIndex = data.findIndex(
-            (item) => item.$key === dragItem?.$key,
-          );
-          data.splice(dragIndex, 1);
-
-          const hoverIndex = hasDroppedOnRoot
-            ? data.length - 1
-            : data.findIndex((item) => item.$key === hoverItem?.$key);
-
-          data.splice(hoverIndex + 1, 0, {
-            ...updatedNode,
-            parent: hoverParent.$key,
-          });
-
-          let nextDragItem = dragItem;
-          let nextHoverItem = dragItem;
-
-          const childrenList = getChildrenList(data, dragItem.$key);
-          if (childrenList.length > 0) {
-            childrenList.forEach(($id: number) => {
-              const dragIndex = data.findIndex((item) => item.$key === $id);
-              if (dragIndex > -1) {
-                nextDragItem = data[dragIndex];
-                data.splice(dragIndex, 1);
-              }
-              const hoverIndex = data.findIndex(
-                (item) => item.$key === nextHoverItem.$key,
-              );
-              if (hoverIndex > -1) {
-                data.splice(hoverIndex + 1, 0, nextDragItem);
-                nextHoverItem = nextDragItem;
-              }
-            });
-          }
-
-          return [...data];
-        });
-      } finally {
-        setLoading(false);
-      }
-    },
-    [droppable, onNodeMove],
-  );
-
-  const handleNodeEdit = useCallback((record: any) => {
-    setEditNode(record);
-  }, []);
-
-  const handleNodeSave = useCallback(
-    async (record: any, index?: number) => {
-      if (onNodeSave) {
-        record.data = await onNodeSave(record.data);
-      }
-      setEditNode(null);
-      setData((data) => {
-        return data.map((rec, ind) => (ind === index ? record : rec));
-      });
-    },
-    [onNodeSave],
-  );
-
-  const handleNodeCancel = useCallback(
-    (record: any) => {
-      setEditNode(null);
-      onNodeDiscard && onNodeDiscard(record);
-    },
-    [onNodeDiscard],
-  );
 
   const handleNavigation = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const currentIndex: number = data.findIndex((row) => row.selected);
@@ -327,9 +227,6 @@ export function Tree(props: TYPES.TreeProps) {
     onSort && sortColumns && onSort(sortColumns);
   }, [sortColumns, onSort]);
 
-  useEffect(() => {
-    editNode && onNodeEdit && onNodeEdit(editNode);
-  }, [editNode, onNodeEdit]);
 
   const classNames = useClassNames();
 
@@ -357,33 +254,10 @@ export function Tree(props: TYPES.TreeProps) {
       className={classNames("table-tree", className, styles.tree, {
         [styles.loading]: loading,
       })}
-      {...(editNode
-        ? {}
-        : {
-            tabIndex: 0,
-            onKeyDown: handleNavigation,
-          })}
+      tabIndex={0}
+      onKeyDown={handleNavigation}
     >
-      {showHeader && (<div className={styles.header}>
-        {columns.map((column) => {
-          const sortColumn = (sortColumns || []).find(
-            (c) => c.name === column.name,
-          );
-          return (
-            <TreeHeaderColumn
-              key={column.name}
-              data={column}
-              {...(sortColumn ? { sort: sortColumn.order } : {})}
-              {...(sortable
-                ? {
-                    onSort: handleSort,
-                  }
-                : {})}
-            />
-          );
-        })}
-      </div>)}
-
+      
       <div className={styles.body}>
         {$data.map(
           (row, rowIndex) =>
@@ -392,22 +266,13 @@ export function Tree(props: TYPES.TreeProps) {
                 key={rowIndex}
                 index={rowIndex}
                 columns={columns}
-                edit={editNode === row}
                 data={row}
                 renderer={nodeRenderer}
                 textRenderer={textRenderer}
-                editRenderer={editNodeRenderer}
                 onToggle={handleToggle}
                 onSelect={handleSelect}
-                {...(editNode ? {} : { onDrop: handleDrop })}
-                onEdit={handleNodeEdit}
-                onSave={handleNodeSave}
-                onCancel={handleNodeCancel}
               />
             ),
-        )}
-        {droppable && (
-          <RootDroppable text={droppableText} onDrop={handleDrop} />
         )}
       </div>
     </div>

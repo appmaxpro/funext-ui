@@ -19,7 +19,8 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
-  clsx
+  clsx,
+  IconButton
 } from "../mui";
 
 import { MaterialIcon } from "../icons/material-icon";
@@ -58,6 +59,7 @@ export interface GridHeaderColumnProps extends TYPES.GridColumnProps {
   onResize?: ResizeHandler;
   onResizeEnd?: ResizeHandler;
   onCustomize?: TYPES.GridProps["onColumnCustomize"];
+  lastHeader?: React.ReactNode;
 }
 
 function GridHeaderCheckbox({
@@ -120,6 +122,7 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
     onResize,
     onResizeEnd,
     onCustomize,
+    lastHeader,
   } = props;
 
   const classNames = useClassNames();
@@ -181,31 +184,154 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
             canSort && onSort?.(e, data, index);
           }}
         >
-          <Box as="span" flex={1} d="inline-flex" alignItems="center" title={column.title}>
+          <span  className="inline-flex items-center grow" title={column.title}>
             <span>{column.action ? " " : column.title}</span>
             {canSort && sort && (
-              <Box d="inline-flex" ms={1} as="span">
-                <MaterialIcon
-                  className={classNames({
-                    [styles.ascSortIcon]: sort === "asc",
-                  })}
-                  fontSize="1.25rem"
-                  icon="sort"
-                />
-              </Box>
+              <MaterialIcon
+                className={classNames({
+                  [styles.ascSortIcon]: sort === "asc",
+                }, 'ms-1')}
+                size={20}
+                icon="sort"
+              />
             )}
-          </Box>
+          </span>
           {hasMenu && (
-            <span
-              className={classNames(styles.headerColumnMenuButton, {
-                [styles.active]: show,
-              })}
-              ref={targetRef}
-              onClick={handleShow}
+            <Menu.Button
+              placement="bottom"
+              trigger={
+                <IconButton 
+                  size="sm"
+                  className={classNames(styles.headerColumnMenuButton, 'p-0', {
+                    [styles.active]: show,
+                  })}
+                  >
+                  <MaterialIcon icon="arrow_drop_down" />
+                </IconButton>
+              }
+              menuProps={{
+                //handler: (open) => setShow(open),
+                offset:[0, -8],
+                //open: show,
+              }}
             >
-              <MaterialIcon icon="arrow_drop_down" />
-            </span>
+            {canSort && (
+              <>
+                <RenderMenuItem
+                  startIcon={
+                    <MaterialIcon
+                      className={styles.ascSortIcon}
+                      size={22}
+                      icon="sort"
+                    /> 
+                  }
+                  text={t("Sort Ascending")}
+                  onClick={(e: SyntheticEvent) =>
+                    onSort?.(e, column, index, "asc")
+                  }
+                >
+                </RenderMenuItem>
+  
+                <RenderMenuItem
+                  startIcon={<MaterialIcon size={22} icon="sort" />}
+                  text={t("Sort Descending")}
+                  onClick={(e: SyntheticEvent) =>
+                    onSort?.(e, column, index, "desc")
+                  }
+                >
+                
+                </RenderMenuItem>
+              </>
+            )}
+  
+            {(onGroup || onUngroup) && (
+              <>
+                {canSort && <MenuDivider />}
+  
+                <MenuItem
+                  onClick={(e: SyntheticEvent) => {
+                    handleHide();
+                    onGroup?.(e, { name: column.name });
+                  }}
+                  startIcon={<span className={styles.headerColumnMenuIcon} />}
+                >
+                  <Box d="flex" alignItems="center" gap={4}>
+                    {t("Group by")}
+                    <i>{column.title}</i>
+                  </Box>
+                </MenuItem>
+  
+                <MenuItem
+                  onClick={(e: SyntheticEvent) => {
+                    handleHide();
+                    onUngroup?.(e, { name: column.name });
+                  }}
+                  startIcon={<span className={styles.headerColumnMenuIcon} />}
+                >
+                  {t("Ungroup")}
+                </MenuItem>
+              </>
+            )}
+  
+            {onHide && (
+              <>
+                {(canSort || onGroup || onUngroup) && <MenuDivider />}
+  
+                <MenuItem
+                  onClick={(e: SyntheticEvent) => {
+                    handleHide();
+                    onHide(e, column);
+                  }}
+                  startIcon={<span className={styles.headerColumnMenuIcon} />}
+                >
+                  <Box d="flex" alignItems="center" gap={4}>
+                    {t("Hide")}
+                    <i>{column.title}</i>
+                  </Box>
+                </MenuItem>
+              </>
+            )}
+  
+            {onShow &&
+              columns
+                ?.filter(
+                  (c) => c.title && c.visible === false && c.hidden !== true,
+                )
+                .map((column) => (
+                  <MenuItem
+                    key={column.id ?? column.name}
+                    onClick={(e: SyntheticEvent) => {
+                      handleHide();
+                      onShow(e, column);
+                    }}
+                    startIcon={<span className={styles.headerColumnMenuIcon} />}
+                  >
+                    <Box d="flex" alignItems="center" gap={4}>
+                      {t("Show")}
+                      <i>{column.title}</i>
+                    </Box>
+                  </MenuItem>
+                ))}
+  
+            {onCustomize && (
+              <>
+                {(canSort || onGroup || onUngroup || onHide || onShow) && (
+                  <MenuDivider />
+                )}
+                <MenuItem
+                  onClick={(e: SyntheticEvent) => {
+                    handleHide();
+                    onCustomize(e);
+                  }}
+                  startIcon={<span className={styles.headerColumnMenuIcon} />}
+                >
+                  {t("Customize...")}
+                </MenuItem>
+              </>
+            )}
+          </Menu.Button>
           )}
+          {lastHeader}
         </span>
 
         {canResize && onResizeStart && onResize && onResizeEnd ? (
@@ -222,144 +348,23 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
               onResize(e, column, index)
             }
           />
-        ) : (
-          <span className={classNames(styles.columnResizer, styles.fixed)}>
-            <Divider vertical />
-          </span>
-        )}
-
-        <Menu
-          target={targetRef.current}
-          open={show}
-          handler={(open) => setShow(open)}
-          offset={[0, -8]}
-          placement="bottom-start"
-        >
-          <MenuList>
-          {canSort && (
-            <>
-              <RenderMenuItem
-                startIcon={
-                  <MaterialIcon
-                    className={styles.ascSortIcon}
-                    fontSize="1.25rem"
-                    icon="sort"
-                  /> 
-                }
-                text={t("Sort Ascending")}
-                onClick={(e: SyntheticEvent) =>
-                  onSort?.(e, column, index, "asc")
-                }
-              >
-              </RenderMenuItem>
-
-              <RenderMenuItem
-                startIcon={<MaterialIcon fontSize="1.25rem" icon="sort" />}
-                text={t("Sort Descending")}
-                onClick={(e: SyntheticEvent) =>
-                  onSort?.(e, column, index, "desc")
-                }
-              >
-              
-              </RenderMenuItem>
-            </>
-          )}
-
-          {(onGroup || onUngroup) && (
-            <>
-              {canSort && <MenuDivider />}
-
-              <MenuItem
-                onClick={(e: SyntheticEvent) => {
-                  handleHide();
-                  onGroup?.(e, { name: column.name });
-                }}
-                startIcon={<span className={styles.headerColumnMenuIcon} />}
-              >
-                <Box d="flex" alignItems="center" gap={4}>
-                  {t("Group by")}
-                  <i>{column.title}</i>
-                </Box>
-              </MenuItem>
-
-              <MenuItem
-                onClick={(e: SyntheticEvent) => {
-                  handleHide();
-                  onUngroup?.(e, { name: column.name });
-                }}
-                startIcon={<span className={styles.headerColumnMenuIcon} />}
-              >
-                {t("Ungroup")}
-              </MenuItem>
-            </>
-          )}
-
-          {onHide && (
-            <>
-              {(canSort || onGroup || onUngroup) && <MenuDivider />}
-
-              <MenuItem
-                onClick={(e: SyntheticEvent) => {
-                  handleHide();
-                  onHide(e, column);
-                }}
-                startIcon={<span className={styles.headerColumnMenuIcon} />}
-              >
-                <Box d="flex" alignItems="center" gap={4}>
-                  {t("Hide")}
-                  <i>{column.title}</i>
-                </Box>
-              </MenuItem>
-            </>
-          )}
-
-          {onShow &&
-            columns
-              ?.filter(
-                (c) => c.title && c.visible === false && c.hidden !== true,
-              )
-              .map((column) => (
-                <MenuItem
-                  key={column.id ?? column.name}
-                  onClick={(e: SyntheticEvent) => {
-                    handleHide();
-                    onShow(e, column);
-                  }}
-                  startIcon={<span className={styles.headerColumnMenuIcon} />}
-                >
-                  <Box d="flex" alignItems="center" gap={4}>
-                    {t("Show")}
-                    <i>{column.title}</i>
-                  </Box>
-                </MenuItem>
-              ))}
-
-          {onCustomize && (
-            <>
-              {(canSort || onGroup || onUngroup || onHide || onShow) && (
-                <MenuDivider />
-              )}
-              <MenuItem
-                onClick={(e: SyntheticEvent) => {
-                  handleHide();
-                  onCustomize(e);
-                }}
-                startIcon={<span className={styles.headerColumnMenuIcon} />}
-              >
-                {t("Customize...")}
-              </MenuItem>
-            </>
-          )}
-          </MenuList>
-        </Menu>
+        ) : null}
+        
+       
       </>
     );
   }
 
-  const className = clsx(data.$headerCss, data.action && styles.action);
+  const className = clsx(
+    data.$headerCss, 
+    data.action && styles.action,
+    styles.action && styles['no-padding'],
+    lastHeader && !data.action && styles['no-padding-end'],
+    (!lastHeader && !data.action) && styles['padding'],
+  );
   return (
     <GridColumn
-      className={clsx(data.$headerCss, data.action && styles.action)}
+      className={className}
       renderer={renderer}
       type="header"
       index={index}

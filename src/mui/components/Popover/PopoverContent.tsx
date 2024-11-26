@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // @floating-ui
 import { FloatingPortal, FloatingFocusManager, useMergeRefs } from "@floating-ui/react";
@@ -14,13 +14,13 @@ import objectsToString from "../../utils/objectsToString";
 // context
 import { useTailwindTheme } from "../../theme";
 import { usePopover } from "./PopoverContext";
-import {FloatingArrow}  from "./FloatingArrow";
+import {FloatingArrow, getArrowOrigin}  from "./FloatingArrow";
  
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
 import type { className, children } from "../../types/components/popover";
 
-import {SxComponentProps, styled} from '../../styles'
+import {SxComponentProps, styled, useRtl} from '../../styles'
 
 
 const PopoverRoot = styled(m.div, {
@@ -65,6 +65,8 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentPro
       arrow
     } = usePopover();
 
+    const [openState, setOpenStated] = React.useState(open);
+
     // 2. set default props
     className = twMerge(defaultProps.className || "", className);
 
@@ -75,6 +77,48 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentPro
     // 4. set refs
     const mergedRef = useMergeRefs([ref, floating]);
 
+    const { side, xAxis, yAxis, ...axis } = getArrowOrigin(
+      context,
+      null,
+      useRtl(),
+    );
+
+    const arrowX = axis[xAxis];
+    const arrowY = axis[yAxis];
+
+    const animation = React.useRef({});
+
+    useEffect(() => {
+      if (!open) {
+        //animation.current = {};
+        return;
+      }
+
+      let x = xAxis === "right" ? `right ${arrowX}px` : `${arrowX}px`;
+      let y = yAxis === "bottom" ? `bottom ${arrowY}px` : `${arrowY}px`;
+
+      const transformOrigin = {
+        top: `${x} bottom`,
+        bottom: `${x} top`,
+        left: `right ${y}`,
+        right: `left ${y}`,
+      }[side];
+
+      const { amount, unmount, ...others } = appliedAnimation as any;
+
+      animation.current = {
+        ...others,
+        amount: {
+          transformOrigin,
+          ...amount,
+        },
+        unmount: {
+          transformOrigin,
+          ...unmount,
+        },
+      };
+    }, [side, open, xAxis, yAxis, arrowX, arrowY]);
+
     // 5. Create an instance of AnimatePresence because of the types issue with the children
     const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
 
@@ -82,7 +126,7 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentPro
     // 6. return
     return (
       <LazyMotion features={domAnimation}>
-        <FloatingPortal id="popover-portal" >
+        <FloatingPortal id="mux-portal" >
           <NewAnimatePresence>
             {open && (
               <FloatingFocusManager context={context}>
@@ -102,7 +146,7 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentPro
                   initial="unmount"
                   exit="unmount"
                   animate={open ? "mount" : "unmount"}
-                  variants={appliedAnimation}
+                  variants={animation.current}
                 >
                   {header}
                   <PopoverContentRoot className={contentClasses} >

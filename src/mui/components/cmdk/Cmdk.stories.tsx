@@ -180,7 +180,7 @@ export const Template = () => {
 
 function Welcome() {
   return (
-    <div className="w-full rounded-lg bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-400 p-4 border-t border-indigo-500 border-b border-indigo-500">
+    <div className="w-full rounded-lg via-indigo-800 to-indigo-400 p-4 border-t border-b ">
       <h2 className="text-lg font-semibold leading-tight text-white">
         Welcome 👋
       </h2>

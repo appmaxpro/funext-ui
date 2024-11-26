@@ -38,43 +38,24 @@ const materialTailwindConfig = {
       none: "0 0 rgb(0, 0 / 0, 0)",
     },
     screens: {
-      sm: "540px",
-      md: "720px",
-      lg: "960px",
-      "lg-max": { max: "960px" },
+      xs: "0px",
+      sm: "576px",
+      md: "768px",
+      lg: "992px",
       xl: "1140px",
-      "2xl": "1320px",
+      xxl: "1400px",
     },
     fontSize: {
-      xs: ['0.75rem', '1rem'],
-      sm: ['0.875rem', '1.25rem'],
-      base: ['1rem', '1.5rem'],
-      lg: ['1.125rem', '1.75rem'],
-      xl: ['1.25rem', '1.75rem'],
-      '2xl': ['1.5rem', '2rem'],
-      '3xl': ['1.25rem', '2.25rem'],
-      'fs-5': '5px',
-      'fs-6': '6px',
-      'fs-7': '7px',
-      'fs-8': '8px',
-      'fs-9': '9px',
-      'fs-10': '10px',
-      'fs-11': '11px',
-      'fs-12': '12px',
-      'fs-13': '13px',
-      'fs-14': '14px',
-      'fs-15': '15px',
-      'fs-16': '16px',
-      'fs-17': '17px',
-      'fs-18': '18px',
-      'fs-19': '19px',
-      'fs-20': '20px',
-      'fs-21': '21px',
-      'fs-22': '22px',
-      'fs-23': '23px',
-      'fs-24': '24px',
-      'fs-25': '25px',
-      'fs-26': '26px',
+      xxs: '.625rem',
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+      '5xl': '3rem',
     },
     fontWeight: {
       'fw1': '100',
@@ -88,6 +69,9 @@ const materialTailwindConfig = {
       'fw9': '900',
     },
     extend: {
+      containers: {
+        'xs': '0px',
+      },
       zIndex: {
         60: '60',
         70: '70',
@@ -104,7 +88,8 @@ const materialTailwindConfig = {
         tooltip: 1500,
       },
       flex: {
-        '0': '0 1'
+        '0': '0 1 0%',
+        '1-auto': '1 0 auto'
       },
       transitionProperty: {
         'height': 'height',
@@ -115,8 +100,8 @@ const materialTailwindConfig = {
   },
   plugins: [
     function ({ addVariant }) {
-      addVariant('inverted', '@media (inverted-colors: inverted)')
-      addVariant('hocus', ['&:focus', '&:hover'])
+      //addVariant('inverted', '@media (inverted-colors: inverted)')
+      //addVariant('hocus', ['&:focus', '&:hover'])
 
     },
     plugins.colorVars,
@@ -126,43 +111,41 @@ const materialTailwindConfig = {
   safelist: [
               "fixed",
               "absolute",
+              /*
               {
                 pattern: /bg-.+/,
-                variants: ['lg', 'hover', 'focus', 'focus-within', 'active', 'lg:hover'],
+                //variants: ['lg', 'hover', 'focus', 'focus-within', 'active', 'lg:hover'],
               },
               {
                 pattern: /text-.+/,
-                variants: ['lg', 'hover', 'focus', 'focus-within', 'active', 'lg:hover'],
-              },
-              {
-                pattern: /(flex)|(flex-.+)|(justify-.+)|(items-.+)|(inline-.+)|(grow)|(shrink)|(hidden)|(block)|(grid)|(grid-.+)/,
-                 variants: ['lg', 'md', 'sm']
+                //variants: ['lg', 'hover', 'focus', 'focus-within', 'active', 'lg:hover'],
+              },*/
+              {//self-
+                pattern: /(flex)|(flex-.+)|(justify-.+)|(items-.+)|(self-.+)|(content-.+)|(place-.+)|(inline-.+)|(grow)|(shrink)|(hidden)|(block)|(grid)|(grid-.+)/,
+                variants: ['lg', 'md', 'sm']
               },
               {
                 pattern: /(rounded-.+)/,
-              },
-              {
-                pattern: /(fs-.+)/,
               },
               {
                 pattern: /(fw.+)/,
               },
               {
                 pattern: /(m-.+)|(mx-.+)|(my-.+)|(ms-.+)|(me-.+)|(mt-.+)|(mb-.+)|(ml-.+)|(mr-.+)|(p-.+)|(px-.+)|(py-.+)|(ps-.+)|(pe-.+)|(pt-.+)|(pb-.+)|(pl-.+)|(pr-.+)/,
-                variants: ['lg', 'md', 'sm']
+                //variants: ['lg', 'md', 'sm']
               },
+              /*
               {
-                pattern: /opacity-.+/,
-                variants: ['hover', 'focus', 'md', 'lg']
-              },
-              {
-                pattern: /(w-.+)|(h-.+)|(min-w-.+)|(max-w-.+)|(min-h-.+)|(max-h-.+)/,
-                variants: ['md', 'lg']
-              },
-              {
-                pattern: /(border-.+)|(ring-.+)|(shadow-.+)|(transition-.+)/,
-              },
-            ]
+                pattern: /(border-.+)|(transition-.+)/,
+              },*/
+            ],
+  blocklist: [
+    'from',
+    'from-*',
+    'gradient',
+    '-scroll',
+    'scroll'
+  ],
 };
 
 /**

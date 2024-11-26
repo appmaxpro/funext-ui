@@ -66,7 +66,7 @@ export type CardMediaProps<
   component?: React.ElementType;
 };
 
-const useUtilityClasses = (ownerState) => {
+const useUtilityClasses = (ownerState:any) => {
   const { classes, isMediaComponent, isImageComponent } = ownerState;
 
   const slots = {
@@ -110,10 +110,12 @@ const MEDIA_COMPONENTS = ['video', 'audio', 'picture', 'iframe', 'img'];
 const IMAGE_COMPONENTS = ['picture', 'img'];
 
 export const CardMedia = React.forwardRef<HTMLElement, CardMediaProps>(function CardMedia(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuiCardMedia' });
+  const props = useMuiDefaultProps({ props: inProps, name: 'MuxCardMedia' });
   const { children, className, component = 'div', image, src, style, ...other } = props;
 
-  const isMediaComponent = MEDIA_COMPONENTS.includes(component as any);
+  const muxImg = (component as any).muxName === 'Img';
+  const isMediaComponent = muxImg || MEDIA_COMPONENTS.includes(component as any);
+
   const composedStyle =
     !isMediaComponent && image ? { backgroundImage: `url("${image}")`, ...style } : style;
 
@@ -121,7 +123,7 @@ export const CardMedia = React.forwardRef<HTMLElement, CardMediaProps>(function 
     ...props,
     component,
     isMediaComponent,
-    isImageComponent: IMAGE_COMPONENTS.includes(component as any),
+    isImageComponent: muxImg || IMAGE_COMPONENTS.includes(component as any),
   };
 
   const classes = useUtilityClasses(ownerState);
@@ -131,9 +133,10 @@ export const CardMedia = React.forwardRef<HTMLElement, CardMediaProps>(function 
       className={clsx(classes.root, className)}
       as={component}
       role={!isMediaComponent && image ? 'img' : undefined}
-      ref={ref}
+      ref={ref as any}
       style={composedStyle}
       ownerState={ownerState}
+      // @ts-ignore
       src={isMediaComponent ? image || src : undefined}
       {...other}
     >

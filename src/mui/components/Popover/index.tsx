@@ -14,7 +14,8 @@ import {
   useClick,
   arrow as fuiArrow,
   useHover,
-  safePolygon
+  safePolygon,
+  UseHoverProps,
 } from "@floating-ui/react";
 
 // utils
@@ -33,13 +34,12 @@ import type {
   dismiss,
   animate,
   children,
-  ArrowProps
+  ArrowProps,
 } from "../../types/components/popover";
 
 // popover components
 import { PopoverHandler, PopoverHandlerProps } from "./PopoverHandler";
 import { PopoverContent, PopoverContentProps } from "./PopoverContent";
-import C from "@/core/common";
 import { isElement } from "../../utils";
 
 export interface PopoverProps {
@@ -51,12 +51,14 @@ export interface PopoverProps {
   animate?: animate;
   children: children;
   arrow?: ArrowProps | boolean;
-  target?: React.MutableRefObject<HTMLElement|null> | HTMLElement | null;
+  target?: React.MutableRefObject<HTMLElement | null> | HTMLElement | null;
   hover?: boolean;
+  hoverProps?: UseHoverProps;
   trigger?: React.ReactNode;
+  onlyHover?: boolean;
 }
 
-const Popover = ({
+const PopoverFc = ({
   open,
   handler,
   placement,
@@ -65,9 +67,11 @@ const Popover = ({
   animate,
   arrow,
   hover,
+  hoverProps,
+  onlyHover,
   children,
   target,
-  trigger
+  trigger,
 }: PopoverProps) => {
   // 1. init
   const { popover } = useTailwindTheme();
@@ -82,15 +86,18 @@ const Popover = ({
   offset = offset ?? defaultProps.offset;
   dismiss = dismiss ?? defaultProps.dismiss;
   animate = animate ?? defaultProps.animate;
-  
-  let arrowProps  = typeof arrow !== 'boolean' ?  arrow : defaultProps.arrow;
 
-  const showArrow = typeof arrow === 'boolean' ? arrow : !!arrowProps;
-  
+  let arrowProps = typeof arrow !== "boolean" ? arrow : defaultProps.arrow;
+
+  const showArrow = typeof arrow === "boolean" ? arrow : !!arrowProps;
+
   if (showArrow === false) {
     arrowProps = undefined;
   } else if (showArrow) {
-    arrowProps = merge(defaultProps.arrow ?? defaultProps.arrow, arrowProps ?? {});
+    arrowProps = merge(
+      defaultProps.arrow ?? defaultProps.arrow,
+      arrowProps ?? {},
+    );
   }
 
   // 4. set animation
@@ -103,7 +110,7 @@ const Popover = ({
     },
   };
   const appliedAnimation = merge(animation, animate as any);
-  
+
   const arrowRef = useRef(null);
 
   // 5. set @floating-ui
@@ -111,19 +118,20 @@ const Popover = ({
     open,
     placement,
     onOpenChange: handler,
-    elements: target ? {
-      reference: isElement(target) ? target : target?.current
-    } : undefined,
+    elements: target
+      ? {
+          reference: isElement(target) ? target : target?.current,
+        }
+      : undefined,
     middleware: [
-      fuiOffset(offset), 
-      flip(), 
-      shift(), 
-      arrowProps && fuiArrow({
+      fuiOffset(offset),
+      flip(),
+      shift(),
+      fuiArrow({
         element: arrowRef,
-        padding: arrowProps.padding ?? 5
-      })
+        padding: arrowProps.padding ?? 5,
+      }),
     ],
-    
   });
 
   const id = useId();
@@ -131,14 +139,18 @@ const Popover = ({
   const descriptionId = `${id}-description`;
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
-    useClick(context),
+    (!onlyHover ? useClick(context) : undefined),
     useRole(context),
     useDismiss(context, dismiss),
-    hover ? useHover(context, {
-      handleClose: safePolygon(),
-    }) : undefined
+    hover && !hoverProps
+      ? useHover(context, {
+          handleClose: safePolygon(),
+        })
+      : hoverProps
+        ? useHover(context, hoverProps)
+        : undefined,
   ]);
-  
+
   React.useEffect(() => {
     if (refs.reference.current && refs.floating.current && open) {
       return autoUpdate(refs.reference.current, refs.floating.current, update);
@@ -160,7 +172,7 @@ const Popover = ({
       labelId,
       descriptionId,
       arrowRef,
-      arrow:arrowProps,
+      arrow: arrowProps,
     }),
     [
       open,
@@ -175,51 +187,56 @@ const Popover = ({
       appliedAnimation,
       labelId,
       descriptionId,
-      arrowRef
+      arrowRef,
     ],
   );
 
-  React.useEffect(()=> {
+  React.useEffect(() => {
     if (open && !initialized) {
       setInitialized(true);
     }
   }, [open]);
 
+  const triggerHandler = trigger && <PopoverHandler>{trigger}</PopoverHandler>;
+
   const hasTarget = !!target && !trigger;
   if (!initialized && hasTarget) {
-     return trigger;
+    return triggerHandler;
   }
 
   if (trigger) {
     // 6. return
     return (
       <PopoverContextProvider value={contextValue}>
-        {trigger}
-        {(children as any)?.type !== PopoverContent
-          ? <PopoverContent>
-            {children}
-          </PopoverContent>
-          : children
-        }
-      </PopoverContextProvider>);
+        {triggerHandler}
+        {(children as any)?.type !== PopoverContent ? (
+          <PopoverContent>{children}</PopoverContent>
+        ) : (
+          children
+        )}
+      </PopoverContextProvider>
+    );
   }
 
   // 6. return
   return (
     <PopoverContextProvider value={contextValue}>
-      {
-        hasTarget || initialized
-        ? (trigger || children)
-        : React.Children.toArray(children)
-          .filter(c => ( c as any).type !== PopoverContent)
-      }
-    </PopoverContextProvider>);
-  
+      {hasTarget || initialized
+        ? triggerHandler || children
+        : React.Children.toArray(children).filter(
+            (c) => (c as any).type !== PopoverContent,
+          )}
+    </PopoverContextProvider>
+  );
 };
 
-
+const Popover = Object.assign(PopoverFc, {
+  Handler: PopoverHandler,
+  Content: PopoverContent,
+});
+// @ts-ignore
 Popover.displayName = "Mux.Popover";
 
 export type { PopoverHandlerProps, PopoverContentProps };
 export { Popover, PopoverHandler, PopoverContent, usePopover };
-export default Object.assign(Popover, { Handler: PopoverHandler, Content: PopoverContent });
+export default Popover;

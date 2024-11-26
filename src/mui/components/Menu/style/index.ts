@@ -67,7 +67,9 @@ export const menu: MenuStylesType = {
           
           className: `fill-white 
                       [&>path:first-of-type]:stroke-slate-300 
-                      [&>path:last-of-type]:fill-white`,
+                      [&>path:last-of-type]:fill-white
+                      dark:fill-slate:800
+                      dark:[&>path:last-of-type]:slate:800`,
           tipRadius: 2,
           style:{ transform: 'translateY(-1px)' }
         }

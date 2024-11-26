@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   autoUpdate,
   flip,
@@ -35,7 +36,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type {ComponentProps} from '../../mui/utils';
+import type {ComponentProps} from '../../mui';
 import {isRTL} from '../../mui/utils';
 import { MaterialIcon } from "../../icons/material-icon";
 import { Button } from '../button';

@@ -4,6 +4,5 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
 .icon {
   display: inline-flex;
   align-items: center;
-  font-size: 1.25rem;
-  padding: 0.125em;
+  font-size: inherit;
 }

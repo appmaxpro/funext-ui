@@ -32,5 +32,5 @@ export function useMapColor<Props extends Record<string, any>>(props:Props) : Pr
 }
 
 export function useThemeColor(color?:string, def?:string) : Colors | undefined {
-  return (color ? (defaultColors.get(color) ?? color ?? def) : (color ?? def)) as Colors;
+  return (color ? (defaultColors.get(color) ?? color) : def) as Colors;
 }

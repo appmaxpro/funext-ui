@@ -2,7 +2,7 @@ import iconNames from "bootstrap-icons/font/bootstrap-icons.json";
 import { forwardRef } from "react";
 
 import { TForeground } from "../../core";
-import { clsx, Box } from "../../mui";
+import { clsx, Box, useColorClass } from "../../mui";
 
 import styles from "./bootstrap-icon.module.scss";
 
@@ -20,15 +20,18 @@ export interface BootstrapIconProps {
 export const BootstrapIcon = forwardRef<HTMLElement, BootstrapIconProps>(
   (props, ref) => {
     const { className, onClick, icon, fill, color, fontSize } = props;
-    const name = fill && !icon.endsWith("-fill") ? `${icon}-fill` : icon;
+    const name = fill && !icon?.endsWith("-fill") ? `${icon!}-fill` : icon;
     const cls = `bi-${name}`;
-    const clsName = clsx(className, styles.icon, styles.bi, styles[cls], 'bs-icon');
+    
+    let clsName = clsx(className, styles.icon, styles.bi, styles[cls], 'bs-icon');
+    if(color){
+      const {className} = useColorClass(color, clsName, color, 'text');
+      clsName = className!;
+    }
 
     return (
-      <Box
-        as="span"
+      <span
         className={clsName}
-        color={color}
         style={{ fontSize }}
         onClick={onClick}
         ref={ref}

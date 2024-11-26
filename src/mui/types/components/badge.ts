@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -14,7 +13,7 @@ export type color = "white" | Colors;
 export type invisible = boolean;
 export type withBorder = boolean;
 export type overlap = "circular" | "square";
-export type placement = "top-start" | "top-end" | "bottom-start" | "bottom-end";
+export type placement = "top-start" | "top-end" | "bottom-start" | "bottom-end" | "center-start" | "center-end";
 export type className = string;
 export type content = ReactNode;
 export type children = ReactNode;
@@ -24,4 +23,4 @@ export type containerRef = React.Ref<HTMLDivElement>;
 // javascript prop-types
 export const propTypesColor: any = ["white", ...propTypesColors];
 export const propTypesOverlap: any = ["circular", "square"];
-export const propTypesPlacement: any = ["top-start" , "top-end" , "bottom-start" , "bottom-end"];
+export const propTypesPlacement: any = ["top-start" , "top-end" , "bottom-start" , "bottom-end", "center-start" , "center-end"];

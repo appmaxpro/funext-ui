@@ -88,7 +88,7 @@ function Details({ data }: { data: GridRow }) {
   }, []);
 
   return (
-    <Collapse in={show}>
+    <Collapse open={show}>
       <Box d="flex" p={3} style={{ maxHeight: 300 }}>
         <Grid
           allowSorting

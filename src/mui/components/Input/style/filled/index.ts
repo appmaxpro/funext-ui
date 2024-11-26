@@ -9,17 +9,21 @@ const inputFilled = {
       add: styles['root'],
       borderColor: "border-inherit",
       peer: 'peer',
-      bg: 'bg-h_sm hover:bg-transparent'
+      bg: 'bg-h_sm hover:bg-transparent',
+      fontSize: "text-base",
     },
     input: {
       peer: 'peer',
       px: "px-1",
-      add: styles['input']
+      add: styles['input'],
+      fontSize: "text-base"
     },
     native:{
+      px: "px-1.5",
     },
     label: {
       className: styles['label'],
+      fontSize: "text-base",
     },
     notched: {
       className: styles['notched'],
@@ -34,31 +38,15 @@ const inputFilled = {
     md: {
       root: {
         borderRadius: "rounded-[4px]",
-      },
-      input: {
-        fontSize: "text-base",
-      },
-      label: {
-        fontSize: "text-base"
-      },
-      native: {
-        px: "px-2",
-      },
+      }
     },
     lg: {
       root: {
-        fontSize: "text-base",
         borderRadius: "rounded-md",
-      },
-      input: {
-        fontSize: "text-base",
       },
       label: {
         fontSize: "text-lg",
         add: `${styles['lg']}`
-      },
-      native: {
-        px: "px-3",
       }
     },
   },

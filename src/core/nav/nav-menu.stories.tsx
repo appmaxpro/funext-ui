@@ -169,6 +169,7 @@ export function NavMenu() {
 
   const [enableSearch, setEnableSearch] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [useCmdkSearch, setUseCmdkSearch] = useState(false);
 
   const handleModeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMode(e.target.value as any);
@@ -272,6 +273,14 @@ export function NavMenu() {
           />
           Show
         </Box>
+        <Box as="label" display="flex" gap={2}>
+          <input
+            type="checkbox"
+            checked={useCmdkSearch}
+            onChange={() => setUseCmdkSearch(!useCmdkSearch)}
+          />
+          Use Cmdk
+        </Box>
       </Box>
       <Box display="flex" style={{ maxWidth: 600, height: 500,  }} 
           className="border border-gray-400"  p={4} gap={4}>
@@ -282,6 +291,7 @@ export function NavMenu() {
             searchOptions={searchOptions}
             searchActive={showSearch}
             items={items}
+            useCmdkSearch={useCmdkSearch}
           />
         </Box>
         <Box flex={1} className="border border-gray-200"></Box>

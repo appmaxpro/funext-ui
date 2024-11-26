@@ -10,6 +10,7 @@ import {space} from '../styles/space';
 const HEIGHT_ADJUSTMENT_FOR_CONTENT_MARGIN = 20;
 
 function isClipped(args: {clipFlex: number; clipHeight: number; height: number}) {
+  console.log("ClippedBox::isClipped:", args)
   return args.height > args.clipHeight + args.clipFlex;
 }
 
@@ -127,7 +128,7 @@ interface ClippedBoxProps {
   title?: string;
 }
 
-function ClippedBox(props: ClippedBoxProps) {
+export function ClippedBox(props: ClippedBoxProps) {
   const revealRef = useRef(false);
   const mountedRef = useRef(false);
 
@@ -261,7 +262,7 @@ function ClippedBox(props: ClippedBoxProps) {
 
   const showMoreButton = (
     <Button
-      size="small"
+      size="sm"
       variant="text"
       color='primary'
       onClick={handleReveal}
@@ -285,11 +286,8 @@ function ClippedBox(props: ClippedBoxProps) {
   );
 }
 
-export default ClippedBox;
-
 const Wrapper = styled('div')`
   position: relative;
-  padding: ${space(1.5)} 0;
   overflow: hidden;
   will-change: max-height;
   transition: max-height 500ms ease-in-out;
@@ -311,7 +309,7 @@ export const ClipFade = styled('div')`
     ${p => p.theme.palette.background.paper}
   );
   text-align: center;
-  border-bottom: 2px solid ${p => p.theme.palette.divider};
+  /*border-bottom: 2px solid ${p => p.theme.palette.divider};*/
   /* Let pointer-events pass through ClipFade to visible elements underneath it */
   pointer-events: none;
   /* Ensure pointer-events trigger event listeners on "Expand" button */

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Block } from "./block";
+import { Block } from "./Block";
 
 const meta = {
   title: "Layout/Block",

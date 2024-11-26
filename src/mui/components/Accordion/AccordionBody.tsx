@@ -65,7 +65,7 @@ export const AccordionBody = React.forwardRef<HTMLDivElement, AccordionBodyProps
       },
     };
 
-    const appliedAnimation = merge(heightAnimation, animate);
+    const appliedAnimation = merge(heightAnimation, animate || {});
 
     // 5. return
     return (

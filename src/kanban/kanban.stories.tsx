@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Box, Input, Button, Menu, MenuItem } from "..";
+import { Box, Input, Button, Menu, IconButton } from "..";
 
 import { Kanban, KanbanProps } from "./kanban";
 import { CardEvent, Column, ColumnEvent } from "./types";
@@ -111,7 +111,7 @@ function KanbanContainer({ columns: columnsProp, readonly }: KanbanProps) {
         sourceColumn: source,
         sourceIndex: getRecordIndex(record.id, source!.id) as number,
       });
-
+      console.log("onCardMove:", { column, index, source, record })
       setColumns(updatedColumns);
     },
     [columns, getRecordIndex],
@@ -121,6 +121,7 @@ function KanbanContainer({ columns: columnsProp, readonly }: KanbanProps) {
     ({ column, index }: ColumnEvent) => {
       const updatedColumns = reorder(columns, getColumnIndex(column.id), index);
       setColumns(updatedColumns);
+      console.log("onColumnMove:", updatedColumns)
     },
     [columns, getColumnIndex],
   );
@@ -237,35 +238,29 @@ export const ReadonlyColumn = () => (
 export const Readonly = () => <KanbanContainer readonly />;
 
 const Record = ({ record, column, onEdit, onDelete }: any) => {
-  const [open, setOpen] = useState(false);
-  const [targetEl, setTargetEl] = useState<HTMLButtonElement | null>(null);
-
-  const toggle = () => setOpen((v) => !v);
-
-  const closeMenu = () => setOpen(false);
 
   const handleEdit = () => {
     onEdit && onEdit({ column, record });
-    setOpen(false);
   };
   const handleDelete = () => {
     onDelete && onDelete({ column, record });
-    setOpen(false);
   };
 
   return (
     <Box p={2} mt={2} shadow="sm" rounded border bg="body">
-      <Box pb={1} pt={1} d="flex" justifyContent="space-between">
+      <Box pb={1} pt={1} d="flex" justifyContent="between" alignItems="center">
         <Box as="p">{record.title}</Box>
-        <Box>
-          <Button p={0} ref={setTargetEl} onClick={toggle} d="inline-flex">
-            <MaterialIcon icon="arrow_drop_down" />
-          </Button>
-        </Box>
-        <Menu show={open} target={targetEl} onHide={closeMenu}>
-          <MenuItem onClick={handleEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        </Menu>
+        <Menu.Button
+            trigger={
+              <IconButton>
+                <MaterialIcon icon="arrow_drop_down" />
+              </IconButton>
+            }
+            >
+            <Menu.Item onClick={handleEdit}>Edit</Menu.Item>
+            <Menu.Item onClick={handleDelete}>Delete</Menu.Item>
+        </Menu.Button>
+        
       </Box>
     </Box>
   );

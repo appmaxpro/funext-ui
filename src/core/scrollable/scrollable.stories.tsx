@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box } from "../box";
-import { Input } from "../input";
+import { Input } from "../../mui";
 import { Scrollable } from "./scrollable";
 
 const config = {

@@ -1,7 +1,5 @@
 'use client';
 import * as React from 'react';
-import {ListContext} from './ListContext';
-
 import { 
   SxComponentProps, 
   styled, 
@@ -13,6 +11,7 @@ import {
 } from "../../styles";
 
 import type{StyledComponent} from "../../styles";
+import { useListContext } from './ListContext';
 
 const useUtilityClasses = (ownerState:any) => {
   const { alignItems, classes } = ownerState;
@@ -37,7 +36,7 @@ export function getListItemAvatarUtilityClass(slot: string): string {
   return generateUtilityClass('MuxListItemAvatar', slot);
 }
 
-const listItemAvatarClasses: ListItemAvatarClasses = generateUtilityClasses('MuxListItemAvatar', [
+export const listItemAvatarClasses: ListItemAvatarClasses = generateUtilityClasses('MuxListItemAvatar', [
   'root',
   'alignItemsFlexStart',
 ]);
@@ -90,7 +89,7 @@ export const ListItemAvatar = React.forwardRef<HTMLElement, ListItemAvatarProps>
   });
 
   const { className, ...other } = props;
-  const context = React.useContext(ListContext);
+  const context = useListContext(true);
   const ownerState = { ...props, alignItems: (context as any).alignItems };
   const classes = useUtilityClasses(ownerState);
 

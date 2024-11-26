@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 
 // @floading-ui
 import { useMergeRefs } from "@floating-ui/react";

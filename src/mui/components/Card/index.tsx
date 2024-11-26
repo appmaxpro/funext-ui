@@ -29,13 +29,16 @@ import { CardBody, CardBodyProps } from "./CardBody";
 import { CardFooter, CardFooterProps } from "./CardFooter";
 import { useColorClass, useThemeColor } from "../../hooks";
 import { CardMedia } from "./CardMedia";
-import { CardActions } from "./CardActions";
+import { CardActionArea, CardActions } from "./CardActions";
 
 export * from "./CardBody";
 export * from "./CardHeader";
 export * from "./CardFooter";
 export * from "./CardMedia";
 export * from "./CardActions";
+export * from "./CardActions";
+export * from '../../types/components/card';
+
 export interface CardClasses {
   /** Styles applied to the root element. */
   root: string;
@@ -66,7 +69,10 @@ const CardRoot = styled(PanelRoot, {
   overridesResolver: (props, styles) => styles.root,
 })({
   overflow: 'hidden',
-}) as StyledComponent<CardOwnProps & Partial<CardProps>>;
+  display: 'flex',
+  flexDirection: 'column',
+  position: 'relative'
+}) ;
 
 
 const resolvePanelProps = (props:CardProps, theme: any) =>  {
@@ -100,7 +106,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
   }
 }
 
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+export const CardFc = React.forwardRef<HTMLDivElement, CardProps>(
   (inProps, ref) => {
   
   const props = useDefaultProps({ 
@@ -121,6 +127,8 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     color,
     raised = false,
     className:inClassName,
+    fill,
+    border,
     ...other
   } = props;
 
@@ -132,18 +140,18 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     square,
     variant,
     hasShadow: !!elevation,
-    hasBg: className.includes('bg-'),
-    hasBorder: className.includes('border-'),
-    hasText: className.includes('text-'),
+    hasBg: !className.includes('bg-') && (variant === 'filled' || fill),
+    hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
+    hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };
 
   const classes = useUtilityClasses(ownerState);
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (theme.shadows[elevation] === undefined) {
+  if (process.env.NODE_ENV !== 'production' && elevation) {
+    if (theme.shadows[elevation as any] === undefined) {
       console.error(
         [
-          `MUI: The elevation provided <Panel elevation={${elevation}}> is not available in the theme.`,
+          `MUX: The elevation provided <Card elevation={${elevation}}> is not available in the theme.`,
           `Please make sure that \`theme.shadows[${elevation}]\` is defined.`,
         ].join('\n'),
       );
@@ -152,10 +160,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
   return (
     <CardRoot
-      as={component}
-      ownerState={ownerState}
+      as={component as any}
+      ownerState={ownerState as any}
       className={clsx(classes.root, className)}
-      {...other}
+      {...(other as any)}
       ref={ref as any}
       style={{
         ...(elevation && {
@@ -169,7 +177,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
                 '#fff',
                 getOverlayAlpha(elevation),
               )}, ${alpha('#fff', getOverlayAlpha(elevation))})`,
-            }),
+            }) as any,
         }),
         ...other.style,
       }}/>
@@ -178,13 +186,15 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   },
 );
 
-Card.displayName = "Mux.Card";
-
-export default Object.assign(Card, {
+export const Card =  Object.assign(CardFc, {
   Header: CardHeader,
   Body: CardBody,
   Content: CardBody,
   Footer: CardFooter,
   Media: CardMedia,
-  Actions: CardActions
+  Actions: CardActions,
+  ActionArea:CardActionArea
 });
+Card.displayName = "Mux.Card";
+
+export default Card;

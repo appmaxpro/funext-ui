@@ -1,4 +1,4 @@
-console.log("<-----------styled-------------->");
+//console.log("<-----------styled-------------->");
 import createStyled, {CreateMUIStyled} from '@mui/system/createStyled';
 import defaultTheme from '../theme/defaultTheme';
 import { Theme as MuiTheme} from '../theme';

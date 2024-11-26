@@ -1,4 +1,3 @@
-export * from "./arrow-navigation";
 export * from "./block";
 export * from "./command-bar";
 export * from "./decorate";
@@ -23,3 +22,4 @@ export * from "./system";
 export * from "./table";
 export * from "./tree";
 export * from "./click-away-listener";
+export * from "./common/ClippedBox";

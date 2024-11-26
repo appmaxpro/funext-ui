@@ -10,7 +10,7 @@ import type {
   objectType,
   disabled,
 } from "../../../types/components/checkbox";
-import { propTypesColor } from "../../../types/components/checkbox";
+import { propTypesColors } from "../../../types/components/checkbox";
 
 export interface RadioStylesType {
   defaultProps?: {
@@ -53,7 +53,7 @@ export const radio: RadioStylesType = {
     iconProps: undefined,
   },
   valid: {
-    colors: propTypesColor,
+    colors: propTypesColors,
   },
   styles: {
     base: {

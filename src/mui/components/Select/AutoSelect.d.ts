@@ -48,11 +48,11 @@ export type AutoSelectOwnerState<
 
 export type AutoSelectRenderGetTagProps = ({ index }: { index: number }) => {
   key: number;
-  className: string;
-  disabled: boolean;
-  'data-tag-index': number;
-  tabIndex: -1;
-  onDelete: (event: any) => void;
+  className?: string;
+  disabled?: boolean;
+  'data-tag-index'?: number;
+  tabIndex: -1?;
+  onDelete?: (event: any) => void;
 };
 
 export interface AutoSelectRenderOptionState {

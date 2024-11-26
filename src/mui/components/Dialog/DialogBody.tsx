@@ -13,9 +13,7 @@ import type { divider, className, children } from "../../types/components/dialog
 
 
 export interface DialogBodyProps extends SxComponentProps<"div"> {
-  divider?: divider;
-  className?: className;
-  children: children;
+  divider?: boolean;
 }
 
 const DialogBodyRoot = styled('div', {
@@ -32,12 +30,10 @@ export const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
       styles: { base },
     } = dialogBody;
 
-    // 2. set default props
-    className = twMerge(defaultProps.className || "", className);
-
     // 3. set styles
     const dialogBodyClasses = twMerge(
       classnames(objectsToString(base.initial), { [objectsToString(base.divider)]: divider }),
+      defaultProps.className,
       className,
     );
 

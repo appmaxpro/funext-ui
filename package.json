@@ -9,9 +9,7 @@
     "ui",
     "funext"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
+  "//": "type: module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -20,15 +18,14 @@
     "./*": "./src/*/index.ts",
     "./core/*": "./src/core/*/index.ts",
     "./icons/*": "./src/icons/*/index.ts",
-    "./mui/*": "./src/mui/*/index.ts",
-    "./mui/themes/tw/withMT": "./src/mui/utils/withMT.js"
+    "./mui/themes/tw/withMT": "./src/mui/themes/tw/withMT.js"
   },
   "scripts": {
     "preinstall": "node scripts/check-pnpm.js",
     "format": "prettier -w '**/*.{ts,tsx,js,jsx,json,css,scss}'",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "build": "node scripts/build.js . -o dist",
+    "build": "node  --experimental-modules scripts/build.js . -o dist",
     "clean": "rimraf dist & rimraf node_modules/.cache/vite",
     "lint": "eslint src",
     "build:react": "pnpm --filter ./packages/material-tailwind-react build",
@@ -38,8 +35,8 @@
   "peerDependencies": {
     "@emotion/react": "^11.5.0",
     "@emotion/styled": "^11.3.0",
-    "react": "^18.2.0-0",
-    "react-dom": "^18.2.0-0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@emotion/cache": "^11.11.0",
@@ -52,9 +49,8 @@
     "@fontsource/roboto": "^5.0.13",
     "@material-symbols/font-400": "^0.17.1",
     "@material-symbols/metadata": "^0.17.1",
-    "@mui/base": "5.0.0-beta.58",
-    "@mui/system": "6.1.1",
-    "@mui/utils": "6.1.1",
+    "@mui/system": "6.1.6",
+    "@mui/utils": "6.1.6",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
@@ -119,6 +115,11 @@
     "vite-plugin-svgr": "^4.2.0"
   },
   "packageManager": "pnpm@8.15.5+sha256.4b4efa12490e5055d59b9b9fc9438b7d581a6b7af3b5675eb5c5f447cee1a589",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "directory": "build"
+  },
   "pnpm": {
     "peerDependencyRules": {
       "ignoreMissing": [
@@ -126,5 +127,9 @@
         "@eslint/*"
       ]
     }
+  },
+  "resolutions": {
+    "@types/react": "18.2.73",
+    "@types/react-dom": "18.2.21"
   }
 }

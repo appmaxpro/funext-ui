@@ -10,7 +10,7 @@ import type {
   disabled,
   objectType,
 } from "../../../types/components/checkbox";
-import { propTypesColor } from "../../../types/components/checkbox";
+import { propTypesColors } from "../../../types/components/checkbox";
 import styles from './ch.module.scss';
 
 export interface CheckboxStylesType {
@@ -61,7 +61,7 @@ export const checkbox: CheckboxStylesType = {
     iconProps: undefined,
   },
   valid: {
-    colors: propTypesColor,
+    colors: propTypesColors,
   },
   styles: {
     base: {

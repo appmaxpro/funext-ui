@@ -1,5 +1,5 @@
 import { RenderLink } from "../types";
-import { createContext, Dispatch, SetStateAction } from "react";
+import { createContext, Dispatch, SetStateAction, useContext } from "react";
 
 export const SelectContext = createContext<{ selected: number }>({
   selected: 0,
@@ -37,3 +37,6 @@ export const OpenContext = createContext<{
   onChangeOpen: () => undefined,
   isOpen: false,
 });
+
+
+

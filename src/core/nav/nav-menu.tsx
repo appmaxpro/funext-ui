@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { MaterialIcon } from "../../icons/material-icon";
 import { ClickAwayListener } from "../click-away-listener";
@@ -6,13 +13,24 @@ import { clsx } from "../clsx";
 import { Collapse } from "../collapse";
 import { Fade } from "../fade";
 import { Scrollable } from "../scrollable";
-import { TextField } from "../text-field";
 import { getRGB } from "./utils";
-
 import styles from "./nav-menu.module.scss";
-import { Popper, usePopperTrigger } from "../popper";
-import { Box } from "../box";
-import {Popover, List, Tooltip, ListProps} from "../..";
+import {
+  Popover,
+  List,
+  Tooltip,
+  ListProps,
+  Popper as MuxPopper,
+  Button,
+  Card,
+  Input,
+  AutoSelect,
+  ListItemButton,
+  ListItemButtonProps,
+  Portal,
+} from "../..";
+import { twJoin } from "tailwind-merge";
+import { useOpenCmdk } from "../../mui/components/Cmdkx/hooks";
 
 export interface NavMenuItem {
   /**
@@ -106,7 +124,7 @@ export interface NavMenuProps {
    */
   onItemClick?: (item: NavMenuItem) => void;
 
-  listProps?: Omit<ListProps, 'children'>
+  listProps?: Omit<ListProps, "children">;
 
   /**
    * Menu search options.
@@ -152,8 +170,7 @@ export interface NavMenuProps {
   style?: React.CSSProperties;
 
   className?: string;
-
-
+  useCmdkSearch?: boolean;
 }
 
 export function NavMenu({
@@ -168,6 +185,7 @@ export function NavMenu({
   searchActive,
   onItemClick,
   listProps,
+  useCmdkSearch,
 }: NavMenuProps) {
   const menus = useMemo(() => items.map((item) => walk(item)), [items]);
   const showIcons = mode === "icons";
@@ -192,6 +210,7 @@ export function NavMenu({
         searchActive={searchActive}
         onItemClick={onItemClick}
         listProps={listProps}
+        useCmdkSearch={useCmdkSearch}
       />
     </div>
   );
@@ -199,7 +218,7 @@ export function NavMenu({
 
 function walk(item: NavMenuNode, parent?: NavMenuNode): NavMenuNode {
   const parentId = parent?.id;
-  const rootId = parent?.rootId ?? parent?.parentId ?? parent?.id;
+  const rootId = parent?.rootId ?? parent?.parentId ?? parentId;
   const result = { ...item, parentId, rootId };
   if (item.items) {
     return { ...result, items: item.items.map((item) => walk(item, result)) };
@@ -212,7 +231,7 @@ interface NavMenuNode extends NavMenuItem {
   parentId?: string;
 }
 
-interface ItemProps {
+interface ItemProps extends ListItemButtonProps {
   item: NavMenuItem;
   state: {
     active?: string | null;
@@ -270,6 +289,11 @@ function useNavMenu({
     },
     [searchEnabled, searchItem.id, searchOptions, showSearch],
   );
+
+  useOpenCmdk((open: boolean) => {
+    console.log("useOpenCmdk:", open)
+    setShowSearch(true);
+  }, searchEnabled);
 
   useEffect(() => {
     if (searchActive !== undefined) {
@@ -343,7 +367,7 @@ function useNavMenu({
   );
 
   const handleSearchClick = useCallback(() => {
-    setShowSearch(true);
+    setShowSearch(!showSearch);
   }, [setShowSearch]);
 
   const state = useMemo(
@@ -386,7 +410,8 @@ function Accordion(props: VariantProps) {
   } = useNavMenu(props);
 
   const { lookup } = state;
-  const { header, headerSmall, searchOptions, listProps } = props;
+  const { header, headerSmall, searchOptions, listProps, useCmdkSearch } =
+    props;
 
   return (
     <ClickAwayListener onClickAway={handleLeave}>
@@ -406,7 +431,7 @@ function Accordion(props: VariantProps) {
             header={headerSmall}
           />
         )}
-        {showSearch && (
+        {(showSearch && !useCmdkSearch) && (
           <div className={clsx(styles.menus, styles.search)}>
             {header && <div className={styles.menusHeader}>{header}</div>}
             <SearchMenu
@@ -414,12 +439,27 @@ function Accordion(props: VariantProps) {
               state={state}
               filter={searchOptions?.filter}
               onItemClick={handleItemClick}
+              show={showSearch}
+              useCmdk={useCmdkSearch}
+              toggleSearch={handleSearchClick}
             />
           </div>
         )}
+        
+        {(useCmdkSearch && searchEnabled) && <SearchMenu
+            item={searchItem}
+            state={state}
+            filter={searchOptions?.filter}
+            onItemClick={handleItemClick}
+            show={showSearch}
+            useCmdk={useCmdkSearch}
+            toggleSearch={handleSearchClick}
+          />}
+
+
         <div className={styles.menus}>
           {header && <div className={styles.menusHeader}>{header}</div>}
-          <Scrollable className={styles.menusInner}>
+          <Scrollable className={clsx(styles.menusInner, '')}>
             {searchEnabled && (
               <div
                 className={clsx(styles.item, styles.searchItem)}
@@ -437,17 +477,17 @@ function Accordion(props: VariantProps) {
               focus
               select
               listStyle={{
-                className: 'text-base font-normal'
+                className: styles.rootList,
               }}
               itemStyle={{
-                rippleClassName: 'bg-primary/40',
-                className: 'rounded-lg px-2 py-1.5',
-                hover: 'hover:bg-primary/10 hover:text-primary-600',
-                selected: 'bg-primary/15 text-primary-600 fw5',
-                active: 'hover:bg-hd-sm',
-                initial:{
-                  transition: ''
-                }
+                rippleClassName: "bg-primary/40",
+                className: "rounded-lg px-2 py-1.5",
+                hover: "hover:bg-primary/10 hover:text-primary-600",
+                selected: "bg-primary/15 text-primary-600 fw5",
+                active: "hover:bg-hd-sm",
+                initial: {
+                  transition: "",
+                },
               }}
               {...listProps}
             >
@@ -460,7 +500,6 @@ function Accordion(props: VariantProps) {
                 />
               ))}
             </List>
-            
           </Scrollable>
         </div>
       </div>
@@ -473,15 +512,17 @@ function Icons(props: VariantProps) {
     state,
     icons,
     items,
+    searchEnabled,
     showSearch,
     searchItem,
     handleLeave,
     handleItemClick,
     handleIconClick,
     handleIconHover,
+    handleSearchClick,
   } = useNavMenu(props);
 
-  const { searchOptions } = props;
+  const { searchOptions, useCmdkSearch } = props;
   const hover = showSearch ? searchItem.id : state.lookup;
 
   return (
@@ -501,14 +542,15 @@ function Icons(props: VariantProps) {
       />
       <div className={styles.menusWrapper}>
         <div className={styles.menus}>
-          {showSearch && (
-            <SearchMenu
-              item={searchItem}
-              state={state}
-              filter={searchOptions?.filter}
-              onItemClick={handleItemClick}
-            />
-          )}
+          <SearchMenu
+            item={searchItem}
+            state={state}
+            filter={searchOptions?.filter}
+            onItemClick={handleItemClick}
+            show={showSearch}
+            useCmdk={useCmdkSearch}
+            toggleSearch={handleSearchClick}
+          />
           {items.map((item) => (
             <Menu
               key={item.id}
@@ -623,15 +665,17 @@ function MenuIcons({
   );
 }
 
-function MenuItem({ item, state, onItemClick }: ItemProps) {
+function MenuItem({ item, state, onItemClick, onClick:clickAction, className, ...rest }: ItemProps) {
   const node: NavMenuNode = item;
-  const { icon, tag: Tag, tagColor, title, help, items = [], onClick } = item;
-
   const {
-    open: popperOpen,
-    targetEl,
-    setTargetEl,
-  } = usePopperTrigger({ trigger: "hover", delay: { open: 500, close: 100 } });
+    icon,
+    tag: Tag,
+    tagColor,
+    title,
+    help,
+    items = [],
+    onClick,
+  } = item;
 
   const root = node.rootId || item.id;
   const active = item.id === state.active;
@@ -642,12 +686,13 @@ function MenuItem({ item, state, onItemClick }: ItemProps) {
   const hasIcon = Boolean(icon);
   const hasItems = items.length > 0;
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((event:any) => {
     if (hasItems) {
       setOpen((prev) => !prev);
     }
     onItemClick?.(item);
     onClick?.();
+    clickAction?.(event)
   }, [hasItems, item, onClick, onItemClick]);
 
   useEffect(() => {
@@ -657,55 +702,65 @@ function MenuItem({ item, state, onItemClick }: ItemProps) {
 
   let itemButton = (
     <List.ItemButton
-      className={clsx(styles.item, {
+      {...rest}
+      className={clsx(styles.item, rest.className, {
         [styles.open]: open,
         [styles.selected]: selected,
       })}
       selected={selected}
       active={active}
       startIcon={
-        hasIcon
-          ? <MenuIcon item={item} state={state} />
-          : <div className={styles.icon}></div>
+        hasIcon ? (
+          <MenuIcon item={item} state={state} />
+        ) : (
+          <div className={styles.icon}></div>
+        )
       }
       endIcon={
-        (Tag || hasItems) 
-        ? <>
-          {Tag && (
-            <div className={styles.tag}>
-              <Tag color={tagColor} />
-            </div>
-          )}
-          {hasItems && <MaterialIcon className={styles.expand} fill icon="keyboard_arrow_down" />}
-        </>
-        : undefined
+        Tag || hasItems ? (
+          <>
+            {Tag && (
+              <div className={styles.tag}>
+                <Tag color={tagColor} />
+              </div>
+            )}
+            {hasItems && (
+              <MaterialIcon
+                className={styles.expand}
+                fill
+                icon="keyboard_arrow_down"
+              />
+            )}
+          </>
+        ) : undefined
       }
-      onClick={handleClick} 
+      onClick={handleClick}
+      
     >
       <div className={styles.text}>{title}</div>
     </List.ItemButton>
   );
 
-  if(help) {
+  if (help) {
     itemButton = (
       <Tooltip
         offset={{
-          mainAxis: 7
+          mainAxis: 7,
         }}
         placement="left"
         content={help}
         allowOverContent
         hoverProps={{
-          delay:{
+          delay: {
             close: 100,
-            open: 500  
-          }
+            open: 500,
+          },
         }}
       >
-        {itemButton}    
+        {itemButton}
       </Tooltip>
     );
-  } 
+  }
 
   if (hasItems) {
     itemButton = (
@@ -729,8 +784,7 @@ function MenuItem({ item, state, onItemClick }: ItemProps) {
 function MenuItems({ item, state, onItemClick, isSubItems }: ItemProps) {
   const { items = [] } = item;
   return (
-    <List 
-      className={clsx(styles.items, { [styles.subItems]: isSubItems })}>
+    <List className={clsx(styles.items, { [styles.subItems]: isSubItems })}>
       {items.map((item) => (
         <MenuItem
           key={item.id}
@@ -743,23 +797,118 @@ function MenuItems({ item, state, onItemClick, isSubItems }: ItemProps) {
   );
 }
 
-function flattenItem(item: NavMenuItem, parent?: NavMenuItem) {
-  let { items = [], icon, tag, ...rest } = item;
+function flattenItem(
+  item: NavMenuItem,
+  parent?: NavMenuItem,
+  withIcon?: boolean,
+) {
+  let { items = [], icon=parent?.icon, iconColor=parent?.iconColor, tag, ...rest } = item;
   const title = parent ? `${parent.title} / ${item.title}` : item.title;
 
   rest = { ...rest, title };
-  items = items.flatMap((child) => flattenItem(child, rest)).flat();
+  if (withIcon && icon) {
+    rest = { ...rest, icon, iconColor} as any;
+  }
+  items = items.flatMap((child) => flattenItem(child, rest, withIcon)).flat();
 
   // don't include parent
   return items.length ? items : [rest];
 }
 
+//const [ref]
+const animation = {
+  unmount: {
+    opacity: 0,
+    transform: "scale(.9)",
+    transition: {
+      duration: 0.7,
+      ease: "easeOut",
+      delay: 0,
+    },
+  },
+  mount: {
+    opacity: 1,
+    transform: "scale(1)",
+    transition: {
+      duration: 0.5,
+      ease: "easeIn",
+      //delay: 0.6,
+    },
+  },
+};
+
+const backdropAnimation = {
+  unmount: {
+    opacity: 0,
+    transition: {
+      //delay: 0.2,
+      ease: "easeOut",
+    },
+  },
+  mount: {
+    opacity: 1,
+    transition: {
+      delay: 0,
+      ease: "easeIn",
+    },
+  },
+};
+
 function SearchMenu({
   item,
   state,
+  filter,
+  onItemClick,
+  useCmdk,
+  show,
+  toggleSearch,
+}: ItemProps & {
+  toggleSearch: () => void;
+  show?: boolean;
+  filter?: (item: NavMenuItem, searchText: string) => boolean;
+  useCmdk?: boolean;
+}) {
+  const items = useMemo(
+    () => item.items?.flatMap((x) => flattenItem(x, undefined, useCmdk)).flat(),
+    [item],
+  );
+
+  if (useCmdk) {
+    return (
+      <CmdkMenuSearch
+        open={show ?? false}
+        items={items || []}
+        onItemClick={onItemClick}
+        toggleSearch={toggleSearch}
+        filter={filter}
+        item={item}
+        state={state}
+      />
+    );
+  }
+
+  return show ? (
+    <PortalSearchMenu
+      state={state}
+      item={item}
+      items={items}
+      onItemClick={onItemClick}
+      filter={filter}
+      toggleSearch={toggleSearch}
+    />
+  ) : null;
+}
+
+function PortalSearchMenu({
+  item,
+  items,
+  state,
   filter: filterMenuItem,
   onItemClick,
+  toggleSearch,
 }: ItemProps & {
+  toggleSearch: () => void;
+  items?: NavMenuItem[];
   filter?: (item: NavMenuItem, searchText: string) => boolean;
 }) {
   const [show, setShow] = useState(false);
@@ -769,11 +918,6 @@ function SearchMenu({
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const hover = true;
-
-  const items = useMemo(
-    () => item.items?.flatMap((x) => flattenItem(x)).flat(),
-    [item],
-  );
 
   const filtered = useMemo(() => {
     if (show && items) {
@@ -786,13 +930,13 @@ function SearchMenu({
     return [];
   }, [items, filterMenuItem, show, text]);
 
-  const canShow = hover ?? false;
-
   const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setText(value);
     setShow(!!value);
   }, []);
+
+  const canShow = hover ?? false;
 
   const cancelSearch = useCallback(
     () => onItemClick?.({ id: state.active || "", title: "" }),
@@ -855,45 +999,203 @@ function SearchMenu({
       >
         <div className={styles.header}>
           <div className={styles.text}>
-            <TextField
+            <Input
               autoFocus
               placeholder={item.title}
               value={text}
               onChange={handleSearch}
               onKeyDown={handleKeyDown}
               onBlur={filtered.length ? handleBlur : cancelSearch}
-              icons={[
-                {
-                  icon: "search",
-                },
-              ]}
+              startAdornment={
+                 <MaterialIcon icon="search"/>
+              }
             />
           </div>
         </div>
-        {(show && text) && (
-          <Scrollable className={clsx(styles.items, 'transition-all duration-300 ease-in-out')} ref={itemsRef}>
-            {filtered.map((item, index) => (
-              <div
-                key={item.id}
-                data-id={item.id}
-                data-index={index}
-                className={clsx(styles.itemWrapper, {
-                  [styles.active]: index === cursor,
-                })}
-              >
-                <List>
-                  <MenuItem
-                    key={item.id}
-                    item={item}
-                    state={{}}
-                    onItemClick={onItemClick}
-                  />
-                </List>
-              </div>
-            ))}
+        {show && text && (
+          <Scrollable
+            className={clsx(
+              styles.items,
+              "transition-all duration-300 ease-in-out",
+            )}
+            ref={itemsRef}
+          >
+            <List>
+              {filtered.map((item, index) => (
+                <MenuItem
+                  key={item.id}
+                  item={item}
+                  state={{}}
+                  onItemClick={onItemClick}
+                />
+              ))}
+            </List>
           </Scrollable>
         )}
       </div>
     </Fade>
   );
 }
+
+function getSelectButtonStyles(selected: boolean, disabled?: boolean) {
+  //ps-4 pe-2 py-2.5
+  return clsx(
+    "flex w-full gap-2.5 px-2 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none",
+    selected && !disabled ? "bg-slate-200/50 dark:bg-slate-800" : "",
+    disabled ? "pointer-events-none opacity-50" : "",
+  );
+}
+
+export const CmdkMenuSearch = ({
+  item,
+  items,
+  state,
+  onItemClick,
+  open,
+  toggleSearch,
+  filter,
+}: ItemProps &{
+  toggleSearch: () => void;
+  items: NavMenuItem[];
+  open: boolean;
+  filter?: (item: NavMenuItem, searchText: string) => boolean;
+}) => {
+  const ref = useRef<HTMLElement | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const [openState, setOpenState] = useState(false);
+  return (
+    <MuxPopper
+      className="MuxSearchCmdk-popper overflow-hidden w-full max-w-xl max-h-full"
+      style={{
+        position: 'static'
+      }}
+      placement="bottom"
+      strategy="fixed"
+      open={open}
+      dismiss={{
+      }}
+      keepMounted
+      animate={animation}
+      backdrop={{
+        className:
+          "backdrop z-modal fixed inset-0 mx-auto flex items-center justify-center w-screen h-screen bg-slate bg-opacity-80 z-100",
+        animate: backdropAnimation,
+      }}
+      focusProps={{
+        modal: true,
+        initialFocus: ref,
+      }}
+      overlay={{
+        lockScroll: true,
+        className: "z-modal",
+      }}
+      contentProps={{
+        className: "flex justify-center mx-auto",
+      }}
+      aria-modal="true"
+      roles={{ role: "dialog" }}
+      handler={(open) => {
+        //console.log("toggleSearch:", open);
+        !open && toggleSearch();
+      }}
+      onCompleteState={(open)=> {
+        //console.log("onCompleteState:", open);
+      }}
+    >
+      <Card
+        variant="elevation"
+        className="cmdk-palette-content antialiased bg-body shadow-lg rounded-lg divide-y transition-height w-full h-full"
+        ref={cardRef as any}
+      >
+        <Card.Body className="p-0">
+          <AutoSelect
+            open
+            autoComplete={false}
+            itemFocusClassName="bg-hd-md"
+            itemFocusVisibleClassName="bg-primary text-white"
+            options={items}
+            clearOnBlur
+            autoSelect={false}
+            autoFocus
+            disablePopper
+            disableCloseOnSelect
+            freeSolo
+            clearOnSelect
+            forcePopupIcon={false}
+            clearIcon={<MaterialIcon icon="cancel" />}
+            onChange={(value:any) => {
+              console.log("onItemClick:", value);
+              onItemClick?.(value);
+              //toggleSearch();
+            }}
+            renderTags={() => null}
+            className="border-b px-2 text-base text-body text-opacity-80"
+            placeholder={item.title}
+            ref={ref}
+            size="lg"
+            getOptionKey={(x) => x?.id}
+            getOptionLabel={(x) => x?.title}
+            optionMatches={filter as any}
+            renderOption={(props, option, state) => (
+              <MenuItem
+                {...props}
+                item={option as any}
+                state={{}}
+                ripple={false}
+                key={props.key}
+                //onItemClick={() => props.onClick}
+              />
+            )}
+            slots={{
+              listbox: List
+            }}
+            slotProps={{
+              panel: {
+                className: "overflow-hidden",
+                variant: "elevation",
+                elevation: 0,
+              },
+              listbox: {
+                className: "px-1 py-4 max-h-80 scroll-py-2",
+                hover: true,
+                active: true,
+                focus: true,
+                select: true,
+                listStyle:{
+                  className: "px-1 py-4 max-h-80 scroll-py-2",
+                },
+                itemStyle:{
+                  rippleClassName: "bg-primary/40",
+                  className: "rounded-md px-2 py-2",
+                  hover: "hover:bg-hd-sm hover:text-body",
+                  selected: "bg-primary text-primary-50 font-fw5",
+                  active: "active:bg-hd-sm",
+                  initial: {
+                    transition: "",
+                  },
+                }
+              } as any,
+            }}
+            renderInput={(props) => (
+              <Input
+                {...props}
+                autoFocus
+                disableBorder
+                startAdornment={<MaterialIcon icon="search" size={28} />}
+                nativeClassName="font-fw5"
+                adornmentsProps={{
+                  start: {
+                    className: "mx-1.5",
+                  },
+                  end: {
+                    className: "mx-1.5",
+                  },
+                }}
+              />
+            )}
+          />
+        </Card.Body>
+      </Card>
+    </MuxPopper>
+  );
+};

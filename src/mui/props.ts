@@ -1,6 +1,24 @@
 // @ts-nocheck
 import React from 'react';
 
+
+/**
+ * a function that takes {component} and returns a component that passes along
+ * all the props to {component} except the {InjectedProps} and will accept
+ * additional {AdditionalProps}
+ */
+export type PropInjector<InjectedProps, AdditionalProps = {}> = <
+  C extends React.JSXElementConstructor<ConsistentWith<React.ComponentProps<C>, InjectedProps>>,
+>(
+  component: C,
+) => React.JSXElementConstructor<
+  DistributiveOmit<
+    React.JSX.LibraryManagedAttributes<C, React.ComponentProps<C>>,
+    keyof InjectedProps
+  > &
+    AdditionalProps
+>;
+
 export type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
 
 export type ClassNameMap<ClassKey extends string = string> = Record<ClassKey, string>;
@@ -26,7 +44,7 @@ export type ComponentProps = React.HTMLProps<React.ComponentType> & {
  */
 export type StandardProps<
   ComponentProps,
-  ClassKey extends string,
+  ClassKey extends string = '',
   Removals extends keyof ComponentProps = never,
 > = DistributiveOmit<ComponentProps, 'classes' | Removals> &
   StyledComponentProps<ClassKey> & {
@@ -101,7 +119,7 @@ export interface OverridableComponent<M extends OverridableTypeMap> {
        * The component used for the root node.
        * Either a string to use a HTML element or a component.
        */
-      component: C;
+      component?: C;
     } & OverrideProps<M, C>,
   ): React.JSX.Element | null;
   (props: DefaultComponentProps<M>): React.JSX.Element | null;
@@ -245,7 +263,7 @@ export type SlotComponentPropsWithSlotState<
       slotState: TSlotState,
     ) => Partial<React.ComponentPropsWithRef<TSlotComponent>> & TOverrides);
 
-export type SlotCommonProps = {
+export type SlotCommonProps<Theme extends object = {}> = {
   component?: React.ElementType;
   sx?: SxPProps<Theme>;
 };

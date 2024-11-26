@@ -1,5 +1,4 @@
 import type React from "react";
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -28,18 +27,3 @@ export type inputProps = React.ComponentProps<"input">;
 // javascript prop-types
 export const propTypesColor: any = propTypesColors;
 export const propTypesSize: any = ["sm", "md", "lg"];
-export const propTypesClassName: any = PropTypes.string;
-export const propTypesTrackClassName: any = PropTypes.string;
-export const propTypesThumbClassName: any = PropTypes.string;
-export const propTypesBarClassName: any = PropTypes.string;
-export const propTypesDefaultValue: any = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
-export const propTypesValue: any = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
-export const propTypesOnChange: any = PropTypes.func;
-export const propTypesMin: any = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
-export const propTypesMax: any = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
-export const propTypesStep: any = PropTypes.oneOfType([PropTypes.number, PropTypes.string]);
-export const propTypesInputRef: any = PropTypes.oneOfType([
-  PropTypes.func,
-  PropTypes.shape({ current: PropTypes.any }),
-]);
-export const propTypesInputProps: any = PropTypes.instanceOf(Object);

@@ -4,7 +4,7 @@ import type { Meta } from "@storybook/react";
 
 import { useState } from "react";
 import { Box } from "../box";
-import { Button } from "../button";
+import { Button } from "../../mui";
 import { useRefs } from "../hooks";
 import { Menu, MenuItem, MenuHandler, MenuList } from "../../mui";
 

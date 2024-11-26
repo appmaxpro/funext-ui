@@ -34,7 +34,7 @@ export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const spinnerColor = objectsToString(colors[findMatch(valid.colors, color, "gray")]);
+    const spinnerColor = objectsToString(colors[findMatch(valid.colors, color, "primary")]);
     const spinnerClasses = twMerge(classnames(objectsToString(base)), className);
 
     // 4. return

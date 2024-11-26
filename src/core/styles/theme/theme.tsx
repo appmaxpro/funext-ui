@@ -10,9 +10,8 @@ import {
 } from "react";
 import {Theme} from '../../../mui/theme';
 import {createPortal} from 'react-dom';
-import { TailwindThemeProvider } from "../../../mui";
-//import createCache from '@emotion/cache';
-//import {css, Global} from '@emotion/react';
+import { TailwindThemeProvider, useG } from "../../../mui";
+
 
 import { ClassValue, cssx } from "../../clsx";
 
@@ -27,6 +26,12 @@ import stylesRtl from "../styles.rtl.module.scss";
 import MuiThemeProvider from "../../../mui/theme/MuiThemeProvider";
 import { useMediaQuery } from "../../../mui/hooks";
 
+import { globalCss } from "../../../mui/styles";
+
+const InputGlobalStyles = globalCss({
+  '@keyframes mux-auto-fill': { from: { display: 'block' } },
+  '@keyframes mux-auto-fill-cancel': { from: { display: 'block' } },
+});
 /*
 // XXX(epurkhiser): We create our own emotion cache object to disable the
 // stylis prefixer plugin. This plugin does NOT use browserlist to determine
@@ -47,7 +52,8 @@ export interface CoreThemeContextValue {
   dir?: string;
   theme?: "light" | "dark";
   options?: ResponsiveThemeOptions;
-  muiTheme?: Theme
+  muiTheme?: Theme;
+  muiOptions?: Partial<ThemeOptions>;
 }
 
 export interface CoreThemeProviderProps extends Partial<CoreThemeContextValue> {
@@ -62,6 +68,7 @@ export function CoreThemeProvider({
   dir,
   theme,
   muiTheme,
+  muiOptions,
   options = {},
   children,
 }: CoreThemeProviderProps) {
@@ -139,8 +146,7 @@ export function CoreThemeProvider({
   //const emotionTheme = theme === 'dark' ? darkTheme : lightTheme;
   return (
     <TailwindThemeProvider>
-      <MuiThemeProvider theme={muiTheme} mode={theme} dir={dir === 'rtl' ? dir : undefined}>
-          
+      <MuiThemeProvider theme={muiTheme} options={muiOptions} mode={theme} dir={dir === 'rtl' ? dir : undefined}>
         <ThemeContext.Provider value={value}>
           {createPortal(
             <Fragment>
@@ -148,6 +154,7 @@ export function CoreThemeProvider({
             </Fragment>,
             document.head
           )}
+          {typeof InputGlobalStyles === 'function' && <InputGlobalStyles/>}
           {cloneElement(children, { dir: value.dir, "data-bs-theme": theme })}
           
         </ThemeContext.Provider>

@@ -105,11 +105,14 @@ export interface TextOwnProps extends Omit<SystemProps<Theme>, 'color'> {
    *   body1: 'p',
    *   body2: 'p',
    *   inherit: 'p',
+   *   small: 'small'
    * }
    */
   variantMapping?: Partial<
     Record<OverridableStringUnion<Variant | 'inherit', TextPropsVariantOverrides>, string>
   >;
+
+  fw?: 300 | 400 | 500 | 600 | 700 | 800 | 900 | '300' | '400' | '500' | '600' | '700' | '800' | '900' | 'bold' | 'normal'
 }
 
 export interface TextTypeMap<

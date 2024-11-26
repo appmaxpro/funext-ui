@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import * as React from 'react';
 import getValidReactChildren from '@mui/utils/getValidReactChildren';
@@ -387,7 +388,7 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
       as={component}
       role="group"
       className={clsx(classes.root, className)}
-      ref={ref}
+      ref={ref as any}
       ownerState={ownerState}
       {...other}
     >

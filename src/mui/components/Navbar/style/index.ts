@@ -61,7 +61,7 @@ export const navbar: NavbarStylesType = {
         initial: {
           display: "block",
           width: "w-full",
-          maxWidth: "max-w-screen-2xl",
+          maxWidth: "max-w-screen-xxl",
           borderRadius: "rounded-xl",
           py: "py-4",
           px: "px-8",
@@ -70,7 +70,7 @@ export const navbar: NavbarStylesType = {
           boxShadow: "shadow-md",
         },
         blurred: {
-          backdropFilter: "backdrop-saturate-200 backdrop-blur-2xl",
+          backdropFilter: "backdrop-saturate-200 backdrop-blur-xxl",
           bgOpacity: "bg-opacity-80",
           borderWidth: "border",
           borderColor: "border-white/80",

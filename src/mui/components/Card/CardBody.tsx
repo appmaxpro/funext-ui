@@ -15,9 +15,6 @@ const CardBodyRoot = styled('div', {
   slot: 'Root'
 })({
   padding: 16,
-  '&:last-child': {
-    paddingBottom: 24,
-  },
 });
 
 export type CardBodyProps = SxComponentProps<"div"> & {};

@@ -23,8 +23,12 @@ export interface ListStylesType {
           focus?: ItemInteractive;
           active?: ItemInteractive;
           selected?: ItemInteractive;
+          selectedHover?: ItemInteractive;
           disabled?: ItemInteractive;
         }
+        gutters?: string;
+        dense?: string;
+        divider?: string;
       };
       itemPrefix?: object;
       itemSuffix?: object;
@@ -82,6 +86,9 @@ export const list: ListStylesType = {
           userSelect: "select-none",
           colorClass: "text-tertiary-disabled",
         },
+        gutters: 'px-4',
+        dense: 'py-1',
+        divider: 'border-b'
       },
       itemPrefix: {
         display: "flex",

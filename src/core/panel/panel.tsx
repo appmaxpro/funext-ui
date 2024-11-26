@@ -22,6 +22,7 @@ export interface ToolPanelProps extends React.HTMLProps<HTMLDivElement> {
   };
   collapsible?: boolean;
   collapsed?: boolean;
+  noFrame?: boolean;
   setCollapsed?: (collapsed?: boolean | ((prev?: boolean) => boolean)) => void;
   onToggle?: (collapsed: boolean) => void;
 }
@@ -38,6 +39,7 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
     collapsed = false,
     setCollapsed,
     onToggle,
+    noFrame,
     ...restProps
   } = props;
 
@@ -45,6 +47,8 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
   
   const hasHeader = Boolean(header || toolbar || collapsible);
   const hasFooter = Boolean(footer);
+
+  //console.log("hasHeader:", header, "has toolbar:", toolbar, "has collapsible:", collapsible)
 
   const [collapseState, setCollapseState] = useState(
     collapsed ? "exited" : "entered",
@@ -108,7 +112,7 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
 
   const content = (
     <div className={styles.body}>
-      <ContentPane className={styles.content} onScroll={onScroll}>
+      <ContentPane className={clsx(styles.content, noFrame && styles.noFrame)} onScroll={onScroll}>
         {children}
       </ContentPane>
       {hasFooter && <div className={styles.footer}>{footer}</div>}
@@ -143,6 +147,7 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
           toolbar={actualToolbar}
           collapsible={collapsible}
           handleToggle={handleToggle}
+          header={header}
           className={clsx({
             [styles.hide]: headerHide,
             [styles.shadow]: headerShadow,

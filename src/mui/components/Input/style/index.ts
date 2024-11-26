@@ -1,4 +1,4 @@
-import styles from './input.module.scss';
+import styles from "./input.module.scss";
 import inputOutlined from "./outlined";
 import inputStandard from "./standard";
 import inputFilled from "./filled";
@@ -9,8 +9,12 @@ import type {
   sizeType,
   InputColorType,
 } from "../../../types/components/input";
-import { propTypesVariant, propTypesSize, propTypesColor } from "../../../types/components/input";
-import { ReactNode } from 'react';
+import {
+  propTypesVariant,
+  propTypesSize,
+  propTypesColor,
+} from "../../../types/components/input";
+import { ReactNode } from "react";
 
 export interface InputSizeStylesType {
   container?: object;
@@ -30,7 +34,6 @@ export interface InputVariantStylesType {
     inputWithIcon?: object;
     icon?: object;
     label?: object;
-
   };
   sizes?: {
     md?: InputSizeStylesType;
@@ -43,7 +46,6 @@ export interface InputVariantStylesType {
   error?: InputStateStylesType;
   success?: InputStateStylesType;
   shrink?: InputStateStylesType;
-
 }
 
 export interface InputStylesType {
@@ -59,8 +61,7 @@ export interface InputStylesType {
     rootProps?: any;
     shrink?: boolean;
     className?: string;
-    disableBorder?:boolean
-    
+    disableBorder?: boolean;
   };
   valid?: {
     variants?: string[];
@@ -73,7 +74,7 @@ export interface InputStylesType {
       input?: object;
       label?: object;
       native?: object;
-      notched?: string,
+      notched?: string;
       adornments?: {
         props?: object;
         start?: object;
@@ -101,7 +102,7 @@ export const input: InputStylesType = {
     success: false,
     shrink: false,
     className: "",
-    disableBorder: false
+    disableBorder: false,
   },
   valid: {
     variants: propTypesVariant,
@@ -112,8 +113,7 @@ export const input: InputStylesType = {
     base: {
       root: {
         position: "relative",
-        width: "w-full",
-        minWidth: "min-w-[120px]",
+        minWidth: "min-w-28",
       },
       input: {
         width: "w-full",
@@ -128,15 +128,15 @@ export const input: InputStylesType = {
       },
       adornments: {
         props: {
-          position: 'relative',
-          height: 'h-full'
+          position: "relative",
+          height: "h-full",
         },
         start: {
-          flex: styles['adornment']
+          flex: styles["adornment"],
         },
         end: {
-          flex: styles['adornment']
-        }
+          flex: styles["adornment"],
+        },
       },
       label: {
         fontWeight: "font-normal",
@@ -146,14 +146,12 @@ export const input: InputStylesType = {
         color: "text-red-500",
         ml: "ms-0.5",
       },
-      disabled:{
-        
-      }
+      disabled: {},
     },
     variants: {
       outlined: inputOutlined,
       standard: inputStandard,
-      filled: inputFilled,
+      filled: inputFilled as InputVariantStylesType,
     },
   },
 };

@@ -94,7 +94,7 @@ export function classNames(
 
 export function renderJsonStructure(jsonStructure: JsonStructure) {
   return jsonStructure.map((list) => (
-    <Cmdk.List heading={list.heading} key={list.id}>
+    <Cmdk.List heading={list.heading} key={list.id} as="ul">
       {list.items.map(({ id, ...rest }) => (
         <Cmdk.ListItem
           index={getItemIndex(jsonStructure, id)}

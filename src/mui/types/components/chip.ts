@@ -10,7 +10,7 @@ import {propTypesColors} from "../generic";
 // typescript types
 export type variant = "filled" | "gradient" | "outlined" | "ghost";
 export type size = "sm" | "md" | "lg";
-export type color = Colors;
+export type color = Colors | "white" | "black" |"default";
 export type icon = ReactNode;
 export type open = boolean;
 export type onClose = () => void;
@@ -25,5 +25,5 @@ export type value = ReactNode;
 
 // javascript prop-types
 export const propTypesVariant: any = ["filled", "gradient", "outlined", "ghost"];
-export const propTypesColor:string[] = ["white", "black", ...propTypesColors];
+export const propTypesColor:string[] = ["white", "black", "default", ...propTypesColors];
 export const propTypesSize: any = ["xs", "sm", "md"];

@@ -37,9 +37,11 @@ export const popover: PopoverStylesType = {
     arrow: {
       props: {
         //maybe enough to set "fill-slate-50 stroke-slate-300 stroke-0" 
-        className: `fill-slate-50 
-                    [&>path:first-of-type]:stroke-slate-300 
-                    [&>path:last-of-type]:fill-slate-50`,
+        className: `fill-white 
+                      [&>path:first-of-type]:stroke-slate-300 
+                      [&>path:last-of-type]:fill-white
+                      dark:fill-slate:800
+                      dark:[&>path:last-of-type]:slate:800`,
         tipRadius: 2,
         strokeWidth: .25,
         style:{ transform: 'translateY(-1px)' }

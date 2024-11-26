@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 
 // framer-motion
-import { AnimatePresence, m, motion, LazyMotion, domAnimation } from "framer-motion";
+import { AnimatePresence, m, LazyMotion, domAnimation } from "framer-motion";
 
 // @floating-ui
 import { 
@@ -18,7 +18,7 @@ import { useTailwindTheme } from "../../theme";
 import { twMerge } from "tailwind-merge";
 import objectsToString from "../../utils/objectsToString";
 
-const MotionDiv = motion.div;
+const MotionDiv = m.div;
 
 export interface SpeedDialContentProps extends React.ComponentProps<"div"> {}
 

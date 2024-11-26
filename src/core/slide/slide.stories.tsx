@@ -7,6 +7,7 @@ import { InputLabel, TextLabel } from "../input-label";
 import {Fade} from '../fade';
 import { Slide } from "./slide";
 import { Checkbox } from "../../mui";
+import React from "react";
 
 const config = {
   component: Slide,

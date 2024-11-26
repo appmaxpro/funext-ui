@@ -72,7 +72,18 @@ export const GridHeader = React.memo(function GridHeader(
     onColumnResizeEnd,
   } = props;
   const RowRenderer = rowRenderer || "div";
-
+  const headerMenu = (
+    allColumns && onColumnShow && onColumnHide &&
+    <GridHeaderMenu
+        groupBy={groupBy}
+        columns={allColumns}
+        onColumnShow={onColumnShow}
+        onColumnHide={onColumnHide}
+        onColumnCustomize={onColumnCustomize}
+        onColumnDrop={onColumnDrop}
+        onColumnGroupRemove={onColumnGroupRemove}
+      />
+  );
   return (
     <div className={className}>
       <RowRenderer className={styles.row}>
@@ -80,6 +91,7 @@ export const GridHeader = React.memo(function GridHeader(
           const sortColumn = (orderBy || []).find(
             (col) => col.name === column.name,
           );
+          const isLast = index === columns.length - 1;
           return (
             <GridHeaderColumn
               key={column.id ?? column.name}
@@ -99,31 +111,13 @@ export const GridHeader = React.memo(function GridHeader(
               onResizeStart={onColumnResizeStart}
               onResizeEnd={onColumnResizeEnd}
               onCustomize={onColumnCustomize}
+              lastHeader={isLast && headerMenu}
               {...(isRowCheck(column) ? { checkType, selectionType } : {})}
+
             />
           );          
         })}
-        {allColumns && onColumnShow && onColumnHide && (
-          <GridColumn 
-            className={styles.action} 
-            data={{
-              width: 38,
-              maxWidth:38,
-              padding: '0',
-            } as any}
-            index={columns.length}
-          >
-            <GridHeaderMenu
-              groupBy={groupBy}
-              columns={allColumns}
-              onColumnShow={onColumnShow}
-              onColumnHide={onColumnHide}
-              onColumnCustomize={onColumnCustomize}
-              onColumnDrop={onColumnDrop}
-              onColumnGroupRemove={onColumnGroupRemove}
-            />
-          </GridColumn>
-        )}
+        
       </RowRenderer>
 
       {searchRowRenderer && searchColumnRenderer && (

@@ -1,16 +1,15 @@
-import * as React from 'react';
-import {generateUtilityClasses, generateUtilityClass } from '../../styles';
-import { 
+import * as React from "react";
+import { generateUtilityClasses, generateUtilityClass } from "../../styles";
+import {
   SxThemeProps,
-  styled ,
-  composeClasses ,
-  useMuiDefaultProps, 
-  clsx ,
-  memoTheme
-} from '../../styles';
+  styled,
+  composeClasses,
+  useMuiDefaultProps,
+  clsx,
+  memoTheme,
+} from "../../styles";
 
-import { OverridableComponent, OverrideProps } from '../../props';
-
+import { OverridableComponent, OverrideProps } from "../../props";
 
 export interface ListSubheaderClasses {
   /** Styles applied to the root element. */
@@ -19,29 +18,29 @@ export interface ListSubheaderClasses {
   colorPrimary: string;
   /** Styles applied to the root element if `color="inherit"`. */
   colorInherit: string;
-  /** Styles applied to the inner `component` element unless `disableGutters={true}`. */
+  /** Styles applied to the inner `component` element unless `gutters={true}`. */
   gutters: string;
   /** Styles applied to the root element if `inset={true}`. */
   inset: string;
-  /** Styles applied to the root element unless `disableSticky={true}`. */
+  /** Styles applied to the root element unless `sticky={true}`. */
   sticky: string;
 }
 
 export type ListSubheaderClassKey = keyof ListSubheaderClasses;
 
 export function getListSubheaderUtilityClass(slot: string): string {
-  return generateUtilityClass(':MuxListSubheader', slot);
+  return generateUtilityClass("MuxListSubheader", slot);
 }
 
-export const listSubheaderClasses: ListSubheaderClasses = generateUtilityClasses(':MuxListSubheader', [
-  'root',
-  'colorPrimary',
-  'colorInherit',
-  'gutters',
-  'inset',
-  'sticky',
-]);
-
+export const listSubheaderClasses: ListSubheaderClasses =
+  generateUtilityClasses("MuxListSubheader", [
+    "root",
+    "colorPrimary",
+    "colorInherit",
+    "gutters",
+    "inset",
+    "sticky",
+  ]);
 
 export interface ListSubheaderOwnProps {
   /**
@@ -56,17 +55,17 @@ export interface ListSubheaderOwnProps {
    * The color of the component. It supports those theme colors that make sense for this component.
    * @default 'default'
    */
-  color?: 'default' | 'primary' | 'inherit';
+  color?: "default" | "primary" | "inherit";
   /**
-   * If `true`, the List Subheader will not have gutters.
-   * @default false
+   * If `false`, the List Subheader will not have gutters.
+   * @default true
    */
-  disableGutters?: boolean;
+  gutters?: boolean;
   /**
-   * If `true`, the List Subheader will not stick to the top during scroll.
-   * @default false
+   * If `false`, the List Subheader will not stick to the top during scroll.
+   * @default true
    */
-  disableSticky?: boolean;
+  sticky?: boolean;
   /**
    * If `true`, the List Subheader is indented.
    * @default false
@@ -80,55 +79,58 @@ export interface ListSubheaderOwnProps {
 
 export interface ListSubheaderTypeMap<
   AdditionalProps = {},
-  RootComponent extends React.ElementType = 'li',
+  RootComponent extends React.ElementType = "li",
 > {
   props: AdditionalProps & ListSubheaderOwnProps;
   defaultComponent: RootComponent;
 }
 
 export type ListSubheaderProps<
-  RootComponent extends React.ElementType = ListSubheaderTypeMap['defaultComponent'],
+  RootComponent extends
+    React.ElementType = ListSubheaderTypeMap["defaultComponent"],
   AdditionalProps = {},
-> = OverrideProps<ListSubheaderTypeMap<AdditionalProps, RootComponent>, RootComponent> & {
+> = OverrideProps<
+  ListSubheaderTypeMap<AdditionalProps, RootComponent>,
+  RootComponent
+> & {
   component?: React.ElementType;
 };
 
-
-const useUtilityClasses = (ownerState:any) => {
-  const { classes, color, disableGutters, inset, disableSticky } = ownerState;
+const useUtilityClasses = (ownerState: any) => {
+  const { classes, color, gutters, inset, sticky } = ownerState;
 
   const slots = {
     root: [
-      'root',
-      color !== 'default' && `color-${color}`,
-      !disableGutters && 'gutters',
-      inset && 'inset',
-      !disableSticky && 'sticky',
+      "root",
+      color !== "default" && `color-${color}`,
+      !gutters && "gutters",
+      inset && "inset",
+      !sticky && "sticky",
     ],
   };
 
   return composeClasses(slots, getListSubheaderUtilityClass, classes);
 };
 
-const ListSubheaderRoot = styled('li', {
-  name: ':MuxListSubheader',
-  slot: 'Root',
+const ListSubheaderRoot = styled("li", {
+  name: "MuxListSubheader",
+  slot: "Root",
   overridesResolver: (props, styles) => {
     const { ownerState } = props;
 
     return [
       styles.root,
-      ownerState.color !== 'default' && styles[`color-${ownerState.color}`],
-      !ownerState.disableGutters && styles.gutters,
+      ownerState.color !== "default" && styles[`color-${ownerState.color}`],
+      !ownerState.gutters && styles.gutters,
       ownerState.inset && styles.inset,
-      !ownerState.disableSticky && styles.sticky,
+      !ownerState.sticky && styles.sticky,
     ];
   },
 })(
-  memoTheme(({ theme }:any) => ({
-    boxSizing: 'border-box',
-    lineHeight: '48px',
-    listStyle: 'none',
+  memoTheme(({ theme }: any) => ({
+    boxSizing: "border-box",
+    lineHeight: "48px",
+    listStyle: "none",
     color: (theme.vars || theme).palette.text.secondary,
     fontFamily: theme.typography.fontFamily,
     fontWeight: theme.typography.fontWeightMedium,
@@ -136,7 +138,7 @@ const ListSubheaderRoot = styled('li', {
     variants: [
       {
         props: {
-          color: 'primary',
+          color: "primary",
         },
         style: {
           color: (theme.vars || theme).palette.primary.main,
@@ -144,29 +146,29 @@ const ListSubheaderRoot = styled('li', {
       },
       {
         props: {
-          color: 'inherit',
+          color: "inherit",
         },
         style: {
-          color: 'inherit',
+          color: "inherit",
         },
       },
       {
-        props: ({ ownerState }:any) => !ownerState.disableGutters,
+        props: ({ ownerState }: any) => ownerState.gutters,
         style: {
           paddingLeft: 16,
           paddingRight: 16,
         },
       },
       {
-        props: ({ ownerState }:any) => ownerState.inset,
+        props: ({ ownerState }: any) => ownerState.inset,
         style: {
           paddingLeft: 72,
         },
       },
       {
-        props: ({ ownerState }:any) => !ownerState.disableSticky,
+        props: ({ ownerState }: any) => ownerState.sticky,
         style: {
-          position: 'sticky',
+          position: "sticky",
           top: 0,
           zIndex: 1,
           backgroundColor: (theme.vars || theme).palette.background.paper,
@@ -176,14 +178,20 @@ const ListSubheaderRoot = styled('li', {
   })),
 );
 
-export const ListSubheader = React.forwardRef(function ListSubheader(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: ':MuxListSubheader' }) as ListSubheaderProps;
+export const ListSubheader = React.forwardRef<
+  HTMLLIElement,
+  ListSubheaderProps
+>(function ListSubheader(inProps, ref) {
+  const props = useMuiDefaultProps({
+    props: inProps,
+    name: "MuxListSubheader",
+  }) as ListSubheaderProps;
   const {
     className,
-    color = 'default',
-    component = 'li',
-    disableGutters = false,
-    disableSticky = false,
+    color = "default",
+    component = "li",
+    gutters = false,
+    sticky = true,
     inset = false,
     ...other
   } = props;
@@ -192,8 +200,8 @@ export const ListSubheader = React.forwardRef(function ListSubheader(inProps, re
     ...props,
     color,
     component,
-    disableGutters,
-    disableSticky,
+    gutters,
+    sticky,
     inset,
   };
 
@@ -209,6 +217,5 @@ export const ListSubheader = React.forwardRef(function ListSubheader(inProps, re
     />
   );
 });
-
 
 export default ListSubheader;

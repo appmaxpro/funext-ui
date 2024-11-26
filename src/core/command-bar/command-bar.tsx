@@ -32,11 +32,10 @@ import { useForwardedRef, useRefs } from "../hooks";
 
 
 export interface CommandItemProps {
-  key: string;
+  key?: any;
   text?: string;
   subtext?: string;
   description?: string;
-  color?: ButtonProps["color"];
   menuProps?: Omit<MenuProps, 'children'>;
   menuListProps?: Omit<MenuListProps, 'children'>;
   imageProps?: {
@@ -67,6 +66,7 @@ export interface CommandItemProps {
   props?: any;
   size?: ButtonProps['size'];
   variant?: ButtonProps['variant'];
+  color?: ButtonProps['color'];
 }
 
 export interface CommandBarProps {
@@ -145,7 +145,8 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
 
   if (OuterRender) {
     const {outer, inner, ...rest} = props;
-    return <OuterRender {...rest} ref={targetRef}/>;
+    //@ts-ignore
+    return <OuterRender {...rest} ref={targetRef as any}/>;
   }
 
   const isSplit = asSplit ?? (onClick && items.length > 0 && !showAsMenuItem);
@@ -172,18 +173,20 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
   const hasContent = !asSplit && !showAsMenuItem && (imageProps || Icon || iconProps || text || showArrow);
   const useWrapperGroup = hasContent && isSplit;
   const useContent = (hasContent  && (isSplit || (text && !iconOnly)));
-  const WrapperEl = useWrapperGroup ? Wrapper : Fragment;
+  const WrapperEl:React.FC<any> = useWrapperGroup ? Wrapper : Fragment;
   
   const showArrowIn = showArrow && !useContent;
 
   const iconComp = (Icon 
           ? <Icon className={styles.icon}/> 
           : iconProps?.icon 
-            ? <MaterialIcon {...iconProps} className={styles.icon}/>
+            ? <MaterialIcon {...iconProps} className={styles.icon} />
             : imageProps?.src && 
                   <Image  {...imageProps} className={clsx(styles.image, imageProps.className)}/>)
                    || undefined;  
 
+  
+  const MenuEl:React.FC<any> = MenuItem;
   return (
     <>
       {showAsMenuItem ? (
@@ -195,8 +198,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
           item={props}
           menuProps={menuProps} 
           menuListProps={menuListProps}>
-
-          <MenuItem 
+          <MenuEl 
              {...buttonProps} 
              disabled={disabled} 
              endIcon={items?.length > 0
@@ -214,7 +216,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
             ) : text
             }
             
-          </MenuItem>
+          </MenuEl>
         </SubMenuButton>  
       ) : (
         <WrapperEl {...(useWrapperGroup && {className, color, variant})}>
@@ -229,7 +231,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
 
               <StyledButton 
                 useContent={useContent} 
-                color={color}
+                
                 title={description || text}
                 showTip={!items.length}
                 aria-haspopup={!isSplit && items.length > 0 ? "true" : undefined}
@@ -246,9 +248,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                   ((iconComp && iconSide === "end") || showArrow) && <>
                       {iconSide === "end" ? iconComp : null}
                       {showArrow && <MaterialIcon
-                        icon="arrow_drop_down"
-                        className={ styles.arrowIcon}
-                      />}
+                        icon="arrow_drop_down"/>}
                   </>
                 }
                 startIcon={
@@ -257,6 +257,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                   : iconComp
                 }
                 text={text}
+                color={color}
                 variant={variant}
                 size={size}
               > 
@@ -285,7 +286,6 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                   ? iconComp 
                   : <MaterialIcon
                     icon="arrow_drop_down"
-                    className={styles.arrowIcon}
                   />
                 }
                 variant={variant}
@@ -306,10 +306,10 @@ export function CommandBar(props: CommandBarProps) {
   const { className, iconOnly, iconProps = {}, items = [], menuListProps } = props;
   return (
     <div className={clsx(className, styles.bar)}>
-      {items.map(({ iconProps: icon, hidden, menuProps, outer:OuterRender=CommandItem, divider, ...item }) => (
+      {items.map(({ iconProps: icon, hidden, menuProps, outer:OuterRender=CommandItem, divider, ...item }, index) => (
 
        divider 
-        ? <Divider vertical variant="middle" flexItem/>
+        ? <Divider vertical variant="middle" flexItem key={`${index}`}/>
         : hidden 
           ? null
           : <OuterRender
@@ -321,6 +321,7 @@ export function CommandBar(props: CommandBarProps) {
                 ...props.menuProps,
                 ...menuProps,
               }}
+              key={`${index}`}
           />
       ))}
     </div>
@@ -359,7 +360,7 @@ const StyledButton = forwardRef(({
 
     } else {
       const {children, startIcon, ...iconProps} = props;
-      button = (<IconButton {...iconProps} ref={ref} tabIndex={-1}>
+      button = (<IconButton {...iconProps} color={color} ref={ref} tabIndex={-1}>
             {children}
             {endIcon || startIcon}
       </IconButton>);
@@ -423,7 +424,7 @@ const SubMenuButton = forwardRef(({
 
 
   if (item.iconOnly) {
-    const tip = item.title ?? item.text;
+    const tip = item.description ?? item.title ?? item.text ;
     if (tip) {
       const btn = handler;
       handler = (
@@ -449,8 +450,8 @@ const SubMenuButton = forwardRef(({
     allowHover={!!showAsMenuItem}>
     {handler}
     <MenuList {...menuListProps}>
-      {items.map((item:any) => {
-        const { key, divider, hidden, outer:OuterRender, ...rest } = item;
+      {items.map((item:any, index: any) => {
+        const { key=index, divider, hidden, outer:OuterRender, ...rest } = item;
 
         if (hidden) {
           return null;
@@ -472,10 +473,10 @@ const SubMenuButton = forwardRef(({
         };
 
         if (OuterRender) {
-          return <OuterRender { ...itemProps}/>;
+          return <OuterRender { ...itemProps} key={key}/>;
         }
 
-        return <CommandItem {...itemProps} />;
+        return <CommandItem {...itemProps} key={key}/>;
       })}
     </MenuList>
   </Menu>);

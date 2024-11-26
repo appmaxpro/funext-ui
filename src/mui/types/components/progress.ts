@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -23,7 +22,3 @@ export type className = string;
 export const propTypesVariant: any = ["filled", "gradient"];
 export const propTypesColor: any = propTypesColors;
 export const propTypesSize: any = ["sm", "md", "lg"];
-export const propTypesValue: any = PropTypes.number;
-export const propTypesLabel: any = PropTypes.oneOfType([PropTypes.string, PropTypes.bool]);
-export const propTypesBarProps: any = PropTypes.instanceOf(Object);
-export const propTypesClassName: any = PropTypes.string;

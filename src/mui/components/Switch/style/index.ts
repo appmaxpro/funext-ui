@@ -9,7 +9,7 @@ import type {
   disabled,
   objectType,
 } from "../../../types/components/checkbox";
-import { propTypesColor } from "../../../types/components/checkbox";
+import { propTypesColors } from "../../../types/components/checkbox";
 
 export interface SwitchButtonStylesType {
   defaultProps?: {
@@ -51,7 +51,7 @@ export const switchButton: SwitchButtonStylesType = {
     circleProps: undefined,
   },
   valid: {
-    colors: propTypesColor,
+    colors: propTypesColors,
   },
   styles: {
     base: {
@@ -66,6 +66,7 @@ export const switchButton: SwitchButtonStylesType = {
         height: "h-4",
         cursor: "cursor-pointer",
         borderRadius: "rounded-full",
+        color: "text-item-4"
       },
       input: {
         peer: "peer",
@@ -79,11 +80,11 @@ export const switchButton: SwitchButtonStylesType = {
         transition: "transition-colors duration-300",
       },
       circle: {
-        bg: "bg-white",
+        bg: "bg-body",
         width: "w-5",
         height: "h-5",
         borderWidth: "border",
-        borderColor: "border-slate-100 dark:border-slate-800",
+        borderColor: "border-slate-200 dark:border-slate-800",
         borderRadius: "rounded-full",
         boxShadow: "shadow-md",
         position: "absolute",

@@ -61,6 +61,8 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     const ripple = rest.ripple ?? contextRipple ?? defaultProps.ripple;
 
     const itemStyles = twMerge(getItemStyle(disabled, selected, active, hover), className);
+    //console.log("itemStyles:", itemStyles)
+    
     const prefixComp = !isValidElement(startIcon) || (startIcon as any).type == ListItemPrefix 
           ? startIcon 
           : <ListItemPrefix>{startIcon}</ListItemPrefix>

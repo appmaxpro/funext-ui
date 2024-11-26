@@ -1,4 +1,5 @@
 // types
+import { height } from "@mui/system";
 import type { size, dismiss, animate, className } from "../../../types/components/dialog";
 import { propTypesSize } from "../../../types/components/dialog";
 
@@ -45,6 +46,7 @@ export const dialog: DialogStylesType = {
   styles: {
     base: {
       backdrop: {
+        position: "absolute",
         display: "flex",
         placeItems: "items-center justify-center",
         width: "w-screen",
@@ -64,6 +66,7 @@ export const dialog: DialogStylesType = {
         borderRadius: "rounded-lg",
         boxShadow: "shadow-2xl",
         display: "flex flex-col",
+        overflow: 'overflow-hidden',
         w: 'max-w-full w-full',
         h: 'max-h-full'
       },
@@ -95,15 +98,12 @@ export const dialog: DialogStylesType = {
         maxWidth: "max-w-[95%] md:max-w-[83.333333%] 2xl:max-w-[75%]",
       },
       xxl: {
-        display: "flex",
-        flexDirection: "flex-col",
         width: "w-screen",
         minWidth: "min-w-[100vw]",
         maxWidth: "max-w-[100vw]",
         height: "h-screen",
         minHeight: "min-h-[100vh]",
-        maxHeight: "max-h-[100vh]",
-        borderRadius: "rounded-none",
+        maxHeight: "max-h-[100vh]"
       },
     },
   },

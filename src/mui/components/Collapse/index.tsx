@@ -1,124 +1,243 @@
-'use client';
-import React from "react";
-
-// framer-motion components
-import {
-  AnimatePresence,
-  AnimatePresenceProps,
-  m,
-  MotionProps,
-  LazyMotion,
-  domAnimation,
-} from "framer-motion";
-
-// @floating-ui
-import { useMergeRefs } from "@floating-ui/react";
-
-// utils
-import merge from "deepmerge";
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
-
+"use client";
+import React, { ComponentType, ElementType, forwardRef, useRef } from "react";
 // types
+import { styled, memoTheme, SxThemeProps } from "../../styles";
 import {
-  AnimationProps,
-} from "../../types/components/collapse";
-import {styled, SxComponentProps} from "../../styles";
-import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+  getTransitionProps,
+  getTransition,
+  reflow,
+  TransitionProps,
+} from "../../../core/transitions";
+import { useForwardedRef } from "../../../core/hooks";
+import { SxBox } from "../Box";
+import { Transition } from "react-transition-group";
 
-
-const CollapseRoot = styled('div', {
+const CollapseRoot = styled("div", {
   name: "MuxCollapse",
   slot: "Root",
   overridesResolver: (props, styles) => styles.root,
-})('');
+})(
+  memoTheme((theme) => ({
+    overflow: "hidden",
+    minWidth: 0,
+    minHeight: 0,
+    variants: [
+      {
+        props: {
+          vertical: false,
+          open: false,
+        },
+        style: {
+          height: 0,
+        },
+      },
+      {
+        props: {
+          vertical: true,
+          open: true,
+          state: "entered",
+        },
+        style: {
+          height: "auto",
+        },
+      },
+      {
+        props: {
+          vertical: false,
+          open: false,
+        },
+        style: {
+          width: 0,
+        },
+      },
+      {
+        props: {
+          vertical: false,
+          open: true,
+          state: "entered",
+        },
+        style: {
+          width: "auto",
+        },
+      },
+      {
+        props: {
+          state: "entered",
+        },
+        style: {
+          overflow: "visible",
+        },
+      },
+      {
+        props: {
+          state: "exited",
+        },
+        style: {
+          visibility: "hidden",
+        },
+      },
+    ],
+  })),
+);
 
-export interface CollapseProps extends SxComponentProps<'div'> {
+export interface CollapseProps extends TransitionProps {
   open: boolean;
-  animate?: AnimationProps;
   horizontal?: boolean;
   keepMounted?: boolean;
-  motionProps?: MotionProps;
+  className?: string;
+  sx?: SxThemeProps;
+  as?: ElementType | ComponentType | undefined;
 }
 
-interface NewAnimatePresenceProps
-  extends Omit<AnimatePresenceProps, "children"> {
-  children: React.ReactNode;
-}
-
-export const Collapse = React.forwardRef<HTMLDivElement, CollapseProps>(
+export const Collapse = forwardRef<HTMLDivElement, CollapseProps>(
   (
-    { open, animate, className, horizontal, keepMounted, motionProps, children, ...rest },
+    {
+      horizontal,
+      timeout = 300,
+      children,
+      className,
+      onEnter,
+      onEntering,
+      onEntered,
+      onExit,
+      onExiting,
+      onExited,
+      keepMounted,
+      open:openProps,
+      as,
+      sx,
+      ...props
+    },
     ref,
   ) => {
-    // 1. init
-    const mobileNavRef = React.useRef(null);
-    const { collapse } = useTailwindTheme();
-    const { styles } = collapse;
-    const { base } = styles;
+    const forwardRef = useForwardedRef(ref);
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const size = horizontal ? "width" : "height";
+    const open = openProps ?? props.in ?? false;
 
-    // 2. set default props
-    animate = animate ?? {};
-    className = className ?? "";
-
-    const direction = horizontal ? "width" : "height";
-
-    // 3. set styles
-    const classes = twMerge(classnames(objectsToString(base)), className);
-
-    // 4. set animations
-    const mainAnimation = {
-      unmount: {
-        [direction]: "0px",
-        //transform: `scale(${horizontal ? .8 : 1}, ${horizontal ? 1 : .8})`,
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-      },
-      mount: {
-        [direction]: "auto",
-        //transform: 'scale(1, 1)',
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-      },
+    const getWrapperSize = () => {
+      const wrapper = wrapperRef.current;
+      if (wrapper) {
+        const position = wrapper.style.position;
+        const visibility = wrapper.style.visibility;
+        const side = horizontal ? "clientWidth" : "clientHeight";
+        try {
+          wrapper.style.visibility = "hidden";
+          wrapper.style.position = "absolute";
+          return wrapper[side];
+        } finally {
+          wrapper.style.position = position;
+          wrapper.style.visibility = visibility;
+        }
+      }
+      return 0;
     };
 
-    const appliedAnimation = merge(mainAnimation, animate);
-    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> =
-      AnimatePresence;
-
-    // 5. set refs
-    const mergedRef = useMergeRefs([ref, mobileNavRef]);
-    const ownerState = {
-      open,
-      keepMounted
+    function handleEnter(isAppearing: boolean) {
+      const node = forwardRef.current!;
+      node.style[size] = "0";
+      if (onEnter) {
+        onEnter(node, isAppearing);
+      }
     }
-    // 6. return
+
+    const handleEntering = (isAppearing: boolean) => {
+      const node = forwardRef.current!;
+      const style = node.style;
+      const wrapperSize = getWrapperSize();
+      const options = getTransitionProps("enter", { timeout, style });
+
+      node.style[size] = `${wrapperSize}px`;
+      node.style.transition = getTransition(size, options);
+
+      if (onEntering) {
+        onEntering(node, isAppearing);
+      }
+    };
+
+    const handleEntered = (isAppearing: boolean) => {
+      const node = forwardRef.current!;
+      node.style[size] = "auto";
+
+      if (onEntered) {
+        onEntered(node, isAppearing);
+      }
+    };
+
+    const handleExit = () => {
+      const node = forwardRef.current!;
+      const wrapperSize = getWrapperSize();
+
+      node.style[size] = `${wrapperSize}px`;
+      reflow(node);
+
+      if (onExit) {
+        onExit(node);
+      }
+    };
+
+    const handleExiting = () => {
+      const node = forwardRef.current!;
+      const style = node.style;
+      const options = getTransitionProps("exit", { timeout, style });
+
+      node.style[size] = "0";
+      node.style.transition = getTransition(size, options);
+
+      if (onExiting) {
+        onExiting(node);
+      }
+    };
+
+    const handleExited = () => {
+      const node = forwardRef.current!;
+      if (onExited) {
+        onExited(node);
+      }
+    };
+
     return (
-      <LazyMotion features={domAnimation}>
-        <CollapseRoot 
-            aria-expanded={open ? 'true' : 'false'} 
-            ownerState={ownerState}
-            className={classes}
-            {...rest}
-            ref={mergedRef}>
-          <NewAnimatePresence initial={false}>
-            {keepMounted || open ? (
-              <m.div
-                initial="unmount"
-                exit="unmount"
-                animate={open ? "mount" : "unmount"}
-                variants={appliedAnimation}
-                className="overflow-hidden"
-                {...motionProps}
+      <Transition
+        timeout={timeout}
+        onEnter={handleEnter}
+        onEntering={handleEntering}
+        onEntered={handleEntered}
+        onExit={handleExit}
+        onExiting={handleExiting}
+        onExited={handleExited}
+        nodeRef={forwardRef}
+        {...props}
+        in={open}
+      >
+        {(state) => {
+          const ownerState = {
+            state,
+            open,
+            vertical: !horizontal,
+          };
+          return (
+            <CollapseRoot
+              ownerState={ownerState}
+              ref={forwardRef}
+              sx={sx}
+              as={as}
+            >
+              <SxBox
+                ref={wrapperRef}
+                display="flex"
+                minWidth={0}
+                minHeight={0}
+                className={className}
               >
-                {children}
-              </m.div>
-            ) : null}
-          </NewAnimatePresence>
-        </CollapseRoot>
-      </LazyMotion>
+                <SxBox minWidth={0} minHeight={0}>
+                  {typeof children === "function" && children(state)}
+                  {typeof children !== "function" && children}
+                </SxBox>
+              </SxBox>
+            </CollapseRoot>
+          );
+        }}
+      </Transition>
     );
   },
 );

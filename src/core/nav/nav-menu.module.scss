@@ -69,7 +69,22 @@
     --ax-theme-nav-menu-item-active-color,
     var(--bs-body-color)
   );
+  --ax-nav-menu-item-font-size: var(
+    --ax-theme-nav-menu-item-font-size,
+    0.875rem
+  );
+  --ax-nav-menu-item-font-weight: var(
+    --ax-theme-nav-menu-item-font-weight,
+    500
+  );
 }
+
+.rootList {
+  font-size: var(--ax-nav-menu-item-font-size);
+  font-weight: var(--ax-nav-menu-item-font-weight);
+  line-height: 1.25rem;
+}
+
 $input_radius: calc(var(--ax-nav-menu-item-radius) - 4px);
 
 .nav {
@@ -142,7 +157,7 @@ $input_radius: calc(var(--ax-nav-menu-item-radius) - 4px);
 
 .item {
   display: flex;
-  transition: all 0.4s cubic-bezier(0, 0.25, 0.73, 1.13);
+  transition: all 0.2s ease-in-out;
   transition-property: background-color, color;
   .tag {
     margin: 0 0.5rem;
@@ -208,7 +223,7 @@ $input_radius: calc(var(--ax-nav-menu-item-radius) - 4px);
   display: none;
   flex-direction: column;
   flex-grow: 1;
-
+  min-height: 0;
   border-radius: var(--ax-nav-menu-item-radius);
   background-color: var(--ax-nav-menu-bg);
 
@@ -237,7 +252,7 @@ $input_radius: calc(var(--ax-nav-menu-item-radius) - 4px);
     display: flex;
   }
 
-  min-height: 0;
+  
 }
 
 .menu,

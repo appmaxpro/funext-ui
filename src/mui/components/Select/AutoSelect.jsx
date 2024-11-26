@@ -184,19 +184,8 @@ const AutoSelectPanel = styled(Panel, {
   overridesResolver: (props, styles) => styles.panel,
 })(memoTheme(({ theme }) => ({
   ...theme.typography.body1,
-  overflow: 'auto',
   backgroundColor: theme.palette.background.paper,
-  variants: [
-    {
-      props: ()=> {
-        //console.log("MuxAutoSelect:Panel:theme", theme);
-        return false;
-      },
-      style: {
-      }
-
-    }
-  ]
+  
 })));
 
 const AutoSelectLoading = styled('div', {
@@ -525,10 +514,13 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
   let startAdornment;
 
   if (multiple && value.length > 0) {
+    
     const getCustomizedTagProps = (params) => ({
       className: classes.tag,
       disabled,
       ...getTagProps(params),
+      size,
+      xsm: true
     });
 
     if (renderTags) {
@@ -540,7 +532,6 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
           <Chip
             key={key}
             label={getOptionLabel(option)}
-            size={buttonSize}
             {...customTagProps}
             {...externalForwardedProps.slotProps.chip}
           />
@@ -555,7 +546,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       
       startAdornment = startAdornment.splice(0, limitTags);
       startAdornment.push(
-        (<Chip key={startAdornment.length} size={buttonSize}>
+        (<Chip key={startAdornment.length} size={size} xsm>
           {getLimitTagsText(more)}
         </Chip>) 
       );
@@ -673,14 +664,14 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
           })}
         </AutoSelectListbox>,
       );
-    } else if (loading && groupedOptions.length === 0) {
-      autoSelectPopper = renderAutoSelectPopperChildren(
+    } else if (groupedOptions.length === 0) {
+      autoSelectPopper = loading
+      ? renderAutoSelectPopperChildren(
         <AutoSelectLoading className={classes.loading} ownerState={ownerState}>
           {loadingText}
-        </AutoSelectLoading>,
-      );
-    } else if (groupedOptions.length === 0 && !loading) {
-      autoSelectPopper = renderAutoSelectPopperChildren(
+        </AutoSelectLoading>
+      )
+      : renderAutoSelectPopperChildren(
         <AutoSelectNoOptions
           className={classes.noOptions}
           ownerState={ownerState}
@@ -691,15 +682,14 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
           }}
         >
           {noOptionsText}
-        </AutoSelectNoOptions>,
-      );
+        </AutoSelectNoOptions>);
     }
   }
   
 
 
   return (
-    <React.Fragment>
+    <>
       <AutoSelectRoot
         ref={ref}
         className={clsx(classes.root, className)}
@@ -709,7 +699,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
         {renderInput({
           disableBorder,
           fullWidth: true,
-          size: size === 'md' ? 'md' : undefined,
+          size: size,
           labelProps: getInputLabelProps(),
           label,
           error,
@@ -779,7 +769,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
         })}
       </AutoSelectRoot>
       {autoSelectPopper }
-    </React.Fragment>
+    </>
   );
 });
 

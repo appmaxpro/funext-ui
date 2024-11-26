@@ -89,7 +89,7 @@ export const carousel: CarouselStylesType = {
     transition: {
       type: "tween",
       duration: 0.5,
-    },
+    } as any,
     loop: false,
     className: "",
   },

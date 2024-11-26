@@ -778,6 +778,7 @@ export function useAutocomplete(props) {
     handleValue(event, newValue, reason, { option });
     if (!disableCloseOnSelect && (!event || (!event.ctrlKey && !event.metaKey))) {
       handleClose(event, reason);
+      console.log("select::handleClose")
     }
 
     if (
@@ -1040,8 +1041,9 @@ export function useAutocomplete(props) {
 
   const handleBlur = (event) => {
     // Ignore the event when using the scrollbar with IE11
-    if (unstable_isActiveElementInListbox(listboxRef)) {
+    if (open && unstable_isActiveElementInListbox(listboxRef)) {
       inputRef.current.focus();
+      console.log("AutoSelect force refocus");
       return;
     }
 
@@ -1101,12 +1103,12 @@ export function useAutocomplete(props) {
     isTouch.current = true;
   };
 
-  const handleOptionClick = (event) => {
+  const handleOptionClick = (event, option) => {
     if (readOnly || disabledProp) {
       return;
     }
     const index = Number(event.currentTarget.getAttribute('data-option-index'));
-    selectNewValue(event, filteredOptions[index], 'selectOption');
+    selectNewValue(event, option || filteredOptions[index], 'selectOption');
 
     isTouch.current = false;
   };
@@ -1285,7 +1287,7 @@ export function useAutocomplete(props) {
         role: 'option',
         id: `${id}-option-${index}`,
         onMouseMove: !disabled ? handleOptionMouseMove : undefined,
-        onClick: !disabled ? handleOptionClick : undefined,
+        onClick: !disabled ? ((event) => handleOptionClick(event, option)) : undefined,
         onTouchStart: !disabled ? handleOptionTouchStart : undefined,
         'data-option-index': index,
         'aria-disabled': disabled,

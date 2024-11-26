@@ -114,6 +114,12 @@ export const TextRoot = styled("span", {
       },
     },
     {
+      props: ({ ownerState }: any) => !!ownerState.fw,
+      style: {
+        fontWeight: "var(--font-weight)",
+      },
+    },
+    {
       props: ({ ownerState }: any) => ownerState.noWrap,
       style: {
         overflow: "hidden",
@@ -233,6 +239,7 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
       noWrap = false,
       variant = "body1",
       variantMapping = defaultVariantMapping,
+      fw,
       ...other
     } = props;
 
@@ -246,6 +253,7 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
       noWrap,
       variant,
       variantMapping,
+      fw
     };
 
     const Component =
@@ -265,6 +273,7 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
         ownerState={ownerState as any}
         style={{
           ...(align !== "inherit" && { "--text-align": align }),
+          ...(fw && { "--font-weight": fw }),
           ...other.style,
         }}
       />

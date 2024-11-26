@@ -173,7 +173,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     const {ref: rippleRef, className: rippleClassName} = useRipple<HTMLElement>({
       ref:labelRef as ForwardedRef<HTMLElement>,
       disabled: disabled || ripple === false,
-      className: (rippleClass ?? `bg-${color ?? "primary"}-500`) ,
+      className: (rippleClass ?? `bg-${color ?? "primary"}`) ,
     });
 
     const [checked, setChecked] = useControlled({
@@ -243,7 +243,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             className={inputClasses}
             checked={isChecked}
             //@ts-ignore 
-            indeterminate={indeterminate ? true: undefined}
+            indeterminate={indeterminate ? 'true': undefined}
             onChange={handleValueChange}
             id={rest.id || checkboxId}
           />

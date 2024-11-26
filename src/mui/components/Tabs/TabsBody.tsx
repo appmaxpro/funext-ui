@@ -69,12 +69,12 @@ export const TabsBody = React.forwardRef<HTMLDivElement, TabsBodyProps>(
     );
 
     const appliedAnimation = React.useMemo(
-      () => merge(mainAnimation, animate),
+      () => merge(mainAnimation, (animate || {}) as any),
       [animate, mainAnimation],
     );
 
     useIsomorphicLayoutEffect(() => {
-      setAnimation(dispatch, appliedAnimation);
+      setAnimation(dispatch as any, appliedAnimation);
     }, [appliedAnimation, dispatch]);
 
     // 5. return

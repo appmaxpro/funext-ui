@@ -27,7 +27,7 @@ export const TabsHeader = React.forwardRef<HTMLUListElement, TabsHeaderProps>(
     const { orientation } = state;
 
     React.useEffect(() => {
-      setIndicator(dispatch, indicatorProps);
+      setIndicator(dispatch as any, indicatorProps as any);
     }, [dispatch, indicatorProps]);
 
     // 2. set default props

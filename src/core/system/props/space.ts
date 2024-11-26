@@ -106,7 +106,7 @@ export const SpaceConfig: Config<SpaceProps> = {
   mb: space("mb"),
   ms: space("ms"),
   me: (val)=> {
-    console.log("SpaceConfig:me-", val)
+    //console.log("SpaceConfig:me-", val)
     return `me-${val}`;
   },
   mx: space("mx"),

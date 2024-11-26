@@ -26,7 +26,8 @@ export type Variant =
   | 'body2'
   | 'caption'
   | 'button'
-  | 'overline';
+  | 'overline'
+  | 'small';
 
 export interface FontStyle {
   fontFamily: React.CSSProperties['fontFamily'];
@@ -97,7 +98,7 @@ export default function createTypography(palette:Palette, typography:any) {
     fontWeightLight = 300,
     fontWeightRegular = 400,
     fontWeightMedium = 500,
-    fontWeightBold = 700,
+    fontWeightBold = 600,
     // Tell MUI what's the font-size on the html element.
     // 16px is the default font-size used by browsers.
     htmlFontSize = 16,
@@ -135,12 +136,12 @@ export default function createTypography(palette:Palette, typography:any) {
   });
 
   const variants = {
-    h1: buildVariant(fontWeightLight, 96, 1.167, -1.5),
-    h2: buildVariant(fontWeightLight, 60, 1.2, -0.5),
-    h3: buildVariant(fontWeightRegular, 48, 1.167, 0),
-    h4: buildVariant(fontWeightRegular, 34, 1.235, 0.25),
-    h5: buildVariant(fontWeightRegular, 24, 1.334, 0),
-    h6: buildVariant(fontWeightMedium, 20, 1.6, 0.15),
+    h1: buildVariant(fontWeightMedium, 48, 1.25, -1.5),
+    h2: buildVariant(fontWeightMedium, 36, 1.3, -0.5),
+    h3: buildVariant(fontWeightMedium, 30, 1.375, 0),
+    h4: buildVariant(fontWeightMedium, 24, 1.375, 0.25),
+    h5: buildVariant(fontWeightMedium, 20, 1.375, 0),
+    h6: buildVariant(fontWeightMedium, 16, 1.625, 0.15),
     subtitle1: buildVariant(fontWeightRegular, 16, 1.75, 0.15),
     subtitle2: buildVariant(fontWeightMedium, 14, 1.57, 0.1),
     body1: buildVariant(fontWeightRegular, 16, 1.5, 0.15),

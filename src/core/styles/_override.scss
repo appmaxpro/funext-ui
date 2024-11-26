@@ -32,7 +32,7 @@
     --ax-theme-table-hover-color,
     var(--bs-table-color)
   );
-  --bs-table-hover-bg: var(--ax-theme-table-hover-bg, rgb(var(--tw-header-max-rgb) / 60%));
+  --bs-table-hover-bg: var(--ax-theme-table-hover-bg, rgb(var(--tw-header-max-rgb) / 30%));
 
   // Custom
   --bs-table-active-cell-color: var(
@@ -46,7 +46,7 @@
 
   --bs-table-th-color: var(--ax-theme-table-th-color, var(--bs-table-color));
   --bs-table-th-bg: var(--ax-theme-table-th-bg, var(--bs-table-bg));
-  --bs-table-th-font-weight: var(--ax-theme-table-th-font-weight, 600);
+  --bs-table-th-font-weight: var(--ax-theme-table-th-font-weight, 500);
 
   --bs-table-cell-padding: var(--ax-theme-table-cell-padding, 0.625rem 0.5rem);
   --bs-table-cell-active-bg: var(

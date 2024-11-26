@@ -17,7 +17,7 @@ import type{
 } from '../../uprops';
 
 import type{ PanelOwnProps } from './panel';
-import type{ CardClasses } from '../../components/Card/style/cardClasses';
+import type{ PanelClasses as CardClasses } from '../../components/Panel/panelClasses';
 
 /**
  * This file contains the types and prop-types for Card, CardHeader, CardBody and CardFooter components.
@@ -25,7 +25,7 @@ import type{ CardClasses } from '../../components/Card/style/cardClasses';
 
 // typescript types
 export type variant = "filled" | "gradient" | "outlined";
-export type color = "default" | "transparent" | "white" | Colors;
+export type color = "default" | "transparent" | "white" | "body" | Colors;
 export type shadow = boolean;
 export type floated = boolean;
 export type divider = boolean;
@@ -33,14 +33,10 @@ export type className = string;
 export type children = ReactNode;
 
 export const propTypesVariant: any = ["filled", "gradient", "outlined"];
-export const propTypesColor: any = ["default", "transparent", "white", ...propTypesColors];
+export const propTypesColor: any = ["default", "transparent", "white", "body", ...propTypesColors];
 
 
 export interface CardOwnProps extends DistributiveOmit<PanelOwnProps, 'classes'> {
-  /**
-   * Override or extend the styles applied to the component.
-   */
-  classes?: Partial<CardClasses>;
   /**
    * If `true`, the card will use raised styling.
    * @default false

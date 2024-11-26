@@ -9,17 +9,17 @@ import {propTypesColors} from "../generic";
  */
 
 // typescript types
-export type variant = "filled" | "gradient" | "outlined" | "ghost";
+export type variant = "filled" | "outlined" | "ghost";
 export type color = Colors;
 export type icon = ReactNode;
 export type open = boolean;
-export type onClose = () => void;
+export type onClose = (event: React.SyntheticEvent | Event) => void;
 export type action = ReactNode;
 export type animate = AnimationProps | boolean;
 export type className = string;
 export type children = ReactNode;
 
 // javascript prop-types
-export const propTypesVariant: any = ["filled", "gradient", "outlined", "ghost"];
+export const propTypesVariant: any = ["filled", "outlined", "ghost"];
 export const propTypesColor:string[] = ["white", "black", "transparent", "default", ...propTypesColors];
 

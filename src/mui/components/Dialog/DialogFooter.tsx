@@ -32,12 +32,9 @@ export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
       defaultProps,
       styles: { base },
     } = dialogFooter;
-
-    // 2. set default props
-    className = twMerge(defaultProps.className || "", className);
-
+    
     // 3. set styles
-    const dialogFooterClasses = twMerge(classnames(objectsToString(base), divider && base.divider), className);
+    const dialogFooterClasses = twMerge(classnames(objectsToString(base), divider && base.divider), defaultProps.className, className);
 
     // 4. return
     return (

@@ -25,23 +25,25 @@ import THEME_ID from '../../theme/identifier';
 
 
 interface BoxAdditionalProps extends Record<string, unknown> {
-  d?: BoxOwnProps['display'],
-  w?: BoxOwnProps['width'],
-  h?: BoxOwnProps['height'],
-  g?: BoxOwnProps['gap'],
-  cg?: BoxOwnProps['columnGap'],
-  rg?: BoxOwnProps['rowGap'],
-  c?: BoxOwnProps['color'],
-  bg?: BoxOwnProps['bgcolor'],
-  ps?: BoxOwnProps['paddingInlineStart'],
-  pe?: BoxOwnProps['paddingInlineEnd'],
+  d?: BoxOwnProps['display'];
+  w?: BoxOwnProps['width'];
+  h?: BoxOwnProps['height'];
+  g?: BoxOwnProps['gap'];
+  cg?: BoxOwnProps['columnGap'];
+  rg?: BoxOwnProps['rowGap'];
+  c?: BoxOwnProps['color'];
+  bg?: BoxOwnProps['bgcolor'];
+  ps?: BoxOwnProps['paddingInlineStart'];
+  pe?: BoxOwnProps['paddingInlineEnd'];
   
-  ms?: BoxOwnProps['marginInlineStart'],
-  me?: BoxOwnProps['marginInlineEnd'],
+  ms?: BoxOwnProps['marginInlineStart'];
+  me?: BoxOwnProps['marginInlineEnd'];
 
-  fs?: BoxOwnProps['fontSize'],
-  fw?: BoxOwnProps['fontWeight'],
-  children?: React.ReactNode
+  fs?: BoxOwnProps['fontSize'];
+  fw?: BoxOwnProps['fontWeight'];
+  children?: React.ReactNode;
+  items?: BoxOwnProps['alignItems'];
+  justify?: BoxOwnProps['justifyContent'];
 }
 
 

@@ -74,7 +74,7 @@ More details: https://www.material-tailwind.com/docs/react/collapse
       },
       mount: {
         opacity: 1,
-        height: `${mobileNavRef.current?.scrollHeight}px`,
+        height: `${(mobileNavRef.current as any)?.scrollHeight}px`,
         transition: { duration: 0.3, times: "[0.4, 0, 0.2, 1]" },
       },
     };

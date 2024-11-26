@@ -37,7 +37,7 @@ export interface TabsContextProviderProps {
   children: children;
 }
 
-function reducer(state, action) {
+function reducer(state:any, action:any) {
   switch (action.type) {
     case "SET_ID": {
       return { ...state, id: action.value };

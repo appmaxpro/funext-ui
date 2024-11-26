@@ -33,7 +33,7 @@ export interface CardStylesType {
 const card: CardStylesType = {
   defaultProps: {
     variant: "filled",
-    color: "white",
+    color: "body",
     shadow: true,
     className: "",
   },
@@ -44,9 +44,6 @@ const card: CardStylesType = {
   styles: {
     base: {
       initial: {
-        position: "relative",
-        display: "flex",
-        flexDirection: "flex-col",
         backgroundClip: "bg-clip-border",
       },
       shadow: {

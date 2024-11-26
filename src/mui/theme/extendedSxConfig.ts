@@ -91,6 +91,18 @@ const extendedSxConfig:SxConfig = {
       cssProperty: 'flexDirection',
       transform: (value:any) => value === 'col' ? 'column' : value,
     })
+  },
+  items: {
+    style: style({
+      prop: 'items',
+      cssProperty: 'alignItems',
+    })
+  },
+  justify: {
+    style: style({
+      prop: 'justify',
+      cssProperty: 'justifyContent',
+    })
   }
 };
 

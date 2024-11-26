@@ -15,7 +15,7 @@ import type{ AutoSelectProps } from '../../core/select/AutoSelect';
 
 import { useStyleProps } from '../../core';
 import { createTheme, extendTheme } from '@mui/material/styles';
-import { Actions } from '../../core/select/select.stories';
+import { Actions } from '../../mui/components/Select/select.stories';
 
 import type { 
   DividerProps,

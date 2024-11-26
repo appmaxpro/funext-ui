@@ -1,7 +1,7 @@
 /**
  * @title Basic
  */
-import { Box } from "../../core";
+import { Box } from "../..";
 import { Grid } from "../grid";
 import { GridProvider } from "../grid-provider";
 import { records } from "./demo-data";

@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -18,6 +17,4 @@ export type color = Colors;
 // javascript prop-types
 export const propTypesVariant: any = ["circular", "rounded", "square"];
 export const propTypesSize: any = ["xs", "sm", "md", "lg", "xl", "xxl"];
-export const propTypesClassName: any = PropTypes.string;
-export const propTypesWithBorder: any = PropTypes.bool;
 export const propTypesColor: any = ["white", ...propTypesColors];

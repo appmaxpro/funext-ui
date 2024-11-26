@@ -8,6 +8,13 @@
 import {RippleRef, RippleState, RippleConfig} from './ripple-ref';
 import style from './styles.module.scss';
 
+
+let supportsPassive = false;
+try {
+  //@ts-ignore
+  window.addEventListener("test", null, { get passive() { supportsPassive = true; } });
+} catch(e) {}
+
 /** Gets whether an event could be a faked `touchstart` event dispatched by a screen reader. */
 function isFakeTouchstartFromScreenReader(event: TouchEvent): boolean {
   const touch: Touch | undefined =
@@ -184,7 +191,7 @@ export class Ripple implements EventListenerObject {
       .forEach(c => ripple.classList.add(c));
       ripple.style.filter = 'opacity(20%)';
     }
-    //console.log("config.className:", config.className)
+    //console.log("ripple.classList:", ripple.classList, ", style:", ripple.style)
 
     ripple.style.transitionDuration = `${enterDuration}ms`;
 
@@ -252,7 +259,7 @@ export class Ripple implements EventListenerObject {
         // it's less likely to break existing tests.
         const fallbackTimer = setTimeout(onTransitionCancel, enterDuration + 100);
 
-        ripple.addEventListener('transitionend', onTransitionEnd);
+        ripple.addEventListener('transitionend', onTransitionEnd, );
         // If the transition is cancelled (e.g. due to DOM removal), we destroy the ripple
         // directly as otherwise we would keep it part of the ripple container forever.
         // https://www.w3.org/TR/css-transitions-1/#:~:text=no%20longer%20in%20the%20document.
@@ -324,7 +331,7 @@ export class Ripple implements EventListenerObject {
     // Use event delegation for the trigger events since they're
     // set up during creation and are performance-sensitive.
     //
-    pointerDownEvents.forEach(type => element.addEventListener(type, this));
+    pointerDownEvents.forEach(type => element.addEventListener(type, this, supportsPassive ? {passive:false} : false));
   }
 
   destroyElement(element: HTMLElement) {
@@ -366,7 +373,7 @@ export class Ripple implements EventListenerObject {
       // has interacted with an element.
       setTimeout(() => {
         pointerUpEvents.forEach(type => 
-          this._triggerElement!.addEventListener(type, this, true));
+          this._triggerElement!.addEventListener(type, this, supportsPassive ? {passive:true} : true));
       });
 
       this._pointerUpEventsRegistered = true;
@@ -500,7 +507,8 @@ export class Ripple implements EventListenerObject {
     const trigger = this._triggerElement;
 
     if (trigger) {
-      pointerDownEvents.forEach(type => trigger.removeEventListener(type, this))
+      //@ts-ignore
+      pointerDownEvents.forEach(type => trigger.removeEventListener(type, this, supportsPassive ? {passive:true} : true))
        
 
       if (this._pointerUpEventsRegistered) {

@@ -63,8 +63,5 @@ const rawTheme:ThemeOptions = {
 };
 
 const defaultTheme = createTheme(rawTheme);
-console.log("defaultTheme:", defaultTheme);
-
-
 
 export default defaultTheme;

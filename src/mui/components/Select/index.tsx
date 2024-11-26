@@ -226,7 +226,7 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
             : null;
 
         if (item && prevActiveIndex != null) {
-          const itemHeight = listItemsRef.current[prevActiveIndex]?.offsetHeight ?? 0;
+          const itemHeight = listItemsRef.current[prevActiveIndex as number]?.offsetHeight ?? 0;
           const floatingHeight = floating.offsetHeight;
           const top = item.offsetTop;
           const bottom = top + itemHeight;

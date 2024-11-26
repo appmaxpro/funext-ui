@@ -1,20 +1,26 @@
-import * as React from 'react';
-import { alpha } from '../utils';
-import { type Theme } from './theme';
-import createTheme from './createTheme';
-import  useTheme from './useTheme';
-import {default as MuxThemeProvider} from './ThemeProvider';
-import { CacheProvider, ThemeProvider as EmotionThemeProvider } from '@emotion/react';
-import createCache from '@emotion/cache';
-import {PaletteMode} from './createPalette';
+import * as React from "react";
+import { alpha } from "../utils";
+import { type Theme } from "./theme";
+import createTheme from "./createTheme";
+import useTheme from "./useTheme";
+import { default as MuxThemeProvider } from "./ThemeProvider";
+import {
+  CacheProvider,
+  ThemeProvider as EmotionThemeProvider,
+} from "@emotion/react";
+import createCache from "@emotion/cache";
+import { PaletteMode } from "./createPalette";
 
-import rtlPlugin from 'stylis-plugin-rtl';
-import { prefixer } from 'stylis';
+import rtlPlugin from "stylis-plugin-rtl";
+// @ts-ignore
+import { prefixer } from "stylis";
 
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import { ThemeOptions } from "@mui/system";
+
 //import '../../global.css';
 
 //import '../../global.css';
@@ -24,7 +30,7 @@ import '@fontsource/roboto/700.css';
 let currentNames = new Set();
 let nameToName = new Map();
 
-export interface CssBaselineProps  {
+export interface CssBaselineProps {
   /**
    * You can wrap a node.
    */
@@ -43,27 +49,33 @@ export interface CssBaselineProps  {
 // It allows developers to easily override MUI styles with other styling solutions, like CSS modules.
 
 const cache = createCache({
-    key: 'mx',
-    prepend: true
+  key: "mx",
+  prepend: true,
 });
 
 const rtlCache = createCache({
-  key: 'mxr',
+  key: "mxr",
   prepend: true,
   stylisPlugins: [prefixer, rtlPlugin],
 });
 
-export default function MuiThemeProvider(props: { 
-  children: React.ReactNode,
-   theme?:Theme,
-   mode?: PaletteMode,
-   dir?: 'rtl' | undefined
-  }) {
-  const { dir} =  props;
-  const { 
-    children, 
-    mode = 'light',
-    theme = createTheme({direction: dir, palette: {mode: mode || 'light'}}), 
+export default function MuiThemeProvider(props: {
+  children: React.ReactNode;
+  theme?: Theme;
+  options?: Partial<ThemeOptions>;
+  mode?: PaletteMode;
+  dir?: "rtl" | undefined;
+}) {
+  const { dir } = props;
+  const {
+    children,
+    options,
+    mode = "light",
+    theme = createTheme({ 
+      direction: dir, 
+      ...(options as any),
+      palette: { mode: mode || "light", ...options?.palette},
+    }),
   } = props;
 
   const [importedComponent, setImportedComponent] = React.useState(null);
@@ -81,22 +93,18 @@ export default function MuiThemeProvider(props: {
     */
   }, []);
 
-
-  const cssCache = dir === 'rtl' ? rtlCache : cache;
-
+  const cssCache = dir === "rtl" ? rtlCache : cache;
 
   //console.log("MuiThemeProvider: background:", theme.palette.action)
   return (
-      <CacheProvider value={cssCache}>
-        <EmotionThemeProvider theme={theme}>
-          <MuxThemeProvider theme={theme}>
-              
-              {<HiddenEl/>}
-              {React.cloneElement(children as any)}
-
-          </MuxThemeProvider>
-        </EmotionThemeProvider>
-      </CacheProvider>
+    <CacheProvider value={cssCache}>
+      <EmotionThemeProvider theme={theme}>
+        <MuxThemeProvider theme={theme}>
+          {<HiddenEl />}
+          {React.cloneElement(children as any)}
+        </MuxThemeProvider>
+      </EmotionThemeProvider>
+    </CacheProvider>
   );
 }
 
@@ -104,4 +112,4 @@ const HiddenEl = () => {
   const theme = useTheme();
   //console.log("ThemeContext.Consumer: props:", theme)
   return null;
-}
+};

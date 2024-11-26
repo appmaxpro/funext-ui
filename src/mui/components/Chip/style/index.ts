@@ -77,13 +77,9 @@ export const chip: ChipStylesType = {
   styles: {
     base: {
       chip: {
-        textTransform: "uppercase",
-        whiteSpace: "whitespace-nowrap",
-        fontSize: "text-xs",
       },
       action: {
         shrink: 'shrink p-0',
-        fontSize: "!text-xs",
       },
       icon: {
         shrink: 'shrink'
@@ -96,6 +92,7 @@ export const chip: ChipStylesType = {
           borderRadius: "rounded-sm",
         },
         action: {
+          fontSize: "!text-xs",
         },
         icon: {
         },
@@ -104,9 +101,10 @@ export const chip: ChipStylesType = {
         chip: {
           py: "py-1",
           fontWeight: "font-normal",
-          borderRadius: "rounded-md",
+          borderRadius: "rounded",
         },
         action: {
+          fontSize: "!text-sm",
         },
         icon: {
         },
@@ -118,7 +116,7 @@ export const chip: ChipStylesType = {
           borderRadius: "rounded-md",
         },
         action: {
-          fontSize: "!text-sm",
+          fontSize: "!text-[20px]",
         },
         icon: {
         },

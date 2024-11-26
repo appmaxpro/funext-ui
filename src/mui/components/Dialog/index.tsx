@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 
 // @floating-ui
 import {
@@ -18,7 +18,7 @@ import {
   useFloatingNodeId,
   useFloatingTree,
   FloatingPortalProps,
-  FloatingNode
+  FloatingNode,
 } from "@floating-ui/react";
 
 // framer-motion
@@ -35,7 +35,11 @@ import objectsToString from "../../utils/objectsToString";
 import { useTailwindTheme } from "../../theme";
 
 // types
-import type { NewAnimatePresenceProps, DismissProps, AnimationProps } from "../../types/generic";
+import type {
+  NewAnimatePresenceProps,
+  DismissProps,
+  AnimationProps,
+} from "../../types/generic";
 import type {
   open,
   handler,
@@ -51,291 +55,260 @@ import { DialogHeader, DialogHeaderProps } from "./DialogHeader";
 import { DialogBody, DialogBodyProps } from "./DialogBody";
 import { DialogFooter, DialogFooterProps } from "./DialogFooter";
 
-import { clsx, styled, SxThemeProps, type SxComponentProps } from "../../styles";
+import {
+  clsx,
+  styled,
+  SxThemeProps,
+  type SxComponentProps,
+} from "../../styles";
 import { isElement } from "../../utils";
 import Panel from "../Panel";
 
+const DialogRoot = styled("div", {
+  name: "MuxDialog",
+  slot: "Root",
+})<SxComponentProps<any>>("");
 
-const DialogRoot = styled(m.div, {
-  name: 'Dialog',
-  slot: 'Root'
-})<SxComponentProps<any>>('');
+const DialogBackdrop = styled("div", {
+  name: "MuxDialogBackdrop",
+  slot: "Root",
+})<SxComponentProps<any>>("");
 
 export interface DialogProps extends SxComponentProps<"div"> {
   open: boolean;
   handler?: handler;
   size?: size;
   dismiss?: DismissProps | false;
-  animate?: AnimationProps;
+  animate?: AnimationProps | false;
   children: children;
   target?: React.MutableRefObject<HTMLElement | null> | HTMLElement | null;
-  focusProps?: Omit<FloatingFocusManagerProps, 'context'>;
+  focusProps?: Omit<FloatingFocusManagerProps, "context" | "children">;
   backdropProps?: any;
   elevation?: number;
 }
 
-const Dialog = React.forwardRef<HTMLDivElement, DialogProps>((props, ref)=>{
-    // 1. init
-    const parentId = useFloatingParentNodeId();
-
-    // 2. return
-    if (parentId == null && false) {
-      return (
-        <FloatingTree>
-          <DialogCore ref={ref as any} {...props}/>
-        </FloatingTree>
-      );
-    }
-
-    return (
-      <DialogCore ref={ref as any} {...props}/>
-    );
-
-})
-
-const DialogCore = React.forwardRef<HTMLDivElement, DialogProps>(
-  ({ 
-    open, 
-    handler, 
-    size, 
-    dismiss, 
-    animate, 
-    className, 
+const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>((props, ref) => {
+  let {
+    open,
+    handler,
+    size,
+    dismiss,
+    animate,
+    className,
     target,
     focusProps,
     backdropProps = {},
     elevation,
-    children, 
+    children,
+    ...rest
+  } = props;
 
-    ...rest 
-  }, ref) => {
-    // 1. init
-    const { dialog } = useTailwindTheme();
-    const {
-      defaultProps, 
-      valid,
-      styles: { base, sizes },
-    } = dialog;
+  // 1. init
+  const { dialog } = useTailwindTheme();
+  const {
+    defaultProps,
+    valid,
+    styles: { base, sizes },
+  } = dialog;
 
-    // 2. set default props
-    handler = handler ?? undefined;
-    size = size ?? defaultProps.size;
-    dismiss = dismiss ?? defaultProps.dismiss;
-    animate = animate ?? defaultProps.animate;
+  // 2. set default props
+  handler = handler ?? undefined;
+  size = size ?? defaultProps.size;
+  dismiss = dismiss ?? defaultProps.dismiss;
 
-    const isFullScreen = size === "xxl";
-    // 3. set styles
-    let backdropClasses = backdropProps
-        ? twMerge(classnames(objectsToString(base.backdrop), backdropProps.className)) 
-        : undefined;
-
-    const sizeClass = objectsToString(sizes[findMatch(valid.sizes, size, "md")]);
-
-    const dialogClasses = twMerge(
-      classnames(
-        objectsToString(base.dialog),
-        sizeClass,
-        defaultProps.className
-      ),
-      className,
-    );
-
-    const panelClasses = twMerge(
-      classnames(
-        objectsToString(base.container),
-        isFullScreen && 'h-full rounded-none shadow-none'
+  const isFullScreen = size === "xxl";
+  // 3. set styles
+  let backdropClasses = backdropProps
+    ? twMerge(
+        classnames(objectsToString(base.backdrop)),
+        "z-modal", 
+        backdropProps.className
       )
-    );
-    
+    : undefined;
 
-    // 4. set animation
-    const animation = {
-      unmount: {
-        opacity: 0,
-        ...(!isFullScreen 
-          ? {y: -50}
-          : {y: '100%'}),
-        transition: {
-          duration: 0.3,
-        },
-      },
-      mount: {
-        opacity: 1,
-        y: 0,
-        transition: {
-          duration: 0.3,
-        },
-      },
-    };
+  const sizeClass = objectsToString(sizes[findMatch(valid.sizes, size, "md")]);
 
+  const dialogClasses = twMerge(
+    classnames(objectsToString(base.dialog), sizeClass, defaultProps.className),
+    "z-modal",
+    className,
+  );
 
-    let backdropAnimation = backdropProps && !isFullScreen 
-      ? {
+  const panelClasses = twMerge(
+    classnames(
+      objectsToString(base.container),
+      isFullScreen && "h-full rounded-none shadow-none",
+    ),
+  );
+
+  const animated = animate !== false ? animate ?? defaultProps.animate : null;
+
+  // 4. set animation
+  const animation = animated
+    ? {
         unmount: {
           opacity: 0,
+          ...(!isFullScreen ? { y: -50 } : { y: "110%" }),
           transition: {
-            delay: 0.2,
+            
+            duration: isFullScreen ? 0.2 : 0.3,
           },
         },
         mount: {
           opacity: 1,
+          y: 0,
+          transition: {
+            duration: isFullScreen ? 0.2 : 0.3,
+          },
         },
       }
+    : null;
+
+  let backdropAnimation =
+    animation && backdropProps /*&& !isFullScreen*/
+      ? {
+          unmount: {
+            opacity: 0,
+            transition: {
+              delay: 0.2,
+            },
+          },
+          mount: {
+            opacity: 1,
+          },
+        }
       : undefined;
 
-    const appliedAnimation = merge(animation, animate as any);
+  const appliedAnimation = animation && merge(animation, animated as any);
 
-    const tree = useFloatingTree();
-    const parentId = useFloatingParentNodeId();
-    const nodeId = useFloatingNodeId();
-
-    const nested = parentId != null;
-
-    // 5. set @floating-ui
-    const { refs, context } = useFloating({
-      open,
-      onOpenChange: handler,
-      elements: target ? {
-        reference: isElement(target) ? target : target?.current
-      } : undefined,
-    });
-
-    const id = useId();
-    const labelId = `${id}-label`;
-    const descriptionId = `${id}-description`;
-
-    const { getFloatingProps } = useInteractions([
-      dismiss 
-        ? useClick(context, {
-            enabled: !nested,
-            ignoreMouse: nested
-        }) 
+  // 5. set @floating-ui
+  const { refs, context } = useFloating({
+    open,
+    onOpenChange: handler,
+    elements: target
+      ? {
+          reference: isElement(target) ? target : target?.current,
+        }
       : undefined,
+  });
+
+  const id = useId();
+  const labelId = `${id}-label`;
+  const descriptionId = `${id}-description`;
+
+  const { getFloatingProps } = useInteractions(
+    [
       useRole(context),
-      dismiss 
-        ? useDismiss(context, nested ? {...dismiss, bubbles: false} : dismiss) 
-        : undefined,
-    ].filter(Boolean));
+      dismiss ? useDismiss(context, dismiss) : undefined,
+    ].filter(Boolean),
+  );
 
-    const mergedRef = useMergeRefs([ref, refs.floating]);
+  const mergedRef = useMergeRefs([ref, refs.floating]);
 
-    // 6. Create an instance of AnimatePresence because of the types issue with the children
-    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
-    //const backdropClassName = size === "xxl" ? "" : backdropClasses;
-    const backdropClassName = backdropClasses;
-    // 7. return
-    return (
-      <LazyMotion features={domAnimation}>
-        <DialogContext.Provider value={{open, nodeId, handler}}>
-          <FloatingDialogPortal 
-            id="modal-portal" 
-            nested={nested} 
-            nodeId={nodeId} 
-            open={open}>
-            <NewAnimatePresence>
-              {open && (
-                <FloatingOverlay 
-                  className="z-modal h-full w-full"
-                  lockScroll
-                >
-                  <FloatingFocusManager {...focusProps} context={context} >
-                    {(!backdropProps) ?
-                      <DialogRoot
-                          {...getFloatingProps({
-                            ...(rest as any),
-                            className: dialogClasses,
-                            ref: mergedRef,
-                            "aria-labelledby": labelId,
-                            "aria-describedby": descriptionId,
-                          })}
-                          initial="unmount"
-                          exit="unmount"
-                          animate={open ? "mount" : "unmount"}
-                          variants={appliedAnimation}
-                          style={{
-                            ...rest.style
-                          }}
-                          sx={rest.sx}
-                        >
-                          <Panel 
-                            className={panelClasses} 
-                            elevation={elevation}>
-                            {children}
-                          </Panel>
-                          
-                        </DialogRoot>
-                      :
-                      <m.div
-                        initial="unmount"
-                        exit="unmount"
-                        animate={open ? "mount" : "unmount"}
-                        variants={backdropAnimation}
-                        transition={{ duration: 0.2 }}
-                        {...backdropProps}
-                        className={twMerge(clsx(backdropClassName, 'z-modal', backdropProps?.className))}
-                      >
-                        <DialogRoot
-                          {...getFloatingProps({
-                            ...(rest as any),
-                            className: dialogClasses,
-                            ref: mergedRef,
-                            "aria-labelledby": labelId,
-                            "aria-describedby": descriptionId,
-                          })}
-                          initial="unmount"
-                          exit="unmount"
-                          animate={open ? "mount" : "unmount"}
-                          variants={appliedAnimation}
-                        >
-                          <Panel 
-                            className={panelClasses} 
-                            elevation={elevation}>
-                            {children}
-                          </Panel>
-                        </DialogRoot>
-                    </m.div>
-                    }
-                  </FloatingFocusManager>
-                </FloatingOverlay>
-              )}
-            </NewAnimatePresence>
-          </FloatingDialogPortal>
-        </DialogContext.Provider>
-      </LazyMotion>
-    );
-  },
-);
-
-
-const FloatingDialogPortal = ({nested, nodeId, children, id}:FloatingPortalProps 
-  & {nested:boolean, nodeId: string, open:boolean}) => {
-    if (nested) {
-      return children;
-    }
-    
-    return <FloatingPortal id={id}>
+  const renderContent:React.ReactNode = useMemo(() => (
+    <DialogRoot
+      {...rest}
+      {...getFloatingProps({
+        ...(rest as any),
+        className: dialogClasses,
+        ref: mergedRef,
+        "aria-labelledby": labelId,
+        "aria-describedby": descriptionId,
+        style: rest.style,
+      })}
+      {...(appliedAnimation && {
+        exit: "unmount",
+        initial: "unmount",
+        animate: open ? "mount" : "unmount",
+        variants: appliedAnimation,
+        as: m.div,
+        
+      })}
+    >
+      <Panel className={panelClasses} elevation={elevation}>
         {children}
-    </FloatingPortal>
-}
+      </Panel>
+    </DialogRoot>
+  ), [appliedAnimation ? !open : false, dialogClasses, panelClasses, elevation]);
 
-Dialog.displayName = "Mux.Dialog";
+  // 6. Create an instance of AnimatePresence because of the types issue with the children
+  const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
+
+  // 7. return
+  return (
+    <LazyMotion features={domAnimation}>
+      <DialogContext.Provider value={{ open, nodeId: id, handler }}>
+        <NewAnimatePresence presenceAffectsLayout={false} >
+          {open && (
+            <FloatingPortal id="mux-portal">
+              <FloatingOverlay className="z-modal h-screen w-screen overflow-hidden" lockScroll>
+                {backdropProps &&  (
+                    <DialogBackdrop
+                      {...(backdropAnimation && {
+                        exit: "unmount",
+                        initial: "unmount",
+                        animate: open ? "mount" : "unmount",
+                        variants: backdropAnimation,
+                        transition: { duration: 0.2 },
+                        as: m.div,
+                      })}
+                      className={backdropClasses}
+                    />
+                )}
+                <div className="inset-0 flex items-center justify-center h-full w-full absolute overflow-hidden">
+                  <FloatingFocusManager {...focusProps} context={context}>                  
+                    {renderContent}
+                  </FloatingFocusManager>
+                </div>
+              </FloatingOverlay>
+            </FloatingPortal>
+          )}
+        </NewAnimatePresence>
+      </DialogContext.Provider>
+    </LazyMotion>
+  );
+});
+
+const FloatingDialogPortal = ({
+  nested,
+  nodeId,
+  children,
+  id,
+  open,
+}: FloatingPortalProps & {
+  nested: boolean;
+  nodeId: string;
+  open: boolean;
+}) => {
+  if (nested) {
+    return children;
+  }
+
+  return <FloatingPortal id={id}>{children}</FloatingPortal>;
+};
+
+DialogFc.displayName = "Mux.Dialog";
 
 type DialogContextValue = {
   open: boolean;
   nodeId: string;
   handler?: handler;
-}
+};
 
 const DialogContext = React.createContext<DialogContextValue | null>(null);
 DialogContext.displayName = "Mux.DialogContext";
 
-export const useDialogContext = ()=> useContext(DialogContext);
+export const useDialogContext = () => useContext(DialogContext);
 
 export type { DialogHeaderProps, DialogBodyProps, DialogFooterProps };
-export { Dialog, DialogHeader, DialogBody, DialogFooter };
-export default Object.assign(Dialog, {
+
+const Dialog = Object.assign(DialogFc, {
   Header: DialogHeader,
   Body: DialogBody,
+  Content: DialogBody,
   Footer: DialogFooter,
-  Tree: FloatingTree
+  Tree: FloatingTree,
 });
+
+export { Dialog, DialogHeader, DialogBody, DialogFooter };
+export default Dialog;

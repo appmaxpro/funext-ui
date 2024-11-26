@@ -23,7 +23,7 @@ export interface AccordionProps extends React.ComponentProps<"div"> {
   children: ReactNode;
 }
 
-const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
+const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(
   ({ open, icon, animate, className, disabled, children, ...rest }, ref) => {
     // 1. init
     const { accordion } = useTailwindTheme();
@@ -41,8 +41,8 @@ const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
     // 3. set styles
     const accordionClasses = twMerge(
       classnames(
-        objectsToString(base.container), 
-        disabled && objectsToString(base.disabled)
+        objectsToString(base.container),
+        disabled && objectsToString(base.disabled),
       ),
       className,
     );
@@ -64,12 +64,12 @@ const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(
   },
 );
 
-
+const Accordion = Object.assign(AccordionFc, {
+  Header: AccordionHeader,
+  Body: AccordionBody,
+});
 Accordion.displayName = "Mux.Accordion";
 
 export type { AccordionHeaderProps, AccordionBodyProps };
 export { Accordion, AccordionHeader, AccordionBody, useAccordion };
-export default Object.assign(Accordion, {
-  Header: AccordionHeader,
-  Body: AccordionBody,
-});
+export default Accordion;

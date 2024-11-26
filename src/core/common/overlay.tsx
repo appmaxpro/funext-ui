@@ -2,7 +2,7 @@
 import {forwardRef, useMemo} from 'react';
 import type {SerializedStyles} from '@emotion/react';
 import type {HTMLMotionProps, MotionProps, MotionStyle} from 'framer-motion';
-import {motion, useIsPresent} from 'framer-motion';
+import {m, useIsPresent} from 'framer-motion';
 import {defined, NODE_ENV} from '../../mui/utils';
 import PanelProvider from './PanelProvider';
 import testableTransition from '../../mui/utils/testableTransition';
@@ -204,10 +204,10 @@ const Overlay = styled(
 
       //console.log("Overlay placement:", placement);
       return (
-        <motion.div {...props} {...animationProps} ref={ref}>
+        <m.div {...props} {...animationProps} ref={ref}>
           {defined(arrowProps) && <OverlayArrow {...arrowProps}/>}
           <PanelProvider>{children}</PanelProvider>
-        </motion.div>
+        </m.div>
       );
     }
   )
@@ -266,7 +266,7 @@ const PositionWrapper = forwardRef<HTMLDivElement, PositionWrapperProps>(
   ) => {
     const isPresent = useIsPresent();
     return (
-      <motion.div
+      <m.div
         {...props}
         ref={ref}
         style={{...style, zIndex, pointerEvents: isPresent ? 'auto' : 'none'}}

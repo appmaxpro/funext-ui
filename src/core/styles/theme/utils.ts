@@ -48,7 +48,7 @@ export function colorContrast(
   minContrastRatio: number = 4.5,
 ) {
   let maxRatio = 0;
-  let maxRatioColor = null;
+  let maxRatioColor = null as unknown;
 
   for (const color of [colorContrastLight, colorContrastDark]) {
     const ratio = Color(background).contrast(Color(color));

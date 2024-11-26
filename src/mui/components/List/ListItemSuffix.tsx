@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -9,6 +9,7 @@ import { twMerge } from "tailwind-merge";
 import objectsToString from "../../utils/objectsToString";
 
 import { SxComponentProps, styled } from "../../styles";
+import { useListContext } from "./ListContext";
 
 const ListItemSuffixRoot = styled('div', {
   name: 'MuxListItemSuffix',
@@ -25,8 +26,13 @@ export const ListItemSuffix = React.forwardRef<HTMLDivElement, ListItemSuffixPro
     styles: { base },
   } = list;
 
+  const { suffix } = useListContext()!;
+
   // 3. set styles
-  const listItemSuffixClasses = twMerge(classnames(objectsToString(base.itemSuffix)), className);
+  const listItemSuffixClasses = useMemo(
+    () => twMerge(classnames(objectsToString(base.itemPrefix)), className, suffix),
+    [className, suffix],
+  );
 
   return (
     <ListItemSuffixRoot {...rest} ref={ref} className={listItemSuffixClasses}>

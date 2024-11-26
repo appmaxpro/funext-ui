@@ -72,8 +72,7 @@ export const rating: RatingStyleTypes = {
         />
       </svg>
     ),
-    ratedColor: "yellow",
-    unratedColor: "slate",
+    ratedColor: "orange",
     className: undefined,
     onChange: undefined,
     readonly: false,

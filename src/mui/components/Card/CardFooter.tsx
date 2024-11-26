@@ -42,7 +42,7 @@ export const CardFooter = React.forwardRef<HTMLElement, CardFooterProps>(
 
     // 4. return
     return (
-      <CardFooterRoot {...rest} ref={ref} className={cardFooterClasses}/>
+      <CardFooterRoot {...rest} ref={ref as any} className={cardFooterClasses}/>
     );
   },
 );

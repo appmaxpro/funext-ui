@@ -316,8 +316,3 @@ export const identity = (value: any) => value;
 export function capitalizeWord(word: string) {
   return (word[0] || "").toUpperCase() + (word || "").substring(1);
 }
-
-export function useRTL() {
-  const { dir } = useCoreTheme();
-  return dir === "rtl";
-}

@@ -77,6 +77,7 @@
   display: flex;
   align-items: center;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .arrow {
@@ -96,7 +97,7 @@
 }
 
 .text {
-  padding: var(--ax-nav-tabs-text-padding);
+  padding: 0 var(--ax-nav-tabs-text-padding);
 }
 
 .icon {
@@ -149,7 +150,6 @@
       opacity: 1;
       color: var(--ax-nav-tabs-tab-hover-color);
       background-color: var(--ax-nav-tabs-tab-hover-bg);
-      font-weight: var(--ax-nav-tabs-tab-hover-font-weight);
     }
     .icon {
       color: var(

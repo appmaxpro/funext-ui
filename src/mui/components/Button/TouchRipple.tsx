@@ -25,7 +25,7 @@ export const TouchRipple = React.forwardRef<HTMLElement, TouchRippleProps>((
 
   if (Comp) {
       return <Comp 
-      {...props} 
+      {...(props as any)} 
       ref={rippleRef} 
       className={clsx(props.className, !actionDisabled && className)}
       data-ripple-id={rippleId}

@@ -1,5 +1,5 @@
 import { Box } from "../box";
-import { Button } from "../button";
+import { Button } from "../../mui";
 import { CircularProgress } from "./circular-progress";
 
 const config = {

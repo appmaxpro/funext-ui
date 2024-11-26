@@ -5,7 +5,7 @@ import React from "react";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { Tree } from "../tree";
-import { Input } from "../../input";
+import { Input } from "../../../mui";
 import { useClassNames } from "../../styles";
 import records from "./data";
 

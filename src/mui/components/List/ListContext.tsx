@@ -1,7 +1,11 @@
 import React, { useCallback, useMemo } from "react";
 
 // types
-import type { ListContextProps, ListContextValues, ItemInteractive } from "../../types/components/list";
+import type {
+  ListContextProps,
+  ListContextValues,
+  ItemInteractive,
+} from "../../types/components/list";
 import type { ListStylesType } from "../../components/List/style";
 
 import { useTailwindTheme } from "../../theme";
@@ -13,12 +17,20 @@ export interface ListContextProviderProps {
   children: React.ReactNode;
 }
 
-export const ListContext = React.createContext<ListContextProps | null>(null);
+const ListContext = React.createContext<ListContextProps | null>(null);
 
 ListContext.displayName = "Mux.ListContext";
 
-const defaultListContext:ListContextProps = {
-  getItemStyle: (disabled?: Boolean, selected?: Boolean, active?: Boolean, useHover?: boolean) => '',
+const defaultListContext: ListContextProps = {
+  getItemStyle: (
+    disabled?: Boolean,
+    selected?: Boolean,
+    active?: Boolean,
+    useHover?: boolean,
+    divider?: boolean,
+    gutters?: boolean,
+    dense?: boolean,
+  ) => "",
   item: {
     hover: undefined,
     focus: undefined,
@@ -28,108 +40,143 @@ const defaultListContext:ListContextProps = {
     default: undefined,
     all: undefined,
     ripple: undefined,
-    rippleClassName: undefined
+    rippleClassName: undefined,
+  },
+};
+
+export function useListContext(def: boolean = true) {
+  try {
+    const context = React.useContext(ListContext);
+    //console.log("ListContext:", context);
+    return context ?? (def ? defaultListContext : context) ;
+  } catch (e) {
+    if (!def) {
+      throw e;
+    }
   }
-} 
 
-export function useListContext(def:boolean = true) {
-  const context = React.useContext(ListContext);
-
-  return context || (def ? defaultListContext : context);
+  return defaultListContext;
 }
 
 const createItemInteractive = (name: string, def: ItemInteractive) => {
-  const active = name ? `${name}:` : '';
+  const active = name ? `${name}:` : "";
   return {
-      ...def,
-      bg: def.bg ? `${active}bg-${def.bg}` : undefined,
-      color: def.color ? `${active}text-${def.color}` : undefined,
-      opacity: def.opacity ? `${active}opacity-${def.opacity}` : undefined,
-  }
-}
+    ...def,
+    bg: def.bg ? `${active}bg-${def.bg}` : undefined,
+    color: def.color ? `${active}text-${def.color}` : undefined,
+    opacity: def.opacity ? `${active}opacity-${def.opacity}` : undefined,
+  };
+};
 
-
-
-export const ListContextProvider = ({ value, children }: ListContextProviderProps) => {
-  const { 
-    className, 
-    item= {} as ListContextValues['item'], 
+export const ListContextProvider = ({
+  value,
+  children,
+}: ListContextProviderProps) => {
+  const {
+    className,
+    item = {} as ListContextValues["item"],
     ripple = true,
-    hover:hasHover,
-    focus:hasFocus,
-    select:hasSelect,
-    active:hasActive
+    hover: hasHover,
+    focus: hasFocus,
+    select: hasSelect,
+    active: hasActive,
+    divider,
+    gutters,
+    dense,
+    ul,
+    prefix,
+    suffix,
+    global
   } = value;
 
   const { list } = useTailwindTheme();
   const listTheme = list as ListStylesType;
-  const {styles} = listTheme;
-  
-  const defaults = useMemo(()=> {
+  const { styles } = listTheme;
 
-    const asObject = (val:any) => 
-        !val ? undefined : typeof val === 'object' ? val : {cp: val};
+  const defaults = useMemo(() => {
+    const asObject = (val: any) =>
+      !val ? undefined : typeof val === "object" ? val : { cp: val };
 
-    const listStyle = {...styles?.base?.list, ...value.list};
+    const listStyle = { ...styles?.base?.list, ...value.list };
     const styleList = styles?.base?.list;
     const styleItem = styles?.base?.item;
     const interactiveStyles = styleItem?.interactive;
 
     const {
       rippleClassName,
-      className,   
-      active:itemActive,
-      hover:itemHover,
-      focus:itemFocus,
-      selected:itemSelected,
-      disabled:itemDisabled,
+      className,
+      active: itemActive,
+      hover: itemHover,
+      focus: itemFocus,
+      selected: itemSelected,
+      disabled: itemDisabled,
       ...otherItem
-    } = item;
-    
+    } = item as any;
+
     const defaultItemActive = {
       ...interactiveStyles?.active,
-      ...asObject(itemActive)
+      ...asObject(itemActive),
     };
 
     const defaultItemHover = {
-      ...(asObject(itemHover) ??  interactiveStyles?.hover ?? defaultItemActive),
+      ...(asObject(itemHover) ?? interactiveStyles?.hover ?? defaultItemActive),
     };
 
     const defaultItemFocus = {
-      ...(asObject(itemFocus) ?? interactiveStyles?.focus ?? defaultItemActive)
+      ...(asObject(itemFocus) ?? interactiveStyles?.focus ?? defaultItemActive),
     };
 
     const defaultItemSelected = {
       ...defaultItemActive,
-      ...(asObject(itemSelected) ?? interactiveStyles?.selected)
+      ...(asObject(itemSelected) ?? interactiveStyles?.selected),
     };
 
     const defaultItemDisabled = {
       ...styleItem?.initial,
       ...styleItem?.disabled,
       ...otherItem.initial,
-      ...createItemInteractive('disabled', asObject(itemDisabled) ?? interactiveStyles?.disabled ?? {}),
+      ...createItemInteractive(
+        "disabled",
+        asObject(itemDisabled) ?? interactiveStyles?.disabled ?? {},
+      ),
     };
 
-    const active = hasActive 
-        ? twMerge(objectsToString(createItemInteractive('active', defaultItemActive)))
-        : undefined;
-    const hover = hasHover 
-        ? twMerge(objectsToString(createItemInteractive('hover', defaultItemHover)).replace("active:", ""))
-        : undefined;
-  
+    const active = hasActive
+      ? twMerge(
+          objectsToString(createItemInteractive("active", defaultItemActive)),
+        )
+      : undefined;
+    const hover = hasHover
+      ? twMerge(
+          objectsToString(
+            createItemInteractive("hover", defaultItemHover),
+          ).replace("active:", ""),
+        )
+      : undefined;
+
     const focus = hasFocus
-        ? twMerge(objectsToString(createItemInteractive('focus', defaultItemFocus)))
-        : undefined;
-    
-    const initial = twMerge(objectsToString({
+      ? twMerge(
+          objectsToString(createItemInteractive("focus", defaultItemFocus)),
+        )
+      : undefined;
+
+    const initial = twMerge(
+      objectsToString({
         ...styleItem?.initial,
         ...otherItem.initial,
-      })
+        divider: divider === true ? styleItem?.divider : divider,
+        gutters: gutters === true ? styleItem?.gutters : gutters,
+        dense: dense === true ? styleItem?.dense : dense,
+      }),
     );
     const initialDefault = twMerge(initial, className);
     return {
-      list: twMerge(objectsToString(listStyle), listTheme.defaultProps?.className, value.className),
+      ul,
+      list: twMerge(
+        objectsToString(listStyle),
+        listTheme.defaultProps?.className,
+        value.className,
+      ),
       item: {
         initial: initialDefault,
         active: active,
@@ -139,15 +186,28 @@ export const ListContextProvider = ({ value, children }: ListContextProviderProp
         default: twMerge(initial, active, focus, className),
         disabled: twMerge(objectsToString(defaultItemDisabled), className),
         selected: hasSelect
-            ? twMerge(initial, objectsToString(createItemInteractive('', defaultItemSelected)), className)
-            : initialDefault,
+          ? twMerge(
+              initial,
+              objectsToString(createItemInteractive("", defaultItemSelected)),
+              className,
+            )
+          : initialDefault,
         ripple,
-        rippleClassName: rippleClassName
-      }
-    }
+        rippleClassName: rippleClassName,
+      },
+      prefix: twMerge(objectsToString(styles?.base?.itemPrefix), prefix),
+      suffix: twMerge(objectsToString(styles?.base?.itemSuffix), suffix),
+      global
+    };
   }, [className, hasActive, hasFocus, hasHover, hasSelect, item?.className]);
 
-  const itemStyle = useCallback((disabled?:Boolean, selected?:Boolean, active?:Boolean, useHover?: boolean)=> {
+  const itemStyle = useCallback(
+    (
+      disabled?: Boolean,
+      selected?: Boolean,
+      active?: Boolean,
+      useHover?: boolean,
+    ) => {
       if (disabled) {
         return defaults.item.disabled;
       }
@@ -156,28 +216,28 @@ export const ListContextProvider = ({ value, children }: ListContextProviderProp
       }
 
       if (active) {
-        return (useHover ?? hasHover 
-          ? defaults.item.all 
-          : defaults.item.default
-        )?.replaceAll("active:", "");
+        return (
+          useHover ?? hasHover ? defaults.item.all : defaults.item.default
+        )?.replace(new RegExp("active:", 'g'), "");
       }
 
-      return useHover ?? hasHover 
-          ? defaults.item.all 
-          : defaults.item.initial;
+      
 
-  }, [className, hasActive, hasFocus, hasHover, hasSelect, item?.className]) ;
+      return useHover ?? hasHover ? defaults.item.all : defaults.item.initial;
+    },
+    [className, hasActive, hasFocus, hasHover, hasSelect, item?.className],
+  );
 
   const values = {
     ...defaults,
     getItemStyle: itemStyle,
-  } ;
+  };
 
   //console.log("ListContext:", values)
 
-  return <ListContext.Provider value={values}>
-    {children}
-    </ListContext.Provider>;
+  return <ListContext.Provider value={values}>{children}</ListContext.Provider>;
 };
+
+export const ListContextConsumer = ListContext.Consumer;
 
 ListContextProvider.displayName = "Mux.ListContextProvider";

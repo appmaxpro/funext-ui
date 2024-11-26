@@ -469,6 +469,8 @@ export interface CssVarsTheme extends ColorSystem {
  * @param args Deep merge the arguments with the about to be returned theme.
  * @returns A complete, ready-to-use theme object.
  */
+
+// @ts-ignore
 export default function createThemeWithVars(
   options?: CssVarsThemeOptions,
   ...args: object[]

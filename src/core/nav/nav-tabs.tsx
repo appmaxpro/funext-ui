@@ -307,6 +307,7 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
               <MaterialIcon
                 className={styles.arrow}
                 icon={isRtl ? "keyboard_arrow_right" : "keyboard_arrow_left"}
+                size={24}
                 onClick={onScrollToEnd}
               />
             </div>
@@ -349,6 +350,7 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
                 <MaterialIcon
                   className={styles.arrow}
                   icon={isRtl ? "keyboard_arrow_left" : "keyboard_arrow_right"}
+                  size={24}
                   onClick={onScrollToStart}
                 />
             </div>
@@ -401,9 +403,11 @@ function NavTab(props: NavTabProps) {
       className={clsx(styles.tab, isActive && styles.active)}
       area-active={isActive ? 'true' : undefined}
       data-tab-id={item.id}
-      onClick={handleClick}
+      // @ts-ignore
+      onClick={handleClick as any}
       onAuxClick={onAuxClick}
       onContextMenu={onContextMenu}
+      tabIndex="-1"
       as='div'
       >
       <NavTabInner item={item} active={isActive} />

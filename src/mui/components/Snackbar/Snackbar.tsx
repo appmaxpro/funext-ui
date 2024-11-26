@@ -35,13 +35,13 @@ export interface SnackbarClasses {
   /** Styles applied to the root element if `anchorOrigin={{ 'bottom', 'center' }}`. */
   anchorOriginBottomCenter: string;
   /** Styles applied to the root element if `anchorOrigin={{ 'top', 'right' }}`. */
-  anchorOriginTopRight: string;
+  anchorOriginTopEnd: string;
   /** Styles applied to the root element if `anchorOrigin={{ 'bottom', 'right' }}`. */
-  anchorOriginBottomRight: string;
+  anchorOriginBottomEnd: string;
   /** Styles applied to the root element if `anchorOrigin={{ 'top', 'left' }}`. */
-  anchorOriginTopLeft: string;
+  anchorOriginTopStart: string;
   /** Styles applied to the root element if `anchorOrigin={{ 'bottom', 'left' }}`. */
-  anchorOriginBottomLeft: string;
+  anchorOriginBottomStart: string;
 }
 
 export type SnackbarClassKey = keyof SnackbarClasses;
@@ -208,8 +208,6 @@ const SnackbarRoot = styled('div', {
     zIndex: (theme.vars || theme).zIndex.snackbar,
     position: 'fixed',
     display: 'flex',
-    left: 8,
-    right: 8,
     justifyContent: 'center',
     alignItems: 'center',
     variants: [
@@ -225,19 +223,19 @@ const SnackbarRoot = styled('div', {
         props: ({ ownerState }:any) => ownerState.anchorOrigin.horizontal === 'start',
         style: {
           justifyContent: 'flex-start',
+          left: 8,
           [theme.breakpoints.up('sm')]: {
-            start: 24,
-            end: 'auto',
+            left: 24,
           },
         },
       },
       {
-        props: ({ ownerState }) => ownerState.anchorOrigin.horizontal === 'end',
+        props: ({ ownerState }:any) => ownerState.anchorOrigin.horizontal === 'end',
         style: {
           justifyContent: 'flex-end',
+          right: 8,
           [theme.breakpoints.up('sm')]: {
-            end: 24,
-            start: 'auto',
+            right: 24,
           },
         },
       },
@@ -246,7 +244,6 @@ const SnackbarRoot = styled('div', {
         style: {
           [theme.breakpoints.up('sm')]: {
             left: '50%',
-            right: 'auto',
             transform: 'translateX(-50%)',
           },
         },
@@ -291,6 +288,7 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
   const ownerState = {
     ...props,
     anchorOrigin: { vertical, horizontal },
+    
     autoHideDuration,
     disableWindowBlurListener,
     TransitionComponent,
@@ -312,7 +310,7 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
       ref,
     },
     className: [classes.root, className],
-  });
+  } as any);
 
   const handleExited = (node:any) => {
     setExited(true);
@@ -335,8 +333,6 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
     return null;
   }
   
-  const rtl = useRtl();
-
   return (
     <ClickAwayListener onClickAway={onClickAway} {...ClickAwayListenerProps}>
       <SnackbarRoot {...rootProps}>

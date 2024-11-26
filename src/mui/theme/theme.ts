@@ -26,7 +26,9 @@ import { ColorSystemOptions, CssVarsPalette, CssVarsTheme } from './themeVars';
  *   }
  * }
  */
-export interface CssThemeVariables {}
+export interface CssThemeVariables {
+  enabled: true
+}
 
 type CssVarsOptions = CssThemeVariables extends {
   enabled: true;
@@ -82,6 +84,7 @@ export interface Theme extends BaseTheme, CssVarsProperties {
   components?: Components<BaseTheme>;
   unstable_sx: (props: SxProps<Theme>) => CSSObject;
   unstable_sxConfig: SxConfig;
+  enabled: true
 }
 
 

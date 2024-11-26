@@ -38,6 +38,7 @@ export interface LinearProgressClasses {
   bar2Indeterminate: string;
   /** Styles applied to the bar2 element if `variant="buffer"`. */
   bar2Buffer: string;
+  striped: string;
 }
 
 export type LinearProgressClassKey = keyof LinearProgressClasses;
@@ -65,6 +66,7 @@ const linearProgressClasses: LinearProgressClasses = generateUtilityClasses('Mux
   'bar1Buffer',
   'bar2Indeterminate',
   'bar2Buffer',
+  'striped'
 ]);
 
 export default linearProgressClasses;

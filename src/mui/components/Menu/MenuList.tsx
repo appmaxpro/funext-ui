@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useEffect, useMemo, useRef } from "react";
 
 // @floating-ui
@@ -7,19 +7,17 @@ import {
   FloatingOverlay,
   FloatingFocusManager,
   useMergeRefs,
-  FloatingArrow,
-  Side
+  Side,
 } from "@floating-ui/react";
 
 // framer-motion
-import { 
-  AnimatePresence, 
-  motion, 
-  m, 
-  LazyMotion, 
+import {
+  AnimatePresence,
+  m,
+  LazyMotion,
   domAnimation,
   createDomMotionComponent,
-  cubicBezier
+  cubicBezier,
 } from "framer-motion";
 
 // utils
@@ -36,9 +34,10 @@ import { isMenuItemValid, isValidItemType, pickAnimation } from "./utils";
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
 
-import { clsx, styled, StyledComponent } from "../../styles";
-import Panel from "../Panel";
+import { clsx, styled, StyledComponent, useRtl } from "../../styles";
+import Panel, { PanelProps } from "../Panel";
 import List, { ListProps } from "../List";
+import { FloatingArrow, getArrowOrigin } from "../Popover/FloatingArrow";
 
 const PanelRoot = styled(Panel, {
   name: "MuxMenu",
@@ -46,8 +45,6 @@ const PanelRoot = styled(Panel, {
   overridesResolver: (props, styles) => styles.root,
 })(({ theme }) => ({
   ...theme.typography.body1,
-  
-
 })) as StyledComponent<any>;
 
 const MenuListRoot = styled(List, {
@@ -56,31 +53,35 @@ const MenuListRoot = styled(List, {
   overridesResolver: (props, styles) => styles.root,
 })({
   overflow: "auto",
+  borderRadius: "inherit",
 });
 
 export interface MenuListProps extends ListProps {
   dismissible?: boolean;
   panelClassName?: string;
   nav?: boolean;
-  children?: React.ReactNode
+  children?: React.ReactNode;
+  panelProps?: Omit<PanelProps, "children">;
 }
 
-
 export const MenuList = React.forwardRef<HTMLUListElement, MenuListProps>(
-  ({children, ...props}, ref) => {
-   
-   return <MenuListContent {...props}>
-    {React.Children.map(children,  (item:any, index) => 
-        item &&
-        React.cloneElement(item as any, {
-          'role': isValidItemType(item) ? (item.props as any).role ?? 'menuitem' : (item.props as any).role            
-          })
-        )
-      }
- </MenuListContent>
-})
-
-
+  ({ children, ...props }, ref) => {
+    return (
+      <MenuListContent {...props} ref={ref}>
+        {React.Children.map(
+          children,
+          (item: any, index) =>
+            item &&
+            React.cloneElement(item as any, {
+              role: isValidItemType(item)
+                ? (item.props as any).role ?? "menuitem"
+                : (item.props as any).role,
+            }),
+        )}
+      </MenuListContent>
+    );
+  },
+);
 
 const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
   (
@@ -88,10 +89,11 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       children,
       className,
       panelClassName,
-      nav = false,
+      nav:xnav = false,
       hover = true,
       active = true,
       focus = true,
+      panelProps,
       itemStyle = {
         disabled: "",
         className:
@@ -114,6 +116,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       x,
       y,
       floating,
+
       listItemsRef,
       getFloatingProps,
       getItemProps,
@@ -129,6 +132,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       arrow,
       arrowRef,
       disablePortal,
+      nav
     } = useMenu();
 
     //m(Panel);
@@ -138,48 +142,43 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
     // 4. set refs
     const mergedRef = useMergeRefs([ref, floating]);
     const listRef = useRef();
-    
+
     React.useEffect(() => {
       if (open && !initialized) {
         setInitialized(true);
       }
     }, [open]);
 
+    const { side, xAxis, yAxis, ...axis } = getArrowOrigin(
+      context,
+      null,
+      useRtl(),
+    );
 
-    const placement = context.placement;
-    const usageContext = context.middlewareData.arrow 
-          ? context.middlewareData.arrow 
-          : context;
-    
-    const side = placement.split('-')[0] as Side;
+    const arrowX = axis[xAxis];
+    const arrowY = axis[yAxis];
 
     const animation = React.useRef({});
 
     const shouldOpen = initialized || nested;
 
-    useEffect(()=> {
-
+    useEffect(() => {
       if (!open && !openState) {
         //animation.current = {};
         return;
-      };
-      
+      }
+
+      let x = xAxis === "right" ? `right ${arrowX}px` : `${arrowX}px`;
+      let y = yAxis === "bottom" ? `bottom ${arrowY}px` : `${arrowY}px`;
+
       const transformOrigin = {
-        top: `${
-          usageContext?.x ?? 0
-        }px bottom`,
-        bottom: `${
-          usageContext?.x ?? 0
-        }px top`,
-        left: `right ${
-          usageContext?.y ?? 0
-        }px bottom`,
-        right: `left ${
-          usageContext?.y ?? 0
-        }px`,
+        top: `${x} bottom`,
+        bottom: `${x} top`,
+        left: `right ${y}`,
+        right: `left ${y}`,
       }[side];
 
-      const {amount, unmount, ...others} = appliedAnimation as any;
+      const { amount, unmount, ...others } = appliedAnimation as any;
 
       animation.current = {
         ...others,
@@ -190,15 +189,17 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
         unmount: {
           transformOrigin,
           ...unmount,
-        }
-      }
-    }, [side, open]);
-    
+        },
+      };
+    }, [side, open, xAxis, yAxis, arrowX, arrowY]);
+
     if ((!initialized && !nested) || !(animation.current as any).amount) {
       return null;
     }
 
-    //console.log("animation:", animation)
+    if (nested) {
+      //console.log("transformOrigin:", animation.current?.amount?.transformOrigin)
+    }
 
     // 2. set default props
     className = className ?? menu.defaultProps.className;
@@ -212,67 +213,61 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       classnames(objectsToString(base.menu)),
       className,
     );
-     
+
     // 5. create an instance of AnimatePresence because of the types issue with the children
     const NewAnimatePresence: React.FC<NewAnimatePresenceProps> =
       AnimatePresence;
 
-    const items = React.Children.map(
+    const items = !nav
+    ? children
+    : React.Children.map(
       children,
-      (child:any, index) =>
+      (child: any, index) =>
         React.isValidElement(child) &&
-        (!isMenuItemValid(child) 
-          ? React.cloneElement(child, 
-              {
-                'aria-disabled': "true",
-                className: clsx(child.props.className, 'item-disabled'),
-                ...getItemProps({
-                  ref(node: HTMLButtonElement) {
-                    listItemsRef.current[index] = node;
-                  },
-                }),
-                
-              }
-          )
+        (!isMenuItemValid(child)
+          ? React.cloneElement(child, {
+              "aria-disabled": "true",
+              className: clsx((child.props as any).className, "item-disabled"),
+              ...getItemProps({
+                ref(node: HTMLButtonElement) {
+                  listItemsRef.current[index] = node;
+                },
+              }),
+            } as any)
           : React.cloneElement(child, {
-            "area-active": activeIndex === index ? "true" : undefined,
-            ...getItemProps({
-              tabIndex: activeIndex === index ? 0 : -1,
-              role: "menuitem",
-              className: child.props.className,
-              ref(node: HTMLButtonElement) {
-                listItemsRef.current[index] = node;
-              },
-              onClick(event) {
-                if (child.props.onClick) {
-                  child.props.onClick?.(event);
-                }
-                tree?.events.emit("click");
-              },
-              onMouseEnter() {
-                if ((allowHover && open) || (internalAllowHover && open)) {
-                  setActiveIndex(index);
-                }
-              },
-            }),
-        })),
+              //@ts-ignore
+              "area-active": activeIndex === index ? "true" : undefined,
+              ...getItemProps({
+                tabIndex: activeIndex === index ? 0 : -1,
+                role: "menuitem",
+                className: (child.props as any).className,
+                ref(node: HTMLButtonElement) {
+                  listItemsRef.current[index] = node;
+                },
+                onClick(event) {
+                  if ((child.props as any).onClick) {
+                    (child.props as any).onClick?.(event);
+                  }
+                  tree?.events.emit("click");
+                },
+                onMouseEnter() {
+                  if ((allowHover && open) || (internalAllowHover && open)) {
+                    setActiveIndex(index);
+                  }
+                },
+              }),
+            })),
     );
 
-    const child = nav ? (
-      <FocusTrap>
-        <ArrowNavigation selector="auto-vertical">
-          <MenuListRoot
-            itemStyle={itemStyle}
-            className={menuClasses}
-            role="menu"
-            //tabIndex={0}
-            //ref={listRef}
-            {...rest}
-          >
-            {items}
-          </MenuListRoot>
-        </ArrowNavigation>
-      </FocusTrap>
+    const child = !nav ? (
+      <MenuListRoot
+        itemStyle={itemStyle}
+        className={menuClasses}
+        role="menu"
+        {...rest}
+      >
+        {items}
+      </MenuListRoot>
     ) : (
       <FloatingFocusManager
         context={context}
@@ -298,8 +293,8 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
     //if(nested)
     //console.log("MenuList:nested:", nested, ", cords:", {x, y, open, placement: context.placement})
     // 6. menu component.
-    const menuComponent = ( 
-      <motion.div
+    const menuComponent = (
+      <m.div
         className="z-modal"
         key={`move-${context.nodeId}`}
         ref={mergedRef as any}
@@ -323,20 +318,30 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
         exit="unmount"
         animate={open ? "mount" : "unmount"}
         variants={animation.current}
-        onAnimationComplete={(def)=> {
-          console.log("onAnimationComplete:", def);
+        onAnimationComplete={(def) => {
+          //console.log("onAnimationComplete:", def);
           setOpenStated(open);
         }}
         transformTemplate={scaleTranslate}
       >
-        <PanelRoot className={panelClasses} elevation={4} variant="outlined">{child}</PanelRoot>
+        <PanelRoot
+          className={panelClasses}
+          elevation={4}
+          variant="outlined"
+          {...panelProps}
+        >
+          {child}
+        </PanelRoot>
         <FloatingArrow
-            {...arrow?.props}
-            className={clsx(arrow?.props?.className, (nested || !arrow) && 'hidden')}
-            ref={arrowRef as any}
-            context={context}
-          />
-      </motion.div>
+          {...arrow?.props}
+          className={clsx(
+            arrow?.props?.className,
+            (nested || !arrow) && "hidden",
+          )}
+          ref={arrowRef as any}
+          context={context}
+        />
+      </m.div>
     );
 
     // 7. return
@@ -355,9 +360,9 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
             )}
           </NewAnimatePresence>
         ) : (
-          <FloatingPortal id="menu-portal">
-            <NewAnimatePresence>
-              {(open || openState) && (
+          <NewAnimatePresence>
+            {(open || openState) && (
+              <FloatingPortal id="mux-portal">
                 <>
                   {lockScroll ? (
                     <FloatingOverlay lockScroll>
@@ -367,15 +372,14 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
                     menuComponent
                   )}
                 </>
-              )}
-            </NewAnimatePresence>
-          </FloatingPortal>
+              </FloatingPortal>
+            )}
+          </NewAnimatePresence>
         )}
       </LazyMotion>
     );
   },
 );
-
 
 /**
  * `transform` is order-dependent, so if you scale(0.5) before translateX(100px),
@@ -390,9 +394,8 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
  * the scale of the parent component. Because of this we want to translate
  * through scaled coordinate space, and can use the transformTemplate prop to do so.
  */
-const scaleTranslate = ({ x, y, scaleX, scaleY }:any) =>
+const scaleTranslate = ({ x, y, scaleX, scaleY }: any) =>
   `scaleX(${scaleX}) scaleY(${scaleY}) translate(${x}, ${y}) translateZ(0)`;
-
 
 MenuList.displayName = "Mux.MenuList";
 

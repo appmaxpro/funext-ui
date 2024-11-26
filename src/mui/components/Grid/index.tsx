@@ -1,5 +1,5 @@
 'use client';
-import { createGrid } from '@mui/system/Grid';
+import createGrid  from './createGrid';
 //import { SxProps, SystemProps } from '@mui/system';
 import { OverridableComponent, OverrideProps } from '../../props';
 import { 
@@ -9,109 +9,15 @@ import {
   SystemThemeProps, 
   useMuiDefaultProps 
 } from '../../styles';
+import React from 'react';
+import {GridProps, GridTypeMap} from './GridProps';
+
+export * from './GridProps';
+
+export {default as gridClasses} from './gridClasses';
+export * from './gridClasses';
 
 export type GridSlot = 'root';
-
-type ResponsiveStyleValue<T> = T | Array<T | null> | { [key in Breakpoint]?: T | null };
-
-export type GridDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
-
-export type GridSpacing = number | string;
-
-export type GridWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
-
-export type GridSize = 'auto' | 'grow' | number | false;
-
-export type GridOffset = 'auto' | number;
-
-export interface GridBaseProps {
-  /**
-   * The content of the component.
-   */
-  children?: React.ReactNode;
-  /**
-   * The number of columns.
-   * @default 12
-   */
-  columns?: ResponsiveStyleValue<number>;
-  /**
-   * Defines the horizontal space between the type `item` components.
-   * It overrides the value of the `spacing` prop.
-   */
-  columnSpacing?: ResponsiveStyleValue<GridSpacing>;
-  /**
-   * If `true`, the component will have the flex *container* behavior.
-   * You should be wrapping *items* with a *container*.
-   * @default false
-   */
-  container?: boolean;
-  /**
-   * Defines the `flex-direction` style property.
-   * It is applied for all screen sizes.
-   * @default 'row'
-   */
-  direction?: ResponsiveStyleValue<GridDirection>;
-  /**
-   * Defines the offset value for the type `item` components.
-   */
-  offset?: ResponsiveStyleValue<GridOffset>;
-  /**
-   * @internal
-   * The level of the grid starts from `0`
-   * and increases when the grid nests inside another grid regardless of container or item.
-   *
-   * ```js
-   * <Grid> // level 0
-   *   <Grid> // level 1
-   *     <Grid> // level 2
-   *   <Grid> // level 1
-   * ```
-   *
-   * Only consecutive grid is considered nesting.
-   * A grid container will start at `0` if there are non-Grid element above it.
-   *
-   * ```js
-   * <Grid> // level 0
-   *   <div>
-   *     <Grid> // level 0
-   *       <Grid> // level 1
-   * ```
-   */
-  unstable_level?: number;
-  /**
-   * Defines the vertical space between the type `item` components.
-   * It overrides the value of the `spacing` prop.
-   */
-  rowSpacing?: ResponsiveStyleValue<GridSpacing>;
-  /**
-   * Defines the size of the the type `item` components.
-   */
-  size?: ResponsiveStyleValue<GridSize>;
-  /**
-   * Defines the space between the type `item` components.
-   * It can only be used on a type `container` component.
-   * @default 0
-   */
-  spacing?: ResponsiveStyleValue<GridSpacing> | undefined;
-  /**
-   * Defines the `flex-wrap` style property.
-   * It's applied for all screen sizes.
-   * @default 'wrap'
-   */
-  wrap?: GridWrap;
-}
-
-export interface GridTypeMap<P = {}, D extends React.ElementType = 'div'> {
-  props: P & GridBaseProps & { sx?: SxThemeProps } & SystemThemeProps;
-  defaultComponent: D;
-}
-
-export type GridProps<
-  D extends React.ElementType = GridTypeMap['defaultComponent'],
-  P = {
-    component?: React.ElementType;
-  },
-> = OverrideProps<GridTypeMap<P, D>, D>;
 
 /**
  *
@@ -133,5 +39,19 @@ export const Grid = createGrid({
   useThemeProps: (inProps) => useMuiDefaultProps({ props: inProps, name: 'MuxGrid' }),
 }) as OverridableComponent<GridTypeMap>;
 
+export const Row = React.forwardRef<Omit<GridProps, 'direction' | 'columnSpacing' | 'rowSpacing'>, HTMLDivElement>(function(props, ref){
+  // eslint-disable-next-line react-compiler/react-compiler
+  //@ts-ignore
+   return <Grid {...props} ref={ref} direction="row"/>
+})
+
+
+export const Col = React.forwardRef<Omit<GridProps, 'direction' | 'columnSpacing' | 'rowSpacing'>, HTMLDivElement>(function(props, ref){
+  // eslint-disable-next-line react-compiler/react-compiler
+  //@ts-ignore
+   return <Grid {...props} ref={ref} direction="column"/>
+})
+
+export const Flex = Grid;
 
 export default Grid;

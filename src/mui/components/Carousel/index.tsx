@@ -25,18 +25,9 @@ import {
   transition,
   loop,
   className,
-  slideRef,
-  propTypesChildren,
-  propTypesClassName,
-  propTypesNextArrow,
-  propTypesPrevArrow,
-  propTypesNavigation,
-  propTypesAutoplay,
-  propTypesAutoplayDelay,
-  propTypesTransition,
-  propTypesLoop,
-  propTypesSlideRef,
+  slideRef
 } from "../../types/components/carousel";
+import { AnimationProps } from "../../types/generic";
 
 export interface CarouselProps extends React.ComponentProps<"div"> {
   children: children;
@@ -45,7 +36,7 @@ export interface CarouselProps extends React.ComponentProps<"div"> {
   navigation?: navigation;
   autoplay?: autoplay;
   autoplayDelay?: autoplayDelay;
-  transition?: transition;
+  transition?: AnimationProps;
   loop?: loop;
   className?: className;
   slideRef?: slideRef;
@@ -61,7 +52,7 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
       autoplay,
       autoplayDelay,
       transition,
-      loop,
+      loop:loopProps,
       className,
       slideRef,
       ...rest
@@ -86,7 +77,7 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
     autoplay = autoplay ?? defaultProps.autoplay;
     autoplayDelay = autoplayDelay ?? defaultProps.autoplayDelay;
     transition = transition ?? defaultProps.transition;
-    loop = loop ?? defaultProps.loop;
+    const loop = loopProps ?? defaultProps.loop ?? false;
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
@@ -110,6 +101,7 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
     };
 
     React.useEffect(() => {
+      // @ts-ignore
       const controls = animate(x, calculateNewX(), transition);
 
       return controls.stop;
@@ -117,6 +109,7 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
 
     React.useEffect(() => {
       window.addEventListener("resize", () => {
+        // @ts-ignore
         animate(x, calculateNewX(), transition);
       });
     }, [calculateNewX, transition, x]);
@@ -136,7 +129,7 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
     // 5. return
     return (
       <div {...rest} ref={mergedRefs} className={carouselClasses}>
-        {childrens.map((child, i) => (
+        {childrens.map((child:any, i:number) => (
           <LazyMotion key={i} features={domAnimation}>
             <m.div
               ref={slideRef}
@@ -169,19 +162,6 @@ export const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
     );
   },
 );
-
-Carousel.propTypes = {
-  className: propTypesClassName,
-  children: propTypesChildren,
-  nextArrow: propTypesNextArrow,
-  prevArrow: propTypesPrevArrow,
-  navigation: propTypesNavigation,
-  autoplay: propTypesAutoplay,
-  autoplayDelay: propTypesAutoplayDelay,
-  transition: propTypesTransition,
-  loop: propTypesLoop,
-  slideRef: propTypesSlideRef,
-};
 
 Carousel.displayName = "Mux.Carousel";
 

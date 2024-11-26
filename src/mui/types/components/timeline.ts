@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import PropTypes from "prop-types";
 
 // generic types
 import type { Colors } from "../generic";
@@ -16,7 +15,5 @@ export type color = "white" | Colors;
 export type variant = "filled" | "outlined" | "ghost" | "gradient";
 
 // javascript prop-types
-export const propTypeClassName: any = PropTypes.string;
-export const propTypeChildren: any = PropTypes.node;
 export const propTypeColor: any = ["white", ...propTypesColors];
 export const propTypeVariant: any = ["filled", "outlined", "ghost", "gradient"];

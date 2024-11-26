@@ -1,4 +1,3 @@
-
 // components
 export * from "./theme";
 export * from "./styles";
@@ -47,21 +46,43 @@ export * from "./components/Grid";
 export * from "./components/Select/AutoSelect";
 export * from "./components/Focus";
 export * from "./components/Snackbar";
+export * from "./components/GlobalStyles";
+export * from "./components/Screen";
 
 export * from "./hooks";
 export * from "./utils";
 export * from "../icons/material-icon";
 
-import Input from "./components/Input"
-export { 
-  Input as TextField
-}
+import Input from "./components/Input";
+export { Input as TextField };
 // context
-export { 
-  TailwindThemeContext as MaterialTailwindTheme, 
-  TailwindThemeProvider, 
-  useTailwindTheme 
+export {
+  TailwindThemeContext as MaterialTailwindTheme,
+  TailwindThemeProvider,
+  useTailwindTheme,
 } from "./theme";
+
+import { propTypesColors } from "./types/generic";
+
+let muiValidColors:Array<string> = [...propTypesColors];
+for (let c of [
+  "success",
+  "danger",
+  "error",
+  "warning",
+  "info",
+  "transparent",
+  "default",
+  "white",
+  "dark",
+  "light",
+]) {
+  if (!muiValidColors.includes(c)) {
+    muiValidColors.push(c);
+  }
+}
+
+export const muiDefaultColors = Object.freeze(muiValidColors);
 
 // theme
 export * from "./components/index";

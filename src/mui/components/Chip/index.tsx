@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 // framer-motion
 import {
@@ -23,34 +23,62 @@ import { OverrideProps } from "../../props";
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
 import type {
-  variant,
-  color,
-  icon,
-  open,
-  onClose,
-  action,
   animate,
-  className,
-  value,
-  size,
 } from "../../types/components/chip";
 
 import IconButton from "../IconButton";
 import { useThemeColor } from "../../hooks";
 import { MaterialIcon } from "../../../icons/material-icon";
 
-import { styled } from "../../styles";
+import { clsx, composeClasses, generateUtilityClass, memoTheme, styled, Theme, useMuiDefaultProps } from "../../styles";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
-import Button, {ButtonProps} from "../Button";
+import Button, {
+  ButtonEndIcon,
+  ButtonProps,
+  ButtonRoot,
+  ButtonStartIcon,
+} from "../Button";
+
+import { buttonClasses } from "../Button/ButtonType";
+import { capitalize } from "../../utils";
+import { lineHeight } from "@mui/system";
 
 
-export interface ChipOwnProps extends Omit<ButtonProps, 'color'> {
-  size?: size;
-  color?: color;
-  open?: open;
+export function getChipUtilityClass(slot: string): string {
+  return generateUtilityClass('MuxChip', slot);
+}
+
+const useUtilityClasses = (ownerState: any) => {
+  const { color, disableElevation, fullWidth, size, variant, classes, xsm } =
+    ownerState;
+
+  const slots = {
+    root: [
+      "root",
+      variant,
+      `size${capitalize(size)}`,
+      `color${capitalize(color)}`,
+      disableElevation && "disableElevation",
+      fullWidth && "fullWidth",
+      xsm && "xsm",
+    ],
+    label: ["label"],
+    startIcon: ["icon", "startIcon", `iconSize${capitalize(size)}`],
+    endIcon: ["icon", "endIcon", `iconSize${capitalize(size)}`],
+  };
+
+  const composedClasses = composeClasses(slots, getChipUtilityClass, classes);
+
+  return {
+    ...classes, // forward the focused, disabled, etc. classes to the ButtonBase
+    ...composedClasses,
+  };
+};
+export interface ChipOwnProps extends ButtonProps {
+  open?: boolean;
   onClose?: (event: React.MouseEvent<HTMLButtonElement> | undefined) => void;
   animate?: animate;
-  label?: value;
+  label?: React.ReactNode;
   motionProps?: MotionProps;
 }
 
@@ -70,117 +98,223 @@ export type ChipProps<
   RootComponent
 > & {
   component?: React.ElementType;
+  rounded?: boolean;
+  xsm?: boolean;
 };
 
-const ChipRoot = styled(Button, {
+const ChipRoot = styled(ButtonRoot, {
   name: "MuxChip",
   slot: "Root",
-  shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes',
+  shouldForwardProp: (prop) =>
+    rootShouldForwardProp(prop) || prop === "classes",
   overridesResolver: (props, styles) => styles.root,
-})({
-  minWidth: 'unset'
-});
+})(
+  memoTheme(({ theme }:{theme:Theme}) => ({
+  minWidth: "unset",
+  variants: [
+    {
+      props: {
+        isButton: false,
+      },
+      style: {
+        boxShadow: "none",
+      },
+    },
+    {
+      props: {
+        size: 'sm',
+      },
+      style: {
+        padding: '2px 5px',
+        fontSize: theme.typography.pxToRem(12),
+        fontWeight: "normal",
+        lineHeight: 1.3
+      },
+    },
+    {
+      props: {
+        size: 'md',
+      },
+      style: {
+        padding: '4px 8px',
+        fontSize: theme.typography.pxToRem(14),
+        lineHeight: 1.3
+      },
+    },
+    {
+      props: {
+        size: 'lg',
+      },
+      style: {
+        padding: '6px 10px',
+        fontSize: theme.typography.pxToRem(15),
+      },
+    },
+    {
+      props: {
+        size: "md",
+        xsm: true,
+      },
+      style: {
+        padding: '2px 6px',
+        fontSize: theme.typography.pxToRem(12),
+      },
+    },
+    {
+      props: {
+        size: "sm",
+        xsm: true,
+      },
+      style: {
+        padding: '0 4px',
+        fontSize: theme.typography.pxToRem(11),
+      },
+    },
+  ],
+})));
 
 export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
-  (
-    {
+  (props, ref) => {
+    // 1. init
+
+    const { chip } = useTailwindTheme();
+    const { defaultProps, valid, styles } = chip;
+    const { base, variants, sizes } = styles;
+
+    props = useMuiDefaultProps({ props, name: "MuxChip" });
+
+    let {
       variant,
       size,
       color,
       open,
       onClose,
-      action,
       animate,
       className,
       label,
       children,
       motionProps,
+      rounded,
+      xsm,
+      startIcon: startIconProp,
+      endIcon: endIconProp,
       ...rest
-    },
-    ref,
-  ) => {
-    // 1. init
-    const { chip } = useTailwindTheme();
-    const { defaultProps, valid, styles } = chip;
-    const { base, variants, sizes } = styles;
+    } = props;
 
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     size = size ?? defaultProps.size;
-    color = useThemeColor(color, defaultProps.color);
+    color = useThemeColor(color, defaultProps.color) as ChipOwnProps["color"];
     animate = animate ?? defaultProps.animate;
     open = open ?? defaultProps.open;
-    action = action ?? defaultProps.action;
     onClose = onClose ?? defaultProps.onClose;
-    className = twMerge(defaultProps.className || "", className);
 
-    // 3. set styles
-    const chipBase = objectsToString(base.chip);
-    const chipAction = objectsToString(base.action);
-    const chipVariant = objectsToString(
-      variants[findMatch(valid.variants, variant, "filled")][
-        findMatch(valid.colors, color, "")
-      ],
-    );
+    const {
+      component = "span",
+      disabled = false,
+      disableElevation = !rest.onClick,
+      disableFocusRipple = false,
+      focusVisibleClassName,
+      fullWidth = false,
+    } = props;
 
-    const sizeVariant = findMatch(valid.sizes, size, "md");
-
-    const chipSize = objectsToString(
-      sizes[sizeVariant]["chip"],
-    );
-    const actionSize = objectsToString(
-      sizes[sizeVariant]["action"],
-    );
-
-    const classes = twMerge(
-      classnames(chipBase, chipVariant, chipSize),
-      className,
-    );
-
-    const actionClasses = twMerge(classnames(chipAction, actionSize));
-    
     const ownerState = {
-      size: '',
-      color: '',
+      ...rest,
+      color,
+      component,
+      disabled,
+      disableElevation,
+      disableFocusRipple,
+      focusVisibleClassName,
+      fullWidth,
+      size,
       variant,
-      classes:{
-        startIcon: 'shrink p-0 m-0 mx-3',
-        endIcon: 'shrink p-0 m-0 ms-3'
-      } 
-    }
+      isButton: !!rest.onClick,
+      xsm
+    };
+
+    const classes = useUtilityClasses(ownerState);
+
+    const { finalClassName, actionClasses, focusVisible } = useMemo(() => {
+      // 3. set styles
+      const chipBase = objectsToString(base.chip);
+      const chipAction = objectsToString(base.action);
+
+      const sizeVariant = findMatch(valid.sizes, size, "md");
+
+      //const chipSize = objectsToString(sizes[sizeVariant]["chip"]);
+      const actionSize = objectsToString(sizes[sizeVariant]["action"]);
+
+      const finalClassName = twMerge(
+        defaultProps.className,
+        chipBase,
+        rounded && "rounded-full",
+        className,
+      );
+
+      const actionClasses = twMerge(classnames(chipAction, actionSize));
+
+      return {
+        finalClassName,
+        actionClasses,
+        focusVisible: clsx(classes.focusVisible, focusVisibleClassName),
+      };
+    }, [size, color, color, rounded, xsm, classes]);
+
+    const startIcon = startIconProp && (
+      <ButtonStartIcon className="shrink p-0 m-0 mx-1" ownerState={ownerState}>
+        {startIconProp}
+      </ButtonStartIcon>
+    );
+
+    const endIcon = (endIconProp || onClose) && (
+      <ButtonEndIcon className="shrink p-0 m-0 ms-1" ownerState={ownerState}>
+        {onClose ? (
+          <IconButton
+            onClick={onClose}
+            size={size}
+            variant="text"
+            dense
+            //@ts-ignore
+            color={
+              variant === "outlined" || variant === "ghost" ? color : "inherit"
+            }
+            className={actionClasses}
+            disabled={rest.disabled}
+          >
+            <MaterialIcon icon="close" />
+          </IconButton>
+        ) : (
+          endIconProp
+        )}
+      </ButtonEndIcon>
+    );
+
+    
+
     // 5. icon template
 
-    const child = <ChipRoot
+    const child = (
+      <ChipRoot
         {...rest}
-        ref={ref}
-        className={classes}
         ownerState={ownerState}
-        component='span'
-        endIcon={ onClose 
-           ? <IconButton
-           onClick={onClose}
-           size={size}
-           variant="text"
-           color={
-             variant === "outlined" || variant === "ghost"
-               ? color
-               : "inherit"
-           }
-           className={actionClasses}
-           disabled={rest.disabled}
-         >
-           <MaterialIcon icon="close"/>
-         </IconButton>
-         : rest.endIcon 
-        }
-    >
-      <span className="grow">{label ? label : (children as any)}</span>
-    </ChipRoot>
+        className={finalClassName}
+        component={component}
+        disabled={disabled}
+        focusRipple={!disableFocusRipple}
+        focusVisibleClassName={focusVisible}
+        ref={ref}
+        classes={classes}
+      >
+        {startIcon}
+        {label || children}
+        {endIcon}
+      </ChipRoot>
+    );
 
     if (!motionProps) {
       return child;
     }
-
 
     // 4. set animation
     const mainAnimation = {

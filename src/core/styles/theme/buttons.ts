@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Color from "color";
 
 import {
@@ -82,7 +83,7 @@ function buttonVariant(options: ButtonOptions) {
   const black = options.black;
   const {
     border = background,
-    color = colorContrast(background, white, black),
+    color = colorContrast(background, white, black)!,
     hoverBackground = colorEquals(color, colorContrastLight)
       ? shadeColor(background, hoverBgShadeAmount, black)
       : tintColor(background, hoverBgTintAmount, white),

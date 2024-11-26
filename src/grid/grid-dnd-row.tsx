@@ -61,13 +61,14 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
   return (
     <DragDropContext onDragStart={onRowMoveStart} onDragEnd={handleDragEnd}>
       <Droppable
-        droppableId={"GRID_ROWS"}
-        type={"GRID_ROW"}
+        droppableId="GRID_ROWS"
+        type="GRID_ROW"
         direction="vertical"
       >
         {(provided) => (
           <div
             className={className}
+            data-drop
             style={style}
             {...provided.droppableProps}
             ref={provided.innerRef}
@@ -130,7 +131,7 @@ export function GridDNDColumn({
       {...props}
       tabIndex={-1}
     >
-      <MaterialIcon icon="drag_handle" />
+      <MaterialIcon icon="drag_indicator" />
     </Box>
   );
 }

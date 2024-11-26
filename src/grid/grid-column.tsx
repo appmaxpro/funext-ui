@@ -21,6 +21,7 @@ export const GridColumn = memo(function GridColumn(
     renderer,
     renderChildren,
     onClick,
+    type
   } = props;
 
   const children = renderChildren ? renderChildren(data, value) : _children;
@@ -54,7 +55,10 @@ export const GridColumn = memo(function GridColumn(
       className={classNames(styles.column, className, data.$css, {
         [styles.center]: ["row-checked"].includes(data.type || ""),
         [styles.selected]: selected,
-      })}
+        [styles.action]: data.action && type !== 'header',
+        [styles.padding]: !data.action && type !== 'header',
+
+      }, )}
       style={
         $width > 0
           ? {

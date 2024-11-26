@@ -35,7 +35,6 @@ const InteractionStateLayer = styled(
   box-sizing: content-box;
   border-radius: inherit;
   border: inherit;
-  color: ${p => (p.color ? p.theme[p.color] ?? p.color : 'currentcolor')};
   background-color: currentcolor;
   border-color: currentcolor;
   pointer-events: none;

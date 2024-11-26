@@ -18,8 +18,10 @@ const inputOutlined = {
       add: styles['in-outline']
     },
     input: {
+      fontSize: "text-base",
       peer: 'peer',
       borderColor: "border-inherit",
+      input: styles['input']
     },
     native:{
       //placeholder: "placeholder:opacity-0 focus:placeholder:opacity-100 group-[.is-shrink]:placeholder:opacity-100",
@@ -35,14 +37,8 @@ const inputOutlined = {
   sizes: {
     md: {
       input: {
-        fontSize: "text-base",
-        borderRadius: "rounded-[4px]",
-      },
-      label: {
-        fontSize: "text-base"
-      },
-      notched: {
-        fontSize: "text-base",
+        
+        borderRadius: "rounded",
       },
       native: {
         px: "px-2",
@@ -50,12 +46,9 @@ const inputOutlined = {
     },
     lg: {
       input: {
-        fontSize: "text-base",
         borderRadius: "rounded-md",
-        border: "border-0"
       },
       label: {
-        fontSize: "text-lg",
         add: `${styles['lg']}`
       },
       native: {
@@ -63,7 +56,6 @@ const inputOutlined = {
       },
       notched: {
         add: `${styles['lg']}`,
-        fontSize: "text-lg",
       },
       adornments: {
         //py: "py-1"
@@ -109,7 +101,7 @@ const inputOutlined = {
       add: styles['flt']
     },
     native:{
-      placeholder: "placeholder:opacity-100"
+      //placeholder: "placeholder:opacity-100"
     }
   },
 };

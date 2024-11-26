@@ -2,6 +2,7 @@ import buttonFilled from "../../Button/style/buttonFilled";
 import buttonGradient from "../../Button/style/buttonGradient";
 import buttonOutlined from "../../Button/style/buttonOutlined";
 import buttonText from "../../Button/style/buttonText";
+import buttonGhost from "../../Button/style/buttonGhost";
 
 // types
 import type {
@@ -13,7 +14,6 @@ import type {
   className,
 } from "../../../types/components/button";
 import { propTypesVariant, propTypesSize, propTypesColor } from "../../../types/components/button";
-import styles from './ib.module.scss';
 
 export interface IconButtonStyleTypes {
   defaultProps?: {
@@ -41,6 +41,7 @@ export interface IconButtonStyleTypes {
       gradient?: typeof buttonGradient;
       outlined?: typeof buttonOutlined;
       text?: typeof buttonText;
+      ghost?: typeof buttonGhost;
     };
     ripple?: object
   };
@@ -68,13 +69,11 @@ export const iconButton: IconButtonStyleTypes = {
     },
     sizes: {
       sm: {
-        fontSize: "text-lg",
+        
       },
       md: {
-        fontSize: "text-2xl",
       },
       lg: {
-        fontSize: "text-3xl",
       },
     },
     variants: {
@@ -82,12 +81,14 @@ export const iconButton: IconButtonStyleTypes = {
       gradient: buttonGradient,
       outlined: buttonOutlined,
       text: buttonText,
+      ghost: buttonGhost
     },
     ripple: {
       filled: 'color',
       gradient: 'color',
       outlined: 'color',
-      text: 'color'
+      text: 'color',
+      ghost: 'color'
     }
   },
 };

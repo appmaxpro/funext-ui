@@ -64,7 +64,7 @@ const TooltipContentRoot = styled('div', {
 export type TooltipProps = SxComponentProps<'div'> & {
   open?: open;
   handler?: handler;
-  content?: () => ReactNode | ReactNode | string;
+  content?: string | React.FC | React.ReactNode;
   interactive?: interactive;
   placement?: placement;
   offset?: offset;
@@ -79,7 +79,7 @@ export type TooltipProps = SxComponentProps<'div'> & {
   hoverProps?: UseHoverProps;
 }
 
-export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
+export const TooltipFc:React.FC<TooltipProps> = React.forwardRef<HTMLDivElement, TooltipProps>(
   (
     {
       open,
@@ -209,7 +209,7 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
           : content
         );
        } 
-    }, [isOpen])
+    }, [isOpen, content])
 
     if (!initialized) {
       return refChildren;
@@ -259,45 +259,46 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
       <>
         {refChildren}
         <LazyMotion features={domAnimation}>
-          <FloatingPortal id="tooltip-portal">
-            <NewAnimatePresence>
-              {isOpen && (
-                <m.div
-                  {...getFloatingProps({
-                    ...other,
-                    ref: mergedRef,
-                    className: tooltipClasses,
-                    style: {
-                      position: strategy,
-                      top: y ?? "",
-                      left: x ?? "",
-                    },
-                  })}
-                  initial="initial"
-                  exit="unmount"
-                  animate={open ? "mount" : ["unmount", "initial"]}
-                  variants={appliedAnimation}
-                >
-                  <TooltipContentRoot as={as} sx={sx}>
-                    {actualChildren}
-                  </TooltipContentRoot>
-                  {arrowProps ? (
-                    <FloatingArrow
-                      {...arrowProps.props}
-                      ref={arrowRef}
-                      context={context}
-                    />
-                  ) : null}
-                </m.div>
-              )}
-            </NewAnimatePresence>
-          </FloatingPortal>
+          <NewAnimatePresence>
+            {isOpen && <FloatingPortal id="mux-portal">
+              <m.div
+                    {...getFloatingProps({
+                      ...other,
+                      ref: mergedRef,
+                      className: tooltipClasses,
+                      style: {
+                        position: strategy,
+                        top: y ?? "",
+                        left: x ?? "",
+                      },
+                    })}
+                    initial="initial"
+                    exit="unmount"
+                    animate={open ? "mount" : ["unmount", "initial"]}
+                    variants={appliedAnimation}
+                  >
+                    <TooltipContentRoot as={as} sx={sx}>
+                      {actualChildren}
+                    </TooltipContentRoot>
+                    {arrowProps ? (
+                      <FloatingArrow
+                        {...arrowProps.props}
+                        ref={arrowRef}
+                        context={context}
+                      />
+                    ) : null}
+                  </m.div>                          
+            </FloatingPortal>
+            }
+          </NewAnimatePresence>
         </LazyMotion>
       </>
     );
   },
 );
 
+
+export const Tooltip = Object.assign(TooltipFc, {safePolygon: safePolygon})
 Tooltip.displayName = "Mux.Tooltip";
-Object.assign(Tooltip, {safePolygon: safePolygon})
+
 export default Tooltip;

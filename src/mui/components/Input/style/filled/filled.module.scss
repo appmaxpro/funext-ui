@@ -71,6 +71,16 @@ label+.input{
   margin-top: 14px;
 }
 
+label+div > input:not(:empty) {
+  max-width: calc(133% - 32px);
+  transform: translate(12px, 4px) scale(0.75);
+  &.lg {
+    max-width: calc(133% - 32px);
+    transform: translate(16px, 4px) scale(0.75);
+  }
+}
+
+
 [dir="rtl"] {
    
   .label {
@@ -97,6 +107,13 @@ label+.input{
           transform: translate(-20px, -12px) scale(0.75);
         }
       }
+    }
+  }
+
+  label+div > input:not(:empty) {
+    transform: translate(-20px, -10px) scale(0.75);
+    &.lg {
+      transform: translate(-20px, -12px) scale(0.75);
     }
   }
 }

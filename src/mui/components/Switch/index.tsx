@@ -32,7 +32,7 @@ export interface SwitchProps extends React.ComponentProps<"input"> {
   circleProps?: objectType;
   inputRef?: React.Ref<HTMLInputElement>;
   rippleClass?: string;
-  error?: any;
+  error?: boolean;
 }
 
 export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
@@ -111,8 +111,6 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
       //trigger: circleRef.current
     });
 
-    const rippleClasses = classnames(objectsToString(base.ripple), rippleClassName);
-
     // 4. return
     return (
       <div ref={ref} className={rootClasses}>
@@ -126,7 +124,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             className={inputClasses}
           />
           <label {...circleProps} htmlFor={rest.id || switchId} 
-             className={classnames(circleClasses, circleClasses)} ref={rippleRef} >
+             className={classnames(circleClasses, circleClasses)} ref={rippleRef as any} >
             
           </label>
         </div>

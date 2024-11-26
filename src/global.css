@@ -411,3 +411,13 @@ video {
   --tw-border-opacity: 1;
   border-color: rgb(var(--tw-border-color-rgb) / var(--tw-border-opacity));
 }
+
+@media (min-width: 1024px) {
+  .lg\:\[--scroll-mt\:6\.3125rem\] {
+      --scroll-mt: 6.3125rem;
+  }
+}
+
+.\[--scroll-mt\:9\.875rem\] {
+  --scroll-mt: 9.875rem;
+}

@@ -128,7 +128,6 @@ export function GridBody(props: GridBodyProps) {
         }
 
         let rowProps: any = {
-          key: row.key,
           index,
           columns,
           data: row,
@@ -169,6 +168,7 @@ export function GridBody(props: GridBodyProps) {
               width={totalWidth}
               renderer={rowGroupHeaderRenderer}
               {...rowProps}
+              key={row.key}
             />
           );
         }
@@ -179,6 +179,7 @@ export function GridBody(props: GridBodyProps) {
               width={totalWidth}
               renderer={rowGroupFooterRenderer}
               {...rowProps}
+              key={row.key}
             />
           );
         }
@@ -192,6 +193,7 @@ export function GridBody(props: GridBodyProps) {
             detailsRenderer={rowDetailsRenderer}
             detailsExpandIcon={rowDetailsExpandIcon}
             {...rowProps}
+            key={row.key}
           />
         );
       })}

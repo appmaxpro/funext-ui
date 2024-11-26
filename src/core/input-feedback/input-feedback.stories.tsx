@@ -1,5 +1,5 @@
 import { Box } from "../box";
-import { Input } from "../input";
+import { Input } from "../../mui";
 import { InputFeedback } from "./input-feedback";
 
 const config = {

@@ -1,8 +1,9 @@
-import * as React from 'react';
+import * as React from "react";
 
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Box } from "./box";
+import { Card, Chip, SxBox, Text, styled } from "../../mui";
 
 const meta = {
   title: "Layout/Box",
@@ -48,7 +49,6 @@ export const Border = () => {
     </Box>
   );
 };
-
 
 const colors: any = {
   primary: "white",
@@ -328,7 +328,7 @@ export const Opacity = () => {
   );
 };
 
-export const Text = () => {
+export const TextBox = () => {
   return (
     <Box style={{ width: 400 }}>
       <Box p={1} mb={1} color="primary">
@@ -564,3 +564,173 @@ export const Overflow = () => {
     </Box>
   );
 };
+
+export const BoxContainer1 = () => {
+  return (
+    <ResizableDemo>
+      <SxBox
+        className="@container"
+        width={400}
+        maxWidth="min(80vw, 600px)"
+        overflow="auto"
+        justify="center"
+        sx={{
+          resize: "horizontal",
+          containerType: "inline-size",
+        }}
+      >
+        <Card
+          variant="outlined"
+          sx={{
+            display: "flex",
+            overflow: "auto",
+            flexDirection: {
+              "@": "column",
+              "@350": "row",
+            },
+          }}
+          className="@xs:flex-col @sm:flex-row flex-none"
+        >
+          <SxBox
+            component="img"
+            alt="The house from the offer."
+            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=350&dpr=2"
+            sx={{
+              alignSelf: "stretch",
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
+              maxHeight: {
+                "@": 160,
+                "@350": "initial",
+              },
+              maxWidth: {
+                "@350": "36%",
+                "@500": 240,
+              },
+              transition: "0.4s",
+            }}
+            className="w-full @xs:max-h-40 @sm:max-h-[initial] @sm:max-h-[36%] @lg:max-w-60"
+          />
+          <Card.Content
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              padding: {
+                "@": 2,
+                "@500": 3,
+              },
+              flex: "auto",
+              transition: "padding 0.4s",
+            }}
+          >
+            <div>
+              <Text
+                component="div"
+                sx={{ color: "text.secondary", fontSize: "0.875rem" }}
+              >
+                123 Main St, Phoenix AZ
+              </Text>
+              <Text
+                component="div"
+                fw="bold"
+                sx={{
+                  color: "primary.main",
+                  fontSize: "1.125rem",
+                  //fontWeight: 'bold',
+                }}
+              >
+                $280,000 — $310,000
+              </Text>
+            </div>
+            <Chip
+              size="sm"
+              label="Confidence score: 85%"
+              sx={{ py: 0, width: "fit-content" }}
+              className="rounded-full"
+              color="inherit"
+              variant="filled"
+            />
+                  <SxBox
+                    className="@container"
+                    width={300}
+                    maxWidth="min(90%, 400px)"
+                    overflow="auto"
+                    justify="center"
+                    sx={{
+                      resize: "horizontal",
+                      containerType: "inline-size",
+                    }}
+                  >
+                     <SxBox
+                      component="img"
+                      alt="The house from the offer."
+                      src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=350&dpr=2"
+                      sx={{
+                        alignSelf: "stretch",
+                        aspectRatio: "16 / 9",
+                        objectFit: "cover",
+                        maxHeight: {
+                          "@": 160,
+                          "@350": "initial",
+                        },
+                        maxWidth: {
+                          "@350": "36%",
+                          "@500": 240,
+                        },
+                        transition: "0.4s",
+                      }}
+                      className="w-full @xs:max-h-40 @sm:max-h-[initial] @sm:max-h-[36%] @lg:max-w-60"
+                    />
+                  </SxBox>
+          </Card.Content>
+        </Card>
+      </SxBox>
+    </ResizableDemo>
+  );
+};
+
+const Line = styled("div")(({ theme }) => ({
+  position: "absolute",
+  height: "100vh",
+  top: 0,
+  transform: "translateY(-400px)",
+  left: 0,
+  borderLeft: "1px dashed",
+  borderColor: (theme.vars || theme).palette.divider,
+  color: (theme.vars || theme).palette.text.secondary,
+  fontSize: "0.75rem",
+  fontFamily: "Menlo, monospace",
+  "& span": {
+    position: "absolute",
+    top: "calc(400px - 1em)",
+    left: 4,
+  },
+}));
+
+function ResizableDemo({ children }) {
+  return (
+    <SxBox
+      sx={{
+        position: "relative",
+        paddingBlock: 2,
+        ml: 2,
+        mr: "auto",
+        "*:has(> &)": {
+          overflow: "hidden",
+        },
+      }}
+    >
+      <Line>
+        <span>0px</span>
+      </Line>
+      <Line sx={{ left: 350 }}>
+        <span>350px</span>
+      </Line>
+      <Line sx={{ left: 500 }}>
+        <span>500px</span>
+      </Line>
+      {children}
+    </SxBox>
+  );
+}

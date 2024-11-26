@@ -155,7 +155,7 @@ export type CardHeaderPropsWithComponent<
 >;
 
 
-const useUtilityClasses = (ownerState) => {
+const useUtilityClasses = (ownerState:any) => {
   const { classes } = ownerState;
 
   const slots = {
@@ -176,7 +176,7 @@ const CardHeaderRoot = styled('div', {
   overridesResolver: (props, styles) => ({
     [`& .${cardHeaderClasses.title}`]: styles.title,
     [`& .${cardHeaderClasses.subheader}`]: styles.subheader,
-    ...styles.root,
+    ...(styles.root as any),
   }),
 })({
   display: 'flex',
@@ -244,7 +244,7 @@ export const CardHeader = React.forwardRef<HTMLElement, CardHeaderPropsWithCompo
   const classes = useUtilityClasses(ownerState);
 
   let title = titleProp;
-  if (title != null && title.type !== Text && !disableText) {
+  if (title != null && (title as any).type !== Text && !disableText) {
     title = (
       <Text
         variant={avatar ? 'body2' : 'h5'}
@@ -258,7 +258,7 @@ export const CardHeader = React.forwardRef<HTMLElement, CardHeaderPropsWithCompo
   }
 
   let subheader = subheaderProp;
-  if (subheader != null && subheader.type !== Text && !disableText) {
+  if (subheader != null && (subheader as any).type !== Text && !disableText) {
     subheader = (
       <Text
         variant={avatar ? 'body2' : 'body1'}
@@ -276,7 +276,7 @@ export const CardHeader = React.forwardRef<HTMLElement, CardHeaderPropsWithCompo
     <CardHeaderRoot
       className={clsx(classes.root, className)}
       as={component}
-      ref={ref}
+      ref={ref as any}
       ownerState={ownerState}
       {...other}
     >

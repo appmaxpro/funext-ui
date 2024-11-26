@@ -60,9 +60,10 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
       <ButtonRoot {...rest} ref={ref} type="button" disabled={disabled} className={buttonStyles}>
         {children}
         <span className={iconClasses}>
-          showIcon 
+          {showIcon 
             ? <Icon open={open}/>
-            : {icon ??
+            : <>
+              {icon ??
                 (open ? (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                       <path
@@ -79,8 +80,12 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
                         clipRule="evenodd"
                       />
                     </svg>
-                  ))}
-        </span>
+                  ))
+                }
+                
+              </>
+            }  
+          </span>
       </ButtonRoot>
     );
   },

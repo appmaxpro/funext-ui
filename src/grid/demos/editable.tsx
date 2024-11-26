@@ -220,7 +220,7 @@ export default function Editable() {
             allowCheckboxSelection
             allowCellSelection
             sortType="state"
-            addNewText={<Button variant="link">Add new line...</Button>}
+            addNewText={<Button variant="text">Add new line...</Button>}
             selectionType="multiple"
             records={$records}
             columns={columns}

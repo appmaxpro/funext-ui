@@ -56,20 +56,19 @@ export const Rating = React.forwardRef<HTMLDivElement, RatingProps>(
     const { base, colors } = styles;
 
     // 2. set default props
-    count = count ?? defaultProps.count;
-    value = value ?? defaultProps.value;
+    count = count ?? defaultProps.count ?? 5;
+    value = value ?? defaultProps.value ?? 0;
     ratedIcon = ratedIcon ?? defaultProps.ratedIcon;
     ratedIcon = ratedIcon ?? defaultProps.ratedIcon;
     unratedIcon = unratedIcon ?? defaultProps.unratedIcon;
     ratedColor = ratedColor ?? defaultProps.ratedColor;
     unratedColor = useThemeColor(unratedColor, defaultProps.unratedColor);
     onChange = onChange ?? defaultProps.onChange;
-    readonly = readonly ?? defaultProps.readonly;
     className = twMerge(defaultProps.className || "", className);
 
     const [ratingValue, setRatingValue] = React.useState(() => [
       ...Array(value).fill("rated"),
-      ...Array(count - value).fill("un_rated"),
+      ...Array((count as number) - (value as number)).fill("un_rated"),
     ]);
     const [ratingOnHover, setRatingOnHover] = React.useState(() => [
       ...Array(count).fill("un_rated"),
@@ -78,10 +77,10 @@ export const Rating = React.forwardRef<HTMLDivElement, RatingProps>(
 
     // 3. set styles
     const ratedColorClasses = objectsToString(
-      colors[findMatch(valid.colors, ratedColor, "yellow")],
+      colors[findMatch(valid.colors, ratedColor, "orange")],
     );
     const unratedColorClasses = objectsToString(
-      colors[findMatch(valid.colors, unratedColor, "blue-gray")],
+      colors[findMatch(valid.colors, unratedColor, "currentColor")],
     );
     const ratingClasses = twMerge(classnames(objectsToString(base.rating), className));
     const ratingIconClasses = objectsToString(base.icon);
@@ -118,8 +117,8 @@ export const Rating = React.forwardRef<HTMLDivElement, RatingProps>(
         className: twMerge(classnames(ratingIconClasses, unratedColorClasses)),
       });
 
-    const renderRating = (data) =>
-      data.map((el, index) => {
+    const renderRating = (data:any) =>
+      data.map((el:any, index:number) => {
         return React.createElement(
           "span",
           {

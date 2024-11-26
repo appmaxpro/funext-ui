@@ -1,7 +1,7 @@
 import type { Meta } from "@storybook/react";
 
 import { Box } from "../box";
-import { Button } from "../button";
+import { Button } from "../../mui";
 import { OverflowList } from "./overflow-list";
 
 const meta = {

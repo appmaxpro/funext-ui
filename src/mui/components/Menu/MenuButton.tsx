@@ -10,6 +10,9 @@ export interface MenuButtonProps extends React.ComponentProps<any> {
   listProps?: any;
   ListComp?: React.ComponentType | string;
   menuProps?: MenuProps;
+  arrow?: MenuProps['arrow'];
+  placement?: MenuProps['placement'];
+  nav?: MenuProps['nav'];
 }
 
 export const MenuButton = React.forwardRef<
@@ -20,6 +23,9 @@ export const MenuButton = React.forwardRef<
   children,
   ListComp= (Menu as any).List,
   listProps,
+  placement="bottom-end",
+  arrow,
+  nav,
   menuProps,
    ...rest 
   }, ref) => {
@@ -32,7 +38,7 @@ export const MenuButton = React.forwardRef<
 
   // 4. return
   return (
-    <Menu placement="top-end" {...menuProps}>
+    <Menu placement={placement} arrow={arrow} nav={nav} {...menuProps}>
       <MenuHandler role="menuitem" {...rest} ref={ref}>
         {trigger}
       </MenuHandler>

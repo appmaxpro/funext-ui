@@ -1,12 +1,9 @@
-import { ArrowNavigation } from "../arrow-navigation";
-
 import { ClickAwayListener } from "../click-away-listener";
-import { FocusTrap } from "../focus-trap";
 import { Popper, PopperProps } from "../popper/popper";
 import styled, { withStyled } from "../styled";
 import styles from "./menu.module.css";
 import {useRtl} from "../../mui";
-
+import {ArrowNavigation, FocusTrap} from '../../mui/components/Focus'
 export interface MenuProps
   extends Pick<
     PopperProps,

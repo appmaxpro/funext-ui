@@ -5,7 +5,7 @@ import { MaterialIcon } from "../icons/material-icon";
 import styles from "./grid.module.scss";
 import { useTranslation } from "./translate";
 import * as TYPES from "./types";
-import { useRTL } from "./utils";
+import { useRtl, clsx } from "..";
 
 export const GridGroupRow = React.memo(function GridGroupRow(
   props: TYPES.GridRowProps,
@@ -17,7 +17,7 @@ export const GridGroupRow = React.memo(function GridGroupRow(
   const RowRenderer = renderer || "div";
   const rendererProps = renderer ? props : {};
   const classNames = useClassNames();
-  const isRTL = useRTL();
+  const isRTL = useRtl();
   const t = useTranslation();
 
   return (
@@ -35,14 +35,15 @@ export const GridGroupRow = React.memo(function GridGroupRow(
         )}
       <div
         onClick={(e) => onClick && data && onClick(e as any, data, index)}
-        className={styles.groupRowContent}
+        className={clsx(styles.groupRowContent, 'inline-flex')}
       >
         <MaterialIcon
-          className={styles.groupRowIcon}
+          className={clsx(styles.groupRowIcon, 'p-1')}
+          size={22}
           icon={
             state === "close"
               ? isRTL
-                ? "chevron_right"
+                ? "chevron_left"
                 : "chevron_right"
               : "expand_more"
           }

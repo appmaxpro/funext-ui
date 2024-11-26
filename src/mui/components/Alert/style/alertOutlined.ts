@@ -1,5 +1,6 @@
 const alertOutlined: object = {
   default: {
+    border: "border",
   },
   transparent: {
     bg: "bg-transparent",

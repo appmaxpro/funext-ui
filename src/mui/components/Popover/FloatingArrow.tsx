@@ -11,6 +11,34 @@ import {
 import { useEnhancedEffect } from '../../hooks';
 import { useRtl } from '../../styles';
 
+
+export function getArrowOrigin(
+  context:FloatingContext, 
+  staticOffset?:string | number | null, 
+  isRtl?: boolean) {
+  const {
+    placement,
+    middlewareData: {arrow},
+  } = context;
+
+  const [side, alignment] = placement.split('-') as [Side, Alignment];
+  const yOffsetProp = staticOffset && alignment === 'end' ? 'bottom' : 'top';
+  let xOffsetProp = staticOffset && alignment === 'end' ? 'right' : 'left';
+  if (staticOffset && isRtl) {
+    xOffsetProp = alignment === 'end' ? 'left' : 'right';
+  }
+  const arrowX = arrow?.x != null ? staticOffset || arrow.x : '';
+  const arrowY = arrow?.y != null ? staticOffset || arrow.y : '';
+
+  return {
+    [xOffsetProp]: arrowX,
+    [yOffsetProp]: arrowY,
+    xAxis: xOffsetProp,
+    yAxis: yOffsetProp,
+    side
+  }
+}
+
 export interface FloatingArrowProps extends React.ComponentPropsWithRef<'svg'> {
   // Omit the original `refs` property from the context to avoid issues with
   // generics: https://github.com/floating-ui/floating-ui/issues/2483
@@ -61,9 +89,7 @@ export const FloatingArrow = React.forwardRef(function FloatingArrow(
 ): JSX.Element | null {
   const {
     context: {
-      placement,
       elements: {floating},
-      middlewareData: {arrow},
     },
     width = 14,
     height = 7,
@@ -99,18 +125,17 @@ export const FloatingArrow = React.forwardRef(function FloatingArrow(
   const svgX = (width / 2) * (tipRadius / -8 + 1);
   const svgY = ((height / 2) * tipRadius) / 4;
 
-  const [side, alignment] = placement.split('-') as [Side, Alignment];
   const isCustomShape = !!d;
+  
+
+  const {
+    side,
+    xAxis,
+    yAxis,
+    ...axis
+  } = getArrowOrigin(props.context, staticOffset, isRtl);
+
   const isVerticalSide = side === 'top' || side === 'bottom';
-
-  const yOffsetProp = staticOffset && alignment === 'end' ? 'bottom' : 'top';
-  let xOffsetProp = staticOffset && alignment === 'end' ? 'right' : 'left';
-  if (staticOffset && isRtl) {
-    xOffsetProp = alignment === 'end' ? 'left' : 'right';
-  }
-
-  const arrowX = arrow?.x != null ? staticOffset || arrow.x : '';
-  const arrowY = arrow?.y != null ? staticOffset || arrow.y : '';
 
   const dValue =
     d ||
@@ -139,8 +164,7 @@ export const FloatingArrow = React.forwardRef(function FloatingArrow(
       style={{
         position: 'absolute',
         pointerEvents: 'none',
-        [xOffsetProp]: arrowX,
-        [yOffsetProp]: arrowY,
+        ...axis,
         [side]:
           isVerticalSide || isCustomShape
             ? '100%'

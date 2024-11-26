@@ -116,7 +116,7 @@ const ListMenuItem = forwardRef(
   }
 
   return (
-    <MenuItem active={active} onClick={handleClick} ref={ref}>
+    <MenuItem active={active} onClick={handleClick} ref={ref as any}>
       <Comp {...renderProps} />
     </MenuItem>
   );

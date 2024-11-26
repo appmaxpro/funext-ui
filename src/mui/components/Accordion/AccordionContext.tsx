@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import { AnimationProps } from "../../types/generic";
 export interface AccordionContextType {
   open: boolean;
-  icon: ReactNode;
-  animate: AnimationProps;
-  disabled: boolean;
+  icon?: ReactNode;
+  animate?: AnimationProps;
+  disabled?: boolean;
 }
 
 export const AccordionContext = React.createContext<AccordionContextType | null>(null);

@@ -46,10 +46,10 @@ const plugins = {
     var defaults = {};
     var white = defaults['white'] || '#ffffff';
     var black = defaults['black'] || '#000000'; 
-    var dark = defaults['dark'] || colors['--tw-slate-950']; 
+    var dark = defaults['dark'] || colors['--tw-slate-900']; 
     var light = defaults['light'] || colors['--tw-slate-50'];
 
-    const lightScheme = {
+    let lightScheme = {
       body_color: dark,
       body_bg: white,
       emphasis_color: black,
@@ -83,7 +83,7 @@ const plugins = {
       ...defaults.lightScheme
     }
 
-    const darkScheme = {
+    let darkScheme = {
       body_color: lightScheme.body_bg ,
       body_bg: lightScheme.body_color,
       emphasis_color: white,
@@ -130,7 +130,7 @@ const plugins = {
           }))
           .reduce((prev, cur)=> ({...prev, ...cur}), {});
     }
-    
+
     addBase({
       ':root': colors,
       ':root, [data-theme=light]': makeScheme(lightScheme),

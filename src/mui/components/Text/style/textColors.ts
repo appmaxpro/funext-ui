@@ -1,6 +1,6 @@
 const textColors: object = {
   inherit: {
-    color: "text-inherit",
+    
   },
   current: {
     color: "text-current",

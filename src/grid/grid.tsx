@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useMemo } from "react";
 import { useClassNames } from "../core";
-import { useRefs, clsx,  Box} from "../mui";
+import { useRefs, clsx,  Box, useRtl} from "../mui";
 import { GridBody } from "./grid-body";
 import { GridDNDColumn } from "./grid-dnd-row";
 import { GridFooter } from "./grid-footer";
@@ -16,11 +16,10 @@ import {
   isRowCheck,
   isRowExpand,
   isRowVisible,
-  navigator,
-  useRTL,
+  navigator
 } from "./utils";
 
-function debounce(func: () => void, timeout: number = 300) {
+function debounce(func: () => void, timeout: number = 1000) {
   let timer: any;
   return (...args: any) => {
     clearTimeout(timer);
@@ -98,8 +97,11 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       rowHeight,
       maxRowHeight,
       labels,
+      headerShadow,
+      bordered,
+      stripped
     } = props;
-    const isRTL = useRTL();
+    const isRTL = useRtl();
 
     const {
       hasRowExpanded,
@@ -142,7 +144,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         return container.getBoundingClientRect().width - vScrollbarWidth;
       }
       return 0;
-    }, []);
+    }, [containerRef]);
 
     // auto size columns
     const sizingColumns = React.useCallback(() => {
@@ -161,7 +163,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             editable: false,
             sortable: false,
             searchable: false,
-            width: 48,
+            width: 42,
             padding: '0'
           });
         }
@@ -177,7 +179,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             editable: false,
             sortable: false,
             searchable: false,
-            width: 44,
+            action: true,
+            width: 32,
           });
         }
         if (
@@ -1295,7 +1298,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
               sizingColumns();
             }
           }
-        }, 300),
+        }, 500),
       );
       observeGrid.observe(containerRef.current);
       return () => {
@@ -1389,6 +1392,9 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
               }
             : {})}
           onScroll={handleScroll}
+          {...(stripped && {'data-stripped': ''})}
+          {...(bordered && {'data-bordered': ''})}
+          {...(headerShadow && {'data-header-shadow': ''})}
         >
           <GridHeader
             className={clsx(classNames(styles.header, {

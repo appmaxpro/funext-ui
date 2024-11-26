@@ -11,7 +11,7 @@ export default function Grouping() {
   const [state, setState] = useGridState({
     groupBy: [{ name: "category" }, { name: "color" }],
   });
-
+  //
   return (
     <GridProvider>
       <Box>

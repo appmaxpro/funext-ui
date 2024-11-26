@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, ToolPanel, useClassNames} from "../core";
+import { ToolPanel, useClassNames} from "../core";
 
 import * as TYPES from "./types";
 

@@ -55,9 +55,12 @@ export interface PanelOwnProps {
    * The variant to use.
    * @default 'elevation'
    */
-  variant?: OverridableStringUnion<'elevation' | "filled" | "gradient" | "outlined", PanelPropsVariantOverrides>;
+  variant?: OverridableStringUnion<'elevation' | "filled" | "outlined", PanelPropsVariantOverrides>;
 
   color?: color;
+
+  fill?: boolean;
+  border?: boolean;
 }
 
 export interface PanelTypeMap<

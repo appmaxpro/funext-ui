@@ -1,3 +1,4 @@
+// @ts-nocheck
 import isPropValid from "@emotion/is-prop-valid";
 import { createElement, forwardRef, useMemo } from "react";
 import { ClassValue } from "../clsx";

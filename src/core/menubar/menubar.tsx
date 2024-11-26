@@ -10,7 +10,7 @@ import React, {
   useState,
 } from "react";
 
-import { ArrowNavigation } from "../arrow-navigation";
+import { ArrowNavigation } from "../../mui/components/Focus";
 import { isElementDisabled, isElementHidden } from "../../mui/components/List/utils";
 import { Box } from "../box";
 import { Menu as AxMenu, MenuHandler, MenuList, MenuButton, useSubMenu} from "../../mui";
