@@ -2,7 +2,13 @@ import React, { memo } from "react";
 import { useClassNames } from "../core";
 import * as TYPES from "./types";
 import styles from "./grid.module.scss";
+import { styled } from "..";
 
+const defaultColClasses = {
+  classes: {
+    root: 'MuxGridColumn'
+  }
+}
 export const GridColumn = memo(function GridColumn(
   props: TYPES.GridColumnProps & {
     renderChildren?: (
@@ -27,8 +33,8 @@ export const GridColumn = memo(function GridColumn(
   const children = renderChildren ? renderChildren(data, value) : _children;
 
   const { width, minWidth, padding } = data;
-  const ColumnComponent = renderer || "div";
-  const rendererProps = renderer ? props : {};
+  const ColumnComponent = renderer || MuxGridColumn;
+  const rendererProps = renderer ? props : defaultColClasses;
   const columnRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -73,3 +79,12 @@ export const GridColumn = memo(function GridColumn(
     </ColumnComponent>
   );
 });
+
+const MuxGridColumn = styled('div', {
+  //name: 'MuxGridColumn',
+  //slot: '',
+})({
+  display: 'flex',
+  alignItems: 'center'
+});
+ 

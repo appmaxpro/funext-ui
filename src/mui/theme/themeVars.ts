@@ -288,6 +288,8 @@ export interface CssVarsThemeOptions extends Omit<ThemeOptions, 'palette' | 'com
    * Theme components
    */
   components?: Components<Omit<Theme, 'components' | 'palette'> & CssVarsTheme>;
+
+  
   /**
    * Color schemes configuration
    */

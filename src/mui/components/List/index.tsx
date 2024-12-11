@@ -150,7 +150,8 @@ const MList = Object.assign(List, {
   Avatar: ListItemAvatar,
   Icon: ListItemAvatar,
   Divider: ItemDivider,
-  Subheader: ListSubheader
+  Subheader: ListSubheader,
+  ContextProvider: ListContextProvider
 });
 
 export default MList;

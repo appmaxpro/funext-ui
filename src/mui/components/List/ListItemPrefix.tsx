@@ -32,7 +32,7 @@ export const ListItemPrefix = React.forwardRef<
 
   // 3. set styles
   const listItemPrefixClasses = useMemo(
-    () => twMerge(classnames(objectsToString(base.itemPrefix)), className, prefix),
+    () => twMerge(className, prefix),
     [className, prefix],
   );
 

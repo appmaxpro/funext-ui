@@ -11,14 +11,10 @@ import type {
 // types
 import { Handler } from "../../types/components/menu";
 
-import type { 
-  ArrowProps, 
-  AnimationProps, 
-  Strategy
-} from "../../types/generic";
+import type { ArrowProps, AnimationProps, Strategy } from "../../types/generic";
+import { MuxFloatingProvider, useFloatingContext } from "../Context";
 
-
-export type MenuContextProps< T extends HTMLElement = HTMLButtonElement>  = {
+export type MenuContextProps<T extends HTMLElement = HTMLButtonElement> = {
   open: boolean;
   handler?: Handler;
   setInternalOpen: Handler;
@@ -29,9 +25,9 @@ export type MenuContextProps< T extends HTMLElement = HTMLButtonElement>  = {
   positionReference?: (instance: T | null) => void;
   floating: (node: HTMLElement | null) => void;
   listItemsRef: React.MutableRefObject<any[]>;
-  getReferenceProps: UseInteractionsReturn['getReferenceProps'];
-  getFloatingProps: UseInteractionsReturn['getFloatingProps'];
-  getItemProps: UseInteractionsReturn['getItemProps'];
+  getReferenceProps: UseInteractionsReturn["getReferenceProps"];
+  getFloatingProps: UseInteractionsReturn["getFloatingProps"];
+  getItemProps: UseInteractionsReturn["getItemProps"];
   appliedAnimation: AnimationProps;
   lockScroll?: boolean;
   context: FloatingContext<ReferenceType>;
@@ -42,8 +38,8 @@ export type MenuContextProps< T extends HTMLElement = HTMLButtonElement>  = {
   setActiveIndex: Handler<number>;
   nested: boolean;
   arrow?: ArrowProps;
-  arrowRef?: ArrowOptions['element'];
-  disablePortal?:boolean;
+  arrowRef?: ArrowOptions["element"];
+  disablePortal?: boolean;
   rtl?: boolean;
   nav?: boolean;
 };
@@ -68,7 +64,18 @@ export function useMenu() {
   return context;
 }
 
-export const MenuContextProvider = ({ value, children }: MenuContextProviderProps) => {
+export const MenuContextProvider = ({
+  value,
+  children,
+}: MenuContextProviderProps) => {
+  const floating = useFloatingContext();
+  if (!floating || floating.type !== "menu") {
+    return (
+      <MuxFloatingProvider type="menu" context={value.context}>
+        <MenuContext.Provider value={value}>{children}</MenuContext.Provider>
+      </MuxFloatingProvider>
+    );
+  }
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
 };
 

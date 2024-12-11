@@ -24,7 +24,7 @@ const CollapseRoot = styled("div", {
     variants: [
       {
         props: {
-          vertical: false,
+          vertical: true,
           open: false,
         },
         style: {

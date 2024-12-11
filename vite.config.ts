@@ -7,13 +7,25 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
-    svgrPlugin({ svgrOptions: { icon: true } })
+    react({
+      babel: {
+        presets: [
+          [
+            "@emotion/babel-preset-css-prop",
+            {
+              autoLabel: "dev-only",
+            },
+          ],
+        ],
+        plugins: ["babel-plugin-macros"],
+      },
+    }),
+    svgrPlugin({ svgrOptions: { icon: true } }),
   ],
   build: {
     rollupOptions: {
       external: [
-        "@mui/utils/useIsFocusVisible" // ignore @mui stuff
+        "@mui/utils/useIsFocusVisible", // ignore @mui stuff
       ],
     },
   },

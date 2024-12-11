@@ -21,7 +21,7 @@ import type {
   children,
 } from "../../types/components/button";
 
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import { ButtonBase } from "../Button";
 import type { ButtonBaseProps } from "../Button/ButtonBase";
 
@@ -41,60 +41,56 @@ try {
 } catch (e) {
   console.error(e);
 }
-let IconButtonRoot;
-if (hasStyled) {
-  IconButtonRoot = styled(ButtonBase, {
-    name: "MuxIconButton",
-    slot: "Root",
-  })({
-    color: "inherit",
-    textAlign: "center",
-    flex: "0 0 auto",
-    borderRadius: "50%",
-    overflow: "visible",
-    variants: [
-      {
-        props: {
-          size: "sm",
-        },
-        style: {
-          padding: "0.375rem",
-          fontSize: "1.125rem",
-        },
+
+let IconButtonRoot = styled(ButtonBase, {
+  name: "MuxIconButton",
+  slot: "Root",
+})({
+  color: "inherit",
+  textAlign: "center",
+  flex: "0 0 auto",
+  borderRadius: "50%",
+  overflow: "visible",
+  variants: [
+    {
+      props: {
+        size: "sm",
       },
-      {
-        props: {
-          size: "md",
-        },
-        style: {
-          padding: "0.5rem",
-          fontSize: "1.5rem", //1.75rem
-        },
+      style: {
+        padding: "0.375rem",
+        fontSize: "1.125rem",
       },
-      {
-        props: {
-          size: "lg",
-        },
-        style: {
-          padding: "0.625rem",
-          fontSize: ".875rem",
-        },
+    },
+    {
+      props: {
+        size: "md",
       },
-      {
-        props: {
-          size: "md",
-          dense: true,
-        },
-        style: {
-          padding: "4px",
-          fontSize: "20px",
-        },
+      style: {
+        padding: "0.5rem",
+        fontSize: "1.5rem", //1.75rem
       },
-    ],
-  });
-} else {
-  IconButtonRoot = "button";
-}
+    },
+    {
+      props: {
+        size: "lg",
+      },
+      style: {
+        padding: "0.625rem",
+        fontSize: ".875rem",
+      },
+    },
+    {
+      props: {
+        size: "md",
+        dense: true,
+      },
+      style: {
+        padding: "4px",
+        fontSize: "20px",
+      },
+    },
+  ],
+});
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   (
@@ -107,6 +103,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       className,
       fullWidth,
       dense,
+      disabled,
       ...rest
     },
     ref,
@@ -116,40 +113,44 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
     const { valid, defaultProps, styles } = iconButton;
     const { base, variants, sizes } = styles;
 
-    // 2. set default props
-    variant = variant ?? defaultProps.variant;
-    size = size ?? defaultProps.size;
-    color = useThemeColor(color, defaultProps.color);
-    ripple = ripple ?? defaultProps.ripple;
-    className = twMerge(defaultProps.className || "", className);
+    const { classes, ownerState } = React.useMemo(() => {
+      // 2. set default props
+      variant = variant ?? defaultProps.variant;
+      size = size ?? defaultProps.size;
+      color = mapThemeColor(color, defaultProps.color);
+      ripple = ripple ?? defaultProps.ripple;
+      className = twMerge(defaultProps.className || "", className);
+      // 2. set styles
+      const buttonBase = objectsToString(base);
+      const variantName = findMatch(valid.variants, variant, "text");
+      const colorMatches = findMatch(valid.colors, color, "transparent");
+      const buttonVariantColor = variants[variantName][colorMatches];
 
-    // 2. set styles
-    const buttonBase = objectsToString(base);
-    const variantName = findMatch(valid.variants, variant, "text");
-    const colorMatches = findMatch(valid.colors, color, "transparent");
-    const buttonVariantColor = variants[variantName][colorMatches];
+      const buttonVariant = objectsToString(buttonVariantColor);
 
-    const buttonVariant = objectsToString(buttonVariantColor);
+      const sizeName = findMatch(valid.sizes, size, "md");
+      const buttonSize = objectsToString(sizes[sizeName]);
+      const classes = cn(
+        buttonBase,
+        buttonSize,
+        buttonVariant,
+        dense && "mt-ic-dense",
+        `mt-ic-button mt-size-${sizeName}`,
+        `mt-color-${color}`,
+        className,
+      );
 
-    const sizeName = findMatch(valid.sizes, size, "md");
-    const buttonSize = objectsToString(sizes[sizeName]);
-    const classes = cn(
-      buttonBase,
-      buttonSize,
-      buttonVariant,
-      dense && 'mt-ic-dense',
-      `mt-ic-button mt-size-${sizeName}`,
-      `mt-color-${color}`,
-      className,
-    );
+      const ownerState = {
+        size,
+        color,
+        variant,
+        disabled,
+        dense,
+      };
 
-    const ownerState = {
-      size,
-      color,
-      variant,
-      disabled: rest.disabled,
-      dense
-    };
+      return { classes, ownerState };
+    }, [iconButton, variant, color, size, className, disabled]);
+
     // 5. return
     return (
       <IconButtonRoot
@@ -160,6 +161,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         type={rest.type || "button"}
         ownerState={ownerState}
         focusRipple={focusRipple}
+        disabled={disabled}
       />
     );
   },

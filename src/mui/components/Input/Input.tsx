@@ -24,7 +24,7 @@ import type {
 
 import { twMerge } from "tailwind-merge";
 import deepmerge from "deepmerge";
-import { useControlled, useRefs, useThemeColor } from "../../hooks";
+import { useControlled, useRefs, mapThemeColor } from "../../hooks";
 import { SxComponentProps, SxThemeProps, clsx, styled, globalCss } from "../../styles";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 
@@ -145,11 +145,6 @@ const BasicInputRoot = styled("input", {
   ],
 });
 
-const BasicTextareaRoot = styled("textarea", {
-  name: "BasicTextarea",
-  slot: "Root",
-})("");
-
 const InputLabelRoot = styled("label", {
   name: "MuxInput",
   slot: "label",
@@ -180,11 +175,9 @@ const InputContainerRoot = styled("div", {
 //forceInline && ('grow flex-wrap' || 'flex-nowrap shrink')
 const AdornmentStartRoot = styled("div", {
   name: "MuxInput",
-  slot: "adornmentStart",
+  slot: "AdornmentStart",
 })({
   display: "inline-flex",
-  flexDirection: "row",
-  placeContent: "center",
   alignItems: "center",
   gap: 1,
   border: 0,
@@ -198,6 +191,17 @@ const AdornmentStartRoot = styled("div", {
         paddingLeft: "4px",
         paddingRight: "4px",
       },
+    },
+    {
+      props: {
+        multiLines: true,
+        vertical: false
+      },
+      style: {
+        flexDirection: 'column',
+        alignItems: "start",
+        justifyContent: 'center'
+      }
     },
     {
       props: {
@@ -244,11 +248,9 @@ const AdornmentStartRoot = styled("div", {
 
 const AdornmentEndRoot = styled("div", {
   name: "MuxInput",
-  slot: "adornmentEnd",
+  slot: "AdornmentEnd",
 })({
   display: "inline-flex",
-  flexDirection: "row",
-  placeContent: "center",
   alignItems: "center",
   gap: 1,
   border: 0,
@@ -256,7 +258,19 @@ const AdornmentEndRoot = styled("div", {
   flexWrap: "nowrap",
   paddingLeft: "4px",
   paddingRight: "4px",
-  variants: [],
+  variants: [
+    {
+      props: {
+        multiLines: true,
+        vertical: false
+      },
+      style: {
+        flexDirection: 'column',
+        alignItems: "start",
+        justifyContent: 'center'
+      }
+    },
+  ],
 });
 
 export type RenderInput = {
@@ -445,7 +459,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     size = size ?? defaultProps.size;
-    color = useThemeColor(otherColor || color, defaultProps.color);
+    color = mapThemeColor(otherColor || color, defaultProps.color);
     //label = label ?? defaultProps.label;
     labelProps = labelProps ?? defaultProps.labelProps;
     rootProps = rootProps ?? defaultProps.containerProps;
@@ -548,7 +562,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         hasError && objectsToString(inputVariant.error.input),
         hasSuccess && objectsToString(inputVariant.success.input),
         inputProps?.className,
-        forceInline ? "" : "flex-nowrap",
+        forceInline && "flex-nowrap",
         "mui_input",
       );
 
@@ -597,10 +611,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
       let nativePx;
       if (disableBorder || ((isOutline || isFilled) && hasAdornments)) {
-        nativePx = hasStart && hasEnd ? "px-0" : hasStart ? "ps-0" : "pe-0";
-
         if (adornments.vertical) {
           nativePx = hasStart && hasEnd ? "py-0" : hasStart ? "pt-0" : "pb-0";
+        } else {
+          nativePx = hasStart && hasEnd ? "px-0" : hasStart ? "ps-0" : "pe-0";
         }
       }
 
@@ -611,11 +625,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           objectsToString(inputVariant.base.native),
           objectsToString(adornments.native),
           objectsToString(inputSize.native),
+          multiLines && !resize && '!resize-none',
+          hasLabel && !isShrink && 'placeholder:opacity-0',
           {
-            ["!resize-none"]: multiLines && !resize,
-            //[propsColor]: isOutline,
             [objectsToString(inputVariant.shrink.native)]: isShrink,
-            ["placeholder:opacity-0"]: hasLabel && !isShrink,
           },
         ),
         nativePx,

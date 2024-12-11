@@ -22,7 +22,7 @@ import type {
   
 } from "../../types/components/progress";
 
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import { 
   getLinearProgressUtilityClass, 
   LinearProgressClasses,  
@@ -300,6 +300,7 @@ const LinearProgressBar1 = styled('span', {
         ownerState.variant === 'striped',
       style: {
         backgroundImage: 'linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent)',
+        backgroundSize: '1rem'
       },
     },
   ],
@@ -329,7 +330,8 @@ const LinearProgressBar2 = styled('span', {
   transformOrigin: 'left',
   variants: [
     {
-      props: ({ ownerState }:any) => ownerState.variant !== 'buffer' && ownerState.color !== 'inherit',
+      props: ({ ownerState }:any) => ownerState.variant !== 'buffer' 
+      && ownerState.color !== 'inherit',
       style: {
         backgroundColor: 'var(--progress-color2, currentColor)',
       },
@@ -340,6 +342,14 @@ const LinearProgressBar2 = styled('span', {
       },
       style: {
         opacity: 0.3,
+      },
+    },
+    {
+      props: {
+        variant: 'striped',
+      },
+      style: {
+        display: 'none',
       },
     },
     {
@@ -430,7 +440,7 @@ const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
 
     const ownerState = {
       ...props,
-      color: useThemeColor(color),
+      color: mapThemeColor(color),
       variant,
     };
     

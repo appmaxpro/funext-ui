@@ -30,10 +30,18 @@ export const Indeterminate = () => {
   );
 };
 
-export const Striped = () => {
+export const Buffer = () => {
   return (
     <Box className="bg-slate-200 min-h-screen p-8">
       <LinearProgress value={20} color="success" size="sm" variant="buffer"/>
+    </Box>
+  );
+};
+
+export const Striped = () => {
+  return (
+    <Box className="bg-slate-200 min-h-screen p-8">
+      <LinearProgress value={70} color="success" className="h-[20px]" variant="striped"/>
     </Box>
   );
 };

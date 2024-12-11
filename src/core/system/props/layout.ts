@@ -46,7 +46,8 @@ export interface FlexProps {
   flexDirection?: Responsive<CSS.Property.FlexDirection>;
   flexFlow?: Responsive<CSS.Property.FlexFlow>;
   flexGrow?: Responsive<CSS.Property.FlexGrow>;
-  flexShrink?: Responsive<CSS.Property.FlexShrink>;
+  grow: Responsive<CSS.Property.FlexGrow>;
+  shrink?: Responsive<CSS.Property.FlexShrink>;
   flexWrap?: Responsive<CSS.Property.FlexWrap>;
   order?: Responsive<CSS.Property.Order>;
   justifyContent?: Responsive<CSS.Property.JustifyContent>;
@@ -67,7 +68,7 @@ const replaceFlex = (value:any) =>
         : value;
 
 
-const def = (key:string, value:any) => `${value}` ===  '1'
+const def = (key:string, value:any) => value === true  || `${value}` ===  '1'
      ?  ` ${key}`
      : `${value}` ===  '0'
      ? ` ${key}-${value}`
@@ -77,9 +78,10 @@ export const FlexConfig: Config<FlexProps> = {
   flex: computeVar("flex"),
   flexBasis: computeVar("basis"),
   flexDirection: computeVar("flex", value => value ==='column' ? 'col' : value),
-  flexFlow: computeVar("", (val) => def('flow', val)),
-  flexGrow: computeVar("", (val) => def('grow', val)),
-  flexShrink: computeVar("", (val) => def('shrink', val)),
+  flexFlow: computeVar("", (val) => def('flow', val ?? '1')),
+  flexGrow: computeVar("", (val) => def('grow', val ?? '1')),
+  grow: computeVar("", (val) => def('grow', val ?? '1')),
+  shrink: computeVar("", (val) => def('shrink', val ?? 1)),
   flexWrap: computeVar("flex"),
   order: computeVar("order"),
   justifyContent: computeVar("justify", (v) => v.replace('flex-', '').replace('content-', '')),

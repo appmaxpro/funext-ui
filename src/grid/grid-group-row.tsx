@@ -5,7 +5,7 @@ import { MaterialIcon } from "../icons/material-icon";
 import styles from "./grid.module.scss";
 import { useTranslation } from "./translate";
 import * as TYPES from "./types";
-import { useRtl, clsx } from "..";
+import { useRtl, clsx, styled } from "..";
 
 export const GridGroupRow = React.memo(function GridGroupRow(
   props: TYPES.GridRowProps,
@@ -14,7 +14,7 @@ export const GridGroupRow = React.memo(function GridGroupRow(
     props;
   const { state, record } = data;
   const { title, level, value, total } = record;
-  const RowRenderer = renderer || "div";
+  const RowRenderer = renderer || GridGroupRowRoot;
   const rendererProps = renderer ? props : {};
   const classNames = useClassNames();
   const isRTL = useRtl();
@@ -53,3 +53,6 @@ export const GridGroupRow = React.memo(function GridGroupRow(
     </RowRenderer>
   );
 });
+const GridGroupRowRoot = styled('div', {
+  name: 'MuxGridGroupRow',
+})('');

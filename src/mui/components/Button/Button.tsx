@@ -101,10 +101,10 @@ export const ButtonRoot = styled(ButtonBase, {
   memoTheme(({ theme }:{theme:Theme}) => {
     const isLight = theme.palette.mode === 'light';
     const inheritFilledBackgroundColor =
-    isLight ? theme.palette.slate[100] : theme.palette.grey[800];
+    isLight ? lighten(theme.palette.slate[200], .5) : theme.palette.slate[800];
 
     const inheritFilledHoverBackgroundColor =
-    isLight ? theme.palette.slate[200] : theme.palette.grey[700];
+    isLight ? lighten(theme.palette.slate[300], .3) : theme.palette.slate[700];
 
     return {
       
@@ -112,8 +112,8 @@ export const ButtonRoot = styled(ButtonBase, {
       padding: '6px 16px',
       border: 0,
       borderRadius: theme.shape.borderRadius,
-      transition: theme.transitions.create(
-        ['background-color', 'box-shadow', 'border-color', 'color'],
+      transition: 'box-shadow,border-color,'+theme.transitions.create(
+        'background-color',
         {
           duration: theme.transitions.duration.short,
         },
@@ -180,11 +180,12 @@ export const ButtonRoot = styled(ButtonBase, {
         },
         {
           props: { variant: 'ghost' },
-          style: {
-            padding: '6px 8px',
-            color: `var(--button-ghost-color)`,
-            backgroundColor: `var(--button-ghost-bg)`,
-          },
+          style: (props) => {
+            return {
+              padding: '6px 8px',
+              color: `var(--button-ghost-color)`,
+              backgroundColor: `var(--button-ghost-bg)`,
+            }},
         },
         ...Object.entries(theme.palette)
           .filter(([, palette]) => palette && palette.main && palette.dark && palette.contrastText)
@@ -198,13 +199,11 @@ export const ButtonRoot = styled(ButtonBase, {
                 : alpha(theme.palette[color].main, 0.5),
               '--button-filled-color': theme.palette[color].contrastText,
               '--button-filled-bg': theme.palette[color].main,
-              '--button-filled-hover-bg': theme.palette[color].dark,
               '--button-ghost-color': theme.palette[color].dark,
               '--button-ghost-bg': lighten(theme.palette[color].light, 0.8),
-              '--button-ghost-hover-bg': lighten(theme.palette[color].light, 0.7),
               '@media (hover: hover)': {
                 [`&.${buttonClasses.canHover}:hover`]: {
-                  '--button-filled-bg': 'var(--button-filled-hover-bg)',
+                  '--button-filled-bg': theme.palette[color].dark,
                   '--button-text-bg': theme.vars
                     ? `rgba(${theme.vars.palette[color].mainChannel} / ${theme.vars.palette.action.hoverOpacity})`
                     : alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
@@ -212,7 +211,7 @@ export const ButtonRoot = styled(ButtonBase, {
                   '--button-outlined-bg': theme.vars
                     ? `rgba(${theme.vars.palette[color].mainChannel} / ${theme.vars.palette.action.hoverOpacity})`
                     : alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
-                  '--button-ghost-bg': 'var(--button-ghost-hover-bg)',
+                  '--button-ghost-bg': lighten(theme.palette[color].light, 0.6),
                 },
               },
             },
@@ -229,64 +228,22 @@ export const ButtonRoot = styled(ButtonBase, {
             '--button-filled-bg': theme.vars
               ? theme.vars.palette.Button.inheritFilledBg
               : inheritFilledBackgroundColor,
-            '--button-filled-hover-bg': theme.vars
-                  ? theme.vars.palette.Button.inheritFilledHoverBg
-                  : inheritFilledHoverBackgroundColor,  
             '--button-ghost-color': theme.vars
-              ? theme.vars.palette.Button.inheritFilledBg
-              : inheritFilledBackgroundColor,  
+                ? theme.vars.palette.text.primary
+                : theme.palette.getContrastText?.(inheritFilledBackgroundColor),
             '--button-ghost-bg': theme.vars
-              ? theme.vars.palette.text.primary
-              : theme.palette.getContrastText?.(inheritFilledBackgroundColor),
-            '--button-ghost-hover-bg': theme.vars
-                  ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
-                  : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
+                ? theme.vars.palette.Button.inheritFilledBg
+                : inheritFilledBackgroundColor,  
             '@media (hover: hover)': {
               [`&.${buttonClasses.canHover}:hover`]: {
-                '--button-filled-bg': 'var(--button-filled-hover-bg)',
-                '--button-ghost-bg': 'var(--button-ghost-hover-bg)',
+                '--button-filled-bg': inheritFilledHoverBackgroundColor,
+                '--button-ghost-bg': inheritFilledHoverBackgroundColor,
                 '--button-text-bg': theme.vars
                   ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
                   : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
                 '--button-outlined-bg': theme.vars
                   ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
                   : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
-              },
-            },
-          },
-        },
-        {
-          props: {
-            color: 'light',
-          },
-          style: {
-            '--button-text-color': isLight ? theme.palette.light.contrastText : theme.palette.light.light,
-            '--button-outlined-color': 'currentcolor',
-            '--button-outlined-border': 'currentcolor',
-            '--button-ghost-color': theme.palette.light.contrastText,
-            '@media (hover: hover)': {
-              [`&.${buttonClasses.canHover}:hover`]: {
-                '--button-ghost-bg': theme.palette.light.light,
-                '--button-outlined-border': alpha(isLight ? theme.palette.light.main : theme.palette.light.light, .8),
-                '--button-text-bg': alpha(theme.palette.light.dark, 2 * theme.palette.action.hoverOpacity),
-              },
-            },
-          },
-        },
-        {
-          props: {
-            color: 'dark',
-          },
-          style: {
-            '--button-filled-bg':theme.palette.dark.dark,
-            '--button-text-color': isLight ? theme.palette.dark.dark : theme.palette.dark.light,
-            '--button-outlined-color': isLight ? theme.palette.dark.main : theme.palette.dark.light,
-            '--button-outlined-border': isLight ? theme.palette.dark.main : theme.palette.dark.light,
-            '@media (hover: hover)': {
-              [`&.${buttonClasses.canHover}:hover`]: {
-                '--button-filled-bg': alpha(theme.palette.dark.dark, theme.palette.action.hoverOpacity),
-                '--button-outlined-border': alpha(isLight ? theme.palette.dark.main : theme.palette.dark.light, .8),
-                '--button-text-bg': alpha(isLight ? theme.palette.dark.main : theme.palette.dark.light, theme.palette.action.hoverOpacity),
               },
             },
           },
@@ -512,6 +469,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       disabled={disabled}
       focusRipple={!disableFocusRipple}
       focusVisibleClassName={clsx(classes.focusVisible, focusVisibleClassName)}
+      data-ripple-color="color"
       ref={ref}
       type={type}
       {...other}

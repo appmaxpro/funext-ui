@@ -151,7 +151,6 @@ export interface ButtonBaseActions {
 
 export const ButtonBaseRoot = styled('button', {
   name: 'MuxButtonBase',
-  slot: 'Root',
   overridesResolver: (props:any, styles:any) => styles.root,
 })({
   display: 'inline-flex',
@@ -244,7 +243,7 @@ export const ButtonBase = React.forwardRef<HTMLElement, ButtonBaseProps>(functio
   
   const actionDisabled = (disabled || (
        hasLink ? !(rest.href || rest.to)
-               : !onClick));
+               : !(onClick || true)));
 
   const focusDisabled = actionDisabled ? actionDisabled : !focusRipple;
 

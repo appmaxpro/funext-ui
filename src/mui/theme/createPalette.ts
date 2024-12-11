@@ -106,6 +106,7 @@ export interface Palette {
   background: TypeBackground;
   getContrastText: (background: string) => string;
   augmentColor: (options: PaletteAugmentColorOptions) => PaletteColor;
+  twColors?: Array<string>;
 }
 
 export interface Channels {
@@ -332,6 +333,7 @@ export default function createPalette(palette:any) {
         //lightShade: 'A200',
         //darkShade: 'A700',
       }),
+      twColors: Object.keys(colors).filter((k) => Boolean((colors as any)[k]['500'])),
       // The colors used to represent interface elements that the user should be made aware of.
       error: augmentColor({ color: error, name: 'error' }),
       // The colors used to represent potentially dangerous actions or important messages.

@@ -25,7 +25,7 @@ import type {
   children,
 } from "../../types/components/button";
 import { styled } from "../../styles";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import {ButtonBase, ButtonBaseProps} from './ButtonBase';
 
 const ButtonRoot = styled(ButtonBase, {
@@ -141,7 +141,7 @@ export const StyledButton = React.forwardRef<HTMLButtonElement, StyledButtonProp
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     size = size ?? defaultProps.size;
-    color = useThemeColor(color, defaultProps.color);
+    color = mapThemeColor(color, defaultProps.color);
     fullWidth = fullWidth ?? defaultProps.fullWidth;
     ripple = ripple ?? defaultProps.ripple;
     className = twMerge(defaultProps.className || "", className);

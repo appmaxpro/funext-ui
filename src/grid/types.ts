@@ -1,4 +1,5 @@
 import React, { CSSProperties, SyntheticEvent } from "react";
+import { TableStyles } from "./styles";
 
 export interface GridColumn {
   id?: string;
@@ -132,6 +133,7 @@ export interface GridProps {
   maxRowHeight?: number | string;
   addNewText?: string | React.ReactNode;
   noRecordsText?: string | React.ReactNode;
+  rowRendererAll?: boolean;
   cellRenderer?: Renderer;
   rowRenderer?: Renderer;
   editRowRenderer?: Renderer;
@@ -194,7 +196,10 @@ export interface GridProps {
   labels?: Record<GridLabel, string>;
   headerShadow?: boolean;
   bordered?: boolean;
-  stripped?: boolean;
+  striped?: boolean;
+  overflow?: boolean;
+  bodyAs?: React.ElementType;
+  tableStyles?: TableStyles;
 }
 
 export interface GridRowProps {
@@ -209,6 +214,7 @@ export interface GridRowProps {
   selected?: boolean;
   selectedCell?: null | number;
   editCell?: number | null;
+  rendererAll?: boolean;
   renderer?: Renderer;
   cellRenderer?: Renderer;
   hasExpanded?: GridProps["hasRowExpanded"];
@@ -230,6 +236,7 @@ export interface GridRowProps {
   ) => void;
   onExpand?: (row: GridRow, expand?: boolean) => void;
   onUpdate?: (rowIndex: number, values: any) => void;
+  rowStyles?: TableStyles['row'];
 }
 
 export interface DropObject extends GridColumn {

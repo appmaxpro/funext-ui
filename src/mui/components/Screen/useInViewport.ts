@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useEnhancedEffect } from "../../hooks";
 import debounce from "@mui/utils/debounce";
 
+const callbackDebounce = debounce(function(cb: () => void) {
+   
+}, 300);
+
 export function useInViewport<T extends HTMLElement = HTMLDivElement>(): {
   visible: boolean;
   ref: React.RefObject<T>;
@@ -17,6 +21,12 @@ export function useInViewport<T extends HTMLElement = HTMLDivElement>(): {
           setVisible(visibility);
         }
       }
+      const hasIOSupport = !!window.IntersectionObserver
+      if (!hasIOSupport) {
+        setVisible(true);
+        return
+      }
+
       let requestFrame: number;
       const observer = new IntersectionObserver(([entry]) => {
         if(entry.target === ref.current){
@@ -30,7 +40,7 @@ export function useInViewport<T extends HTMLElement = HTMLDivElement>(): {
             }
             requestFrame = requestAnimationFrame(() => setVisibility(visible));
           } else {
-            debounce(() => setVisibility(visible), 300);
+            callbackDebounce(() => setVisibility(visible));
           }
         }
       });

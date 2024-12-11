@@ -113,7 +113,7 @@ export const input: InputStylesType = {
     base: {
       root: {
         position: "relative",
-        minWidth: "min-w-28",
+        minWidth: "min-w-14",
       },
       input: {
         width: "w-full",

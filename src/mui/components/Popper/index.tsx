@@ -76,6 +76,7 @@ import { SxComponentProps, clsx, styled, StyledComponent } from "../../styles";
 import { isElement } from "../../utils";
 import { HtmlAttributes } from "csstype";
 import { useControlled } from "../../hooks";
+import { MuxFloatingProvider } from "../Context";
 
 export declare type Derivable<T> = (state: MiddlewareState) => T;
 
@@ -226,12 +227,13 @@ export interface SharedPopperProps {
   backdrop?: Backdrop;
   overlay?: Overlay;
   contentProps?: SxComponentProps;
+  type?: string;
 }
 
 export interface PopperProps<T = HTMLElement | null>
   extends PopperContextProps<T>,
     SharedPopperProps,
-    Omit<React.ComponentProps<"div">, 'style'> {
+    Omit<React.ComponentProps<"div">, "style"> {
   className?: string;
   id?: string;
   root?: HTMLElement | null | React.MutableRefObject<HTMLElement | null>;
@@ -239,7 +241,7 @@ export interface PopperProps<T = HTMLElement | null>
   disablePortal?: boolean;
   keepMounted?: boolean;
   trigger?: React.ReactNode;
-  style?: PopperContentProps['style']
+  style?: PopperContentProps["style"];
 }
 
 export function usePopperContext(
@@ -421,7 +423,7 @@ export const Popper = ({
 };
 
 export interface PopperPortalProps
-  extends Omit<React.ComponentProps<"div">, 'style'>,
+  extends Omit<React.ComponentProps<"div">, "style">,
     SharedPopperProps {
   id?: string;
   root?: HTMLElement | null | React.MutableRefObject<HTMLElement | null>;
@@ -430,7 +432,7 @@ export interface PopperPortalProps
   keepMounted?: boolean;
   context: PopperContextValue;
   trigger?: React.ReactNode;
-  style?: PopperContentProps['style'];
+  style?: PopperContentProps["style"];
 }
 
 export const PopperPortal = ({
@@ -443,6 +445,7 @@ export const PopperPortal = ({
   keepMounted,
   focusProps,
   trigger,
+  type = 'popper',
   ...rest
 }: PopperPortalProps) => {
   const { open, openState, setOpenState } = context;
@@ -464,38 +467,39 @@ export const PopperPortal = ({
   }
 
   const shouldOpen = openState || open;
-
+  const popperProvider = (
+    <PopperContext.Provider value={context}>
+      {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
+      <NewAnimatePresence
+        presenceAffectsLayout={false}
+        onExitComplete={() => {
+          console.log("AnimatePresence:onExitComplete");
+          setOpenState(false);
+        }}
+      >
+        {shouldOpen ? (
+          renderContent ? (
+            <PopperContent {...rest} internal>
+              {children}
+            </PopperContent>
+          ) : (
+            children
+          )
+        ) : null}
+      </NewAnimatePresence>
+    </PopperContext.Provider>
+  );
   // 7. return
   return (
     <LazyMotion features={domAnimation}>
-      {disablePortal ? (
-        <PopperContext.Provider value={context}>
-          {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
-          <NewAnimatePresence
-            presenceAffectsLayout={false}
-            onExitComplete={() => {
-              console.log("AnimatePresence:onExitComplete");
-              setOpenState(false);
-            }}
-          >
-            {shouldOpen ? (
-              renderContent ? (
-                <PopperContent {...rest} internal>
-                  {children}
-                </PopperContent>
-              ) : (
-                children
-              )
-            ) : null}
-          </NewAnimatePresence>
-        </PopperContext.Provider>
-      ) : (
-        <PopperContext.Provider value={context}>
-          {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
-          <FloatingPortal root={root} id={id}>
+      <MuxFloatingProvider type={type} context={context.floating}>
+        {disablePortal ? (
+          <PopperContext.Provider value={context}>
+            {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
             <NewAnimatePresence
               presenceAffectsLayout={false}
               onExitComplete={() => {
+                console.log("AnimatePresence:onExitComplete");
                 setOpenState(false);
               }}
             >
@@ -509,9 +513,31 @@ export const PopperPortal = ({
                 )
               ) : null}
             </NewAnimatePresence>
-          </FloatingPortal>
-        </PopperContext.Provider>
-      )}
+          </PopperContext.Provider>
+        ) : (
+          <PopperContext.Provider value={context}>
+            {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
+            <FloatingPortal root={root} id={id}>
+              <NewAnimatePresence
+                presenceAffectsLayout={false}
+                onExitComplete={() => {
+                  setOpenState(false);
+                }}
+              >
+                {shouldOpen ? (
+                  renderContent ? (
+                    <PopperContent {...rest} internal>
+                      {children}
+                    </PopperContent>
+                  ) : (
+                    children
+                  )
+                ) : null}
+              </NewAnimatePresence>
+            </FloatingPortal>
+          </PopperContext.Provider>
+        )}
+      </MuxFloatingProvider>
     </LazyMotion>
   );
 };
@@ -519,10 +545,13 @@ export const PopperPortal = ({
 Popper.displayName = "Mux.Popper";
 
 export interface PopperContentProps
-  extends Omit<SxComponentProps<"div">, 'style'>,
+  extends Omit<SxComponentProps<"div">, "style">,
     SharedPopperProps {
   internal?: boolean;
-  style?: ((context: UseFloatingReturn) => React.CSSProperties | null) | React.CSSProperties | undefined;
+  style?:
+    | ((context: UseFloatingReturn) => React.CSSProperties | null)
+    | React.CSSProperties
+    | undefined;
   [key: string]: any;
 }
 
@@ -589,14 +618,15 @@ export const PopperContent = React.forwardRef<
         {...(props as any)}
         {...getFloatingProps({
           ref: mergedRef,
-          style: typeof props.style === 'function' 
-          ? props.style(floating)
-          :{
-            position: strategy,
-            top: y ?? "",
-            left: x ?? "",
-            ...props.style,
-          },
+          style:
+            typeof props.style === "function"
+              ? props.style(floating)
+              : {
+                  position: strategy,
+                  top: y ?? "",
+                  left: x ?? "",
+                  ...props.style,
+                },
         } as any)}
         key={"content-" + labelId}
         aria-labelledby={labelId}
@@ -617,7 +647,12 @@ export const PopperContent = React.forwardRef<
             }
           : undefined)}
       >
-        <PopperContentRoot {...contentProps}>{children}</PopperContentRoot>
+        {arrow || contentProps ? (
+          <PopperContentRoot {...contentProps}>{children}</PopperContentRoot>
+        ) : (
+          children
+        )}
+
         {arrow ? (
           <FloatingArrow
             {...arrow.props}
@@ -666,6 +701,7 @@ export const PopperContent = React.forwardRef<
           variants: backdropAnimate,
           duration: backdrop.duration ?? 0.2,
           animate: open ? "mount" : "unmount",
+          as: m.div,
         })}
       >
         {content}

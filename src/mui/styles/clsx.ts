@@ -1,1 +1,1 @@
-export * from '../../core/clsx';
+export * from '../utils/clsx';

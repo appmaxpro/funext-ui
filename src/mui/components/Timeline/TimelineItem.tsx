@@ -13,6 +13,15 @@ import {
   children
 } from "../../types/components/timeline";
 
+import {
+  styled
+} from "../../styles";
+
+const TimelineItemRoot = styled("li", {
+  name: "MuxTimelineItem",
+  slot: "Root",
+})({})
+
 const TimelineItemContext = React.createContext<any>(0);
 TimelineItemContext.displayName = "Mux.TimelineItemContext";
 
@@ -48,9 +57,9 @@ export const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
     // 4. return
     return (
       <TimelineItemContext.Provider value={contextValue}>
-        <li ref={ref} {...rest} className={classes}>
+        <TimelineItemRoot ref={ref} {...rest} className={classes}>
           {children}
-        </li>
+        </TimelineItemRoot>
       </TimelineItemContext.Provider>
     );
   },

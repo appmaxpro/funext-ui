@@ -14,6 +14,15 @@ import {
   children
 } from "../../types/components/timeline";
 
+import {
+  styled
+} from "../../styles";
+
+const TimelineConnectorRoot = styled("span", {
+  name: "MuxTimelineConnector",
+  slot: "Root",
+})({})
+
 export interface TimelineConnectorProps extends React.HTMLAttributes<HTMLSpanElement> {
   className?: className;
   children?: children;
@@ -33,7 +42,7 @@ export const TimelineConnector = React.forwardRef<HTMLSpanElement, TimelineConne
 
     // 4. return
     return (
-      <span
+      <TimelineConnectorRoot
         {...rest}
         ref={ref}
         className={containerClasses}
@@ -51,7 +60,7 @@ export const TimelineConnector = React.forwardRef<HTMLSpanElement, TimelineConne
         ) : (
           <span className={lineClasses} />
         )}
-      </span>
+      </TimelineConnectorRoot>
     );
   },
 );

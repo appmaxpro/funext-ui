@@ -27,7 +27,7 @@ import type {
 } from "../../types/components/chip";
 
 import IconButton from "../IconButton";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import { MaterialIcon } from "../../../icons/material-icon";
 
 import { clsx, composeClasses, generateUtilityClass, memoTheme, styled, Theme, useMuiDefaultProps } from "../../styles";
@@ -167,7 +167,7 @@ const ChipRoot = styled(ButtonRoot, {
       },
       style: {
         padding: '0 4px',
-        fontSize: theme.typography.pxToRem(11),
+        fontSize: theme.typography.pxToRem(10),
       },
     },
   ],
@@ -204,7 +204,6 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     size = size ?? defaultProps.size;
-    color = useThemeColor(color, defaultProps.color) as ChipOwnProps["color"];
     animate = animate ?? defaultProps.animate;
     open = open ?? defaultProps.open;
     onClose = onClose ?? defaultProps.onClose;
@@ -269,6 +268,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
 
     const endIcon = (endIconProp || onClose) && (
       <ButtonEndIcon className="shrink p-0 m-0 ms-1" ownerState={ownerState}>
+        {endIconProp}
         {onClose ? (
           <IconButton
             onClick={onClose}
@@ -284,9 +284,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
           >
             <MaterialIcon icon="close" />
           </IconButton>
-        ) : (
-          endIconProp
-        )}
+        ) : null}
       </ButtonEndIcon>
     );
 

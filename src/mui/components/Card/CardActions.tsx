@@ -1,9 +1,21 @@
-
-'use client';
-import * as React from 'react';
-import { generateUtilityClass, composeClasses, styled, useMuiDefaultProps, generateUtilityClasses, SxThemeProps, clsx, memoTheme } from '../../styles';
-import { OverrideProps, StandardProps } from '../../props';
-import { ButtonBase, ButtonBaseTypeMap, ExtendButtonBaseTypeMap } from '../Button';
+"use client";
+import * as React from "react";
+import {
+  generateUtilityClass,
+  composeClasses,
+  styled,
+  useMuiDefaultProps,
+  generateUtilityClasses,
+  SxThemeProps,
+  clsx,
+  memoTheme,
+} from "../../styles";
+import { OverrideProps, StandardProps } from "../../props";
+import {
+  ButtonBase,
+  ButtonBaseTypeMap,
+  ExtendButtonBaseTypeMap,
+} from "../Button";
 export interface CardActionsClasses {
   /** Styles applied to the root element. */
   root: string;
@@ -14,25 +26,29 @@ export interface CardActionsClasses {
 export type CardActionsClassKey = keyof CardActionsClasses;
 
 export function getCardActionsUtilityClass(slot: string): string {
-  return generateUtilityClass('MuxCardActions', slot);
+  return generateUtilityClass("MuxCardActions", slot);
 }
 
-export const cardActionsClasses: CardActionsClasses = generateUtilityClasses('MuxCardActions', [
-  'root',
-  'spacing',
-]);
+export const cardActionsClasses: CardActionsClasses = generateUtilityClasses(
+  "MuxCardActions",
+  ["root", "spacing"],
+);
 
-const useUtilityClasses = (ownerState:any) => {
+const useUtilityClasses = (ownerState: any) => {
   const { classes, disableSpacing } = ownerState;
 
   const slots = {
-    root: ['root', !disableSpacing && 'spacing'],
+    root: ["root", !disableSpacing && "spacing"],
   };
 
   return composeClasses(slots, getCardActionsUtilityClass, classes);
 };
 
-export interface CardActionsProps extends StandardProps<React.HTMLAttributes<HTMLDivElement>, CardActionsClassKey> {
+export interface CardActionsProps
+  extends StandardProps<
+    React.HTMLAttributes<HTMLDivElement>,
+    CardActionsClassKey
+  > {
   /**
    * The content of the component.
    */
@@ -52,24 +68,23 @@ export interface CardActionsProps extends StandardProps<React.HTMLAttributes<HTM
   disableSpacing?: boolean;
 }
 
-
-const CardActionsRoot = styled('div', {
-  name: 'MuxCardActions',
-  slot: 'Root',
+const CardActionsRoot = styled("div", {
+  name: "MuxCardActions",
+  slot: "Root",
   overridesResolver: (props, styles) => {
     const { ownerState } = props;
 
     return [styles.root, !ownerState.disableSpacing && styles.spacing];
   },
 })({
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   padding: 8,
   variants: [
     {
       props: { disableSpacing: false },
       style: {
-        '& > :not(style) ~ :not(style)': {
+        "& > :not(style) ~ :not(style)": {
           marginLeft: 8,
         },
       },
@@ -77,27 +92,29 @@ const CardActionsRoot = styled('div', {
   ],
 });
 
-export const CardActions = React.forwardRef<HTMLElement, CardActionsProps>(function CardActions(inProps, ref) {
-  const props = useMuiDefaultProps({
-    props: inProps,
-    name: 'MuxCardActions',
-  });
+export const CardActions = React.forwardRef<HTMLElement, CardActionsProps>(
+  function CardActions(inProps, ref) {
+    const props = useMuiDefaultProps({
+      props: inProps,
+      name: "MuxCardActions",
+    });
 
-  const { disableSpacing = false, className, ...other } = props;
+    const { disableSpacing = false, className, ...other } = props;
 
-  const ownerState = { ...props, disableSpacing };
+    const ownerState = { ...props, disableSpacing };
 
-  const classes = useUtilityClasses(ownerState);
+    const classes = useUtilityClasses(ownerState);
 
-  return (
-    <CardActionsRoot
-      className={clsx(classes.root, className)}
-      ownerState={ownerState}
-      ref={ref as any}
-      {...other}
-    />
-  );
-});
+    return (
+      <CardActionsRoot
+        className={clsx(classes.root, className)}
+        ownerState={ownerState}
+        ref={ref as any}
+        {...other}
+      />
+    );
+  },
+);
 
 export interface CardActionAreaClasses {
   /** Styles applied to the root element. */
@@ -111,15 +128,15 @@ export interface CardActionAreaClasses {
 export type CardActionAreaClassKey = keyof CardActionAreaClasses;
 
 export function getCardActionAreaUtilityClass(slot: string): string {
-  return generateUtilityClass('MuxCardActionArea', slot);
+  return generateUtilityClass("MuxCardActionArea", slot);
 }
 
-export const cardActionAreaClasses: CardActionAreaClasses = generateUtilityClasses('MuxCardActionArea', [
-  'root',
-  'focusVisible',
-  'focusHighlight',
-]);
-
+export const cardActionAreaClasses: CardActionAreaClasses =
+  generateUtilityClasses("MuxCardActionArea", [
+    "root",
+    "focusVisible",
+    "focusHighlight",
+  ]);
 
 export interface CardActionAreaOwnProps {
   /**
@@ -142,71 +159,80 @@ export type CardActionAreaTypeMap<
 }>;
 
 export type CardActionAreaProps<
-  RootComponent extends React.ElementType = ButtonBaseTypeMap['defaultComponent'],
+  RootComponent extends
+    React.ElementType = ButtonBaseTypeMap["defaultComponent"],
   AdditionalProps = {},
-> = OverrideProps<CardActionAreaTypeMap<AdditionalProps, RootComponent>, RootComponent> & {
+> = OverrideProps<
+  CardActionAreaTypeMap<AdditionalProps, RootComponent>,
+  RootComponent
+> & {
   component?: React.ElementType;
 };
 
-
-
-const useAreaUtilityClasses = (ownerState:any) => {
+const useAreaUtilityClasses = (ownerState: any) => {
   const { classes } = ownerState;
 
   const slots = {
-    root: ['root'],
-    focusHighlight: ['focusHighlight'],
+    root: ["root"],
+    focusHighlight: ["focusHighlight"],
   };
 
   return composeClasses(slots, getCardActionAreaUtilityClass, classes);
 };
 
 const CardActionAreaRoot = styled(ButtonBase, {
-  name: 'MuxCardActionArea',
-  slot: 'Root',
+  name: "MuxCardActionArea",
+  slot: "Root",
   overridesResolver: (props, styles) => styles.root,
 })(
   memoTheme(({ theme }) => ({
-    display: 'block',
-    textAlign: 'inherit',
-    borderRadius: 'inherit', // for Safari to work https://github.com/mui/material-ui/issues/36285.
-    width: '100%',
+    display: "block",
+    textAlign: "inherit",
+    borderRadius: "inherit", // for Safari to work https://github.com/mui/material-ui/issues/36285.
+    width: "100%",
     [`&:hover .${cardActionAreaClasses.focusHighlight}`]: {
       opacity: (theme.vars || theme).palette.action.hoverOpacity,
-      '@media (hover: none)': {
+      "@media (hover: none)": {
         opacity: 0,
       },
     },
-    [`&.${cardActionAreaClasses.focusVisible} .${cardActionAreaClasses.focusHighlight}`]: {
-      opacity: (theme.vars || theme).palette.action.focusOpacity,
-    },
+    [`&.${cardActionAreaClasses.focusVisible} .${cardActionAreaClasses.focusHighlight}`]:
+      {
+        opacity: (theme.vars || theme).palette.action.focusOpacity,
+      },
   })),
 );
 
-const CardActionAreaFocusHighlight = styled('span', {
-  name: 'MuxCardActionArea',
-  slot: 'FocusHighlight',
+const CardActionAreaFocusHighlight = styled("span", {
+  name: "MuxCardActionArea",
+  slot: "FocusHighlight",
   overridesResolver: (props, styles) => styles.focusHighlight,
 })(
   memoTheme(({ theme }) => ({
-    overflow: 'hidden',
-    pointerEvents: 'none',
-    position: 'absolute',
+    overflow: "hidden",
+    pointerEvents: "none",
+    position: "absolute",
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
-    borderRadius: 'inherit',
+    borderRadius: "inherit",
     opacity: 0,
-    backgroundColor: 'currentcolor',
-    transition: theme.transitions.create('opacity', {
+    backgroundColor: "currentcolor",
+    transition: theme.transitions.create("opacity", {
       duration: theme.transitions.duration.short,
     }),
   })),
 );
 
-export const CardActionArea = React.forwardRef<HTMLButtonElement, CardActionAreaProps>(function CardActionArea(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxCardActionArea' });
+export const CardActionArea = React.forwardRef<
+  HTMLButtonElement,
+  CardActionAreaProps
+>(function CardActionArea(inProps, ref) {
+  const props = useMuiDefaultProps({
+    props: inProps,
+    name: "MuxCardActionArea",
+  });
   const { children, className, focusVisibleClassName, ...other } = props;
 
   const ownerState = props;
@@ -215,13 +241,19 @@ export const CardActionArea = React.forwardRef<HTMLButtonElement, CardActionArea
   return (
     <CardActionAreaRoot
       className={clsx(classes.root, className)}
-      focusVisibleClassName={clsx(focusVisibleClassName, (classes as any).focusVisible)}
+      focusVisibleClassName={clsx(
+        focusVisibleClassName,
+        (classes as any).focusVisible,
+      )}
       ref={ref}
       ownerState={ownerState}
       {...other}
     >
       {children}
-      <CardActionAreaFocusHighlight className={classes.focusHighlight} ownerState={ownerState} />
+      <CardActionAreaFocusHighlight
+        className={classes.focusHighlight}
+        ownerState={ownerState}
+      />
     </CardActionAreaRoot>
   );
 });

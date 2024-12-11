@@ -632,7 +632,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
   const renderAutoSelectPopperChildren = (children) => (
     disablePopper 
     ? renderAutoSelectPanelChildren(children)
-    : <Popper {...createPopperProps()}>
+    : <Popper {...createPopperProps()} type="select">
         {renderAutoSelectPanelChildren(children)}
       </Popper>
   );

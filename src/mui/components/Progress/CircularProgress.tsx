@@ -20,7 +20,7 @@ import {
   InternalStandardProps as StandardProps 
 } from '../../uprops';
 
-import { useThemeColor } from '../../hooks';
+import { mapThemeColor } from '../../hooks';
 
 import { CircularProgressClasses, CircularProgressClassKey } from './circularProgressClasses';
 
@@ -231,7 +231,7 @@ const CircularProgressCircle = styled('circle', {
  * you should use `aria-describedby` to point to the progress bar, and set the `aria-busy`
  * attribute to `true` on that region until it has finished loading.
  */
-export const CircularProgress = React.forwardRef(function CircularProgress(inProps, ref) {
+export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressProps>(function CircularProgress(inProps, ref) {
   const props = useMuiDefaultProps({ props: inProps, name: 'MuxCircularProgress' }) as CircularProgressProps;
   const {
     className,
@@ -245,7 +245,7 @@ export const CircularProgress = React.forwardRef(function CircularProgress(inPro
     ...other
   } = props;
   
-  const themeColor = useThemeColor(color);
+  const themeColor = mapThemeColor(color);
   const hasThemeColor = themeColor && propTypesColors.includes(themeColor);
 
   const ownerState = {
@@ -283,7 +283,7 @@ export const CircularProgress = React.forwardRef(function CircularProgress(inPro
       {...rootProps}
       {...other}
       style={{
-        '--progress-color': hasThemeColor ? `var(--tw-${themeColor}-rgb)` :  themeColor,
+        '--progress-color': hasThemeColor ? `var(--tw-${themeColor})` :  themeColor,
         width: size, 
         height: size, 
         ...rootStyle, 

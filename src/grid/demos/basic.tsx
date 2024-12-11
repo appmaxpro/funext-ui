@@ -57,6 +57,8 @@ export default function Basic() {
           columns={columns}
           state={state}
           setState={setState}
+          bordered
+          headerShadow
         />
       </Box>
     </GridProvider>

@@ -5,11 +5,12 @@ import {
   TouchEventHandler,
 } from "react";
 import styled from "../styled";
+import {styled as stylex, SxComponentProps} from "../../mui/styles";
 
 // ! Fix mouse event inferred as any type
 // Since https://github.com/microsoft/TypeScript/pull/56004
 // Mouse/touch/pointer event handlers copied from DOMAttributes
-export interface BoxProps {
+export interface BoxProps extends SxComponentProps{
   // MouseEvents
   onAuxClick?: MouseEventHandler<HTMLElement>;
   onAuxClickCapture?: MouseEventHandler<HTMLElement>;
@@ -78,5 +79,8 @@ export interface BoxProps {
   onLostPointerCapture?: PointerEventHandler<HTMLElement>;
   onLostPointerCaptureCapture?: PointerEventHandler<HTMLElement>;
 }
+const SxBox = stylex('div', {
+  name: 'Box'
+})<SxComponentProps>();
 
-export const Box = styled.div<BoxProps>();
+export const Box = styled(SxBox)<BoxProps>();

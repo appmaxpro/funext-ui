@@ -1,5 +1,5 @@
 import React from "react";
-import { ToolPanel, useClassNames} from "../core";
+import { ToolPanel, useClassNames } from "../core";
 
 import * as TYPES from "./types";
 
@@ -7,7 +7,7 @@ import { GridColumn } from "./grid-column";
 import { capitalizeWord } from "./utils";
 import { useTranslation } from "./translate";
 import styles from "./grid.module.scss";
-import Popover from "../mui/components/Popover";
+import { Panel, Popover, styled } from "../mui";
 
 export const GridFooterRow = React.memo(function GridFooterRow(
   props: TYPES.GridRowProps,
@@ -22,7 +22,7 @@ export const GridFooterRow = React.memo(function GridFooterRow(
     renderer,
     data,
   } = props;
-  const RowRenderer = renderer || "div";
+  const RowRenderer = renderer || GridFooterRowRoot;
   const rendererProps = renderer ? props : {};
   const classNames = useClassNames();
 
@@ -68,26 +68,28 @@ function GridFooterRowColumn(
   }, [column, row]);
 
   const t = useTranslation();
-  
+
   return (
     <GridColumn selected={selected} index={index} data={column} type="footer">
-      {column.aggregate && <Popover
-            offset={7}
-            arrow
-            placement="top"
-          >
-            <Popover.Handler>
-              <span>{textValue}</span>
-            </Popover.Handler>
-            <Popover.Content>
-              <ToolPanel className="rounded-md p-2 shadow">
-                <span>
-                  {t(capitalizeWord(column.aggregate) as TYPES.GridLabel)} :{" "}
-                  {textValue}
-                </span>
-              </ToolPanel>
+      {column.aggregate && (
+        <Popover offset={7} arrow placement="top">
+          <Popover.Handler>
+            <span>{textValue}</span>
+          </Popover.Handler>
+          <Popover.Content>
+            <Panel className="rounded-md p-2 shadow">
+              <span>
+                {t(capitalizeWord(column.aggregate) as TYPES.GridLabel)} :{" "}
+                {textValue}
+              </span>
+            </Panel>
           </Popover.Content>
-        </Popover>}
+        </Popover>
+      )}
     </GridColumn>
   );
 }
+
+const GridFooterRowRoot = styled("div", {
+  name: "MuxGridFooterRow",
+})("");

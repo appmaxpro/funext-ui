@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useClassNames } from "../core";
-import { Checkbox, Radio, Box, clsx } from "../mui";
+import { Checkbox, Radio, Box, clsx, styled } from "../mui";
 
 import { GridColumn } from "./grid-column";
 import { isRowCheck, isRowExpand } from "./utils";
@@ -24,6 +24,7 @@ export const GridBodyRow = React.memo(function GridBodyRow(
     selectionType,
     style,
     width,
+    rendererAll,
     renderer,
     cellRenderer,
     hasExpanded,
@@ -54,7 +55,6 @@ export const GridBodyRow = React.memo(function GridBodyRow(
       cell: TYPES.GridColumn,
       cellIndex: number,
     ) {
-      console.log("handleCellClick:", cellIndex)
       setTimeout(() => {
         onCellClick && onCellClick(e, cell, cellIndex, data, rowIndex);
       }, 50);
@@ -78,18 +78,18 @@ export const GridBodyRow = React.memo(function GridBodyRow(
   const renderColumn = React.useCallback(
     (column: TYPES.GridColumn, value: any) => {
       if (isRowCheck(column)) {
-        const Comp =selectionType === "single" ? Radio : Checkbox;
+        const Comp = selectionType === "single" ? Radio : Checkbox;
         return (
           <Comp
             checked={selected}
             onChange={() => {}}
             className="m-0"
             tabIndex={-1}
-            onClick={(e:any)=> {
-               e && e.stopPropagation();
-               if (e) {
-                handleCellClick(e, column, 0)
-               }
+            onClick={(e: any) => {
+              e && e.stopPropagation();
+              if (e) {
+                handleCellClick(e, column, 0);
+              }
             }}
           />
         );
@@ -98,7 +98,7 @@ export const GridBodyRow = React.memo(function GridBodyRow(
         const { expand, disable } = expandState;
         return (
           <div
-            className={clsx(styles.expandRowIcon, 'inline-flex p-0.5 text-xl', {
+            className={clsx(styles.expandRowIcon, "inline-flex p-0.5 text-xl", {
               [styles.disabled]: disable,
             })}
             onClick={(e) => {
@@ -110,7 +110,6 @@ export const GridBodyRow = React.memo(function GridBodyRow(
               <ExpandIcon expand={Boolean(expand)} />
             ) : (
               <MaterialIcon
-                
                 size={20}
                 icon={expand ? "arrow_drop_down" : "arrow_right"}
               />
@@ -123,7 +122,7 @@ export const GridBodyRow = React.memo(function GridBodyRow(
     [ExpandIcon, data, expandState, onExpand, selected, selectionType],
   );
 
-  const RowComponent = renderer || "div";
+  const RowComponent = renderer || GridRowRoot;
   const rendererProps = renderer ? props : {};
   const classNames = useClassNames();
   const DragComponent: any = draggable ? GridDNDRow : React.Fragment;
@@ -134,8 +133,8 @@ export const GridBodyRow = React.memo(function GridBodyRow(
       <DragComponent {...(draggable ? { ...props } : {})}>
         <RowComponent
           {...rendererProps}
-          className={classNames(styles.row, className, {
-            [styles.selected]: selected,
+          className={clsx(!draggable && styles.row, !draggable &&  className, {
+            [styles.selected]: !draggable && selected,
             [styles.inner]: draggable,
           })}
           style={style}
@@ -143,45 +142,48 @@ export const GridBodyRow = React.memo(function GridBodyRow(
             onDoubleClick && onDoubleClick(e, data, rowIndex)
           }
         >
-          {columns.map((column, index) => {
-            const rawValue = getColumnRawValue(column);
-            const value = getColumnValue(rawValue, column);
-            return (
-              <GridColumn
-                key={column.id ?? column.name}
-                data={column}
-                index={index}
-                type="body"
-                record={data.record}
-                value={value}
-                rawValue={rawValue}
-                focus={editCell === index}
-                selected={selectedCell === index}
-                renderer={column.renderer || cellRenderer}
-                onClick={handleCellClick}
-                onUpdate={handleUpdate}
-                renderChildren={renderColumn}
-              />
-            );
-          })}
+          {!rendererAll
+            ? columns.map((column, index) => {
+                const rawValue = getColumnRawValue(column);
+                const value = getColumnValue(rawValue, column);
+                return (
+                  <GridColumn
+                    key={column.id ?? column.name}
+                    data={column}
+                    index={index}
+                    type="body"
+                    record={data.record}
+                    value={value}
+                    rawValue={rawValue}
+                    focus={editCell === index}
+                    selected={selectedCell === index}
+                    renderer={column.renderer || cellRenderer}
+                    onClick={handleCellClick}
+                    onUpdate={handleUpdate}
+                    renderChildren={renderColumn}
+                  />
+                );
+              })
+            : null}
         </RowComponent>
       </DragComponent>
       {RowDetails && expandState?.expand && (
-        <div
+        <RowDetails
           className={styles.detailsRow}
           data-row-details={`${data.key}`}
+          data={data}
+          onClose={() => onExpand?.(data, Boolean(!expandState?.expand))}
           {...(width && {
             style: {
               width: width + borderWidth * 2, // add left + right border width
             },
           })}
-        >
-          <RowDetails
-            data={data}
-            onClose={() => onExpand?.(data, Boolean(!expandState?.expand))}
-          />
-        </div>
+        />
       )}
     </>
   );
 });
+
+const GridRowRoot = styled('div', {
+  name: 'MuxGridRow',
+})('');

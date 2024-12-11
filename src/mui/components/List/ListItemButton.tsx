@@ -63,13 +63,13 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     const itemStyles = twMerge(getItemStyle(disabled, selected, active, hover), className);
     //console.log("itemStyles:", itemStyles)
     
-    const prefixComp = !isValidElement(startIcon) || (startIcon as any).type == ListItemPrefix 
+    const prefixComp = !isValidElement(startIcon) || (startIcon as any).type === ListItemPrefix 
           ? startIcon 
           : <ListItemPrefix>{startIcon}</ListItemPrefix>
 
     //if(active)
     //  console.log("ListItemButton: tabIndex:", tabIndex, ", itemStyles:", itemStyles)
-    const suffixComp = !isValidElement(endIcon)  || (endIcon as any).type == ListItemSuffix 
+    const suffixComp = !isValidElement(endIcon)  || (endIcon as any).type === ListItemSuffix 
       ? endIcon 
       : <ListItemSuffix>{endIcon}</ListItemSuffix>
 

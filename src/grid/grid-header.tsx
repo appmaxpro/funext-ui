@@ -11,6 +11,7 @@ import { GridHeaderMenu, GridHeaderMenuProps } from "./grid-header-menu";
 import * as TYPES from "./types";
 import styles from "./grid.module.scss";
 import { isRowCheck } from "./utils";
+import { styled } from "..";
 
 export interface GridHeaderProps
   extends Pick<
@@ -42,6 +43,7 @@ export interface GridHeaderProps
   onColumnDrop?: GridHeaderMenuProps["onColumnDrop"];
   onColumnGroupAdd?: GridHeaderMenuProps["onColumnGroupRemove"];
   onColumnGroupRemove?: GridHeaderMenuProps["onColumnGroupRemove"];
+  shadow?: boolean;
 }
 
 export const GridHeader = React.memo(function GridHeader(
@@ -70,8 +72,9 @@ export const GridHeader = React.memo(function GridHeader(
     onColumnResizeStart,
     onColumnResize,
     onColumnResizeEnd,
+    shadow
   } = props;
-  const RowRenderer = rowRenderer || "div";
+  const RowRenderer = rowRenderer || GridHeaderRowRoot;
   const headerMenu = (
     allColumns && onColumnShow && onColumnHide &&
     <GridHeaderMenu
@@ -85,7 +88,7 @@ export const GridHeader = React.memo(function GridHeader(
       />
   );
   return (
-    <div className={className}>
+    <GridHeaderRoot className={className}>
       <RowRenderer className={styles.row}>
         {columns.map((column, index) => {
           const sortColumn = (orderBy || []).find(
@@ -128,9 +131,15 @@ export const GridHeader = React.memo(function GridHeader(
             searchColumnRenderer,
           }}
         />
-      )}
-
-      
-    </div>
+      )}      
+    </GridHeaderRoot>
   );
 });
+
+const GridHeaderRoot = styled('div', {
+  name: 'MuxGridHeader',
+})('');
+
+const GridHeaderRowRoot = styled('div', {
+  name: 'MuxGridHeaderRow',
+})('');

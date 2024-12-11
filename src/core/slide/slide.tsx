@@ -1,6 +1,6 @@
 import { cloneElement, forwardRef, isValidElement } from "react";
 import { Transition } from "react-transition-group";
-import { useForwardedRef } from "../hooks";
+import { useForwardedRef, useRefs } from "../hooks";
 import { useCoreTheme } from "../styles";
 import { TransitionProps } from "../transitions/types";
 import {
@@ -9,12 +9,17 @@ import {
   getTransitionStyle,
   reflow,
 } from "../transitions/utils";
-import { useRtl } from "../../mui";
+import { useRtl, useTheme, debounce } from "../../mui";
+import React from "react";
+import getReactElementRef from "../../mui/utils/getReactElementRef";
 
 type Direction = "start" | "end" | "up" | "down";
 
 export interface SlideProps extends TransitionProps {
   direction?: Direction;
+  temporary?: boolean;
+  container?: HTMLElement | (() => HTMLElement | null | undefined);
+  style?: Partial<CSSStyleDeclaration>;
 }
 
 const styles = {
@@ -37,164 +42,296 @@ const getDirection = (direction: Direction, rtl: boolean) => {
   return direction;
 };
 
-const getTranslateValue = (
+const getTransitionProperty = (
+  directionGiven: Direction,
+  temporary: boolean,
+  rtl: boolean,
+) => {
+  if (!temporary) {
+    const direction = getDirection(directionGiven, rtl);
+    if (direction === "start" || direction === "end") {
+      return "width";
+    }
+
+    return "height";
+  }
+  return "transform";
+};
+
+// Translate the node so it can't be seen on the screen.
+// Later, we're going to translate the node back to its original location with `none`.
+function getTranslateValue(
   node: HTMLElement,
   directionGiven: Direction,
   rtl: boolean,
-) => {
-  const view = ownerWindow(node);
-  const rect = node.getBoundingClientRect();
+  resolvedContainer?: HTMLElement,
+) {
   const direction = getDirection(directionGiven, rtl);
+  const rect = node.getBoundingClientRect();
+  const containerRect =
+    resolvedContainer && resolvedContainer.getBoundingClientRect();
+  const containerWindow = ownerWindow(node);
+  let transform;
 
-  const computedStyle = view.getComputedStyle(node);
-  const transform =
-    computedStyle.getPropertyValue("-webkit-transform") ||
-    computedStyle.getPropertyValue("transform");
+  if ((node as any).fakeTransform) {
+    transform = (node as any).fakeTransform;
+  } else {
+    const computedStyle = containerWindow.getComputedStyle(node);
+    transform =
+      computedStyle.getPropertyValue("-webkit-transform") ||
+      computedStyle.getPropertyValue("transform");
+  }
 
   let offsetX = 0;
   let offsetY = 0;
 
-  if (typeof transform === "string" && transform !== "none" && transform) {
+  if (transform && transform !== "none" && typeof transform === "string") {
     const transformValues = transform.split("(")[1].split(")")[0].split(",");
     offsetX = parseInt(transformValues[4], 10);
     offsetY = parseInt(transformValues[5], 10);
   }
 
   if (direction === "start") {
-    return `translateX(${view.innerWidth}px) translateX(${
-      offsetX - rect.left
-    }px)`;
+    if (containerRect) {
+      return `translateX(${containerRect.right + offsetX - rect.left}px)`;
+    }
+
+    return `translateX(${containerWindow.innerWidth + offsetX - rect.left}px)`;
   }
 
   if (direction === "end") {
+    if (containerRect) {
+      return `translateX(-${rect.right - containerRect.left - offsetX}px)`;
+    }
+
     return `translateX(-${rect.left + rect.width - offsetX}px)`;
   }
 
   if (direction === "up") {
-    return `translateY(${view.innerHeight}px) translateY(${
-      offsetY - rect.top
-    }px)`;
+    if (containerRect) {
+      return `translateY(${containerRect.bottom + offsetY - rect.top}px)`;
+    }
+    return `translateY(${containerWindow.innerHeight + offsetY - rect.top}px)`;
   }
 
-  // down
+  // direction === 'down'
+  if (containerRect) {
+    return `translateY(-${rect.top - containerRect.top + rect.height - offsetY}px)`;
+  }
   return `translateY(-${rect.top + rect.height - offsetY}px)`;
-};
+}
 
-export const Slide = forwardRef<HTMLElement, SlideProps>(
-  (
-    {
-      timeout = 300,
-      direction = "end",
-      children,
-      onEnter,
-      onEntering,
-      onEntered,
-      onExit,
-      onExiting,
-      onExited,
-      ...props
-    }: SlideProps,
+function resolveContainer(containerPropProp: any) {
+  return typeof containerPropProp === "function"
+    ? containerPropProp()
+    : containerPropProp;
+}
+
+export function setTranslateValue(
+  node: HTMLElement,
+  direction: Direction,
+  rtl: boolean,
+  containerProp: any,
+) {
+  const resolvedContainer = resolveContainer(containerProp);
+  const transform = getTranslateValue(node, direction, rtl, resolvedContainer);
+
+  if (transform) {
+    node.style.webkitTransform = transform;
+    node.style.transform = transform;
+  }
+}
+
+export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
+  const theme = useTheme();
+  const defaultEasing = {
+    enter: theme.transitions.easing.easeOut,
+    exit: theme.transitions.easing.sharp,
+  };
+
+  const defaultTimeout = {
+    enter: theme.transitions.duration.enteringScreen,
+    exit: theme.transitions.duration.leavingScreen,
+  };
+
+  const rtl = useRtl();
+
+  const {
+    appear = true,
+    children,
+    container: containerProp,
+    direction = 'down',
+    easing: easingProp = defaultEasing,
+    in: inProp,
+    onEnter,
+    onEntered,
+    onEntering,
+    onExit,
+    onExited,
+    onExiting,
+    timeout = defaultTimeout,
+    style = {},
+    ...rest
+  } = props;
+
+  const childrenRef = React.useRef(null);
+  const handleRef = useRefs(
+    getReactElementRef(children as any),
+    childrenRef,
     ref,
-  ) => {
-    const rtl = useRtl();
-    const nodeRef = useForwardedRef<any>(ref);
-    const handleEnter = (isAppearing: boolean) => {
-      const node: HTMLElement = nodeRef.current!;
-      node.style.transform = getTranslateValue(node, direction, rtl);
+  );
 
+  const normalizedTransitionCallback =
+    (callback: any) => (isAppearing?: boolean) => {
+      if (callback) {
+        // onEnterXxx and onExitXxx callbacks have a different arguments.length value.
+        if (isAppearing === undefined) {
+          callback(childrenRef.current);
+        } else {
+          callback(childrenRef.current, isAppearing);
+        }
+      }
+    };
+
+  const handleEnter = normalizedTransitionCallback(
+    (node: HTMLDivElement, isAppearing: boolean) => {
+      setTranslateValue(node, direction, rtl, containerProp);
       reflow(node);
 
       if (onEnter) {
         onEnter(node, isAppearing);
       }
-    };
+    },
+  );
 
-    const handleEntering = (isAppearing: boolean) => {
-      const node: HTMLElement = nodeRef.current!;
-      const style = node.style;
-      const options = getTransitionProps("enter", { timeout, style });
+  const handleEntering = normalizedTransitionCallback(
+    (node: HTMLElement, isAppearing: boolean) => {
+      const transitionProps = getTransitionProps("enter", {
+        timeout,
+        style: style ?? node.style,
+        easing: easingProp,
+      });
 
-      style.visibility = "";
-      style.transform = "";
-      style.transition = getTransition("transform", options);
+      node.style.webkitTransition = theme.transitions.create(
+        "-webkit-transform",
+        {
+          ...transitionProps,
+        },
+      );
 
+      node.style.transition = theme.transitions.create("transform", {
+        ...transitionProps,
+      });
+
+      node.style.webkitTransform = "none";
+      node.style.transform = "none";
       if (onEntering) {
         onEntering(node, isAppearing);
       }
-    };
+    },
+  );
 
-    const handleEntered = (isAppearing: boolean) => {
-      const node: HTMLElement = nodeRef.current!;
-      if (onEntered) {
-        onEntered(node, isAppearing);
-      }
-    };
+  const handleEntered = normalizedTransitionCallback(onEntered);
+  const handleExiting = normalizedTransitionCallback(onExiting);
 
-    const handleExit = () => {
-      const node: HTMLElement = nodeRef.current!;
-      node.style.transform = getTranslateValue(node, direction, rtl);
-      if (onExit) {
-        onExit(node);
-      }
-    };
+  const handleExit = normalizedTransitionCallback((node: HTMLElement) => {
+    const transitionProps = getTransitionProps("exit", {
+      timeout,
+      style: style ?? node.style,
+      easing: easingProp,
+    });
 
-    const handleExiting = () => {
-      const node: HTMLElement = nodeRef.current!;
-      const style = node.style;
-      const options = getTransitionProps("enter", { timeout, style });
-
-      style.transition = getTransition("transform", options);
-
-      if (onExiting) {
-        onExiting(node);
-      }
-    };
-
-    const handleExited = () => {
-      const node: HTMLElement = nodeRef.current!;
-      switch(direction){
-        case 'start':
-          node.style.transform = 'translateX(-100000px)';
-          break;
-        case 'end':
-          node.style.transform = 'translateX(100000px)';
-          break;
-        case 'up':
-          node.style.transform = 'translateX(-100000px)';
-          break;
-        case 'down':
-          node.style.transform = 'translateY(100000px)';
-          break;
-      }
-      node.style.transition = "";
-      node.style.visibility = "hidden";
-      if (onExited) {
-        onExited(node);
-      }
-    };
-
-    return (
-      <Transition
-        timeout={timeout}
-        onEnter={handleEnter}
-        onEntering={handleEntering}
-        onEntered={handleEntered}
-        onExit={handleExit}
-        onExiting={handleExiting}
-        onExited={handleExited}
-        nodeRef={nodeRef}
-        {...props}
-      >
-        {(state) => {
-          if (isValidElement(children)) {
-            const style = getTransitionStyle(state, styles as any, children);
-            return cloneElement(children as React.ReactElement, {
-              style,
-              ref: nodeRef,
-            });
-          }
-        }}
-      </Transition>
+    node.style.webkitTransition = theme.transitions.create(
+      "-webkit-transform",
+      transitionProps,
     );
-  },
-);
+    node.style.transition = theme.transitions.create(
+      "transform",
+      transitionProps,
+    );
+
+    setTranslateValue(node, direction, rtl, containerProp);
+
+    if (onExit) {
+      onExit(node);
+    }
+  });
+
+  const handleExited = normalizedTransitionCallback((node: HTMLElement) => {
+    // No need for transitions when the component is hidden
+    node.style.webkitTransition = "";
+    node.style.transition = "";
+
+    if (onExited) {
+      onExited(node);
+    }
+  });
+
+  const updatePosition = React.useCallback(() => {
+    if (childrenRef.current) {
+      setTranslateValue(childrenRef.current, direction, rtl, containerProp);
+    }
+  }, [direction, containerProp]);
+
+  React.useEffect(() => {
+    // Skip configuration where the position is screen size invariant.
+    if (
+      !childrenRef.current ||
+      inProp ||
+      direction === "down" ||
+      direction === "end"
+    ) {
+      return undefined;
+    }
+
+    const handleResize = debounce(() => {
+      if (childrenRef.current) {
+        setTranslateValue(childrenRef.current, direction, rtl, containerProp);
+      }
+    });
+
+    const containerWindow = ownerWindow(childrenRef.current);
+    containerWindow.addEventListener("resize", handleResize);
+    return () => {
+      handleResize.clear();
+      containerWindow.removeEventListener("resize", handleResize);
+    };
+  }, [direction, inProp, containerProp]);
+
+  React.useEffect(() => {
+    if (!inProp) {
+      // We need to update the position of the drawer when the direction change and
+      // when it's hidden.
+      updatePosition();
+    }
+  }, [inProp, updatePosition]);
+
+  return (
+    <Transition
+      nodeRef={childrenRef}
+      onEnter={handleEnter}
+      onEntered={handleEntered}
+      onEntering={handleEntering}
+      onExit={handleExit}
+      onExited={handleExited}
+      onExiting={handleExiting}
+      appear={appear}
+      in={inProp}
+      timeout={timeout}
+      {...rest}
+    >
+      {(state, childProps) => {
+        return isValidElement(children) && React.cloneElement(children, {
+          //@ts-ignore
+          ref: handleRef as any,
+          style: {
+            visibility: state === 'exited' && !inProp ? 'hidden' : undefined,
+            ...style,
+            ...children.props.style,
+          },
+          ...childProps,
+        });
+      }}
+    </Transition>
+  );
+});

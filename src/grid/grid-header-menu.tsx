@@ -102,22 +102,15 @@ export const GridHeaderMenu = React.memo(function GridHeaderMenu({
   onColumnDrop,
   onColumnGroupRemove,
 }: GridHeaderMenuProps) {
-  const [showColumnOptions, setColumnOptions] = React.useState(false);
-  const [columnOptionsTarget, setColumnOptionsTarget] = 
-  React.useState<HTMLElement | null>(null);
   const t = useTranslation();
   const rtl = useRtl();
-  const classNames = useClassNames();
-
-  const showMenu = useCallback(() => setColumnOptions(true), []);
-  const hideMenu = useCallback(() => setColumnOptions(false), []);
   const placement = rtl ? "bottom-start" : "bottom-end";
 
   return (
     <Menu.Button
       placement={placement}
       trigger={
-        <IconButton ref={setColumnOptionsTarget} dense>
+        <IconButton dense>
           <MaterialIcon icon="more_vert" />
         </IconButton>
       }
@@ -140,9 +133,8 @@ export const GridHeaderMenu = React.memo(function GridHeaderMenu({
                 checked={visible}
                 onChange={toggle}
                 label={column.title}
-                fullWidth
                 labelProps={{
-                      className: 'pe-1'
+                  className: 'pe-1'
                 }}
               />
             );

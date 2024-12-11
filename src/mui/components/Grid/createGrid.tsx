@@ -55,7 +55,12 @@ function useThemePropsDefault<T extends {}>(props: T) {
   });
 }
 
-const GridContext = React.createContext<boolean>(true);
+
+interface GridContextValue{
+  media:boolean;
+  containerName?:string
+}
+const GridContext = React.createContext<GridContextValue>({media:false});
 
 export default function createGrid(
   options: {
@@ -152,7 +157,7 @@ export default function createGrid(
     const props = extendSxProp(themeProps) as Omit<typeof themeProps, "color"> &
       GridOwnerState; // `color` type conflicts with html color attribute.
     
-    const parentMedia = React.useContext(GridContext);
+    const {media:parentMedia, containerName:parentContainerName} = React.useContext(GridContext);
     
     const {
       className,
@@ -169,6 +174,7 @@ export default function createGrid(
       columnSpacing: columnSpacingProp = spacingProp,
       unstable_level: level = 0,
       media = parentMedia || container,
+      containerName = parentContainerName,
       ...other
     } = props;
     const size = parseResponsiveProp<GridSize>(
@@ -234,7 +240,7 @@ export default function createGrid(
     );
 
     return container 
-       ? <GridContext.Provider value={media}>{items}</GridContext.Provider>
+       ? <GridContext.Provider value={{media, containerName}}>{items}</GridContext.Provider>
        : items
   }) as OverridableComponent<GridTypeMap>;
 

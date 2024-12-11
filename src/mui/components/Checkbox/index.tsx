@@ -1,4 +1,9 @@
-import React, { ChangeEventHandler, ForwardedRef, useCallback, useRef } from "react";
+import React, {
+  ChangeEventHandler,
+  ForwardedRef,
+  useCallback,
+  useRef,
+} from "react";
 
 // utils
 import classnames from "classnames";
@@ -20,254 +25,195 @@ import type {
   disabled,
   objectType,
 } from "../../types/components/checkbox";
-import { styled } from "../../styles";
-import { useControlled, useForwardedRef, useThemeColor } from "../../hooks";
+import {
+  alpha,
+  composeClasses,
+  generateUtilityClass,
+  generateUtilityClasses,
+  memoTheme,
+  styled,
+  useMuiDefaultProps,
+} from "../../styles";
+import { useControlled, useForwardedRef, mapThemeColor } from "../../hooks";
+import CheckBoxOutlineBlankIcon from "../internal/svg-icons/CheckBoxOutlineBlank";
+import CheckBoxIcon from "../internal/svg-icons/CheckBox";
+import IndeterminateCheckBoxIcon from "../internal/svg-icons/IndeterminateCheckBox";
+import SwitchBase, { SwitchBaseProps } from "../internal/SwitchBase";
+import { capitalize, clsx } from "../../utils";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 
-export const CheckboxRoot = styled('div', {
-  name: 'MuxCheckbox',
-  slot: 'Root',
-  overridesResolver: (props:any, styles:any) => styles.root,  
-})( {
-  fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
-  fontWeight: 500,
-  lineHeight: 1.75,
-  letterSpacing:' 0.02857em',
-  textTransform: 'uppercase',
-  minWidth: '64px',
-  borderRadius: '4px',
-  backgroundColor: 'unset',
-  transition: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,' +
-     'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,' +
-     'border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,' +
-     'color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-  ['&:active, &:focus'] : {
-    outline: 0
+export function getCheckboxUtilityClass(slot: string): string {
+  return generateUtilityClass("Mux", slot);
+}
+
+const checkboxClasses = generateUtilityClasses('Mux', [
+  'checked',
+  'indeterminate',
+  'disabled',
+]);
+
+const useUtilityClasses = (ownerState: any) => {
+  const { classes, indeterminate, color, size } = ownerState;
+
+  const slots = {
+    root: [
+      'root',
+      indeterminate && "indeterminate",
+      `color${capitalize(color)}`,
+      `size${capitalize(size)}`,
+    ],
+  };
+
+  const composedClasses = composeClasses(
+    slots,
+    getCheckboxUtilityClass,
+    classes,
+  );
+  
+  return {
+    ...classes, // forward the disabled and checked classes to the SwitchBase
+    ...composedClasses
+  };
+};
+
+const CheckboxRoot = styled(SwitchBase, {
+  name: "MuxCheckbox",
+  shouldForwardProp: (prop) =>
+    (rootShouldForwardProp(prop) || prop === 'classes'),
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+    return [
+      'root',
+      ownerState.indeterminate && styles.indeterminate,
+      styles[`size${capitalize(ownerState.size)}`],
+      ownerState.color !== "default" &&
+        styles[`color${capitalize(ownerState.color)}`],
+    ];
   },
-  ['&:disabled']: {
-    pointerEvents: 'none',
-    opacity: .6,
-    boxShadow: 'none',
-  },
-  variants: [
-    {
-      props: {
-        variant: 'text'
-      },
-      style: {
-         
-      },
-      classes: 'text-ccccc'
-    },
-    {
-      props: {
-        variant: 'filled',
-        hasColor: true
-      },
-      style: {
-         backgroundColor: 'var(--bt-color)',
-         color: 'var(--bt-text-color)',
-         ['&:hover']: {
-           backgroundColor: 'rgb(var(--bt-color-dark) / 50%)',
-         },
-         ['&:focus']: {
-          backgroundColor: 'rgb(var(--bt-color-dark) / 70%) '
+})(
+  memoTheme(({ theme }) => ({
+    color: (theme.vars || theme).palette.text.secondary,
+    variants: [
+      {
+        props: ({ownerState}:any) => !ownerState.disabled && ownerState.ripple,
+        style: {
+          "&:hover": {
+            backgroundColor: theme.vars
+              ? `rgba(${theme.vars.palette.action.activeChannel} / ${theme.vars.palette.action.hoverOpacity})`
+              : alpha(
+                  theme.palette.action.active,
+                  theme.palette.action.hoverOpacity,
+                ),
+            "@media (hover: none)": {
+              backgroundColor: "transparent",
+            },
+          },
         },
-        ['&:active']: {
-          backgroundColor: 'rgb(var(--bt-color-dark) / 65%) ',
-        }
       },
-    },
-    {
-      props: {
-        size: 'sm'
+      {
+        props: ({ownerState}:any) => theme.palette.twColors?.includes(ownerState.color as any),
+        style: ({ownerState}:any) => ({
+          [`&.${checkboxClasses.checked}, &.${checkboxClasses.indeterminate}`]: {
+            '--tw-text-opacity': 1,
+            color: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-text-opacity))`,
+          },
+          [`&.${checkboxClasses.disabled}`]: {
+            color: (theme.vars || theme).palette.action.disabled,
+          },
+        }),
       },
-      style: {
-        fontSize: '0.8125rem',
-        padding: '4px 5px',
-      }
-    },
-    {
-      props: {
-        size: 'md'
-      },
-      style: {
-        fontSize: '0.875rem',
-        padding: '6px 16px',
-      }
-    },
-    {
-      props: {
-        size: 'lg'
-      },
-      style: {
-        fontSize: '0.9375rem',
-        padding: '8px 22px',
-        gap: 3
-      }
-    },
-  ]
+    ],
+  })),
+);
 
-});
+const defaultCheckedIcon = <CheckBoxIcon />;
+const defaultIcon = <CheckBoxOutlineBlankIcon />;
+const defaultIndeterminateIcon = <IndeterminateCheckBoxIcon />;
 
-export interface CheckboxProps extends React.ComponentProps<"input"> {
+export interface CheckboxProps extends SwitchBaseProps {
   color?: color;
-  label?: label;
-  icon?: icon;
-  ripple?: ripple;
-  className?: className;
-  disabled?: disabled;
-  containerProps?: objectType;
-  labelProps?: objectType;
-  iconProps?: objectType;
-  rootRef?: React.Ref<HTMLDivElement>;
-  rippleClass?: string;
-  error?: boolean;
   indeterminate?: boolean;
-  fullWidth?: boolean;
+  indeterminateIcon?: React.ReactNode;
+  error?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  (
-    {
-      color,
-      label,
-      icon,
-      ripple,
-      className,
-      disabled,
-      containerProps,
-      labelProps,
-      iconProps,
-      rootRef,
-      rippleClass,
-      error,
-      defaultChecked=false,
-      checked:isChecked,
-      onChange,
-      fullWidth,
-      indeterminate,
-      ...rest
-    },
-    ref,
-  ) => {
+  (inProps, ref) => {
+
     // 1. init
     const { checkbox } = useTailwindTheme();
     const { defaultProps, valid, styles } = checkbox;
     const { base, colors } = styles;
-    const checkboxId = React.useId();
-
+    let {
+      color: inColor,
+      error,
+      ...others
+    } = inProps;
     // 2. set default props
-    color = useThemeColor(error ? 'error' : color, defaultProps.color);
-    icon = icon ?? defaultProps.icon;
-    ripple = ripple ?? defaultProps.ripple;
-    disabled = disabled ?? defaultProps.disabled;
-    containerProps = containerProps ?? defaultProps.containerProps;
-    labelProps = labelProps ?? defaultProps.labelProps;
-    iconProps = iconProps ?? defaultProps.iconProps;
-    className = twMerge(defaultProps.className || "", className);
+    let color = mapThemeColor(error ? "error" : inColor, defaultProps.color);
 
-    const labelRef = useRef<HTMLElement>();
-    const colorClass = colors[findMatch(valid.colors, color, "primary")]
-    const matchColor = objectsToString(colorClass)
-    // 3. set ripple effect instance
-    const {ref: rippleRef, className: rippleClassName} = useRipple<HTMLElement>({
-      ref:labelRef as ForwardedRef<HTMLElement>,
-      disabled: disabled || ripple === false,
-      className: (rippleClass ?? `bg-${color ?? "primary"}`) ,
-    });
+    const muiProps = useMuiDefaultProps({ props: inProps, name: 'MuxCheckbox' });
 
-    const [checked, setChecked] = useControlled({
-      name: 'input',
-      prop: 'checked',
-      state: isChecked,
-      defaultState: defaultChecked
-   })
-
-   const handleValueChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-     setChecked((event.currentTarget || event.target)?.checked);
-     onChange?.(event);
-   }, [onChange, setChecked]) 
-    
-    // 4. set styles
-    const rootClasses = classnames(objectsToString(base.root), {
-      [objectsToString(base.disabled)]: disabled,
-      ["w-full"]: fullWidth
-    });
-    const containerClasses = twMerge(
-      classnames(
-        objectsToString({
-          ...base.container, 
-          color: ((checked || indeterminate) 
-                ? `text-${color ?? "primary"}-500`
-                : undefined
-          ),
-        }), 
-        {
-          [rippleClassName]: !disabled && ripple !== false,
-        },
-      ),
-      containerProps?.className,
-    );
-
-    const inputClasses = twMerge(
-      classnames(
-        objectsToString(base.input),
-      ),
-      'MuxCheckbox-root',
+    let {
+      indeterminate,
+      indeterminateIcon: indeterminateIconProp = defaultIndeterminateIcon,
+      checkedIcon = defaultCheckedIcon,
+      icon: iconProp = defaultIcon,
+      rippleClassName,
+      ripple = defaultProps.ripple,
+      labelProps = defaultProps.labelProps,
       className,
-    );
-    const labelClasses = twMerge(
-        classnames(objectsToString(base.label), fullWidth && 'grow'),
-        labelProps?.className
-    );
+      size = defaultProps.size ?? 'md',
+      inputProps,
+      ...props
+    } = muiProps;
 
-    const iconContainerClasses = twMerge(
-      classnames(objectsToString(base.icon)),
-      iconProps?.className,
-    );
+    const rippleClass = rippleClassName ?? `bg-${color ?? "primary"}`;
 
     //const inputRef = useForwardedRef(ref);
+    const ownerState = {
+      ...props,
+      indeterminate,
+      color,
+      size,
+      ripple,
+      error,
+    };
 
+    const icon = indeterminate ? indeterminateIconProp : iconProp;
+    const indeterminateIcon = indeterminate
+      ? indeterminateIconProp
+      : checkedIcon;
+
+    const classes = useUtilityClasses(ownerState);
+    if(indeterminate){
+      //console.log("classes:", classes)
+    }
     return (
-      <div ref={rootRef} className={rootClasses}>
-        <div
-          {...containerProps}
-          className={containerClasses}
-          ref={rippleRef as any}
-        >
-          <input
-            {...rest}
-            ref={ref}
-            type="checkbox"
-            disabled={disabled}
-            className={inputClasses}
-            checked={isChecked}
-            //@ts-ignore 
-            indeterminate={indeterminate ? 'true': undefined}
-            onChange={handleValueChange}
-            id={rest.id || checkboxId}
-          />
-          {icon || (
-              
-              <svg className={iconContainerClasses} focusable="false" 
-                  aria-hidden="true" viewBox="0 0 24 24" 
-                  data-testid="CheckBoxIcon">
-                    {checked 
-                        ? <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-                        : indeterminate
-                        ? <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"></path>
-                        : <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
-                      }
-                    </svg>
-              
-            )}
-        </div>
-        {label && (
-          <label {...labelProps} className={labelClasses} htmlFor={rest.id || checkboxId}>
-            {label}
-          </label>
-        )}
-      </div>
+      <CheckboxRoot
+        className={clsx(classes.root, className)}
+        type="checkbox"
+        inputProps={{
+          //@ts-ignore
+          "data-indeterminate": indeterminate,
+          indeterminate: indeterminate ? 'true' : undefined,
+          ...inputProps,
+        }}
+        icon={React.cloneElement(icon as any, {
+          size: (icon as any).props?.fontSize ?? size,
+        })}
+        checkedIcon={React.cloneElement(indeterminateIcon as any, {
+          size: (indeterminateIcon as any).props?.size ?? size,
+        })}
+        ownerState={ownerState}
+        ref={ref}
+        ripple={ripple}
+        rippleClassName={rippleClass}
+        labelProps={labelProps}
+        {...props}
+        print={props.checked}
+      />
     );
   },
 );

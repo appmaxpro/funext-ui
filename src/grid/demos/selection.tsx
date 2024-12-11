@@ -26,6 +26,8 @@ export default function Selection({
           columns={columns}
           state={state}
           setState={setState}
+          bordered
+          overflow
         />
       </Box>
     </GridProvider>

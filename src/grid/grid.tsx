@@ -6,7 +6,7 @@ import { GridBody } from "./grid-body";
 import { GridDNDColumn } from "./grid-dnd-row";
 import { GridFooter } from "./grid-footer";
 import { GridHeader } from "./grid-header";
-import styles from "./grid.module.scss";
+//import styles from "./grid.module.scss";
 import { TranslateProvider } from "./translate";
 import * as TYPES from "./types";
 import {
@@ -18,6 +18,7 @@ import {
   isRowVisible,
   navigator
 } from "./utils";
+import { defaultTableStyles } from "./styles";
 
 function debounce(func: () => void, timeout: number = 1000) {
   let timer: any;
@@ -99,7 +100,10 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       labels,
       headerShadow,
       bordered,
-      stripped
+      striped,
+      overflow,
+      tableStyles: styles = defaultTableStyles,
+      bodyAs
     } = props;
     const isRTL = useRtl();
 
@@ -119,6 +123,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
     } = props;
 
     const {
+      rowRendererAll,
       cellRenderer,
       rowRenderer,
       headerCellRenderer,
@@ -195,6 +200,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             editable: false,
             sortable: false,
             searchable: false,
+            action: true,
             renderer: GridDNDColumn,
           });
         }
@@ -602,7 +608,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         );
         refs.current.style.innerHTML = `
           .${styles.resizingColumns} .${getCssSelector(
-            styles.column,
+            styles.header?.column?.column ?? '',
           )}:nth-child(${index + 1}) {
             width: ${width}px !important;
             min-width: ${width}px !important;
@@ -902,7 +908,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         event.defaultPrevented ||
         (event.target &&
           (event.target as HTMLElement).classList.contains(
-            styles.focusElement,
+            styles.focusElement ?? 'focusElement',
           )) ||
         ctrlKey ||
         ![
@@ -979,12 +985,18 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         row = 0;
         [col] = selectedCols;
       }
+      if (rowRendererAll && [
+        "ArrowRight",
+        "ArrowLeft",
+      ].includes(key)){
+        return;
+      }
 
       const prevCol = col;
       const prevRow = row;
 
       const maxRow = data.length - 1;
-      const maxCol = columns.length - 1;
+      const maxCol = rowRendererAll ? 0 : columns.length - 1 ;
       const isGroupCell =
         !isHeaderCell && rows[row] && rows[row].type === ROW_TYPE.GROUP_ROW;
       const isFirstColumn = col === 0;
@@ -1139,16 +1151,18 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       const container = containerRef.current;
       const header =
         container &&
-        container.querySelector(getCssSelector(`.${styles.header}`));
+        container.querySelector(getCssSelector(`.${styles.header?.header}`));
       if (header && stickyHeader) {
         if (!refs.current.stickOffset) {
           refs.current.stickOffset = header.offsetTop + header.offsetHeight;
         }
         const isStick = e.currentTarget.scrollTop > refs.current.stickOffset;
-        if (isStick) {
-          header.classList.add(styles.shadow);
-        } else {
-          header.classList.remove(styles.shadow);
+        if(styles.header?.shadow){
+          if (isStick) {
+            header.classList.add(styles.header.shadow);
+          } else {
+            header.classList.remove(styles.header.shadow);
+          }
         }
       }
     };
@@ -1164,8 +1178,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
           );
         const getCellNode = () => {
           if (!rowNode) return;
-          const selector = `.${styles.column}:nth-child(${col + 1})`;
-          if (rowNode.classList.contains(styles.groupRow)) {
+          const selector = `.${styles.column?.column}:nth-child(${col + 1})`;
+          if (rowNode.classList.contains(styles.group?.groupRow ?? 'groupRow')) {
             return rowNode;
           }
           return rowNode.querySelector(getCssSelector(selector));
@@ -1193,14 +1207,14 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             (isUpwards
               ? (
                   container.querySelector(
-                    getCssSelector(`.${styles.header}`),
+                    getCssSelector(`.${styles.header?.header}`),
                   ) || {}
                 ).clientHeight
               : isDownwards
                 ? -(
                     (
                       container.querySelector(
-                        getCssSelector(`.${styles.footer}`),
+                        getCssSelector(`.${styles.footer?.footer}`),
                       ) || {}
                     ).clientHeight || 0
                   )
@@ -1376,14 +1390,16 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       <TranslateProvider labels={labels}>
         <Box
           ref={handleRef}
-          className={classNames("table-grid", "select_no_border", styles.container, className, {
-            [styles["no-records"]]:
+          className={classNames(styles.table_grid, styles.select_no_border, styles.container, className, {
+            [styles.no_records]:
               records.length === 0 && state?.rows?.length === 0,
-            [styles["no-columns"]]: noColumns,
-            [styles["has-add-new"]]: Boolean(props.addNewText),
-            [styles["has-footer"]]: hasFooter,
-            [styles["variable-rows"]]: rowType === "variable",
-            [styles["rtl"]]: isRTL,
+            [styles.no_columns]: noColumns,
+            [styles.has_add_new]: Boolean(props.addNewText),
+            [styles.has_footer]: hasFooter,
+            [styles.variable_rows]: rowType === "variable",
+            [styles.overflow]: overflow,
+            
+            [styles.rtl]: isRTL,
           })}
           {...(allowCellSelection
             ? {
@@ -1392,14 +1408,11 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
               }
             : {})}
           onScroll={handleScroll}
-          {...(stripped && {'data-stripped': ''})}
-          {...(bordered && {'data-bordered': ''})}
-          {...(headerShadow && {'data-header-shadow': ''})}
         >
           <GridHeader
-            className={clsx(classNames(styles.header, {
-              [styles.sticky]: stickyHeader,
-              [styles.options]: allowColumnOptions,
+            className={clsx(classNames(styles.header?.header, {
+              [styles.header?.sticky]: stickyHeader,
+              [styles.header?.options]: allowColumnOptions,
               
             }))}
             groupBy={state.groupBy}
@@ -1409,6 +1422,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             rowRenderer={headerRowRenderer}
             checkType={checkType}
             selectionType={selectionType}
+            shadow={headerShadow}
             {...(allowColumnOptions ? { allColumns: state.columns } : {})}
             {...(allowSearch
               ? {
@@ -1455,9 +1469,14 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             selectionType={selectionType}
             noRecordsText={records.length === 0 ? props.noRecordsText : ""}
             addNewText={props.addNewText}
+            tableStyles={styles}
+            striped={striped}
+            border={bordered}
+            as={bodyAs}
             {...{
               rowHeight,
               maxRowHeight,
+              rowRendererAll,
               cellRenderer,
               rowRenderer,
               editRowRenderer,
@@ -1492,8 +1511,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
           />
           {hasFooter && (
             <GridFooter
-              className={classNames(styles.footer, {
-                [styles.sticky]: stickyFooter,
+              className={classNames(styles.footer?.footer, {
+                [styles.footer?.sticky]: stickyFooter,
               })}
               rowRenderer={footerRowRenderer}
               records={records}

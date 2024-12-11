@@ -15,7 +15,7 @@ const defaultColors:Map<string, Colors> = new Map(
   )
 );
 
-export function useMapColor<Props extends Record<string, any>>(props:Props) : Props {
+export function mapThemeColorProps<Props extends Record<string, any>>(props:Props) : Props {
   const {color} = props;
   if (color) {
     const colorValue = defaultColors.get(color);
@@ -31,6 +31,6 @@ export function useMapColor<Props extends Record<string, any>>(props:Props) : Pr
   return props;
 }
 
-export function useThemeColor(color?:string, def?:string) : Colors | undefined {
-  return (color ? (defaultColors.get(color) ?? color) : def) as Colors;
+export function mapThemeColor(color?:string, def?:string) : Colors | undefined {
+  return (color ? (defaultColors.get(color) ?? color) : (color ?? def)) as Colors;
 }

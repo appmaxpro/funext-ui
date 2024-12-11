@@ -2,7 +2,6 @@ import { useState } from "react";
 import * as React from "react";
 
 import { Box } from "../box";
-import { Button } from "../button";
 import { ClickAwayListener } from "../click-away-listener";
 import { Grow } from "../grow";
 import { Panel, Popper as Popper2 } from "../../mui";
@@ -12,19 +11,17 @@ import {
   PopoverHandler,
   Popper as Popper3,
   Tooltip,
-  PopperHandler
+  PopperHandler,
+  Button
 } from "../../mui";
 
 
-import { Input } from "../input";
+import { Input } from "../../mui";
 import { InputLabel } from "../input-label";
 import { useClassNames } from "../styles";
 import { Popper } from "./popper";
 import { usePopperTrigger } from "./use-popper-trigger";
-import {
-  Transition as Transition2,
-  TransitionChild,
-} from "../transitions/Transition";
+
 import "./test.scss";
 // framer-motion
 import { AnimatePresence, m, domAnimation, LazyMotion } from "framer-motion";
@@ -75,7 +72,7 @@ export const Dropdown = () => {
 
   return (
     <Box m={5} p={5}>
-      <Button variant="primary" ref={setTargetEl} onClick={toggle}>
+      <Button color="primary" ref={setTargetEl} onClick={toggle}>
         Button
       </Button>
       <Popper open={open} target={targetEl} offset={[0, 4]} arrow>
@@ -114,7 +111,7 @@ function Example({ event, interactive }: any) {
 
   return (
     <Box ms={1}>
-      <Button textTransform="capitalize" variant="primary" ref={setTargetEl}>
+      <Button textTransform="capitalize" color="primary" ref={setTargetEl}>
         {event}
       </Button>
       <ClickAwayListener onClickAway={onClickAway}>
@@ -123,7 +120,7 @@ function Example({ event, interactive }: any) {
             <Box as="h4">Personal Information</Box>
             <Input mt={1} placeholder="First Name" />
             <Input mt={1} placeholder="Last Name" />
-            <Button mt={1} variant="primary">
+            <Button mt={1} color="primary">
               Save
             </Button>
           </Box>
@@ -179,23 +176,6 @@ const MyButton = ({ children, onClick }: any) => {
     );
   }
 
-  return (
-    <Popover placement={children}>
-      <Tooltip content={() => children} placement={children}>
-        <PopoverHandler>
-          <Button
-            className="m-2"
-            variant="primary"
-            textTransform="capitalize"
-            onClick={handler}
-          >
-            {children}
-          </Button>
-        </PopoverHandler>
-      </Tooltip>
-      <PopoverContent>Popover Content `${children}`</PopoverContent>
-    </Popover>
-  );
 };
 
 export const Placement = () => {

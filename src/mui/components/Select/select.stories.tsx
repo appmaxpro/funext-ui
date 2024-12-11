@@ -622,7 +622,7 @@ function getSelectButtonStyles(selected: boolean, disabled?: boolean) {
     "flex w-full gap-2.5 px-2 py-2.5 focus:outline-none",
     selected && !disabled
       ? "bg-primary text-white"
-      : "hover:bg-hd-sx",
+      : "hover:bg-primary-400 hover:text-white active:bg-primary active:text-white",
     disabled
       ? "pointer-events-none opacity-50"
       : ""
@@ -776,7 +776,7 @@ export const Cmdk = () => {
   const openRef = useRef(false);
   const butId = useId().replace(":", '');
   const theme = useTheme();
-  const md = useMediaQuery(theme.breakpoints.down('lg'));
+  const md = useMediaQuery(theme.breakpoints.down('md'));
 
   //const [ref]
   const animation = {
@@ -784,7 +784,7 @@ export const Cmdk = () => {
       opacity: 0,
       transform: "scale(.9)",
       transition: {
-        duration: .7,
+        duration: .4,
         ease: "easeOut",
         delay: 0,
       },
@@ -793,7 +793,7 @@ export const Cmdk = () => {
       opacity: 1,
       transform: "scale(1)",
       transition: {
-        duration: 0.5,
+        duration: 0.3,
         ease: "easeIn",
         //delay: 0.6,
       },
@@ -834,7 +834,7 @@ export const Cmdk = () => {
         },
       }}
       style={{
-        ...(md && {top: 68})
+        ...(md && {top: 0})
       }}
       focusProps={{
         modal: true,

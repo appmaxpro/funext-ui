@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 import { Box } from "../box";
-import { Button } from "../button";
+import { Button } from "../../mui";
 import { Portal } from "./portal";
 
 const config = {
@@ -19,7 +19,7 @@ export const Basic = () => {
 
   return (
     <Box>
-      <Button variant="primary" onClick={toggle}>
+      <Button color="primary" onClick={toggle}>
         Toggle
       </Button>
       <Box mt={2} p={2} border>

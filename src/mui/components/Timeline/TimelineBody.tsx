@@ -14,6 +14,19 @@ import {
   children
 } from "../../types/components/timeline";
 
+
+import {
+  styled
+} from "../../styles";
+
+const TimelineBodyRoot = styled("div", {
+  name: "MuxTimelineBody",
+  slot: "Root",
+})({
+  display: 'flex',
+  gap: 2
+})
+
 export interface TimelineBodyProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: className;
   children?: children;
@@ -32,7 +45,7 @@ export const TimelineHeader = React.forwardRef<HTMLDivElement, TimelineBodyProps
 
     // 4. return
     return (
-      <div {...rest} ref={ref} className={classes}>
+      <TimelineBodyRoot {...rest} ref={ref} className={classes}>
         <span
           className="pointer-events-none invisible h-full flex-shrink-0"
           style={{
@@ -40,7 +53,7 @@ export const TimelineHeader = React.forwardRef<HTMLDivElement, TimelineBodyProps
           }}
         />
         <div>{children}</div>
-      </div>
+      </TimelineBodyRoot>
     );
   },
 );

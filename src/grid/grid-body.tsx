@@ -6,6 +6,8 @@ import { GridDNDContainer } from "./grid-dnd-row";
 import { isRowVisible } from "./utils";
 import * as TYPES from "./types";
 import styles from "./grid.module.scss";
+import { ratedIcon } from "src/mui/types/components/rating";
+import { clsx, styled } from "..";
 
 export interface GridBodyProps
   extends Pick<
@@ -25,6 +27,7 @@ export interface GridBodyProps
       | "rowGroupFooterRenderer"
       | "rowDetailsRenderer"
       | "rowDetailsExpandIcon"
+      | "rowRendererAll" 
       | "rowRenderer"
       | "editRowRenderer"
       | "editRowColumnRenderer"
@@ -33,12 +36,17 @@ export interface GridBodyProps
       | "onRecordDiscard"
       | "onRowDoubleClick"
       | "onCellClick"
+      | "tableStyles" 
+      | "bodyAs" 
     > {
   onRowExpand?: (row: TYPES.GridRow) => void;
   onRowMove?: TYPES.GridRowProps["onMove"];
   onRowMoveStart?: TYPES.GridRowProps["onMoveStart"];
   onRowClick?: TYPES.GridRowProps["onClick"];
   onRecordUpdate?: TYPES.GridRowProps["onUpdate"];
+  striped?: TYPES.GridRowProps["onUpdate"];
+  border?: boolean;
+  as?: React.ElementType;
 }
 
 export function GridBody(props: GridBodyProps) {
@@ -52,6 +60,7 @@ export function GridBody(props: GridBodyProps) {
     rowHeight,
     maxRowHeight,
     hasRowExpanded,
+    rowRendererAll,
     rowRenderer,
     cellRenderer,
     rowGroupHeaderRenderer,
@@ -72,6 +81,9 @@ export function GridBody(props: GridBodyProps) {
     onRowMoveStart,
     onRowClick,
     onRowDoubleClick,
+    striped,
+    border,
+    as,
   } = props;
 
   const renderRows = React.useMemo(
@@ -88,16 +100,18 @@ export function GridBody(props: GridBodyProps) {
   );
 
   const showNoRecords = noRecordsText && !addNewText;
-
+  const Component = as ?? GridBodyRoot;
   function render(children: React.ReactNode) {
     const props = {
       ...(showNoRecords ? { style: { width: totalWidth + 2 } } : {}),
-      className: styles.body,
+      className: clsx(styles.body, striped && styles.striped, border && styles.border),
+      as
     };
     if (onRowMove) {
       return (
         <GridDNDContainer
           {...props}
+          as={Component}
           rows={rows}
           onRowMove={onRowMove}
           onRowMoveStart={onRowMoveStart}
@@ -106,7 +120,7 @@ export function GridBody(props: GridBodyProps) {
         </GridDNDContainer>
       );
     }
-    return <div {...props}>{children}</div>;
+    return <Component {...props}>{children}</Component>;
   }
   const style = useMemo(() => {
     const style: CSSProperties = {};
@@ -137,6 +151,7 @@ export function GridBody(props: GridBodyProps) {
             selectedCell && selectedCell[0] === index ? selectedCell[1] : null,
           selected: (selectedRows || []).includes(index),
           style,
+          rendererAll: rowRendererAll,
           cellRenderer,
           onCellClick,
           onClick: onRowClick,
@@ -192,6 +207,7 @@ export function GridBody(props: GridBodyProps) {
             hasExpanded={hasRowExpanded}
             detailsRenderer={rowDetailsRenderer}
             detailsExpandIcon={rowDetailsExpandIcon}
+
             {...rowProps}
             key={row.key}
           />
@@ -208,3 +224,7 @@ export function GridBody(props: GridBodyProps) {
     </>,
   );
 }
+
+export const GridBodyRoot = styled('div', {
+  name: 'MuxGridBody',
+})('');

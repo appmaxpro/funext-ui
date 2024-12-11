@@ -93,6 +93,7 @@ export const Sizes = () => {
 export const Variants = () => {
   return (
     <Box display="flex" alignItems="center" g={2} flexDirection="column">
+      <Divider>Filled</Divider>
       <Box display="flex" alignItems="center" g={2} my={5}>
         <Button variant="filled" color="primary">Primary</Button>
         <Button variant="filled" color="secondary">Secondary</Button>
@@ -102,13 +103,21 @@ export const Variants = () => {
         <Button variant="filled" color="info">Info</Button>
         <Button variant="filled" color="light">Light</Button>
         <Button variant="filled" color="dark">Dark</Button>
-        <Button variant="filled"
-            as={Link}
-            LinkComponent={Link} href="#">
-            Link
-        </Button>
-        
+        <Button variant="filled" color="inherit">inherit</Button>
       </Box>
+      <Divider>Filled disable elevation</Divider>
+      <Box display="flex" alignItems="center" g={2} my={5}>
+        <Button variant="filled" color="primary" disableElevation>Primary</Button>
+        <Button variant="filled" color="secondary" disableElevation>Secondary</Button>
+        <Button variant="filled" color="success" disableElevation>Success</Button>
+        <Button variant="filled" color="info" disableElevation>Danger</Button>
+        <Button variant="filled" color="warning" disableElevation>Warning</Button>
+        <Button variant="filled" color="info" disableElevation>Info</Button>
+        <Button variant="filled" color="light" disableElevation>Light</Button>
+        <Button variant="filled" color="dark" disableElevation>Dark</Button>
+        <Button variant="filled" color="inherit" disableElevation>inherit</Button>
+      </Box>
+      <Divider>Text</Divider>
       <Box display="flex" alignItems="center" g={2} my={5}>
         <Button variant="text" color="primary">Primary</Button>
         <Button variant="text" color="secondary">Secondary</Button>
@@ -118,8 +127,10 @@ export const Variants = () => {
         <Button variant="text" color="info">Info</Button>
         <Button variant="text" color="light">Light</Button>
         <Button variant="text" color="dark">Dark</Button>
-        
+        <Button variant="text" color="inherit">inherit</Button>
+
       </Box>
+      <Divider>Outlined</Divider>
       <Box display="flex" alignItems="center" g={2} my={5}>
         <Button variant="outlined" color="primary">Primary</Button>
         <Button variant="outlined" color="secondary">Secondary</Button>
@@ -129,7 +140,9 @@ export const Variants = () => {
         <Button variant="outlined" color="info">Info</Button>
         <Button variant="outlined" color="light">Light</Button>
         <Button variant="outlined" color="dark">Dark</Button>
+        <Button variant="outlined" color="inherit">inherit</Button>
       </Box>
+      <Divider>Ghost</Divider>
       <Box display="flex" alignItems="center" g={2} my={5}>
         <Button variant="ghost" color="primary">Primary</Button>
         <Button variant="ghost" color="secondary">Secondary</Button>
@@ -139,6 +152,7 @@ export const Variants = () => {
         <Button variant="ghost" color="info">Info</Button>
         <Button variant="ghost" color="light">Light</Button>
         <Button variant="ghost" color="dark">Dark</Button>
+        <Button variant="ghost" color="inherit">inherit</Button>
       </Box>
     </Box>
     

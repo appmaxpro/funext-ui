@@ -7,6 +7,7 @@ import { default as MuxThemeProvider } from "./ThemeProvider";
 import {
   CacheProvider,
   ThemeProvider as EmotionThemeProvider,
+  ClassNames
 } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { PaletteMode } from "./createPalette";
@@ -20,6 +21,8 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ThemeOptions } from "@mui/system";
+import ClassNameGenerator from "@mui/utils/ClassNameGenerator";
+import { StyledContext } from "../components/Context";
 
 //import '../../global.css';
 
@@ -44,13 +47,27 @@ export interface CssBaselineProps {
   enableColorScheme?: boolean;
 }
 
-//ClassNameGenerator.configure(getName);
+//ClassNameGenerator.configure((name) => name);
+
+/*
+ClassNameGenerator.configure((name) => {
+  let ret = nameToName.get(name)
+  if (!ret) {
+    do{
+      ret = `bX${Math.floor(Math.random() * 1000)}x`
+    } while(currentNames.has(ret))
+    currentNames.add(ret);
+    nameToName.set(name, ret);
+  }
+  return ret;
+})*/
 // prepend: true moves MUI styles to the top of the <head> so they're loaded first.
 // It allows developers to easily override MUI styles with other styling solutions, like CSS modules.
 
 const cache = createCache({
   key: "mx",
   prepend: true,
+  stylisPlugins: []
 });
 
 const rtlCache = createCache({
@@ -96,8 +113,13 @@ export default function MuiThemeProvider(props: {
   const cssCache = dir === "rtl" ? rtlCache : cache;
 
   //console.log("MuiThemeProvider: background:", theme.palette.action)
+  function log(...val:any[]){
+    console.log(...val)
+    return null;
+  }
+
   return (
-    <CacheProvider value={cssCache}>
+    <CacheProvider value={cssCache} >
       <EmotionThemeProvider theme={theme}>
         <MuxThemeProvider theme={theme}>
           {<HiddenEl />}

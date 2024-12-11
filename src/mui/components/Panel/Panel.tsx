@@ -29,7 +29,7 @@ import {
 import { PanelProps, PanelOwnProps } from '../../types/components/panel';
 import { twMerge } from 'tailwind-merge';
 import { TailwindTheme } from '../../components';
-import { useColorClass, useThemeColor } from '../../hooks';
+import { getThemeColorClass, mapThemeColor } from '../../hooks';
 
 
 const useUtilityClasses = (ownerState:PanelOwnProps) => {
@@ -65,7 +65,7 @@ export const PanelRoot = styled('div', {
   variants: [
     {
       props: {
-        hasBg: true
+        fill: true
       },
       style: {
         backgroundColor: 'var(--tw-body-bg)',
@@ -112,7 +112,7 @@ const resolvePanelProps = (props:PanelProps, theme: TailwindTheme) =>  {
   const { defaultProps, styles, valid } = panel;
   const { base, variants } = styles;
   let variant =  props.variant ?? defaultProps.variant;
-  let color = useThemeColor( props.color, defaultProps.color);
+  let color = mapThemeColor( props.color, defaultProps.color);
 
   // 3. set styles
   const panelRoot = objectsToString(base.initial);
@@ -130,7 +130,7 @@ const resolvePanelProps = (props:PanelProps, theme: TailwindTheme) =>  {
   
   return {
     ...props,
-    ...useColorClass(color, className, undefined, variant === 'filled' ? 'bg' : 'border'),
+    ...getThemeColorClass(color, className, undefined, variant === 'filled' ? 'bg' : 'border'),
     variant,
   }
 }
@@ -163,7 +163,7 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel
     square,
     variant,
     hasShadow: !!elevation,
-    hasBg: !className.includes('bg-') && (variant === 'filled' || fill),
+    fill: !className.includes('bg-') && (variant === 'filled' || fill),
     hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
     hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };

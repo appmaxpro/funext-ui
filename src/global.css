@@ -385,6 +385,11 @@ video {
   box-shadow: var(--tw-footer-shadow);
 }
 
+.container-hover:active .active-show,
+.container-hover:hover .hover-show {
+  display: unset;
+}
+
 @tailwind base;
 
 :root {
@@ -421,3 +426,4 @@ video {
 .\[--scroll-mt\:9\.875rem\] {
   --scroll-mt: 9.875rem;
 }
+

@@ -35,7 +35,7 @@ import type {
 
 import IconButton from "../IconButton";
 import Text from "../Text";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import Panel from "../Panel";
 
 const AlertRoot = styled(m.div, {
@@ -97,7 +97,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 
     // 2. set default props
     variant = variant ?? defaultProps.variant;
-    color = useThemeColor(color, defaultProps.color);
+    color = mapThemeColor(color, defaultProps.color);
     if (animate === true)
       animate =
         animate === true
@@ -215,6 +215,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
               exit="unmount"
               animate={open ? "mount" : "unmount"}
               variants={appliedAnimation}
+              
               {...motionProps}
             >
               {child}

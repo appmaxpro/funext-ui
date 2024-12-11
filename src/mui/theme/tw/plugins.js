@@ -84,15 +84,15 @@ const plugins = {
     }
 
     let darkScheme = {
-      body_color: lightScheme.body_bg ,
-      body_bg: lightScheme.body_color,
+      body_color: lightScheme.body_tertiary_bg ,
+      body_bg: lightScheme.body_tertiary_color,
       emphasis_color: white,
       
       body_secondary_color: lightScheme.body_secondary_bg,
       body_secondary_bg: lightScheme.body_secondary_color,
       
-      body_tertiary_color: lightScheme.body_tertiary_bg,
-      body_tertiary_bg: lightScheme.body_tertiary_color,
+      body_tertiary_color: lightScheme.body_bg,
+      body_tertiary_bg: lightScheme.body_color,
 
       border_color: colors['--tw-slate-700'],
       border_color_min: colors['--tw-slate-800'],

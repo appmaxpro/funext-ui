@@ -1,10 +1,12 @@
 import React, { MutableRefObject, useMemo } from "react";
 import { useTheme, Breakpoint, Breakpoints } from "../../styles";
+import { debounce} from "../../utils";
 import { useMediaQuery } from "@mui/system";
 import { useEnhancedEffect } from "../../hooks";
 const breakpointKeys = ["xs", "sm", "md", "lg", "xl"];
+const resizeDebounce = debounce((fn)=> fn(), 700);
 
-export type ScreenSizeContextValue = {
+export type SizeContextValue = {
   lgDown?: boolean;
   lgUp?: boolean;
   mdDown?: boolean;
@@ -21,7 +23,12 @@ export type ScreenSizeContextValue = {
   down: (breakpoint: Breakpoint, inclusive?: boolean) => boolean;
 };
 
-const ScreenSizeContext = React.createContext<ScreenSizeContextValue>({
+const ScreenSizeContext = React.createContext<SizeContextValue>({
+  up: () => true,
+  down: () => false,
+});
+
+const ContainerSizeContext = React.createContext<SizeContextValue>({
   up: () => true,
   down: () => false,
 });
@@ -105,7 +112,7 @@ export const ScreenSizeProvider = ({
   children: React.ReactNode;
 }) => {
   const theme = useTheme();
-  const [value, setValue] = React.useState<ScreenSizeContextValue>({
+  const [value, setValue] = React.useState<SizeContextValue>({
     up: (breakpoint: Breakpoint, inclusive?: boolean) => true,
     down: (breakpoint: Breakpoint, inclusive?: boolean) => true,
   });
@@ -140,9 +147,18 @@ export const ScreenSizeProvider = ({
   );
 };
 
-export function useContainerSize(ref: MutableRefObject<HTMLElement | null>) {
+
+export function useResizeDetector<T extends HTMLElement = HTMLDivElement>() {
+  const ref = React.useRef<T | null>(null);
+  const size = useResizeDetectorRef(ref);
+  return {ref, size}
+}
+
+export function useResizeDetectorRef(
+  ref: MutableRefObject<HTMLElement | null>,
+) {
   const theme = useTheme();
-  const [value, setValue] = React.useState<ScreenSizeContextValue>({
+  const [value, setValue] = React.useState<SizeContextValue>({
     up: (breakpoint: Breakpoint, inclusive?: boolean) => true,
     down: (breakpoint: Breakpoint, inclusive?: boolean) => true,
   });
@@ -160,12 +176,15 @@ export function useContainerSize(ref: MutableRefObject<HTMLElement | null>) {
     if (current == null) return;
 
     const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target === current) {
-          getDimensions(entry.contentRect);
-          break;
+      resizeDebounce(()=> {
+        for (const entry of entries) {
+          if (entry.target === current) {
+            getDimensions(entry.contentRect)
+            break;
+          }
         }
-      }
+      })
+      
     });
 
     observer.observe(current);
@@ -179,6 +198,24 @@ export function useContainerSize(ref: MutableRefObject<HTMLElement | null>) {
   return value;
 }
 
+export const ContainerSizeProvider = ({
+  children,
+  value,
+}: {
+  children: React.ReactNode;
+  value: SizeContextValue;
+}) => {
+  return (
+    <ContainerSizeContext.Provider value={value}>
+      {children}
+    </ContainerSizeContext.Provider>
+  );
+};
+
+export const useScreenSize = () => React.useContext(ScreenSizeContext);
+export const useContainerSize = () =>
+  React.useContext(ContainerSizeContext);
+
 interface SuggestSize {
   xs?: any;
   sm?: any;
@@ -187,30 +224,24 @@ interface SuggestSize {
   xl?: any;
   def: any;
 }
-export function useSuggestSize(
-  ref: MutableRefObject<HTMLElement | null>,
-  suggest: SuggestSize,
-) {
-  const container = useContainerSize(ref);
+
+export function useSuggestItemSize(suggest: SuggestSize) {
+  const container = useContainerSize();
   const [value, setValue] = React.useState(suggest.def);
 
   React.useEffect(() => {
     if (container.current) {
-      if (ref.current) {
-        let index = breakpointKeys.indexOf(container.current);
-        for (; index >= 0; index -= 1) {
-          let bk = container.current as keyof typeof suggest;
-          if (suggest[bk]) {
-            setValue(suggest[bk]);
-            return;
-          }
+      let index = breakpointKeys.indexOf(container.current);
+      for (; index >= 0; index -= 1) {
+        let bk = container.current as keyof typeof suggest;
+        if (suggest[bk]) {
+          setValue(suggest[bk]);
+          return;
         }
-        if (value != suggest.def) {
-          setValue(suggest.def);
-        }
+      }
+      if (value != suggest.def) {
+        setValue(suggest.def);
       }
     }
   }, [container]);
 }
-
-export const useScreenSize = () => React.useContext(ScreenSizeContext);

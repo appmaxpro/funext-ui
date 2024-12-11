@@ -2,11 +2,6 @@
   // "relative" so that the ripples inside are correctly positioned relatively to the container.
   .mat-ripple {
     overflow: hidden;
-
-    // By default, every ripple container should have position: relative in favor of creating an
-    // easy API for developers using the MatRipple directive.
-    position: relative;
-
     // Promote containers that have ripples to a new layer. We want to target `:not(:empty)`,
     // because we don't want all ripple containers to have their own layer since they're used in a
     // lot of places and the layer is only relevant while animating. Note that ideally we'd use
@@ -20,10 +15,9 @@
     &.hide-overflow{
       overflow: hidden!important;
     }
-  }
-
-  .mat-ripple.mat-ripple-unbounded {
-    overflow: visible;
+    & .mat-ripple-unbounded {
+      overflow: visible;
+    }
   }
 
   .mat-ripple-element {

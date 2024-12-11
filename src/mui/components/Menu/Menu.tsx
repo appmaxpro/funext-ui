@@ -49,6 +49,7 @@ import {
   type AnimationProps as MotionAnimationProps,
   cubicBezier 
 } from "framer-motion"
+import { useFloatingContext } from "../Context";
 
 
 export interface MenuProps<T=HTMLElement|null>{
@@ -155,21 +156,28 @@ export const MenuCore = React.forwardRef<
     // 3. set animation
     const animation = {
       unmount: {
-        transform: 'scale(0)',
+        //transform: 'scale(0)',
+        scaleX: 0,
+        scaleY: 0,
+        opacity: 0,
         transition: { 
           duration: .25, 
           ease 
         },
+        
       },
       mount: {
-        transform: ['scale(0)', 'scale(1.1)', 'scale(1)'],
+        //transform: ['scale(0)', 'scale(1.1)', 'scale(1)'],
+        scaleX: 1,
+        scaleY: 1,
+        opacity: 1,
         transition: { 
           times: [0, .25, 0.3],
           duration: .8,
           ease 
-        },
+        }
       },
-    };
+    } as AnimationProps;
 
     const appliedAnimation = merge(animation, animate as any);
 
@@ -355,6 +363,8 @@ export const MenuCore = React.forwardRef<
         arrowRef
       ],
     );
+
+    
 
     // 5. return
     return (

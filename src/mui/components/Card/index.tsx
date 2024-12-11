@@ -27,7 +27,7 @@ import Panel, {PanelRoot} from "../Panel";
 import { CardHeader, CardHeaderProps } from "./CardHeader";
 import { CardBody, CardBodyProps } from "./CardBody";
 import { CardFooter, CardFooterProps } from "./CardFooter";
-import { useColorClass, useThemeColor } from "../../hooks";
+import { getThemeColorClass, mapThemeColor } from "../../hooks";
 import { CardMedia } from "./CardMedia";
 import { CardActionArea, CardActions } from "./CardActions";
 
@@ -83,7 +83,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
 
   // 2. set default props
   let variant = props.variant ?? defaultProps.variant;
-  let color = useThemeColor(props.color, defaultProps.color);
+  let color = mapThemeColor(props.color, defaultProps.color);
 
   // 3. set styles
   const cardRoot = objectsToString(base.initial);
@@ -101,7 +101,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
 
   return {
     ...props,
-    ...useColorClass(color, className, undefined, variant === 'filled' ? 'bg' : 'border'),
+    ...getThemeColorClass(color, className, undefined, variant === 'filled' ? 'bg' : 'border'),
     variant,
   }
 }

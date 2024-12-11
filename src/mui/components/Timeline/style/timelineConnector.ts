@@ -12,7 +12,7 @@ export const timelineConnector: TimelineConnectorStyleTypes = {
     base: {
       container: {
         position: "absolute",
-        left: "left-0",
+        left: "start-0",
         display: "grid",
         justifyContent: "justify-center",
         backgroundColor: "bg-transparent",

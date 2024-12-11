@@ -32,22 +32,23 @@ export function createFilterOptions(config = {}) {
   } = config;
 
   return (options, inputValue, getOptionLabel) => {
-    let input = trim ? inputValue.trim() : inputValue;
-
-    if (matches) {
-      return !input
-          ? options
-          : options.filter((option) => matches(option, input));
-    }
-
-    if (ignoreCase) {
-      input = input.toLowerCase();
-    }
+    let input = trim ? `${inputValue}`.trim() : `${inputValue}`;
     
     if (ignoreAccents) {
       input = stripDiacritics(input);
     }
 
+    if (!options) {
+      return options;
+    }
+
+    if (matches) {
+      return options.filter((option) => matches(option, input));
+    }
+
+    if (ignoreCase) {
+      input = input.toLowerCase();
+    }
 
     const filteredOptions = !input
       ? options
@@ -240,7 +241,7 @@ export function useAutocomplete(props) {
   const popupOpen = (open || openProp) && !readOnly;
   
   const filteredOptions = (popupOpen || inOpen)
-    ? allowFilter 
+    ? (allowFilter && !freeSolo)
       ? filterOptions(
           filterSelectedOptions
           ? options.filter((option) => {

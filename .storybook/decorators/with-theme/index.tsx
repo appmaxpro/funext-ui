@@ -49,7 +49,7 @@ export const WithTheme: Decorator = (Story, context) => {
 
       {
       <CoreThemeProvider dir={dir} theme={theme}>
-        <Panel className='w-full min-h-screen bg-header-min'>
+        <Panel className='w-full min-h-screen' fill>
           {Story(context)}
         </Panel> 
       </CoreThemeProvider>

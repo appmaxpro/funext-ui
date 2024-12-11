@@ -2,6 +2,7 @@ import React from "react";
 import { GridFooterRow } from "./grid-footer-row";
 import { doAggregate } from "./utils";
 import * as TYPES from "./types";
+import { styled } from "..";
 
 export interface GridFooterProps
   extends Pick<TYPES.GridState, "columns">,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { Box } from "../box";
-import { Button } from "../button";
+import { Button } from "../../mui";
 import { Popper } from "../popper";
 import { ClickAwayListener } from "./click-away-listener";
 

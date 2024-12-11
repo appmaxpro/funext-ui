@@ -1,4 +1,3 @@
-import checkboxColors from "./checkboxColors";
 
 // types
 import type {
@@ -24,6 +23,7 @@ export interface CheckboxStylesType {
     containerProps?: objectType;
     labelProps?: objectType;
     iconProps?: objectType;
+    size: 'sm' | 'md' | 'lg'
   };
   valid?: {
     colors?: string[];
@@ -39,7 +39,6 @@ export interface CheckboxStylesType {
       iconClass?: string;
 
     };
-    colors: typeof checkboxColors;
     size: {
       sm?: object;
       md?: object;
@@ -59,47 +58,17 @@ export const checkbox: CheckboxStylesType = {
     containerProps: undefined,
     labelProps: undefined,
     iconProps: undefined,
+    size: 'md'
   },
   valid: {
     colors: propTypesColors,
   },
   styles: {
     base: {
-      root: {
-        display: "inline-flex",
-        alignItems: "items-center",
-      },
-      container: {
-        className: styles['check'],
-        color: 'item-text text-opacity-50'
-      },
-      input: {
-        className: styles['input']
-      },
-      label: {
-        fontWeight: "font-light",
-        userSelect: "select-none",
-        cursor: "cursor-pointer",
-        mt: "mt-px",
-      },
-      icon: {
-        iconClass: styles['icon'],
-      },
-
-      disabled: {
-        opacity: "opacity-50",
-        pointerEvents: "pointer-events-none",
-      },
+      
     },
-    colors: checkboxColors,
-
     size:{
-       sm: {
-        add: styles['sm']
-       },
-       lg: {
-        add: styles['lg']
-       }
+      
     }
 
   },

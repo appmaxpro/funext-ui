@@ -39,10 +39,6 @@ const panel: PanelStylesType = {
   styles: {
     base: {
       initial: {
-        position: "relative",
-        display: "flex",
-        flexDirection: "flex-col",
-        backgroundClip: "bg-clip-border",
       },
     },
     variants: {

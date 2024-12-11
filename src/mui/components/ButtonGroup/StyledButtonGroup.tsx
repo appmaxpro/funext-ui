@@ -19,7 +19,7 @@ import type {
   className,
   children,
 } from "../../types/components/button";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 
 export interface StyledButtonGroupProps extends React.ComponentProps<"div"> {
   variant?: variant;
@@ -42,7 +42,7 @@ export const StyledButtonGroup = React.forwardRef<HTMLDivElement, StyledButtonGr
     // 2. set default props
     variant = variant ?? defaultProps.variant;
     size = size ?? defaultProps.size;
-    color = useThemeColor(color, defaultProps.color);
+    color = mapThemeColor(color, defaultProps.color);
     ripple = ripple ?? defaultProps.ripple;
     fullWidth = fullWidth ?? defaultProps.fullWidth;
     className = twMerge(defaultProps.className || "", className);

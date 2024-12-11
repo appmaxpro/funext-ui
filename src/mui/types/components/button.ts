@@ -11,7 +11,7 @@ import { propTypesColors } from "../generic";
 // typescript types
 export type variant = "filled" | "outlined" | "gradient" | "text" | "ghost";
 export type size = "sm" | "md" | "lg";
-export type color = "white" | "black" | "default" | "transparent" | Colors ;
+export type color = "white" | "black" | "default" | "transparent" | 'inherit' | Colors ;
 export type fullWidth = boolean;
 export type ripple = boolean;
 export type className = string;
@@ -21,4 +21,4 @@ export type loading = boolean;
 // javascript prop-types
 export const propTypesVariant: any = ["filled", "outlined", "gradient", "text", "ghost"];
 export const propTypesSize: any = ["sm", "md", "lg"];
-export const propTypesColor: any = ["white", "black", "default", "transparent", ...propTypesColors];
+export const propTypesColor: any = ["white", "black", "default", "transparent", 'inherit', ...propTypesColors];

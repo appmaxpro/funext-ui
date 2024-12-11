@@ -13,6 +13,7 @@ export type TransitionHandlerKeys =
 
 export type TransitionKeys =
   | "in"
+  | "easing"
   | "timeout"
   | "mountOnEnter"
   | "unmountOnExit"

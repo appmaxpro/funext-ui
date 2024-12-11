@@ -32,7 +32,7 @@ import {
   getTextUtilityClass,
   TextClasses,
 } from "./textClasses";
-import { useColorClass } from "../../hooks";
+import { getThemeColorClass } from "../../hooks";
 
 const useUtilityClasses = (ownerState: any) => {
   const { align, gutterBottom, noWrap, paragraph, variant, classes } =
@@ -156,7 +156,7 @@ const resolveProps = (
   color = color ?? defaultProps.color;
   className = twMerge(defaultProps.className || "", className);
 
-  const { color: asColor, className: asClassName } = useColorClass(
+  const { color: asColor, className: asClassName } = getThemeColorClass(
     color,
     className,
     undefined,

@@ -13,6 +13,19 @@ import {
   children
 } from "../../types/components/timeline";
 
+import {
+  styled
+} from "../../styles";
+
+const TimelineHeaderRoot = styled("div", {
+  name: "MuxTimelineHeader",
+  slot: "Root",
+})({
+  display: 'flex',
+  gap: 2,
+  alignItems: "items-center"
+})
+
 export interface TimelineHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: className;
   children?: children;
@@ -30,9 +43,9 @@ export const TimelineHeader = React.forwardRef<HTMLDivElement, TimelineHeaderPro
 
     // 4. return
     return (
-      <div {...rest} ref={ref} className={classes}>
+      <TimelineHeaderRoot {...rest} ref={ref} className={classes}>
         {children}
-      </div>
+      </TimelineHeaderRoot>
     );
   },
 );

@@ -3,6 +3,7 @@ import { GridColumn } from "./grid-column";
 import * as TYPES from "./types";
 import styles from "./grid.module.scss";
 import { clsx } from "../core/clsx";
+import { styled } from "..";
 
 interface GridSearchRowProps
   extends Pick<TYPES.GridRowProps, "columns">,
@@ -12,11 +13,11 @@ export const GridSearchRow = React.memo(function GridSearchRow(
   props: GridSearchRowProps,
 ) {
   const { columns = [], searchRowRenderer, searchColumnRenderer } = props;
-  const SearchRow = searchRowRenderer || "div";
+  const SearchRow = searchRowRenderer || GridSearchRowRoot;
   const ColumnRenderer = searchColumnRenderer;
 
   return (
-    <SearchRow className={clsx(styles.row, styles.searchRow)}>
+    <GridSearchRowRoot as={searchRowRenderer} className={clsx(styles.row, styles.searchRow)}>
       {columns.map((column, index) => {
         const { $css, ...rest } = column;
         return (
@@ -31,6 +32,10 @@ export const GridSearchRow = React.memo(function GridSearchRow(
           </GridColumn>
         );
       })}
-    </SearchRow>
+    </GridSearchRowRoot>
   );
 });
+
+const GridSearchRowRoot = styled('div', {
+  name: 'MuxGridSearchRow',
+})('');

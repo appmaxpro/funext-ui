@@ -1,9 +1,10 @@
   fadeIn: (x: number, y: number, config?: RippleConfig) => RippleRef;
 import { RippleConfig, RippleRef } from './ripple-ref';
 import {Ripple, RippleTarget} from './ripple';
-
+import Color from 'color';
 import { useForwardedRef } from '../hooks/use-refs';
 import { useState, ForwardedRef, useEffect, useRef, useCallback } from 'react';
+import isDevelopment  from '#is-development';
 
 // @floating-ui
 import {
@@ -13,7 +14,26 @@ import {
 export * from './ripple';
 export * from './ripple-ref';
 import style from './styles.module.scss';
+import { css } from '@emotion/react';
+import { getWindow } from '../utils';
+import { useStyled } from '../components/Context';
 
+const PREFIX = 'MuxRipple';
+const CLASSES = {
+  hideOverflow: `${PREFIX}-hide-overflow`,
+  relative: `${PREFIX}-relative`,
+}
+const rippleClass = css`
+  overflow: hidden;
+  [&.${CLASSES.hideOverflow}]:{
+    overflow: hidden!important;
+  }
+  [&.${CLASSES.relative}]:{
+    /* By default, every ripple container should have position: relative in favor of creating an
+       easy API for developers using the MatRipple directive.*/
+    position: relative;
+  }
+`;
 
 
 export interface RippleProps<T> extends RippleConfig {
@@ -46,11 +66,11 @@ export function useRipple<T extends HTMLElement>(props: RippleProps<T>) : Ripple
    const rippleRef = useRef<Ripple|null>(null);
    const rippleRefId = useRef<string|null>(null);
    const rippleRefRef = useRef<RippleRef|undefined>();
-
+   const cssx = useStyled();
    //const elementRef = ref ? ref : fwRef;
    const domId = useId();
-
-   //console.log("useRipple: className:", rest);
+   //console.log("useRipple: isDevelopment:", isDevelopment)
+   //console.log("useRipple: rippleClass:", cssx(rippleClass), ", isDevelopment:", isDevelopment);
 
    const setupElement = useCallback((element: HTMLElement)=> {
        if (rippleRef.current) {
@@ -84,6 +104,16 @@ export function useRipple<T extends HTMLElement>(props: RippleProps<T>) : Ripple
         const activeTrigger = trigger ?? elementRef.current;
         const rippleDisabled = disabled ?? !!(elementRef.current as any).disabled;
         if (!rippleDisabled) {
+          let fallbackCssProp = elementRef.current.getAttribute('data-ripple-color') as RippleConfig['fallbackCssProp'];
+          if(!rest.className && !rest.color && fallbackCssProp){
+            
+            const cssStyle = getWindow(elementRef.current).getComputedStyle(elementRef.current);
+            const color = cssStyle[fallbackCssProp];
+            if(color){
+              rest.color = Color(color).alpha(1).alpha(.2).hexa();
+            }
+          }
+
           const ripple = new Ripple({rippleDisabled, rippleConfig: rest} as unknown as RippleTarget, elementRef.current);
           rippleRef.current = ripple;
           ripple.setupElement(activeTrigger);

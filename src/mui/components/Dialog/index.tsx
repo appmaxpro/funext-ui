@@ -18,7 +18,7 @@ import {
   useFloatingNodeId,
   useFloatingTree,
   FloatingPortalProps,
-  FloatingNode,
+  FloatingRootContext
 } from "@floating-ui/react";
 
 // framer-motion
@@ -63,6 +63,7 @@ import {
 } from "../../styles";
 import { isElement } from "../../utils";
 import Panel from "../Panel";
+import { MuxFloatingProvider, useFloatingContext } from "../Context";
 
 const DialogRoot = styled("div", {
   name: "MuxDialog",
@@ -179,7 +180,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>((props, ref) => {
         }
       : undefined;
 
-  const appliedAnimation = animation && merge(animation, animated as any);
+  const appliedAnimation = useMemo(()=> animation && merge(animation, animated as any), [!open])
 
   // 5. set @floating-ui
   const { refs, context } = useFloating({
@@ -222,14 +223,13 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>((props, ref) => {
         animate: open ? "mount" : "unmount",
         variants: appliedAnimation,
         as: m.div,
-        
       })}
     >
       <Panel className={panelClasses} elevation={elevation}>
         {children}
       </Panel>
     </DialogRoot>
-  ), [appliedAnimation ? !open : false, dialogClasses, panelClasses, elevation]);
+  ), [appliedAnimation, dialogClasses, panelClasses, elevation]);
 
   // 6. Create an instance of AnimatePresence because of the types issue with the children
   const NewAnimatePresence: React.FC<NewAnimatePresenceProps> = AnimatePresence;
@@ -237,7 +237,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>((props, ref) => {
   // 7. return
   return (
     <LazyMotion features={domAnimation}>
-      <DialogContext.Provider value={{ open, nodeId: id, handler }}>
+      <MuxFloatingProvider type="dialog" context={context}>
         <NewAnimatePresence presenceAffectsLayout={false} >
           {open && (
             <FloatingPortal id="mux-portal">
@@ -264,7 +264,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>((props, ref) => {
             </FloatingPortal>
           )}
         </NewAnimatePresence>
-      </DialogContext.Provider>
+      </MuxFloatingProvider>
     </LazyMotion>
   );
 });
@@ -289,16 +289,7 @@ const FloatingDialogPortal = ({
 
 DialogFc.displayName = "Mux.Dialog";
 
-type DialogContextValue = {
-  open: boolean;
-  nodeId: string;
-  handler?: handler;
-};
-
-const DialogContext = React.createContext<DialogContextValue | null>(null);
-DialogContext.displayName = "Mux.DialogContext";
-
-export const useDialogContext = () => useContext(DialogContext);
+export const useDialogContext = useFloatingContext;
 
 export type { DialogHeaderProps, DialogBodyProps, DialogFooterProps };
 

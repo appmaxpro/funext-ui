@@ -1,4 +1,4 @@
-import { color, variant, propTypeColor, propTypeVariant } from "../../../types/components/timeline";
+import { color, variant, propTypesColor, propTypesVariant } from "../../../types/components/timeline";
 
 export interface TimelineItemStyleTypes {
   defaultProps?: {
@@ -20,8 +20,8 @@ export const timelineItem: TimelineItemStyleTypes = {
     variant: "filled",
   },
   valid: {
-    colors: propTypeColor,
-    variants: propTypeVariant,
+    colors: propTypesColor,
+    variants: propTypesVariant,
   },
   styles: {
     base: {

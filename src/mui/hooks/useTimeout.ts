@@ -1,4 +1,4 @@
-import useLazyRef from './useLazyRef';
+import useLazyRef from './use-lazy-ref';
 import useOnMount from './useOnMount';
 
 export class Timeout {
@@ -30,7 +30,6 @@ export class Timeout {
     return this.clear;
   };
 }
-
 
 
 export const useTimeout = () => {

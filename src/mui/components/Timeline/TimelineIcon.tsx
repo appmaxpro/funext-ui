@@ -20,6 +20,15 @@ import {
   variant
 } from "../../types/components/timeline";
 
+import {
+  styled
+} from "../../styles";
+
+const TimelineIconRoot = styled("span", {
+  name: "MuxTimelineIcon",
+  slot: "Root",
+})({})
+
 export interface TimelineIconProps extends React.HTMLAttributes<HTMLSpanElement> {
   className?: className;
   children?: children;
@@ -53,17 +62,17 @@ export const TimelineIcon = React.forwardRef<HTMLSpanElement, TimelineIconProps>
 
     // 3. set styles
     const variantClasses = objectsToString(
-      variants[findMatch(valid.variants, variant, "filled")][
-        findMatch(valid.colors, color, "gray")
+      variants[findMatch(valid.variants, variant, "ghost")][
+        findMatch(valid.colors, color, "primary")
       ],
     );
     const classes = twMerge(objectsToString(base), variantClasses, className);
 
     // 4. return
     return (
-      <span ref={mergedRef} {...rest} className={classes}>
+      <TimelineIconRoot ref={mergedRef} {...rest} className={classes}>
         {children}
-      </span>
+      </TimelineIconRoot>
     );
   },
 );

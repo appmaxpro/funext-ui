@@ -11,7 +11,7 @@ import { useTailwindTheme } from "../../theme";
 
 // types
 import type { color, className } from "../../types/components/spinner";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 
 export interface SpinnerProps extends React.ComponentProps<"svg"> {
   color?: color;
@@ -30,7 +30,7 @@ export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
     } = spinner;
 
     // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
+    color = mapThemeColor(color, defaultProps.color);
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles

@@ -8,6 +8,7 @@ import {
   FloatingFocusManager,
   useMergeRefs,
   Side,
+  useTransitionStyles,
 } from "@floating-ui/react";
 
 // framer-motion
@@ -18,6 +19,7 @@ import {
   domAnimation,
   createDomMotionComponent,
   cubicBezier,
+  transform,
 } from "framer-motion";
 
 // utils
@@ -38,6 +40,8 @@ import { clsx, styled, StyledComponent, useRtl } from "../../styles";
 import Panel, { PanelProps } from "../Panel";
 import List, { ListProps } from "../List";
 import { FloatingArrow, getArrowOrigin } from "../Popover/FloatingArrow";
+import { useRefs } from "../../hooks";
+import { SxBox } from "../Box";
 
 const PanelRoot = styled(Panel, {
   name: "MuxMenu",
@@ -89,7 +93,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       children,
       className,
       panelClassName,
-      nav:xnav = false,
+      nav: xnav = false,
       hover = true,
       active = true,
       focus = true,
@@ -132,68 +136,71 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       arrow,
       arrowRef,
       disablePortal,
-      nav
+      nav,
     } = useMenu();
 
+    const arrowXx = context.middlewareData.arrow?.x ?? 0;
+    const arrowYy = context.middlewareData.arrow?.y ?? 0;
+    const arrowW = arrow?.props?.width ?? 0;
+    const arrowH = arrow?.props?.height ?? 0;
+    const transformX = arrowXx + arrowW / 2;
+    const transformY = arrowYy + arrowH;
+
+    function cbTransform(other: any) {
+      return `${other}translate(${x}px, ${y}px)`;
+    }
     //m(Panel);
     const [initialized, setInitialized] = React.useState(false);
-    const [openState, setOpenStated] = React.useState(open);
+    const [openState, setOpenStated] = React.useState(false);
+    const timeoutRef = useRef(0);
+    const wasOpenState = useRef(false);
 
     // 4. set refs
-    const mergedRef = useMergeRefs([ref, floating]);
-    const listRef = useRef();
-
+    const mergedRef = useRefs(ref, floating);
     React.useEffect(() => {
       if (open && !initialized) {
         setInitialized(true);
       }
-    }, [open]);
+    }, [open, initialized]);
 
-    const { side, xAxis, yAxis, ...axis } = getArrowOrigin(
-      context,
-      null,
-      useRtl(),
-    );
-
-    const arrowX = axis[xAxis];
-    const arrowY = axis[yAxis];
-
-    const animation = React.useRef({});
-
-    const shouldOpen = initialized || nested;
-
-    useEffect(() => {
-      if (!open && !openState) {
-        //animation.current = {};
-        return;
+    React.useEffect(() => {
+      if (open && timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = 0;
       }
+    }, [open, timeoutRef]);
 
-      let x = xAxis === "right" ? `right ${arrowX}px` : `${arrowX}px`;
-      let y = yAxis === "bottom" ? `bottom ${arrowY}px` : `${arrowY}px`;
+    React.useEffect(() => {
+      if (open && !openState && initialized) {
+        setOpenStated(true);
+      }
+      if (!open && openState) {
+        //@ts-ignore
+        timeoutRef.current = setTimeout(() => setOpenStated(open), 400);
+      }
+    }, [open, openState, initialized]);
 
-      const transformOrigin = {
-        top: `${x} bottom`,
-        bottom: `${x} top`,
-        left: `right ${y}`,
-        right: `left ${y}`,
-      }[side];
+    React.useEffect(() => {
+      if (openState && !wasOpenState.current) {
+        wasOpenState.current = true;
+      }
+    }, [openState]);
 
-      const { amount, unmount, ...others } = appliedAnimation as any;
+    const [side] = context.placement.split("-") as [Side];
 
-      animation.current = {
-        ...others,
-        amount: {
-          transformOrigin,
-          ...amount,
-        },
-        unmount: {
-          transformOrigin,
-          ...unmount,
-        },
-      };
-    }, [side, open, xAxis, yAxis, arrowX, arrowY]);
+    const transformOrigin = useMemo(() => {
+      return (open && initialized) || openState
+        ? {
+            top: `${transformX}px${arrowH ? ` calc(100% + ${arrowH}px)` : " 100%"}`,
+            bottom: `${transformX}px${arrowH ? ` ${-arrowH}px` : " 0px"}`,
+            left: `${arrowH ? `calc(100% + ${arrowH}px) ` : "100% "}${transformY}px`,
+            right: `${arrowH ? `${-arrowH}px ` : "0px "}${transformY}px`,
+          }[side]
+        : undefined;
+    }, [side, transformX, transformY, arrowH, initialized, open, openState]);
 
-    if ((!initialized && !nested) || !(animation.current as any).amount) {
+    if (!initialized && !nested) {
+      //console.log("!initialized");
       return null;
     }
 
@@ -214,50 +221,52 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       className,
     );
 
-    // 5. create an instance of AnimatePresence because of the types issue with the children
-    const NewAnimatePresence: React.FC<NewAnimatePresenceProps> =
-      AnimatePresence;
-
     const items = !nav
-    ? children
-    : React.Children.map(
-      children,
-      (child: any, index) =>
-        React.isValidElement(child) &&
-        (!isMenuItemValid(child)
-          ? React.cloneElement(child, {
-              "aria-disabled": "true",
-              className: clsx((child.props as any).className, "item-disabled"),
-              ...getItemProps({
-                ref(node: HTMLButtonElement) {
-                  listItemsRef.current[index] = node;
-                },
-              }),
-            } as any)
-          : React.cloneElement(child, {
-              //@ts-ignore
-              "area-active": activeIndex === index ? "true" : undefined,
-              ...getItemProps({
-                tabIndex: activeIndex === index ? 0 : -1,
-                role: "menuitem",
-                className: (child.props as any).className,
-                ref(node: HTMLButtonElement) {
-                  listItemsRef.current[index] = node;
-                },
-                onClick(event) {
-                  if ((child.props as any).onClick) {
-                    (child.props as any).onClick?.(event);
-                  }
-                  tree?.events.emit("click");
-                },
-                onMouseEnter() {
-                  if ((allowHover && open) || (internalAllowHover && open)) {
-                    setActiveIndex(index);
-                  }
-                },
-              }),
-            })),
-    );
+      ? children
+      : React.Children.map(
+          children,
+          (child: any, index) =>
+            React.isValidElement(child) &&
+            (!isMenuItemValid(child)
+              ? React.cloneElement(child, {
+                  "aria-disabled": "true",
+                  className: clsx(
+                    (child.props as any).className,
+                    "item-disabled",
+                  ),
+                  ...getItemProps({
+                    ref(node: HTMLButtonElement) {
+                      listItemsRef.current[index] = node;
+                    },
+                  }),
+                } as any)
+              : React.cloneElement(child, {
+                  //@ts-ignore
+                  "area-active": activeIndex === index ? "true" : undefined,
+                  ...getItemProps({
+                    tabIndex: activeIndex === index ? 0 : -1,
+                    role: "menuitem",
+                    className: (child.props as any).className,
+                    ref(node: HTMLButtonElement) {
+                      listItemsRef.current[index] = node;
+                    },
+                    onClick(event) {
+                      if ((child.props as any).onClick) {
+                        (child.props as any).onClick?.(event);
+                      }
+                      tree?.events.emit("click");
+                    },
+                    onMouseEnter() {
+                      if (
+                        (allowHover && open) ||
+                        (internalAllowHover && open)
+                      ) {
+                        setActiveIndex(index);
+                      }
+                    },
+                  }),
+                })),
+        );
 
     const child = !nav ? (
       <MenuListRoot
@@ -290,19 +299,13 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
       </FloatingFocusManager>
     );
 
-    //if(nested)
-    //console.log("MenuList:nested:", nested, ", cords:", {x, y, open, placement: context.placement})
+    const { floatingStyles } = context;
     // 6. menu component.
     const menuComponent = (
-      <m.div
-        className="z-modal"
+      <div
+        className="z-modal left-0 top-0"
         key={`move-${context.nodeId}`}
         ref={mergedRef as any}
-        style={{
-          position: strategy,
-          top: y ?? 0,
-          left: x ?? 0,
-        }}
         {...getFloatingProps({
           onKeyDown(event) {
             if (event.key === "Tab" && !nav) {
@@ -313,71 +316,65 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
               }
             }
           },
+          style: {
+            position: strategy,
+            ...floatingStyles,
+            transition: wasOpenState.current
+              ? "transform 240ms cubic-bezier(0.4, 0, 0.2, 1)"
+              : undefined,
+          },
         })}
-        initial="unmount"
-        exit="unmount"
-        animate={open ? "mount" : "unmount"}
-        variants={animation.current}
-        onAnimationComplete={(def) => {
-          //console.log("onAnimationComplete:", def);
-          setOpenStated(open);
-        }}
-        transformTemplate={scaleTranslate}
       >
-        <PanelRoot
-          className={panelClasses}
-          elevation={4}
-          variant="outlined"
-          {...panelProps}
+        <div
+          style={{
+            transformOrigin,
+            opacity: openState && open ? 1 : 0,
+            transform: openState && open ? "scale(1)" : "scale(0)",
+            transition:
+              "opacity 361ms cubic-bezier(0.4, 0, 0.2, 1), transform 240ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+          onTransitionEnd={() => {
+            console.log("onTransitionEnd:");
+            //@ts-ignore
+            !open &&
+              (timeoutRef.current = setTimeout(() => setOpenStated(open), 400));
+            open && setOpenStated(open);
+          }}
         >
-          {child}
-        </PanelRoot>
-        <FloatingArrow
-          {...arrow?.props}
-          className={clsx(
-            arrow?.props?.className,
-            (nested || !arrow) && "hidden",
-          )}
-          ref={arrowRef as any}
-          context={context}
-        />
-      </m.div>
-    );
+          <PanelRoot
+            className={panelClasses}
+            elevation={4}
+            variant="outlined"
+            {...panelProps}
+          >
+            {child}
+          </PanelRoot>
 
-    // 7. return
-    return (
-      <LazyMotion features={domAnimation}>
-        {disablePortal ? (
-          <NewAnimatePresence>
-            {(open || openState) && (
-              <>
-                {lockScroll ? (
-                  <FloatingOverlay lockScroll>{menuComponent}</FloatingOverlay>
-                ) : (
-                  menuComponent
-                )}
-              </>
+          <FloatingArrow
+            {...arrow?.props}
+            className={clsx(
+              arrow?.props?.className,
+              (nested || !arrow) && "hidden",
             )}
-          </NewAnimatePresence>
-        ) : (
-          <NewAnimatePresence>
-            {(open || openState) && (
-              <FloatingPortal id="mux-portal">
-                <>
-                  {lockScroll ? (
-                    <FloatingOverlay lockScroll>
-                      {menuComponent}
-                    </FloatingOverlay>
-                  ) : (
-                    menuComponent
-                  )}
-                </>
-              </FloatingPortal>
-            )}
-          </NewAnimatePresence>
-        )}
-      </LazyMotion>
+            ref={arrowRef as any}
+            context={context}
+          />
+        </div>
+      </div>
     );
+    console.log("openState:", openState, ", open:", open);
+    let finalChild = lockScroll ? (
+      <FloatingOverlay lockScroll>{menuComponent}</FloatingOverlay>
+    ) : (
+      menuComponent
+    );
+    if (!disablePortal) {
+      finalChild = (
+        <FloatingPortal id="mux-portal">{finalChild}</FloatingPortal>
+      );
+    }
+    // 7. return
+    return (openState || open) && finalChild;
   },
 );
 
@@ -394,8 +391,11 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
  * the scale of the parent component. Because of this we want to translate
  * through scaled coordinate space, and can use the transformTemplate prop to do so.
  */
-const scaleTranslate = ({ x, y, scaleX, scaleY }: any) =>
-  `scaleX(${scaleX}) scaleY(${scaleY}) translate(${x}, ${y}) translateZ(0)`;
+const scaleTranslate = (props: any) => {
+  const { x, y, scaleX, scaleY } = props;
+  console.log("scaleTranslate:", props);
+  return `scale(${scaleX}, ${scaleY}) translate3d(${x}, ${y}, 0)`;
+};
 
 MenuList.displayName = "Mux.MenuList";
 

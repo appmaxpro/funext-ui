@@ -10,15 +10,45 @@
     "funext"
   ],
   "//": "type: module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/funext-ui.cjs.js",
+  "module": "dist/funext-ui.esm.js",
+  "types": "dist/funext-ui.cjs.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./*": "./src/*/index.ts",
-    "./core/*": "./src/core/*/index.ts",
-    "./icons/*": "./src/icons/*/index.ts",
-    "./mui/themes/tw/withMT": "./src/mui/themes/tw/withMT.js"
+    ".": {
+      "types": {
+        "import": "./dist/funext-ui.cjs.mjs",
+        "default": "./dist/funext-ui.cjs.js"
+      },
+      "development": {
+        "browser": {
+          "module": "./dist/funext-ui.browser.development.esm.js",
+          "import": "./dist/funext-ui.browser.development.cjs.mjs",
+          "default": "./dist/funext-ui.browser.development.cjs.js"
+        },
+        "module": "./dist/funext-ui.development.esm.js",
+        "import": "./dist/funext-ui.development.cjs.mjs",
+        "default": "./dist/funext-ui.development.cjs.js"
+      },
+      "module": "./dist/funext-ui.esm.js",
+      "import": "./dist/funext-ui.cjs.mjs",
+      "default": "./dist/funext-ui.cjs.js"
+    },
+    "./package.json": "./package.json",
+    "./macro": {
+      "types": {
+        "default": "./macro.d.ts"
+      }
+    }
+  },
+  "imports": {
+    "#is-development": {
+      "development": "./src/mui/utils/conditions/true.ts",
+      "default": "./src/mui/utils/conditions/false.ts"
+    },
+    "#is-browser": {
+      "browser": "./src/mui/utils/conditions/true.ts",
+      "default": "./src/mui/utils/conditions/is-browser.ts"
+    }
   },
   "scripts": {
     "preinstall": "node scripts/check-pnpm.js",
@@ -74,6 +104,7 @@
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
+    "@emotion/babel-preset-css-prop": "^11.12.0",
     "@storybook/addon-essentials": "^8.0.5",
     "@storybook/addon-interactions": "^8.0.5",
     "@storybook/addon-links": "^8.0.5",
@@ -92,6 +123,7 @@
     "@typescript-eslint/parser": "^7.4.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.20",
+    "babel-plugin-macros": "^3.1.0",
     "commander": "^12.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",

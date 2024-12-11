@@ -98,7 +98,7 @@ export const list: ListStylesType = {
       itemSuffix: {
         display: "flex",
         placeItems: "items-center justify-center",
-        marginRight: "ms-auto justify-self-end",
+        marginRight: "ms-auto",
       },
     },
   },

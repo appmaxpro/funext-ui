@@ -23,7 +23,7 @@ import {
   containerProps,
   containerRef
 } from "../../types/components/badge";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 import { SxBox } from "../Box";
 
 export interface BadgeProps {
@@ -63,7 +63,7 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
 
 
     // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
+    color = mapThemeColor(color, defaultProps.color);
     invisible = invisible ?? defaultProps.invisible;
     withBorder = withBorder ?? defaultProps.withBorder;
     overlap = overlap ?? defaultProps.overlap;
@@ -73,10 +73,10 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
       badgeContainerClasses,
       badgeClasses
     } = useMemo(()=> {
-      className = twMerge(defaultProps.className || "", className);
+
       containerProps =
-        merge(containerProps as any, defaultProps.containerProps || {}) ?? defaultProps.containerProps;
-  
+        merge(defaultProps.containerProps, containerProps as any || {});
+        
       // 3. set styles
       const badgeInitialClasses = objectsToString(base.badge.initial);
       const badgeWithBorderClasses = objectsToString(base.badge.withBorder);
@@ -88,6 +88,7 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         ],
       );
       const badgeClasses = twMerge(
+        defaultProps.className || "",
         classnames(badgeInitialClasses, badgePlacementClasses, badgeColorClasses, {
           [badgeWithBorderClasses]: withBorder,
           [badgeWithContentClasses]: content,

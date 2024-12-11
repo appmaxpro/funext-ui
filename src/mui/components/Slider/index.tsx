@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 // utils
 import merge from "deepmerge";
@@ -27,8 +27,7 @@ import type {
   inputRef,
   inputProps,
 } from "../../types/components/slider";
-import { useThemeColor } from "../../hooks";
-
+import { mapThemeColor } from "../../hooks";
 
 export interface SliderProps extends React.ComponentProps<"div"> {
   color?: color;
@@ -80,47 +79,80 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
     }, [defaultValue]);
 
     // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
-    size = size ?? defaultProps.size;
+
     min = min ?? defaultProps.min;
     max = max ?? defaultProps.max;
     step = step ?? defaultProps.step;
-    className = twMerge(defaultProps.className || "", className);
-    thumbClassName =
-      classnames(defaultProps.thumbClassName, thumbClassName) ?? defaultProps.thumbClassName;
-    trackClassName =
-      classnames(defaultProps.trackClassName, trackClassName) ?? defaultProps.trackClassName;
-    barClassName = classnames(defaultProps.barClassName, barClassName) ?? defaultProps.barClassName;
-    inputProps = merge(inputProps as any, defaultProps?.inputProps || {}) ?? defaultProps.inputProps;
 
-    // 3. set styles
-    const sliderContainerClasses = twMerge(
-      classnames(
-        objectsToString(base.container),
-        objectsToString(colors[findMatch(valid.colors, color, "gray")]),
-        objectsToString(sizes[findMatch(valid.sizes, size, "md")]["container"]),
+    const { sliderContainerClasses, sliderBarClasses, sliderClasses } =
+      useMemo(() => {
+        color = mapThemeColor(color, defaultProps.color);
+        size = size ?? defaultProps.size;
+        className = classnames(defaultProps.className || "", className);
+
+        thumbClassName =
+          classnames(defaultProps.thumbClassName, thumbClassName) ??
+          defaultProps.thumbClassName;
+        trackClassName =
+          classnames(defaultProps.trackClassName, trackClassName) ??
+          defaultProps.trackClassName;
+        barClassName =
+          classnames(defaultProps.barClassName, barClassName) ??
+          defaultProps.barClassName;
+        inputProps =
+          merge(inputProps as any, defaultProps?.inputProps || {}) ??
+          defaultProps.inputProps;
+
+        // 3. set styles
+        const sliderContainerClasses = twMerge(
+          classnames(
+            objectsToString(base.container),
+            objectsToString(colors[findMatch(valid.colors, color, "gray")]),
+            objectsToString(
+              sizes[findMatch(valid.sizes, size, "md")]["container"],
+            ),
+            className,
+          ),
+        );
+        const sliderBarClasses = twMerge(
+          classnames(objectsToString(base.bar), barClassName),
+        );
+        const sliderTrackClasses = classnames(
+          objectsToString(base.track),
+          objectsToString(sizes[findMatch(valid.sizes, size, "md")]["track"]),
+        );
+        const sliderThumbClasses = classnames(
+          objectsToString(base.thumb),
+          objectsToString(sizes[findMatch(valid.sizes, size, "md")]["thumb"]),
+        );
+        const sliderClasses = classnames(
+          objectsToString(base.slider),
+          twMerge(sliderTrackClasses, trackClassName),
+          twMerge(sliderThumbClasses, thumbClassName),
+        );
+
+        return {
+          sliderContainerClasses,
+          sliderBarClasses,
+          sliderClasses,
+        };
+      }, [
+        slider,
         className,
-      ),
-    );
-    const sliderBarClasses = twMerge(classnames(objectsToString(base.bar), barClassName));
-    const sliderTrackClasses = classnames(
-      objectsToString(base.track),
-      objectsToString(sizes[findMatch(valid.sizes, size, "md")]["track"]),
-    );
-    const sliderThumbClasses = classnames(
-      objectsToString(base.thumb),
-      objectsToString(sizes[findMatch(valid.sizes, size, "md")]["thumb"]),
-    );
-    const sliderClasses = classnames(
-      objectsToString(base.slider),
-      twMerge(sliderTrackClasses, trackClassName),
-      twMerge(sliderThumbClasses, thumbClassName),
-    );
+        trackClassName,
+        thumbClassName,
+        barClassName,
+        size,
+        color,
+      ]);
 
     // 4. return
     return (
       <div {...rest} ref={ref} className={sliderContainerClasses}>
-        <label className={sliderBarClasses} style={{ width: `${value || innerValue}%` }} />
+        <label
+          className={sliderBarClasses}
+          style={{ width: `${value || innerValue}%` }}
+        />
         <input
           ref={inputRef}
           type="range"
@@ -130,7 +162,9 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
           className={sliderClasses}
           {...(value ? { value } : null)}
           defaultValue={defaultValue}
-          onChange={(e) => (onChange ? onChange(e) : setInnerValue(Number(e.target.value)))}
+          onChange={(e) =>
+            onChange ? onChange(e) : setInnerValue(Number(e.target.value))
+          }
         />
       </div>
     );

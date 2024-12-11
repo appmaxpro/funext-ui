@@ -26,6 +26,7 @@ export const MenuHandler = React.forwardRef<HTMLElement, MenuHandlerProps>(
           icon:`keyboard_arrow_${rtl ? 'left' : 'right'}`,
           className:`transition-transform ${open ? 'rotate-90' : ''}`
         }}
+        size={20}
       />
       : endIcon);
 

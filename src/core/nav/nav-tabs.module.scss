@@ -46,7 +46,6 @@
   );
 }
 
-.container,
 .strip,
 .tabs {
   display: flex;
@@ -81,19 +80,58 @@
 }
 
 .arrow {
-  visibility: hidden;
+  display: none;
   cursor: pointer;
   user-select: none;
+  z-index: 1;
+  height: 100%;
+  width: 56px;
+  min-height: 40px;
+  overflow: visible;
+  position: relative;
+  .arrow-icon {
+    z-index: 1;
+  }
+  & > *{
+    height: 100%;
+  }
+  &.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    &.left::after{
+      position: absolute;
+      left: 20px;
+      background: linear-gradient(to right, var(--tw-body-bg) 20%, rgba(33, 33, 33, 0) 80%);
+      height: 100%;
+      width: 50px;
+      min-width: 40px;
+      content: "";
+      pointer-events: none;
+      
+    }
+    &.right::before{
+      position: absolute;
+      left: -40px;
+      background: linear-gradient(to left, var(--tw-body-bg) 20%, rgba(33, 33, 33, 0) 80%);
+      height: 100%;
+      width: 50px;
+      min-width: 40px;
+      content: "";
+      pointer-events: none;
+      
+    }
+  }
 }
+
 
 .button:not(.active) {
   width: 0;
 }
 
 .button.active {
-  .arrow {
-    visibility: visible;
-  }
+  visibility: visible;
 }
 
 .text {
@@ -118,21 +156,20 @@
   transition: all 300ms ease-out 0ms;
 }
 
-
 .tab {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  cursor: pointer;
   z-index: 0; // XXX: Chrome overlapped rendering
   --ripple-background: var(--tw-secondary-bg-subtle);
   opacity: .9;
   &.active {
     .title {
       opacity: 1;
-      color: var(--ax-nav-tabs-tab-active-color);
-      background-color: var(--ax-nav-tabs-tab-active-bg);
-      font-weight: var(--ax-nav-tabs-tab-active-font-weight);
+      color: var(
+        --ax-theme-nav-tabs-active-color,
+        var(--ax-nav-tabs-active-color)
+      );
     }
     .icon {
       color: var(
@@ -148,8 +185,6 @@
   &:hover {
     .title {
       opacity: 1;
-      color: var(--ax-nav-tabs-tab-hover-color);
-      background-color: var(--ax-nav-tabs-tab-hover-bg);
     }
     .icon {
       color: var(
@@ -162,4 +197,9 @@
       );
     }
   }
+}
+
+.ripple {
+  border-radius: 0!important;
+  background-color:  rgb(var(--tw-slate-950-rgb) / 40%);
 }

@@ -10,13 +10,22 @@ import {
   useState,
 } from "react";
 
+import {
+  generateUtilityClass,
+  composeClasses,
+  styled,
+  SxThemeProps,
+  memoTheme,
+  SxComponentProps,
+} from "../../mui/styles";
+
 import { MaterialIcon } from "../../icons/material-icon";
 import { clsx } from "../clsx";
 import { useCoreTheme } from "../styles";
 import { getRGB } from "./utils";
 
 import styles from "./nav-tabs.module.scss";
-import { TouchRipple as Ripple, useRtl } from "../../mui";
+import { ButtonBase, IconButton, TouchRipple as Ripple, useRtl } from "../../mui";
 export interface NavTabItem {
   /**
    * The item id should be unique among all the tab items.
@@ -124,6 +133,36 @@ const useTabs = () => {
   };
 };
 
+const NavTabsContainerRoot = styled('div', {
+  name: 'MuxNavTabsContainer',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center'
+});
+
+const NavTabsScrollRoot = styled('div', {
+  name: 'MuNavTabsScroll',
+  overridesResolver: (props, styles) => styles.root,
+})({
+  position: 'relative',
+  display: 'flex',
+  overflow: 'hidden',
+  flexGrow: 1
+});
+
+const NavTabsRoot = styled('div', {
+  name: 'MuxNavTabs',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({
+  display: 'flex',
+});
+
+const margin = 50 - 12;
+
 export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
   (props, ref) => {
     const { className, items, onItemClick } = props;
@@ -148,13 +187,14 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
     );
 
 
-    const setIndicatorBounds = () => {
+    const setIndicatorBounds = (tabElement?:HTMLElement) => {
+      tabElement ??= activeElement!;
       const x = isRtl
       ? stripElement!.clientWidth -
-        activeElement!.offsetLeft -
-        activeElement!.offsetWidth
-      : activeElement!.offsetLeft;
-      const w = activeElement!.offsetWidth;
+        tabElement.offsetLeft -
+        tabElement.offsetWidth
+        : tabElement.offsetLeft;
+      const w = tabElement.offsetWidth;
       if (w > 0) {
         setIndicator({ x, w });
       }
@@ -164,18 +204,26 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
     const scrollIn = useCallback(
       (element: HTMLElement) => {
         if (stripElement) {
-          const left = element.offsetLeft;
-          const right = left + element.offsetWidth;
+          
           const scrollLeft = stripElement.scrollLeft;
           const scrollRight = scrollLeft + stripElement.clientWidth;
+          const left = element.offsetLeft - margin;
+          const right = element.offsetLeft + element.offsetWidth + margin;
 
+          console.log("NavTabs:", {
+            left,
+            right,
+            scrollLeft,
+            scrollRight
+          })
           const diff =
             right > scrollRight
               ? right - scrollRight
               : left < scrollLeft
                 ? -(scrollLeft - left)
                 : 0;
-
+          
+          console.log("NavTabs scroll:", diff)      
           if (diff) {
             stripElement.scroll({
               left: scrollLeft + diff,
@@ -191,11 +239,12 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
       (id: string | null, element: HTMLElement | null, persist = true) => {
         persist && setActiveTab(id);
         setActiveElement(element);
+        console.log("setActive: id:", id, ", element:", element)
         if (element) {
           scrollIn(element);
         }
-        if (activeElement && stripElement){
-          setIndicatorBounds();
+        if ((activeElement || element) && stripElement){
+          setIndicatorBounds(element ?? undefined);
         }
       },
       [scrollIn, setActiveElement, setActiveTab],
@@ -289,35 +338,33 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
     }, [activateScrollArrows, stripElement, items]);
 
     useEffect(() => {
-      if (props.active !== active) {
-        setActive(props.active ?? null, null);
+      if (props.active !== active && props.active != undefined) {
+        //setActive(props.active ?? null, null);
       }
     }, [active, props.active, setActive]);
 
     return (
       <NavTabsContext.Provider value={{ active, activeElement, setActive }}>
-        <div className={clsx(className, styles.container)} ref={ref}>
-          <Ripple>
+        <NavTabsContainerRoot className={clsx(styles.container, className)} ref={ref}>
             <div
-              className={clsx(styles.button, styles.start, {
+              className={clsx(styles.arrow, isRtl ? styles.right : styles.left, {
                 [styles.active]: startArrow,
               })}
             >
-
-              <MaterialIcon
-                className={styles.arrow}
-                icon={isRtl ? "keyboard_arrow_right" : "keyboard_arrow_left"}
-                size={24}
-                onClick={onScrollToEnd}
-              />
+              <Ripple overflow={false} centered={true} radius={20}>
+                <MaterialIcon
+                  className={clsx("flex items-center justify-center grow h-full", styles['arrow-icon'])}
+                  icon={isRtl ? "keyboard_arrow_right" : "keyboard_arrow_left"}
+                  size={24}
+                  onClick={onScrollToEnd}
+                />
+              </Ripple>
             </div>
-          </Ripple>
-          <div
+          <NavTabsScrollRoot
             ref={stripRef}
-            className={styles.strip}
             onScroll={activateScrollArrows}
           >
-            <div className={styles.tabs}>
+            <NavTabsRoot>
               {items.map((item) => (
                 <NavTab
                   key={item.id}
@@ -325,7 +372,8 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
                   onItemClick={handleItemClick}
                 />
               ))}
-            </div>
+              <div style={{width: 2 * margin}}/>
+            </NavTabsRoot>
             <div
               className={styles.indicator}
               style={
@@ -340,28 +388,39 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
                     }
               }
             ></div>
-          </div>
-          <Ripple>
+          </NavTabsScrollRoot>
+          
             <div
-              className={clsx(styles.button, styles.end, {
+              className={clsx(styles.arrow, isRtl ? styles.left : styles.right, {
                 [styles.active]: endArrow,
               })}
             >
+              <Ripple overflow={false} centered={true} radius={20}>
                 <MaterialIcon
-                  className={styles.arrow}
+                  className={clsx("flex items-center justify-center grow h-full", styles['arrow-icon'])}
                   icon={isRtl ? "keyboard_arrow_left" : "keyboard_arrow_right"}
                   size={24}
                   onClick={onScrollToStart}
                 />
+              </Ripple>
             </div>
-          </Ripple>
-        </div>
+        </NavTabsContainerRoot>
       </NavTabsContext.Provider>
     );
   },
 );
 
-interface NavTabProps {
+
+const NavTabRoot = styled(ButtonBase, {
+  name: 'MuxNavTab',
+  slot: 'Root',
+  overridesResolver: (props, styles) => styles.root,
+})({
+  position: 'relative',
+  overflow: 'hidden'
+});
+
+interface NavTabProps extends SxComponentProps<'div'>{
   item: NavTabItem;
   onItemClick?: (item: NavTabItem) => void;
 }
@@ -390,28 +449,28 @@ function NavTab(props: NavTabProps) {
   }, [elementRef, isActive, item.id, setActive]);
 
 
-  useEffect(() => {
-    if (isActive) {
-      setActive(item.id, elementRef.current, false);
-    }
-  }, [elementRef, isActive, item.id, setActive]);
-
   return (
     
-    <Ripple 
-      ref={elementRef} 
+    <NavTabRoot 
       className={clsx(styles.tab, isActive && styles.active)}
       area-active={isActive ? 'true' : undefined}
       data-tab-id={item.id}
       // @ts-ignore
       onClick={handleClick as any}
+      //@ts-ignore
       onAuxClick={onAuxClick}
+      //@ts-ignore
       onContextMenu={onContextMenu}
-      tabIndex="-1"
-      as='div'
+      component='div'
+      rippleProps={{
+        overflow: false,
+        className: styles.ripple,
+        centered: true
+      }}
+      ref={elementRef}
       >
       <NavTabInner item={item} active={isActive} />
-    </Ripple>
+    </NavTabRoot>
   );
 }
 

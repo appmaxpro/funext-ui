@@ -30,7 +30,7 @@ export const ListItemSuffix = React.forwardRef<HTMLDivElement, ListItemSuffixPro
 
   // 3. set styles
   const listItemSuffixClasses = useMemo(
-    () => twMerge(classnames(objectsToString(base.itemPrefix)), className, suffix),
+    () => twMerge(className, suffix),
     [className, suffix],
   );
 

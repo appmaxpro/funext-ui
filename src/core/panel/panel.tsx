@@ -6,7 +6,7 @@ import { CommandBar, CommandBarProps, CommandItemProps } from "../command-bar";
 import { Scrollable } from "../scrollable";
 
 import styles from "./panel.module.scss";
-import { useDialogContext } from "../../mui";
+import { useFloatingContext } from "../../mui";
 import { size } from "@floating-ui/react";
 
 export interface ToolPanelProps extends React.HTMLProps<HTMLDivElement> {
@@ -43,7 +43,7 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
     ...restProps
   } = props;
 
-  const dialogCtx = useDialogContext();
+  const dialogCtx = useFloatingContext();
   
   const hasHeader = Boolean(header || toolbar || collapsible);
   const hasFooter = Boolean(footer);

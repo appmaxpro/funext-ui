@@ -2,6 +2,7 @@ import React from "react";
 
 // types
 import type { contextValue, children } from "../../types/components/popover";
+import { MuxFloatingProvider } from "../Context";
 
 export interface PopoverContextProviderProps {
   value: contextValue;
@@ -23,9 +24,17 @@ export function usePopover() {
   return context;
 }
 
-export const PopoverContextProvider = ({ value, children }: PopoverContextProviderProps) => {
-  return <PopoverContext.Provider value={value}>{children}</PopoverContext.Provider>;
+export const PopoverContextProvider = ({
+  value,
+  children,
+}: PopoverContextProviderProps) => {
+  return (
+    <PopoverContext.Provider value={value}>
+      <MuxFloatingProvider context={value.context} type="popover">
+        {children}
+      </MuxFloatingProvider>
+    </PopoverContext.Provider>
+  );
 };
-
 
 PopoverContextProvider.displayName = "Mux.PopoverContextProvider";

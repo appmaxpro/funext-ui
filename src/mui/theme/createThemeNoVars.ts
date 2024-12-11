@@ -64,6 +64,7 @@ function createThemeNoVars(options:any = {}, ...args:Array<any>) {
       'checked',
       'completed',
       'disabled',
+      'indeterminate',
       'error',
       'expanded',
       'focused',

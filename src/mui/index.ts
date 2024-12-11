@@ -48,6 +48,7 @@ export * from "./components/Focus";
 export * from "./components/Snackbar";
 export * from "./components/GlobalStyles";
 export * from "./components/Screen";
+export * from "./components/Context";
 
 export * from "./hooks";
 export * from "./utils";

@@ -23,6 +23,7 @@ export type RippleConfig = {
   animation?: RippleAnimationConfig;
   finishOnPointerUp?: boolean;
   overflow?: boolean;
+  fallbackCssProp?: 'color' | 'backgroundColor';
 };
 
 /**

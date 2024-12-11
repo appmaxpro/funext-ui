@@ -20,7 +20,7 @@ import type {
   onChange,
   readonly as readonlyType,
 } from "../../types/components/rating";
-import { useThemeColor } from "../../hooks";
+import { mapThemeColor } from "../../hooks";
 
 export interface RatingProps extends Omit<React.ComponentProps<"div">, "onChange"> {
   count?: count;
@@ -62,7 +62,7 @@ export const Rating = React.forwardRef<HTMLDivElement, RatingProps>(
     ratedIcon = ratedIcon ?? defaultProps.ratedIcon;
     unratedIcon = unratedIcon ?? defaultProps.unratedIcon;
     ratedColor = ratedColor ?? defaultProps.ratedColor;
-    unratedColor = useThemeColor(unratedColor, defaultProps.unratedColor);
+    unratedColor = mapThemeColor(unratedColor, defaultProps.unratedColor);
     onChange = onChange ?? defaultProps.onChange;
     className = twMerge(defaultProps.className || "", className);
 

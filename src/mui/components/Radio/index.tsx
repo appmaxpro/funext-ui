@@ -1,165 +1,237 @@
-import React, { ForwardedRef, useCallback, useRef } from "react";
-
-// utils
-import { useRipple } from "../../ripple";
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
-
+import React from "react";
 // types
-import type {
-  color,
-  label,
-  icon,
-  ripple,
-  className,
-  disabled,
-  objectType,
-} from "../../types/components/checkbox";
-import { useControlled, useThemeColor } from "../../hooks";
+import type { color } from "../../types/components/checkbox";
+import {
+  alpha,
+  composeClasses,
+  generateUtilityClass,
+  generateUtilityClasses,
+  memoTheme,
+  styled,
+  clsx,
+  useMuiDefaultProps,
+  SxThemeProps,
+} from "../../styles";
+import SwitchBase, { SwitchBaseProps } from "../internal/SwitchBase";
+import { capitalize } from "../../utils";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+import RadioButtonIcon from "./RadioButtonIcon";
+import { OverridableStringUnion, StandardProps } from "../../props";
+import { mapThemeColor } from "../../hooks";
 
-
-export interface RadioProps extends React.ComponentProps<"input"> {
-  color?: color;
-  label?: label;
-  icon?: icon;
-  ripple?: ripple;
-  className?: className;
-  disabled?: disabled;
-  containerProps?: objectType;
-  labelProps?: objectType;
-  iconProps?: objectType;
-  rootRef?: React.Ref<HTMLDivElement>;
-  rippleClass?:string;
+export interface RadioClasses {
+  /** State class applied to the root element if `checked={true}`. */
+  checked: string;
+  /** State class applied to the root element if `disabled={true}`. */
+  disabled: string;
 }
 
-export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
-  (
-    {
-      color,
-      label,
-      icon,
-      ripple,
-      className,
-      disabled,
-      containerProps,
-      labelProps,
-      iconProps,
-      rootRef,
-      checked:isChecked,
-      defaultChecked,
-      onChange,
-      rippleClass,
-      ...rest
+export type RadioClassKey = keyof RadioClasses;
+
+export function getRadioUtilityClass(slot: string): string {
+  return generateUtilityClass("MuxRadio", slot);
+}
+
+const radioClasses: RadioClasses = generateUtilityClasses("MuxRadio", [
+  "checked",
+  "disabled",
+]);
+
+const useUtilityClasses = (ownerState: any) => {
+  const { classes, color, size } = ownerState;
+
+  const slots = {
+    root: [
+      `color${capitalize(color)}`,
+      size !== "md" && `size${capitalize(size)}`,
+    ],
+  };
+
+  return {
+    ...classes,
+    ...composeClasses(slots, getRadioUtilityClass, classes),
+  };
+};
+
+const RadioRoot = styled(SwitchBase, {
+  shouldForwardProp: (prop) =>
+    rootShouldForwardProp(prop) || prop === "classes",
+  name: "MuxRadio",
+  slot: "Root",
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+
+    return [
+      styles.root,
+      ownerState.size !== "medium" &&
+        styles[`size${capitalize(ownerState.size)}`],
+      styles[`color${capitalize(ownerState.color)}`],
+    ];
+  },
+})(
+  memoTheme(({ theme }) => ({
+    color: (theme.vars || theme).palette.text.secondary,
+    [`&.${radioClasses.disabled}`]: {
+      color: (theme.vars || theme).palette.action.disabled,
     },
-    ref,
-  ) => {
-    // 1. init
-    const { radio } = useTailwindTheme();
-    const { defaultProps, valid, styles } = radio;
-    const { base, colors } = styles;
-    const radioId = React.useId();
+    variants: [
+      {
+        props: ({ownerState}:any) => !ownerState.disabled && ownerState.ripple,
+        style: {
+          "&:hover": {
+            backgroundColor: theme.vars
+              ? `rgba(${theme.vars.palette.action.activeChannel} / ${theme.vars.palette.action.hoverOpacity})`
+              : alpha(
+                  theme.palette.action.active,
+                  theme.palette.action.hoverOpacity,
+                ),
+            "@media (hover: none)": {
+              backgroundColor: "transparent",
+            },
+          },
+        },
+      },
+      {
+        props: ({ ownerState }: any) =>
+          !ownerState.disabled &&
+          ownerState.ripple &&
+          theme.palette.twColors?.includes(ownerState.color as any),
+        style: ({ ownerState }: any) => ({
+          [`&.${radioClasses.checked}`]: {
+            "--tw-bg-opacity": theme.palette.action.hoverOpacity,
+            backgroundColor: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-bg-opacity))`,
+          },
+        }),
+      },
+      {
+        props: ({ ownerState }: any) =>
+          theme.palette.twColors?.includes(ownerState.color as any),
+        style: ({ ownerState }: any) => ({
+          [`&.${radioClasses.checked}`]: {
+            "--tw-text-opacity": 1,
+            color: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-text-opacity))`,
+          },
+          [`&.${radioClasses.disabled}`]: {
+            color: (theme.vars || theme).palette.action.disabled,
+          },
+        }),
+      }
+    ],
+  })),
+);
 
-    const [checked, setChecked] = useControlled({
-      name: 'input',
-      prop: 'checked',
-      state: isChecked,
-      defaultState: defaultChecked
-   })
+export interface RadioPropsSizeOverrides {}
 
-   const handleValueChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-     setChecked((event.currentTarget || event.target)?.checked);
-     onChange?.(event);
-   }, [onChange, setChecked]) 
+export interface RadioPropsColorOverrides {}
 
-    // 2. set default props
-    color = useThemeColor(color, defaultProps.color);
-    label = label ?? defaultProps.label;
-    icon = icon ?? defaultProps.icon;
-    ripple = ripple ?? defaultProps.ripple;
-    disabled = disabled ?? defaultProps.disabled;
-    containerProps = containerProps ?? defaultProps.containerProps;
-    labelProps = labelProps ?? defaultProps.labelProps;
-    iconProps = iconProps ?? defaultProps.iconProps;
-    className = twMerge(defaultProps.className || "", className);
+export interface RadioProps
+  extends StandardProps<
+    SwitchBaseProps,
+    RadioClassKey,
+    "checkedIcon" | "color" | "icon" | "type"
+  > {
+  /**
+   * The icon to display when the component is checked.
+   * @default <RadioButtonIcon checked />
+   */
+  checkedIcon?: React.ReactNode;
+  /**
+   * Override or extend the styles applied to the component.
+   */
+  classes?: Partial<RadioClasses>;
+  /**
+   * The color of the component.
+   * It supports both default and custom theme colors, which can be added as shown in the
+   * [palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors).
+   * @default 'primary'
+   */
+  color?: color;
+  /**
+   * If `true`, the component is disabled.
+   */
+  disabled?: boolean;
+  /**
+   * The icon to display when the component is unchecked.
+   * @default <RadioButtonIcon />
+   */
+  icon?: React.ReactNode;
+  /**
+   * The size of the component.
+   * `small` is equivalent to the dense radio styling.
+   * @default 'medium'
+   */
+  size?: OverridableStringUnion<"sm" | "md" | "lg", RadioPropsSizeOverrides>;
+  /**
+   * The system prop that allows defining system overrides as well as additional CSS styles.
+   */
+  sx?: SxThemeProps;
+  error?: boolean;
+}
 
-    const labelRef = useRef<HTMLLabelElement>();
-    const colorClass = colors[findMatch(valid.colors, color, "primary")]
-    
-    // 3. set ripple effect instance ForwardedRef
-    const {ref: rippleRef, className: rippleClassName} = useRipple({
-      ref: labelRef as ForwardedRef<HTMLLabelElement>,
-      disabled: disabled || ripple === false,
-      className: rippleClass ?? colorClass?.color?.replace("text-", "bg-")
-    });
+const defaultCheckedIcon = <RadioButtonIcon checked />;
+const defaultIcon = <RadioButtonIcon />;
 
-    // 4. set styles
-    const rootClasses = classnames(objectsToString(base.root), {
-      [objectsToString(base.disabled)]: disabled,
-    });
-    const containerClasses = twMerge(
-      classnames(objectsToString(base.container), rippleClassName),
-      containerProps?.className,
-    );
-    const inputClasses = twMerge(
-      classnames(
-        objectsToString(base.input),
-        checked && objectsToString(colorClass),
-      ),
+export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
+  function Radio(inProps, ref) {
+    const props = useMuiDefaultProps({ props: inProps, name: "MuxRadio" });
+
+    const {
+      checked: checkedProp,
+      checkedIcon = defaultCheckedIcon,
+      color:inColor = "primary",
+      icon = defaultIcon,
+      name: nameProp,
+      size = "md",
       className,
-    );
-    const labelClasses = twMerge(classnames(objectsToString(base.label)), labelProps?.className);
-    const radioIconClasses = classnames(
-      classnames(objectsToString(base.icon)),
-      colorClass?.color,
-      iconProps?.className,
-    );
+      disabled: disabledProp,
+      ripple = true,
+      rippleClassName,
+      error,
+      ...other
+    } = props;
+
+    let color = mapThemeColor(error ? "error" : inColor);
+    const rippleClass = rippleClassName ?? `bg-${color ?? "primary"}`;
+
+    let disabled = disabledProp;
+
+    disabled ??= false;
+
+    const ownerState = {
+      ...props,
+      disabled,
+      ripple,
+      color,
+      size,
+    };
+
+    const classes = useUtilityClasses(ownerState);
+    let checked = checkedProp;
+    let name = nameProp;
 
     return (
-      <div ref={rootRef} className={rootClasses}>
-        <label
-          {...containerProps}
-          className={containerClasses}
-          htmlFor={rest.id || radioId}
-          ref={rippleRef}
-          >
-          <input
-            {...rest}
-            ref={ref}
-            type="radio"
-            disabled={disabled}
-            className={inputClasses}
-            checked={checked}
-            onChange={handleValueChange}
-            id={rest.id || radioId}
-          />
-          <span className={radioIconClasses}>
-            {icon || (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3 w-3"
-                viewBox="0 0 12 12"
-                fill="currentColor"
-              >
-                <circle data-name="ellipse" cx="6" cy="6" r="6" />
-              </svg>
-            )}
-          </span>
-        </label>
-        {label && (
-          <label {...labelProps} className={labelClasses} htmlFor={rest.id || radioId}>
-            {label}
-          </label>
-        )}
-      </div>
+      <RadioRoot
+        type="radio"
+        icon={React.cloneElement(icon as any, {
+          size: defaultIcon.props.size ?? size,
+        })}
+        checkedIcon={React.cloneElement(checkedIcon as any, {
+          size: defaultCheckedIcon.props.size ?? size,
+        })}
+        disabled={disabled}
+        ownerState={ownerState}
+        classes={classes}
+        name={name}
+        checked={checked}
+        ref={ref}
+        className={clsx(classes.root, className)}
+        ripple={ripple}
+        rippleClassName={rippleClass}
+        {...other}
+      />
     );
   },
 );
-
 
 Radio.displayName = "Mux.Radio";
 

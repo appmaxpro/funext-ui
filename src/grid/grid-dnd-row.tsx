@@ -10,6 +10,8 @@ import { MaterialIcon } from "../icons/material-icon";
 import * as TYPES from "./types";
 
 import styles from "./grid.module.scss";
+import { fontSize, styled } from "@mui/system";
+
 
 const GridDNDRowContext = React.createContext<any>(null);
 
@@ -19,6 +21,7 @@ export interface GridDNDBodyProps extends Pick<TYPES.GridState, "rows"> {
   className?: string;
   onRowMove?: TYPES.GridRowProps["onMove"];
   onRowMoveStart?: TYPES.GridRowProps["onMoveStart"];
+  as?: React.ElementType;
 }
 
 function getStyle(style: any) {
@@ -38,7 +41,7 @@ function getStyle(style: any) {
 }
 
 export function GridDNDContainer(props: GridDNDBodyProps) {
-  const { className, style, children, rows, onRowMove, onRowMoveStart } = props;
+  const { className, style, children, rows, as:Component='div', onRowMove, onRowMoveStart } = props;
 
   function handleDragEnd(result: any) {
     const { source, destination } = result;
@@ -57,7 +60,6 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
 
     onRowMove && onRowMove(rows[dragIndex], rows[hoverIndex]);
   }
-
   return (
     <DragDropContext onDragStart={onRowMoveStart} onDragEnd={handleDragEnd}>
       <Droppable
@@ -66,7 +68,7 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
         direction="vertical"
       >
         {(provided) => (
-          <div
+          <Component
             className={className}
             data-drop
             style={style}
@@ -75,7 +77,7 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
           >
             {children as any}
             {provided.placeholder}
-          </div>
+          </Component>
         )}
       </Droppable>
     </DragDropContext>
@@ -83,7 +85,7 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
 }
 
 export function GridDNDRow(props: TYPES.GridRowProps) {
-  const { index, className, children, data } = props;
+  const { index, className, children, data , selected} = props;
   return (
     <Draggable draggableId={`${data.key}`} index={index}>
       {(provided, snapshot) => (
@@ -92,12 +94,13 @@ export function GridDNDRow(props: TYPES.GridRowProps) {
             {...provided.draggableProps}
             ref={(ref) => provided.innerRef(ref)}
             style={getStyle(provided.draggableProps.style)}
-            children={children}
-            className={clsx(styles.dndRow, className)}
+            className={clsx(styles.row, styles.dndRow, className, selected && styles.selected)}
             data-dragging={snapshot.isDragging ? "true" : undefined}
-          />
-          <Box as="span" d="none" {...provided.dragHandleProps} />
-          {snapshot.isDragging && <DisableScrolling />}
+          >
+            {children}
+            <Box as="span" d="hidden" {...provided.dragHandleProps} />
+            {snapshot.isDragging && <DisableScrolling />}
+          </div>          
         </GridDNDRowContext.Provider>
       )}
     </Draggable>
@@ -127,11 +130,11 @@ export function GridDNDColumn({
       d="flex"
       className={className}
       onClick={onClick}
-      style={{ ...props?.style, ...style }}
+      style={{fontSize: '1.25em',...props?.style, ...style }}
       {...props}
       tabIndex={-1}
     >
-      <MaterialIcon icon="drag_indicator" />
+      <MaterialIcon icon="drag_indicator"/>
     </Box>
   );
 }

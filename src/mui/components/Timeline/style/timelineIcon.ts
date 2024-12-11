@@ -2,7 +2,7 @@ import ghost from "./timelineIconColors/ghost";
 import filled from "./timelineIconColors/filled";
 import outlined from "./timelineIconColors/outlined";
 import gradient from "./timelineIconColors/gradient";
-import { color, variant, propTypeColor, propTypeVariant } from "../../../types/components/timeline";
+import { color, variant, propTypesColor, propTypesVariant } from "../../../types/components/timeline";
 
 export interface TimelineIconStyleTypes {
   defaultProps?: {
@@ -30,8 +30,8 @@ export const timelineIcon: TimelineIconStyleTypes = {
     variant: "filled",
   },
   valid: {
-    colors: propTypeColor,
-    variants: propTypeVariant,
+    colors: propTypesColor,
+    variants: propTypesVariant,
   },
   styles: {
     base: {

@@ -1,8 +1,7 @@
 import { useState } from "react";
 
 import { Box } from "../box";
-import { Button } from "../button";
-import { Input } from "../input";
+import { Button, Input } from "../../mui";
 import { InputLabel, TextLabel } from "../input-label";
 import {Fade} from '../fade';
 import { Slide } from "./slide";

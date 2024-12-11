@@ -12,7 +12,7 @@ from '../../styles';
 import { getDividerUtilityClass, type DividerClassKey } from './dividerClasses';
 import type{DividerProps} from '../../types/components/divider';
 import { twMerge } from 'tailwind-merge';
-import { useThemeColor } from '../../hooks';
+import { mapThemeColor } from '../../hooks';
 
 
 const useUtilityClasses = (ownerState:any) => {
@@ -245,7 +245,7 @@ const Divider = React.forwardRef<HTMLElement,DividerProps>((inProps, ref) => {
     ...other
   } = props;
 
-  const dividerColor = useThemeColor(color);
+  const dividerColor = mapThemeColor(color);
   
   const ownerState = {
     ...props,

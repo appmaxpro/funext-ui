@@ -137,6 +137,11 @@ export class Ripple implements EventListenerObject {
    * @param config Extra ripple options.
    */
   fadeInRipple(x: number, y: number, config: RippleConfig = {}): RippleRef {
+    
+    if(!config.overflow){
+      this._containerElement.classList.add(style['hide-overflow']);
+    }
+    
     const containerRect = (this._containerRect =
       this._containerRect || this._containerElement.getBoundingClientRect());
     const animationConfig = {...defaultRippleAnimationConfig, ...config.animation};
@@ -146,10 +151,8 @@ export class Ripple implements EventListenerObject {
       y = containerRect.top + containerRect.height / 2;
     } 
 
-    if(!config.overflow){
-      this._containerElement.classList.add(style['hide-overflow']);
-    }
-    const radius = config.radius || distanceToFurthestCorner(x, y, containerRect);
+    
+    let radius = config.radius ?? distanceToFurthestCorner(x, y, containerRect);
 
     const offsetX = x - containerRect.left;
     const offsetY = y - containerRect.top;
@@ -157,12 +160,12 @@ export class Ripple implements EventListenerObject {
 
     const ripple = document.createElement('div');
     ripple.classList.add(style['mat-ripple-element']);
-  
+    
     ripple.style.left = `${offsetX - radius}px`;
     ripple.style.top = `${offsetY - radius}px`;
     ripple.style.width = `${radius * 2}px`;
     ripple.style.height = `${radius * 2}px`;
-    
+    console.log("fadeInRipple:containerRect: radius",radius, 'height:', containerRect.height);
     /*
     console.log("fadeInRipple:containerRect:", containerRect,
        "\nradius:", radius, "\nstyle:", {
@@ -194,8 +197,10 @@ export class Ripple implements EventListenerObject {
     //console.log("ripple.classList:", ripple.classList, ", style:", ripple.style)
 
     ripple.style.transitionDuration = `${enterDuration}ms`;
-
+    ripple.style.opacity= '0';
+    
     this._containerElement.appendChild(ripple);
+    
 
     // By default the browser does not recalculate the styles of dynamically created
     // ripple elements. This is critical to ensure that the `scale` animates properly.
@@ -227,7 +232,7 @@ export class Ripple implements EventListenerObject {
     // Note: We use a 3d transform here in order to avoid an issue in Safari where
     // the ripples aren't clipped when inside the shadow DOM (see #24028).
     ripple.style.transform = 'scale3d(1, 1, 1)';
-
+    ripple.style.opacity= '1';
     rippleRef.state = RippleState.FADING_IN;
 
     if (!config.persistent) {

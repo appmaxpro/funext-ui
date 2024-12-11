@@ -59,13 +59,12 @@ export const iconButton: IconButtonStyleTypes = {
   valid: {
     variants: propTypesVariant,
     sizes: propTypesSize,
-    colors: [...propTypesColor, 'transparent', 'inherit', 'default'],
+    colors: propTypesColor,
   },
   styles: {
     base: {
       disabled: "disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none",
       position: "relative",
-      //default: Object.values(styles).join(' ')
     },
     sizes: {
       sm: {

@@ -27,7 +27,7 @@ export const records = [
   },
   {
     id: 3,
-    name: "Keyboard",
+    name: "Keyboard this along term.This long style",
     category: "Other",
     color: "Orange",
     price: 15,
