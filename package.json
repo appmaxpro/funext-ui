@@ -9,36 +9,15 @@
     "ui",
     "funext"
   ],
-  "//": "type: module",
-  "main": "./dist/funext-ui.cjs.js",
-  "module": "dist/funext-ui.esm.js",
-  "types": "dist/funext-ui.cjs.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
-    ".": {
-      "types": {
-        "import": "./dist/funext-ui.cjs.mjs",
-        "default": "./dist/funext-ui.cjs.js"
-      },
-      "development": {
-        "browser": {
-          "module": "./dist/funext-ui.browser.development.esm.js",
-          "import": "./dist/funext-ui.browser.development.cjs.mjs",
-          "default": "./dist/funext-ui.browser.development.cjs.js"
-        },
-        "module": "./dist/funext-ui.development.esm.js",
-        "import": "./dist/funext-ui.development.cjs.mjs",
-        "default": "./dist/funext-ui.development.cjs.js"
-      },
-      "module": "./dist/funext-ui.esm.js",
-      "import": "./dist/funext-ui.cjs.mjs",
-      "default": "./dist/funext-ui.cjs.js"
-    },
-    "./package.json": "./package.json",
-    "./macro": {
-      "types": {
-        "default": "./macro.d.ts"
-      }
-    }
+    ".": "./src/index.ts",
+    "./*": "./src/*/index.ts",
+    "./core/*": "./src/core/*/index.ts",
+    "./icons/*": "./src/icons/*/index.ts",
+    "./package.json": "./package.json"
   },
   "imports": {
     "#is-development": {
@@ -99,6 +78,7 @@
     "react-is": "^18.3.1",
     "react-material-symbols": "^4.4.0",
     "react-transition-group": "^4.4.5",
+    "rooks": "^7.14.1",
     "stylis": "^4.3.2",
     "stylis-plugin-rtl": "^2.1.1",
     "tailwind-merge": "^2.5.2"

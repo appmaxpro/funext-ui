@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useClassNames } from "../core";
-import { Checkbox, Radio, Box, clsx, styled } from "../mui";
+import { Checkbox, Radio, Box, clsx, styled, IconButton } from "../mui";
 
 import { GridColumn } from "./grid-column";
 import { isRowCheck, isRowExpand } from "./utils";
@@ -97,8 +97,9 @@ export const GridBodyRow = React.memo(function GridBodyRow(
       if (isRowExpand(column)) {
         const { expand, disable } = expandState;
         return (
-          <div
-            className={clsx(styles.expandRowIcon, "inline-flex p-0.5 text-xl", {
+          <IconButton
+             size="sm" dense
+             className={clsx(styles.expandRowIcon, {
               [styles.disabled]: disable,
             })}
             onClick={(e) => {
@@ -106,15 +107,14 @@ export const GridBodyRow = React.memo(function GridBodyRow(
               !disable && onExpand?.(data, !expand);
             }}
           >
-            {ExpandIcon ? (
-              <ExpandIcon expand={Boolean(expand)} />
-            ) : (
-              <MaterialIcon
-                size={20}
-                icon={expand ? "arrow_drop_down" : "arrow_right"}
-              />
-            )}
-          </div>
+              {ExpandIcon ? (
+                <ExpandIcon expand={Boolean(expand)} />
+              ) : (
+                <MaterialIcon
+                  icon={expand ? "keyboard_arrow_down" : "keyboard_arrow_right"}
+                />
+              )}
+          </IconButton>
         );
       }
       return value;
@@ -127,18 +127,19 @@ export const GridBodyRow = React.memo(function GridBodyRow(
   const classNames = useClassNames();
   const DragComponent: any = draggable ? GridDNDRow : React.Fragment;
   const borderWidth = 1;
+  //const FinalRowComponent = draggable ? 'div' : RowComponent;
 
   return (
     <>
-      <DragComponent {...(draggable ? { ...props } : {})}>
+      <DragComponent {...(draggable ? { ...props, Component: GridRowRoot} : {})}>
         <RowComponent
           {...rendererProps}
-          className={clsx(!draggable && styles.row, !draggable &&  className, {
+          className={clsx(!draggable && styles.row, className, {
             [styles.selected]: !draggable && selected,
             [styles.inner]: draggable,
           })}
           style={style}
-          onDoubleClick={(e) =>
+          onDoubleClick={draggable ? undefined : (e) =>
             onDoubleClick && onDoubleClick(e, data, rowIndex)
           }
         >
@@ -186,4 +187,6 @@ export const GridBodyRow = React.memo(function GridBodyRow(
 
 const GridRowRoot = styled('div', {
   name: 'MuxGridRow',
-})('');
+})({
+
+});

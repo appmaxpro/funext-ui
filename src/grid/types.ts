@@ -195,7 +195,7 @@ export interface GridProps {
   translate?: (key: string) => null | string;
   labels?: Record<GridLabel, string>;
   headerShadow?: boolean;
-  bordered?: boolean;
+  border?: boolean;
   striped?: boolean;
   overflow?: boolean;
   bodyAs?: React.ElementType;

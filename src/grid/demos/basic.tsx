@@ -57,7 +57,7 @@ export default function Basic() {
           columns={columns}
           state={state}
           setState={setState}
-          bordered
+          border
           headerShadow
         />
       </Box>

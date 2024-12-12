@@ -12,7 +12,6 @@ import * as TYPES from "./types";
 import styles from "./grid.module.scss";
 import { fontSize, styled } from "@mui/system";
 
-
 const GridDNDRowContext = React.createContext<any>(null);
 
 export interface GridDNDBodyProps extends Pick<TYPES.GridState, "rows"> {
@@ -41,7 +40,15 @@ function getStyle(style: any) {
 }
 
 export function GridDNDContainer(props: GridDNDBodyProps) {
-  const { className, style, children, rows, as:Component='div', onRowMove, onRowMoveStart } = props;
+  const {
+    className,
+    style,
+    children,
+    rows,
+    as: Component = "div",
+    onRowMove,
+    onRowMoveStart,
+  } = props;
 
   function handleDragEnd(result: any) {
     const { source, destination } = result;
@@ -62,11 +69,7 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
   }
   return (
     <DragDropContext onDragStart={onRowMoveStart} onDragEnd={handleDragEnd}>
-      <Droppable
-        droppableId="GRID_ROWS"
-        type="GRID_ROW"
-        direction="vertical"
-      >
+      <Droppable droppableId="GRID_ROWS" type="GRID_ROW" direction="vertical">
         {(provided) => (
           <Component
             className={className}
@@ -84,23 +87,41 @@ export function GridDNDContainer(props: GridDNDBodyProps) {
   );
 }
 
-export function GridDNDRow(props: TYPES.GridRowProps) {
-  const { index, className, children, data , selected} = props;
+export function GridDNDRow(
+  props: TYPES.GridRowProps & { Component?: React.ElementType },
+) {
+  const {
+    index,
+    className,
+    children,
+    data,
+    onDoubleClick,
+    renderer,
+    Component = "div",
+    selected,
+    ...rest
+  } = props;
+  const rendererProps = renderer ? rest : ({} as any);
   return (
     <Draggable draggableId={`${data.key}`} index={index}>
       {(provided, snapshot) => (
         <GridDNDRowContext.Provider value={provided.dragHandleProps}>
-          <div
+          <Component
             {...provided.draggableProps}
-            ref={(ref) => provided.innerRef(ref)}
+            ref={(ref: HTMLElement | null) => provided.innerRef(ref)}
             style={getStyle(provided.draggableProps.style)}
-            className={clsx(styles.row, styles.dndRow, className, selected && styles.selected)}
+            className={clsx(
+              styles.row,
+              styles.dndRow,
+              className,
+              selected && styles.selected,
+            )}
             data-dragging={snapshot.isDragging ? "true" : undefined}
           >
             {children}
             <Box as="span" d="hidden" {...provided.dragHandleProps} />
             {snapshot.isDragging && <DisableScrolling />}
-          </div>          
+          </Component>
         </GridDNDRowContext.Provider>
       )}
     </Draggable>
@@ -130,11 +151,11 @@ export function GridDNDColumn({
       d="flex"
       className={className}
       onClick={onClick}
-      style={{fontSize: '1.25em',...props?.style, ...style }}
+      style={{ fontSize: "1.25em", ...props?.style, ...style }}
       {...props}
       tabIndex={-1}
     >
-      <MaterialIcon icon="drag_indicator"/>
+      <MaterialIcon icon="drag_indicator" />
     </Box>
   );
 }

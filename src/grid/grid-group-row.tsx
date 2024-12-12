@@ -5,7 +5,7 @@ import { MaterialIcon } from "../icons/material-icon";
 import styles from "./grid.module.scss";
 import { useTranslation } from "./translate";
 import * as TYPES from "./types";
-import { useRtl, clsx, styled } from "..";
+import { useRtl, clsx, styled, IconButton } from "..";
 
 export const GridGroupRow = React.memo(function GridGroupRow(
   props: TYPES.GridRowProps,
@@ -33,13 +33,13 @@ export const GridGroupRow = React.memo(function GridGroupRow(
         .map((_, ind) =>
           ind !== 0 ? <div key={ind} className={styles.groupSpacer} /> : null,
         )}
-      <div
+      <IconButton
+        size="sm"
+        dense
+        className="me-0.5 p-1"
         onClick={(e) => onClick && data && onClick(e as any, data, index)}
-        className={clsx(styles.groupRowContent, 'inline-flex')}
       >
         <MaterialIcon
-          className={clsx(styles.groupRowIcon, 'p-1')}
-          size={22}
           icon={
             state === "close"
               ? isRTL
@@ -48,11 +48,11 @@ export const GridGroupRow = React.memo(function GridGroupRow(
               : "expand_more"
           }
         />
-        {title} : {value} ({total} {t("items")})
-      </div>
+      </IconButton>
+      {title} : {value} ({total} {t("items")})
     </RowRenderer>
   );
 });
-const GridGroupRowRoot = styled('div', {
-  name: 'MuxGridGroupRow',
-})('');
+const GridGroupRowRoot = styled("div", {
+  name: "MuxGridGroupRow",
+})("");

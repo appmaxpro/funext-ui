@@ -24,6 +24,7 @@ import {
 import ButtonGroupContext, {ButtonGroupButtonContext} from '../ButtonGroup/ButtonGroupContext';
 import { capitalize } from '../../utils';
 import rootShouldForwardProp from '../../styles/rootShouldForwardProp';
+import { mapThemeColor } from "../../hooks";
 
 const useUtilityClasses = (ownerState:any) => {
   const { color, disableElevation, fullWidth, size, variant, classes, disable } = ownerState;
@@ -410,7 +411,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
   const resolvedProps = resolveProps(contextProps as any, inProps);
   const props = useMuiDefaultProps({ props: resolvedProps, name: 'MuxButton' });
   const { button: { defaultProps }} = useTailwindTheme();
-    
+  
   const {
     children,
     color = defaultProps.color,
@@ -420,7 +421,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
     className,
     disabled = false,
     disableElevation = false,
-    disableFocusRipple = false,
+    focusRipple = true,
     endIcon: endIconProp,
     startIcon: startIconProp,
     focusVisibleClassName,
@@ -429,13 +430,14 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
     ...other
   } = props;
 
+
   const ownerState = {
     ...props,
     color,
     component,
     disabled,
     disableElevation,
-    disableFocusRipple,
+    focusRipple,
     fullWidth,
     size,
     type,
@@ -467,7 +469,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       className={clsx(contextProps.className, className, positionClassName)}
       component={component}
       disabled={disabled}
-      focusRipple={!disableFocusRipple}
+      focusRipple={focusRipple}
       focusVisibleClassName={clsx(classes.focusVisible, focusVisibleClassName)}
       data-ripple-color="color"
       ref={ref}

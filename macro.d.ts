@@ -1,1 +1,1 @@
-export * from '@emotion/react'
+export * from '@funext/ui'

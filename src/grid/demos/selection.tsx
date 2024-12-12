@@ -26,7 +26,7 @@ export default function Selection({
           columns={columns}
           state={state}
           setState={setState}
-          bordered
+          border
           overflow
         />
       </Box>

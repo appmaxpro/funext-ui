@@ -82,7 +82,7 @@ export const FlexConfig: Config<FlexProps> = {
   flexGrow: computeVar("", (val) => def('grow', val ?? '1')),
   grow: computeVar("", (val) => def('grow', val ?? '1')),
   shrink: computeVar("", (val) => def('shrink', val ?? 1)),
-  flexWrap: computeVar("flex"),
+  flexWrap: computeVar("flex", value => value ? 'wrap' : ''),
   order: computeVar("order"),
   justifyContent: computeVar("justify", (v) => v.replace('flex-', '').replace('content-', '')),
   alignContent: computeVar("content", replaceFlex),

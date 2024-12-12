@@ -41,6 +41,7 @@ export default function Aggregation() {
           columns={columns}
           state={state}
           setState={setState}
+          
         />
       </Box>
     </GridProvider>

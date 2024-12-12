@@ -7,7 +7,7 @@ const buttonText: object = {
     bg: "bg-transparent",
   },
   default: {
-    hover: "hover:bg-hd-sm",
+    hover: "hover:bg-hd-md/75",
     active: "active:bg-hd-md",
   },
   white: {

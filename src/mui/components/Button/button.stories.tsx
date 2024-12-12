@@ -11,13 +11,16 @@ import {
   IconButton,
   Tooltip as MuiTooltip, 
   Popover,
-  Text as MuiText
+  Text as MuiText,
+  ButtonProps,
+  Checkbox
 } 
 from "../..";
 
 import {Link} from "../Link";
 
 import { MaterialIcon } from "../../../icons/material-icon";
+import { useOnHoverRef } from "rooks";
 
 const config = {
   component: Button,
@@ -91,14 +94,15 @@ export const Sizes = () => {
 };
 
 export const Variants = () => {
+  
   return (
     <Box display="flex" alignItems="center" g={2} flexDirection="column">
       <Divider>Filled</Divider>
-      <Box display="flex" alignItems="center" g={2} my={5}>
+      <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
         <Button variant="filled" color="primary">Primary</Button>
         <Button variant="filled" color="secondary">Secondary</Button>
         <Button variant="filled" color="success">Success</Button>
-        <Button variant="filled" color="info">Danger</Button>
+        <Button variant="filled" color="error">Error</Button>
         <Button variant="filled" color="warning">Warning</Button>
         <Button variant="filled" color="info">Info</Button>
         <Button variant="filled" color="light">Light</Button>
@@ -110,7 +114,7 @@ export const Variants = () => {
         <Button variant="filled" color="primary" disableElevation>Primary</Button>
         <Button variant="filled" color="secondary" disableElevation>Secondary</Button>
         <Button variant="filled" color="success" disableElevation>Success</Button>
-        <Button variant="filled" color="info" disableElevation>Danger</Button>
+        <Button variant="filled" color="error" disableElevation>Error</Button>
         <Button variant="filled" color="warning" disableElevation>Warning</Button>
         <Button variant="filled" color="info" disableElevation>Info</Button>
         <Button variant="filled" color="light" disableElevation>Light</Button>
@@ -122,7 +126,7 @@ export const Variants = () => {
         <Button variant="text" color="primary">Primary</Button>
         <Button variant="text" color="secondary">Secondary</Button>
         <Button variant="text" color="success">Success</Button>
-        <Button variant="text" color="info">Danger</Button>
+        <Button variant="text" color="error">Error</Button>
         <Button variant="text" color="warning">Warning</Button>
         <Button variant="text" color="info">Info</Button>
         <Button variant="text" color="light">Light</Button>
@@ -135,7 +139,7 @@ export const Variants = () => {
         <Button variant="outlined" color="primary">Primary</Button>
         <Button variant="outlined" color="secondary">Secondary</Button>
         <Button variant="outlined" color="success">Success</Button>
-        <Button variant="outlined" color="info">Danger</Button>
+        <Button variant="outlined" color="error">Error</Button>
         <Button variant="outlined" color="warning">Warning</Button>
         <Button variant="outlined" color="info">Info</Button>
         <Button variant="outlined" color="light">Light</Button>
@@ -147,7 +151,7 @@ export const Variants = () => {
         <Button variant="ghost" color="primary">Primary</Button>
         <Button variant="ghost" color="secondary">Secondary</Button>
         <Button variant="ghost" color="success">Success</Button>
-        <Button variant="ghost" color="info">Danger</Button>
+        <Button variant="ghost" color="error">Error</Button>
         <Button variant="ghost" color="warning">Warning</Button>
         <Button variant="ghost" color="info">Info</Button>
         <Button variant="ghost" color="light">Light</Button>
@@ -158,6 +162,8 @@ export const Variants = () => {
     
   );
 };
+
+
 
 export const Outline = () => {
   return (
@@ -171,8 +177,8 @@ export const Outline = () => {
       <Button color="success" variant="outlined">
         Success
       </Button>
-      <Button color="red" variant="outlined">
-        Danger
+      <Button color="error" variant="outlined">
+        Error
       </Button>
       <Button color="warning" variant="outlined">
         Warning
@@ -196,8 +202,8 @@ export const Text = () => {
       <Button color="success" variant="text">
         Success
       </Button>
-      <Button color="red" variant="text">
-        Danger
+      <Button color="error" variant="text">
+          Error
       </Button>
       <Button color="warning" variant="text">
         Warning
@@ -221,8 +227,8 @@ export const Ghost = () => {
       <Button color="success" variant="ghost">
         Success
       </Button>
-      <Button color="red" variant="ghost">
-        Danger
+      <Button color="error" variant="ghost">
+        Error
       </Button>
       <Button color="warning" variant="ghost">
         Warning
@@ -233,6 +239,75 @@ export const Ghost = () => {
     </Box>
   );
 };
+
+function VariableButton(props:
+  {variant:ButtonProps['variant'], 
+    hoverVariant:ButtonProps['variant'], 
+    button?:boolean
+  }& ButtonProps) {
+    const {variant, hoverVariant, button = true, ...rest} = props;
+    const Comp = button ? Button : IconButton;
+    const [hover, setHover] = useState(false);
+    const ref = useOnHoverRef(
+      () => setHover(true),
+      () => setHover(false),
+    );
+
+    return (<Comp variant={hover ? hoverVariant : variant} {...rest} ref={ref}/>)
+
+  }
+
+export const VariableState = () => {
+  const [variant, setVariant] = useState<ButtonProps['variant']>('filled');
+  const [hoverVariant, setHoverVariant] = useState<ButtonProps['variant']>('filled');
+  const [isButton, setIsButton] = useState(true);
+
+  return (
+  <Box display="flex" alignItems="center" g={2} flexDirection="column">
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+      <span>Variants:</span>
+      <Menu.Button
+        trigger={<Button variant={variant} color="primary">{`${variant![0].toUpperCase()}${variant?.substring(1)}`}</Button>}>
+         <Menu.Item selected={variant==='filled'} onClick={()=> setVariant('filled')} >Filled</Menu.Item>
+         <Menu.Item selected={variant==='outlined'} onClick={()=> setVariant('outlined')}>Outlined</Menu.Item>
+         <Menu.Item selected={variant==='text'} onClick={()=> setVariant('text')}>Text</Menu.Item>
+         <Menu.Item selected={variant==='ghost'} onClick={()=> setVariant('ghost')}>Ghost</Menu.Item>
+      </Menu.Button>
+      <span></span>
+      <span>Hover Variants:</span>
+      <Menu.Button
+        trigger={<Button variant={hoverVariant} color="inherit">{`${hoverVariant![0].toUpperCase()}${hoverVariant?.substring(1)}`}</Button>}>
+         <Menu.Item selected={hoverVariant==='filled'} onClick={()=> setHoverVariant('filled')}>Filled</Menu.Item>
+         <Menu.Item selected={hoverVariant==='outlined'} onClick={()=> setHoverVariant('outlined')}>Outlined</Menu.Item>
+         <Menu.Item selected={hoverVariant==='text'}   onClick={()=> setHoverVariant('text')}>Text</Menu.Item>
+         <Menu.Item selected={hoverVariant==='ghost'} onClick={()=> setHoverVariant('ghost')}>Ghost</Menu.Item>
+      </Menu.Button>
+    </Box>
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="primary" className="px-3 py-1.5">Primary</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="secondary" className="px-3 py-1.5">Secondary</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="success" className="px-3 py-1.5">Success</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="error" className="px-3 py-1.5">Error</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="warning" className="px-3 py-1.5">Warning</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="info" className="px-3 py-1.5">Info</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="light" className="px-3 py-1.5">Light</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="dark" className="px-3 py-1.5">Dark</VariableButton>
+      <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="inherit" className="px-3 py-1.5">inherit</VariableButton>
+    </Box>
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="primary"><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="secondary"><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="success" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="error" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="warning" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="info" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="light" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="dark" ><MaterialIcon icon="home"/></VariableButton>
+      <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="inherit" ><MaterialIcon icon="home"/></VariableButton>
+    </Box>
+  </Box>
+  );
+}
 
 export function CustomizedMenus() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

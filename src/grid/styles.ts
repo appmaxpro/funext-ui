@@ -11,6 +11,7 @@ export interface TableStyles {
   has_footer?: string;
   variable_rows?: string;
   overflow?: string;
+  border?: string;
   rtl?: string;
 
   body?: string;
@@ -18,6 +19,7 @@ export interface TableStyles {
   noRecordsText?: string;
   disabled?: string;
   focusElement?: string;
+  resizingColumns?: string;
   
   header?: {
     header?: string;
@@ -84,6 +86,7 @@ export const defaultTableStyles:TableStyles = Object.freeze( {
   has_footer: styles['has-footer'],
   variable_rows: styles['variable-rows'],
   overflow: styles['overflow'],
+  border: styles['border'],
   rtl: styles.rtl,
 
   body: styles.body,
@@ -91,7 +94,7 @@ export const defaultTableStyles:TableStyles = Object.freeze( {
   noRecordsText: styles.noRecordsText,
   disabled: styles.disabled,
   focusElement: styles.focusElement,
-
+  resizingColumns: styles.resizingColumns,
   header: {
     header: styles.header,
     headerColumnTitle: styles.headerColumnTitle,

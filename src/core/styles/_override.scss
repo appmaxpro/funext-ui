@@ -27,12 +27,12 @@
     --ax-theme-table-active-color,
     var(--bs-table-color)
   );
-  --bs-table-active-bg: var(--ax-theme-table-active-bg, rgb(var(--tw-header-med-rgb) / 70%));
+  --bs-table-active-bg: var(--ax-theme-table-active-bg, rgb(var(--tw-primary-rgb) / 8%));
   --bs-table-hover-color: var(
     --ax-theme-table-hover-color,
     var(--bs-table-color)
   );
-  --bs-table-hover-bg: var(--ax-theme-table-hover-bg, rgb(var(--tw-header-max-rgb) / 30%));
+  --bs-table-hover-bg: var(--ax-theme-table-hover-bg, rgb(var(--tw-primary-rgb) / 3%));
 
   // Custom
   --bs-table-active-cell-color: var(

@@ -44,7 +44,7 @@ export interface GridBodyProps
   onRowMoveStart?: TYPES.GridRowProps["onMoveStart"];
   onRowClick?: TYPES.GridRowProps["onClick"];
   onRecordUpdate?: TYPES.GridRowProps["onUpdate"];
-  striped?: TYPES.GridRowProps["onUpdate"];
+  striped?: boolean;
   border?: boolean;
   as?: React.ElementType;
 }
@@ -227,4 +227,6 @@ export function GridBody(props: GridBodyProps) {
 
 export const GridBodyRoot = styled('div', {
   name: 'MuxGridBody',
-})('');
+})({
+
+});

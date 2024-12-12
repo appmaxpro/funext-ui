@@ -1,7 +1,7 @@
-// @ts-nocheck
+
 import React, { useMemo } from "react";
 import { useClassNames } from "../core";
-import { useRefs, clsx,  Box, useRtl} from "../mui";
+import { useRefs, clsx,  Box, useRtl, styled} from "../mui";
 import { GridBody } from "./grid-body";
 import { GridDNDColumn } from "./grid-dnd-row";
 import { GridFooter } from "./grid-footer";
@@ -99,7 +99,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       maxRowHeight,
       labels,
       headerShadow,
-      bordered,
+      border = true,
       striped,
       overflow,
       tableStyles: styles = defaultTableStyles,
@@ -579,7 +579,6 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         body &&
           (body.style.minWidth = `${body.getBoundingClientRect().width}px`);
 
-        container.classList.add(styles.resizingColumns);
         container.appendChild(refs.current.style);
       },
       [],
@@ -974,7 +973,6 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       }
 
       const isEditMode = isTabKey;
-      //@ts-expect-error no thing
       [row, col] = selectedCell.length ? selectedCell : [];
       // first focus attempt with tab in editable mode (open group)
       if (isEditMode && groupBy && groupBy.length) {
@@ -1388,18 +1386,18 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
 
     return (
       <TranslateProvider labels={labels}>
-        <Box
+        <TreeGridRoot
           ref={handleRef}
           className={classNames(styles.table_grid, styles.select_no_border, styles.container, className, {
-            [styles.no_records]:
+            [styles.no_records!]:
               records.length === 0 && state?.rows?.length === 0,
-            [styles.no_columns]: noColumns,
-            [styles.has_add_new]: Boolean(props.addNewText),
-            [styles.has_footer]: hasFooter,
-            [styles.variable_rows]: rowType === "variable",
-            [styles.overflow]: overflow,
-            
-            [styles.rtl]: isRTL,
+            [styles.no_columns!]: noColumns,
+            [styles.has_add_new!]: Boolean(props.addNewText),
+            [styles.has_footer!]: hasFooter,
+            [styles.variable_rows!]: rowType === "variable",
+            [styles.overflow!]: overflow,
+            [styles.border!]: border,
+            [styles.rtl!]: isRTL,
           })}
           {...(allowCellSelection
             ? {
@@ -1411,8 +1409,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
         >
           <GridHeader
             className={clsx(classNames(styles.header?.header, {
-              [styles.header?.sticky]: stickyHeader,
-              [styles.header?.options]: allowColumnOptions,
+              [styles.header?.sticky!]: stickyHeader,
+              [styles.header?.options!]: allowColumnOptions,
               
             }))}
             groupBy={state.groupBy}
@@ -1470,8 +1468,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             noRecordsText={records.length === 0 ? props.noRecordsText : ""}
             addNewText={props.addNewText}
             tableStyles={styles}
-            striped={striped}
-            border={bordered}
+            striped={!!striped}
+            border={border}
             as={bodyAs}
             {...{
               rowHeight,
@@ -1512,15 +1510,22 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
           {hasFooter && (
             <GridFooter
               className={classNames(styles.footer?.footer, {
-                [styles.footer?.sticky]: stickyFooter,
+                [styles.footer?.sticky!]: stickyFooter,
               })}
               rowRenderer={footerRowRenderer}
               records={records}
               columns={displayColumns}
             />
           )}
-        </Box>
+        </TreeGridRoot>
       </TranslateProvider>
     );
   },
 );
+
+
+export const TreeGridRoot = styled('div', {
+  name: 'MuxTreeGrid',
+})({
+  
+});
