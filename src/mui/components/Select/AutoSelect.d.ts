@@ -1,58 +1,53 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { OverridableStringUnion } from '../../props';
+import { OverridableStringUnion } from "../../props";
 import {
   useAutocomplete,
   AutocompleteValue,
   createFilterOptions,
   UseAutocompleteProps,
-  AutocompleteFreeSoloValueMapping,
-} from '../useAutocomplete/useAutocomplete';
+  UseAutocompleteReturnValue,
+} from "../useAutocomplete/useAutocomplete";
 
-import type { IconButtonProps } from '../IconButton/type';
-import type { InternalStandardProps as StandardProps } from '../../props';
-import type { SxThemeProps} from '../../styles';
+import type { IconButtonProps } from "../IconButton/type";
+import type { InternalStandardProps as StandardProps } from "../../props";
+import type { SxThemeProps } from "../../styles";
 
-import { InputProps as TextFieldProps} from '../Input';
-import { ChipProps, ChipTypeMap } from '../Chip';
-import { PanelProps } from '../Panel';
-import { PopperProps } from '../Popper';
-import { AutoSelectClasses } from './autoSelectClasses';
-import { CreateSlotsAndSlotProps, SlotProps } from '../../props';
+import { InputProps, SingleInputProps } from "../Input";
+import { ChipProps, ChipTypeMap } from "../Chip";
+import { PanelProps } from "../Panel";
+import { PopperProps } from "../Popper";
+import { AutoSelectClasses } from "./autoSelectClasses";
+import { CreateSlotsAndSlotProps, SlotProps } from "../../props";
 
-export * from './autoSelectClasses';
-export {default as autoSelectClasses} from './autoSelectClasses';
+export * from "./autoSelectClasses";
+export { default as autoSelectClasses } from "./autoSelectClasses";
 
-export {
-  createFilterOptions,
-};
+export { createFilterOptions };
 
 export type AutoSelectOwnerState<
   Value,
   Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
-  ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
-> = AutoSelectProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent> & {
+> = AutoSelectProps<Value, Multiple> & {
   disablePortal: boolean;
   expanded: boolean;
   focused: boolean;
   fullWidth: boolean;
-  getOptionLabel: (option: Value | AutocompleteFreeSoloValueMapping<FreeSolo>) => string;
+  getOptionLabel: (option: Value) => string;
   hasClearIcon: boolean;
   hasPopupIcon: boolean;
   inputFocused: boolean;
   popupOpen: boolean;
-  size: OverridableStringUnion<'sm' | 'medium', AutoSelectPropsSizeOverrides>;
+  size: OverridableStringUnion<"md" | "lg", AutoSelectPropsSizeOverrides>;
 };
 
 export type AutoSelectRenderGetTagProps = ({ index }: { index: number }) => {
   key: number;
   className?: string;
   disabled?: boolean;
-  'data-tag-index'?: number;
-  tabIndex: -1?;
-  onDelete?: (event: any) => void;
+  "data-tag-index"?: number;
+  tabIndex: -1;
+  onClose?: (event: any) => void;
 };
 
 export interface AutoSelectRenderOptionState {
@@ -67,19 +62,11 @@ export interface AutoSelectRenderGroupParams {
   children?: React.ReactNode;
 }
 
-export interface AutoSelectRenderInputParams {
-  id: string;
-  disabled: boolean;
-  fullWidth: boolean;
-  size: 'small' | undefined;
-  InputLabelProps: ReturnType<ReturnType<typeof useAutocomplete>['getInputLabelProps']>;
-  InputProps: {
-    ref: React.Ref<any>;
-    className: string;
-    startAdornment: React.ReactNode;
-    endAdornment: React.ReactNode;
-  };
-  inputProps: ReturnType<ReturnType<typeof useAutocomplete>['getInputProps']>;
+export interface AutoSelectRenderInputParams extends SingleInputProps {
+  InputLabelProps: ReturnType<
+    ReturnType<typeof useAutocomplete>["getInputLabelProps"]
+  >;
+  inputProps: ReturnType<ReturnType<typeof useAutocomplete>["getInputProps"]>;
 }
 
 export interface AutoSelectPropsSizeOverrides {}
@@ -100,72 +87,75 @@ export interface AutoSelectSlots {
    * @default Popper
    */
   popper?: React.JSXElementConstructor<PopperProps>;
-
 }
 
 export type AutoSelectSlotsAndSlotProps<
   Value,
   Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
-  ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
 > = CreateSlotsAndSlotProps<
   AutoSelectSlots,
   {
     chip: SlotProps<
-      React.ElementType<Partial<ChipProps<ChipComponent>>>,
+      React.ElementType<Partial<ChipProps>>,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
     clearIndicator: SlotProps<
       React.ElementType<Partial<IconButtonProps>>,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
     /**
      * Props applied to the Listbox element.
      */
     listbox: SlotProps<
       React.ElementType<
-        ReturnType<ReturnType<typeof useAutocomplete>['getListboxProps']> & {
+        ReturnType<ReturnType<typeof useAutocomplete>["getListboxProps"]> & {
           sx?: SxThemeProps;
           ref?: React.Ref<Element>;
         }
       >,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
 
     panel: SlotProps<
       React.ElementType<Partial<PanelProps>>,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
     popper: SlotProps<
       React.ElementType<Partial<PopperProps>>,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
     popupIndicator: SlotProps<
       React.ElementType<Partial<IconButtonProps>>,
       {},
-      AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
+      AutoSelectOwnerState<Value, Multiple>
     >;
-
   }
 >;
 
-export interface AutoSelectProps<
-  Value,
-  Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
-  ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
-> extends UseAutocompleteProps<Value, Multiple, DisableClearable, FreeSolo>,
-    StandardProps<React.HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange' | 'children'>,
-    Pick<TextFieldProps, 'variant' | 'size' | 'placeholder' | 'name' | 'label' | 'required' | 'color' | 'error' | 'disableBorder'>,
-    AutoSelectSlotsAndSlotProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent> {
-
+export interface AutoSelectProps<Value, Multiple extends boolean | undefined>
+  extends UseAutocompleteProps<Value, Multiple>,
+    StandardProps<
+      React.HTMLAttributes<HTMLDivElement>,
+      "defaultValue" | "onChange" | "children" | "color"
+    >,
+    Pick<
+      SingleInputProps,
+      | "variant"
+      | "size"
+      | "placeholder"
+      | "name"
+      | "label"
+      | "required"
+      | "color"
+      | "error"
+      | "disableBorder"
+    >,
+    AutoSelectSlotsAndSlotProps<Value, Multiple> {
   /**
    * Override or extend the styles applied to the component.
    */
@@ -191,21 +181,15 @@ export interface AutoSelectProps<
   closeText?: string;
 
   /**
-   * If `true`, the component is disabled.
-   * @default false
-   */
-  disabled?: boolean;
-  /**
    * If `true`, the `Popper` content will be under the DOM hierarchy of the parent component.
    * @default false
    */
   disablePortal?: boolean;
-  disablePopper?: boolean;
   /**
    * Force the visibility display of the popup icon.
    * @default 'auto'
    */
-  forcePopupIcon?: true | false | 'auto';
+  forcePopupIcon?: true | false | "auto";
   /**
    * If `true`, the input will take up the full width of its container.
    * @default false
@@ -219,7 +203,7 @@ export interface AutoSelectProps<
    * @default (more) => `+${more}`
    */
   getLimitTagsText?: (more: number) => React.ReactNode;
-  
+
   /**
    * If `true`, the component is in a loading state.
    * This shows the `loadingText` in place of suggestions (only if there are no suggestions to show, for example `options` are empty).
@@ -247,7 +231,9 @@ export interface AutoSelectProps<
    */
   noOptionsText?: React.ReactNode;
   onKeyDown?: (
-    event: React.KeyboardEvent<HTMLDivElement> & { defaultMuiPrevented?: boolean },
+    event: React.KeyboardEvent<HTMLDivElement> & {
+      defaultMuiPrevented?: boolean;
+    },
   ) => void;
   /**
    * Override the default text for the *open popup* icon button.
@@ -263,11 +249,6 @@ export interface AutoSelectProps<
    */
   popupIcon?: React.ReactNode;
   /**
-   * If `true`, the component becomes readonly. It is also supported for multiple tags where the tag cannot be deleted.
-   * @default false
-   */
-  readOnly?: boolean;
-  /**
    * Render the group.
    *
    * @param {AutoSelectRenderGroupParams} params The group to render.
@@ -280,7 +261,20 @@ export interface AutoSelectProps<
    * @param {object} params
    * @returns {ReactNode}
    */
-  renderInput: (params: AutoSelectRenderInputParams) => React.ReactNode;
+  renderInput?: (params: SingleInputProps, popup?: boolean) => React.ReactNode;
+
+  renderOutside?: (
+    getRootProps: UseAutocompleteReturnValue<Value, Multiple>['getRootProps'],
+    getInputProps: UseAutocompleteReturnValue<Value, Multiple>['getInputProps'],
+    ClearIndicator: React.FunctionComponent<any>,
+    open: boolean,
+    hasClearIcon: boolean,
+    children: React.ReactNode
+  ) => React.ReactNode;
+
+  renderInputValue?: (
+    value: AutocompleteValue<Value, Multiple>,
+  ) => React.ReactNode;
   /**
    * Render the option, use `getOptionLabel` by default.
    *
@@ -294,7 +288,7 @@ export interface AutoSelectProps<
     props: React.HTMLAttributes<HTMLLIElement> & { key: any },
     option: Value,
     state: AutoSelectRenderOptionState,
-    ownerState: AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>,
+    ownerState: AutoSelectOwnerState<Value, Multiple>,
   ) => React.ReactNode;
   /**
    * Render the selected value.
@@ -307,23 +301,13 @@ export interface AutoSelectProps<
   renderTags?: (
     value: Value[],
     getTagProps: AutoSelectRenderGetTagProps,
-    ownerState: AutoSelectOwnerState<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>,
+    ownerState: AutoSelectOwnerState<Value, Multiple>,
   ) => React.ReactNode;
-  /**
-   * The size of the component.
-   * @default 'medium'
-   */
-  size?: TextFieldProps['size'];
+
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */
   sx?: SxThemeProps;
-
-  variant?: TextFieldProps['variant'],
-  label?: TextFieldProps['label'],
-  placeholder?: TextFieldProps['placeholder'],
-  name?: TextFieldProps['name'],
-  renderInput?: (params: AutoSelectRenderInputParams) => React.ReactNode;
 
   menuHeader?: React.ReactNode;
 
@@ -333,7 +317,6 @@ export interface AutoSelectProps<
 
   disablePopper?: boolean;
 }
-
 
 /**
  *
@@ -348,9 +331,4 @@ export interface AutoSelectProps<
 export default function AutoSelect<
   Value,
   Multiple extends boolean | undefined = false,
-  DisableClearable extends boolean | undefined = false,
-  FreeSolo extends boolean | undefined = false,
-  ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
->(
-  props: AutoSelectProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>,
-): React.JSX.Element;
+>(props: AutoSelectProps<Value, Multiple>): React.JSX.Element;

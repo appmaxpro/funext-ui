@@ -46,7 +46,7 @@ export interface FlexProps {
   flexDirection?: Responsive<CSS.Property.FlexDirection>;
   flexFlow?: Responsive<CSS.Property.FlexFlow>;
   flexGrow?: Responsive<CSS.Property.FlexGrow>;
-  grow: Responsive<CSS.Property.FlexGrow>;
+  grow?: Responsive<CSS.Property.FlexGrow>;
   shrink?: Responsive<CSS.Property.FlexShrink>;
   flexWrap?: Responsive<CSS.Property.FlexWrap>;
   order?: Responsive<CSS.Property.Order>;

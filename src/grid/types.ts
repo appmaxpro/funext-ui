@@ -200,7 +200,12 @@ export interface GridProps {
   overflow?: boolean;
   bodyAs?: React.ElementType;
   tableStyles?: TableStyles;
+  slots?:{
+      header: React.JSXElementConstructor<{}>;
+  }
 }
+
+
 
 export interface GridRowProps {
   data: GridRow;

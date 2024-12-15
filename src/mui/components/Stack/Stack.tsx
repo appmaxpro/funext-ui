@@ -9,7 +9,6 @@ export const Stack = styled.div<StackProps>(
   ({ gap = 0, horizontal }) => [
     {
       'flex-col': !horizontal,
-      'flex-row': !!horizontal,
       'gap': gap
     },
   ],

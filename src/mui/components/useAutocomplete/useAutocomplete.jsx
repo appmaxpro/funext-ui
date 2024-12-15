@@ -95,8 +95,11 @@ export function useAutocomplete(props) {
     autoSelect = false,
     blurOnSelect = false,
     clearOnBlur = !freeSolo,
-    clearOnSelect = !!freeSolo && clearOnBlur,
+    clearOnSelect = freeSolo && clearOnBlur,
+    selectOnFocus = !freeSolo,
+    handleHomeEndKeys = !freeSolo,
     clearOnEscape = false,
+    openOnFocus = false,
     componentName = 'useAutocomplete',
     multiple = false,
     defaultValue = multiple ? MULTIPLE_DEFAULT_VALUE : null,
@@ -116,7 +119,7 @@ export function useAutocomplete(props) {
     getOptionKey,
     getOptionLabel: getOptionLabelProp = (option) => option.label ?? option,
     groupBy,
-    handleHomeEndKeys = !freeSolo,
+    
     id: idProp,
     includeInputInList = false,
     inputValue: inputValueProp,
@@ -130,13 +133,13 @@ export function useAutocomplete(props) {
     onInputChange,
     onOpen,
     open: openProp,
-    openOnFocus = false,
     options,
     readOnly = false,
-    selectOnFocus = !freeSolo,
+    
     value: valueProp,
     action,
-    inOpen
+    inOpen,
+    renderOutside
   } = props;
 
   const id = useId(idProp);
@@ -311,8 +314,9 @@ export function useAutocomplete(props) {
   }
 
   const focusTag = useEventCallback((tagToFocus) => {
-    if (tagToFocus === -1) {
-      inputRef.current.focus();
+    if (tagToFocus === -1 ) {
+      if(inputRef.current)
+        inputRef.current.focus();
     } else {
       anchorEl.querySelector(`[data-tag-index="${tagToFocus}"]`).focus();
     }
@@ -363,6 +367,7 @@ export function useAutocomplete(props) {
   }
 
   const setHighlightedIndex = useEventCallback(({ event, index, reason = 'auto' }) => {
+    if(!inputRef.current) return;
     highlightedIndexRef.current = index;
     
     // does the index exist?
@@ -466,12 +471,13 @@ export function useAutocomplete(props) {
         listboxNode.scrollTop = element.offsetTop - element.offsetHeight * (groupBy ? 1.3 : 0);
       }
     }
-  });
+  }, [inputRef]);
 
   const changeHighlightedIndex = useEventCallback(
     ({ event, diff, direction = 'next', reason = 'auto' }) => {
       
-      if (!popupOpen) {
+      if (!popupOpen || !inputRef.current) {
+        console.log("changeHighlightedIndex: no inputRef")
         return;
       }
 
@@ -533,12 +539,12 @@ export function useAutocomplete(props) {
           // The portion of the selected suggestion that has not been typed by the user,
           // a completion string, appears inline after the input cursor in the textbox.
           const index = option.toLowerCase().indexOf(inputValue.toLowerCase());
-          if (index === 0 && inputValue.length > 0) {
+          if (index === 0 && inputValue.length > 0 && inputRef.current.setSelectionRange) {
             inputRef.current.setSelectionRange(inputValue.length, option.length);
           }
         }
       }
-    },
+    }, [inputRef]
   );
 
   const getPreviousHighlightedOptionIndex = () => {
@@ -709,9 +715,8 @@ export function useAutocomplete(props) {
     if (onClose) {
       onClose(reason, event);
     }
+    console.log(componentName, ":handleClose: reason:", reason);
   };
-
-  React.useImperativeHandle(action, ()=> ({handleOpen, handleClose}));
 
   const handleValue = (event, newValue, reason, details) => {
     if (disabledProp || readOnly) {
@@ -787,6 +792,7 @@ export function useAutocomplete(props) {
       (blurOnSelect === 'touch' && isTouch.current) ||
       (blurOnSelect === 'mouse' && !isTouch.current)
     ) {
+      if(inputRef.current)
       inputRef.current.blur();
     }
   };
@@ -856,10 +862,12 @@ export function useAutocomplete(props) {
     focusTag(nextTag);
   };
 
-  const handleClear = (event) => {
-    ignoreFocus.current = true;
+  const handleClear = (event, outside) => {
     setInputValueState('');
-
+    if(outside) {
+      return;
+    }
+    ignoreFocus.current = true;
     if (onInputChange) {
       onInputChange('', 'clear', event);
     }
@@ -880,6 +888,8 @@ export function useAutocomplete(props) {
       setFocusedTag(-1);
       focusTag(-1);
     }
+
+    console.log("handleKeyDown:", event.key);
 
     // Wait until IME is settled.
     if (event.which !== 229) {
@@ -961,7 +971,7 @@ export function useAutocomplete(props) {
             selectNewValue(event, option, 'selectOption');
 
             // Move the selection to the end.
-            if (autoComplete) {
+            if (autoComplete && inputRef.current.setSelectionRange) {
               inputRef.current.setSelectionRange(
                 inputRef.current.value.length,
                 inputRef.current.value.length,
@@ -1042,7 +1052,7 @@ export function useAutocomplete(props) {
 
   const handleBlur = (event) => {
     // Ignore the event when using the scrollbar with IE11
-    if (open && unstable_isActiveElementInListbox(listboxRef)) {
+    if (open && (renderOutside || unstable_isActiveElementInListbox(listboxRef))) {
       inputRef.current.focus();
       console.log("AutoSelect force refocus");
       return;
@@ -1147,7 +1157,7 @@ export function useAutocomplete(props) {
   // Focus the input when interacting with the combobox
   const handleClick = (event) => {
     // Prevent focusing the input if click is anywhere outside the Autocomplete
-    if (!event.currentTarget.contains(event.target)) {
+    if (!event.currentTarget.contains(event.target) || !inputRef.current) {
       return;
     }
     inputRef.current.focus();
@@ -1171,6 +1181,8 @@ export function useAutocomplete(props) {
 
   let dirty = freeSolo && inputValue.length > 0;
   dirty = dirty || (multiple ? value.length > 0 : value !== null);
+
+  let outsideDirty = freeSolo && inputValue.length > 0;
 
   let groupedOptions = filteredOptions;
   if (groupBy) {
@@ -1247,14 +1259,16 @@ export function useAutocomplete(props) {
       disabled: disabledProp,
       readOnly: (readOnly || !allowFilter)
     }),
-    getClearProps: () => ({
+    getClearProps: (outside) => ({
       tabIndex: -1,
       type: 'button',
-      onClick: handleClear,
+      onClick: (event) => handleClear(event, outside),
     }),
     getPopupIndicatorProps: () => ({
       tabIndex: -1,
       type: 'button',
+      'area-haspopup': "true",
+      'area-expanded': `${open}`,
       onClick: handlePopupIndicator,
     }),
     getTagProps: (index) => ({
@@ -1299,6 +1313,7 @@ export function useAutocomplete(props) {
     inputValue,
     value,
     dirty,
+    outsideDirty,
     expanded: popupOpen && anchorEl,
     popupOpen: popupOpen,
     focused: focused || focusedTag !== -1,
@@ -1306,6 +1321,8 @@ export function useAutocomplete(props) {
     setAnchorEl,
     focusedTag,
     groupedOptions,
+    handleClose,
+    handleOpen
   };
 }
 

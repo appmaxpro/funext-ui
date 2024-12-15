@@ -385,9 +385,12 @@ video {
   box-shadow: var(--tw-footer-shadow);
 }
 
+.container-hover:focus .focus-show,
+.container-hover:focus-within .focus-within-show,
 .container-hover:active .active-show,
 .container-hover:hover .hover-show {
   display: unset;
+  visibility: unset;
 }
 
 @tailwind base;

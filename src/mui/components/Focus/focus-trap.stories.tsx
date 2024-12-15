@@ -1,7 +1,7 @@
 import { Box } from "../box";
-import { Button } from "../button";
-import { Input } from "../input";
-import { FocusTrap } from "./.";
+import { Button } from "../Button";
+import { Input } from "../Input";
+import { FocusTrap } from "./FocusTrap";
 
 const config = {
   component: FocusTrap,

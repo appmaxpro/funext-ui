@@ -149,7 +149,7 @@ const animation = {
   },
 };
 
-export declare type Backdrop = {
+export declare type Backdrop = React.HTMLAttributes<'div'> & {
   className?: string;
   animate?: AnimationProps | false;
   duration?: number;
@@ -684,9 +684,11 @@ export const PopperContent = React.forwardRef<
         ),
       [backdrop],
     );
-
+    
+    
     const backdropContent = backdrop ? (
       <PopperBackdrop
+        {...backdrop}
         key={"backdrop-" + labelId}
         className={
           backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"

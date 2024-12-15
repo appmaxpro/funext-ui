@@ -33,17 +33,13 @@ export function createFilterOptions<Value>(
 
 export type AutocompleteFreeSoloValueMapping<FreeSolo> = FreeSolo extends true ? string : never;
 
-export type AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo> = Multiple extends true
-  ? Array<Value | AutocompleteFreeSoloValueMapping<FreeSolo>>
-  : DisableClearable extends true
-    ? NonNullable<Value | AutocompleteFreeSoloValueMapping<FreeSolo>>
-    : Value | null | AutocompleteFreeSoloValueMapping<FreeSolo>;
+export type AutocompleteValue<Value, Multiple> = Multiple extends true
+  ? Array<Value>
+  : Value | null | undefined;
 
 export interface UseAutocompleteProps<
   Value,
-  Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
+  Multiple extends boolean | undefined
 > {
   /**
    * @internal The prefix of the state class name, temporary for Joy UI
@@ -114,12 +110,12 @@ export interface UseAutocompleteProps<
    * The default value. Use when the component is not controlled.
    * @default props.multiple ? [] : null
    */
-  defaultValue?: AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo>;
+  defaultValue?: AutocompleteValue<Value, Multiple>;
   /**
    * If `true`, the input can't be cleared.
    * @default false
    */
-  disableClearable?: DisableClearable;
+  disableClearable?: boolean;
   /**
    * If `true`, the popup won't close when a value is selected.
    * @default false
@@ -171,7 +167,7 @@ export interface UseAutocompleteProps<
    * If `true`, the Autocomplete is free solo, meaning that the user input is not bound to provided options.
    * @default false
    */
-  freeSolo?: FreeSolo;
+  freeSolo?: boolean;
 
   allowCreateOption?: boolean;
 
@@ -191,7 +187,7 @@ export interface UseAutocompleteProps<
    * @param {Value} option The option to get the key for.
    * @returns {string | number}
    */
-  getOptionKey?: (option: Value | AutocompleteFreeSoloValueMapping<FreeSolo>) => string | number;
+  getOptionKey?: (option: Value) => string | number;
   /**
    * Used to determine the string value for a given option.
    * It's used to fill the input (and the list box options if `renderOption` is not provided).
@@ -202,7 +198,7 @@ export interface UseAutocompleteProps<
    * @returns {string}
    * @default (option) => option.label ?? option
    */
-  getOptionLabel?: (option: Value | AutocompleteFreeSoloValueMapping<FreeSolo>) => string;
+  getOptionLabel?: (option: Value) => string;
   /**
    * If provided, the options will be grouped under the returned string.
    * The groupBy value is also used as the text for group headings when `renderGroup` is not provided.
@@ -247,7 +243,7 @@ export interface UseAutocompleteProps<
    * @param {string} [details]
    */
   onChange?: (
-    value: AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo>,
+    value: AutocompleteValue<Value, Multiple>,
     reason: AutocompleteChangeReason,
     event: React.SyntheticEvent,   
     details?: AutocompleteChangeDetails<Value>, 
@@ -321,7 +317,7 @@ export interface UseAutocompleteProps<
    * The value must have reference equality with the option in order to be selected.
    * You can customize the equality behavior with the `isOptionEqualToValue` prop.
    */
-  value?: AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo>;
+  value?: AutocompleteValue<Value, Multiple>;
 
   action?: React.Ref<OpenChangeAction>;
 
@@ -330,10 +326,8 @@ export interface UseAutocompleteProps<
 
 export interface UseAutocompleteParameters<
   Value,
-  Multiple extends boolean | undefined,
-  DisableClearable extends boolean | undefined,
-  FreeSolo extends boolean | undefined,
-> extends UseAutocompleteProps<Value, Multiple, DisableClearable, FreeSolo> {}
+  Multiple extends boolean | undefined
+> extends UseAutocompleteProps<Value, Multiple> {}
 
 export type AutocompleteHighlightChangeReason = 'keyboard' | 'mouse' | 'auto' | 'touch';
 
@@ -365,7 +359,7 @@ export type AutocompleteGetTagProps = (index: number) => {
   key: number;
   'data-tag-index': number;
   tabIndex: -1;
-  onDelete: (event: any) => void;
+  onClose: (event: any) => void;
 };
 /**
  *
@@ -379,12 +373,10 @@ export type AutocompleteGetTagProps = (index: number) => {
  */
 export function useAutocomplete<
   Value,
-  Multiple extends boolean | undefined = false,
-  DisableClearable extends boolean | undefined = false,
-  FreeSolo extends boolean | undefined = false,
+  Multiple extends boolean | undefined = false
 >(
-  props: UseAutocompleteProps<Value, Multiple, DisableClearable, FreeSolo>,
-): UseAutocompleteReturnValue<Value, Multiple, DisableClearable, FreeSolo>;
+  props: UseAutocompleteProps<Value, Multiple>,
+): UseAutocompleteReturnValue<Value, Multiple>;
 
 export default useAutocomplete;
 
@@ -395,9 +387,7 @@ export interface UseAutocompleteRenderedOption<Value> {
 
 export interface UseAutocompleteReturnValue<
   Value,
-  Multiple extends boolean | undefined = false,
-  DisableClearable extends boolean | undefined = false,
-  FreeSolo extends boolean | undefined = false,
+  Multiple extends boolean | undefined = false
 > {
   /**
    * Resolver for the root slot's props.
@@ -456,7 +446,7 @@ export interface UseAutocompleteReturnValue<
   /**
    * The value of the autocomplete.
    */
-  value: AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo>;
+  value: AutocompleteValue<Value, Multiple>;
   /**
    * If `true`, the component input has some values.
    */
