@@ -23,6 +23,7 @@ export interface RadioStylesType {
     containerProps?: objectType;
     labelProps?: objectType;
     iconProps?: objectType;
+    size?: 'sm' | 'md' | 'lg';
   };
   valid?: {
     colors?: string[];
@@ -45,6 +46,7 @@ export const radio: RadioStylesType = {
     containerProps: undefined,
     labelProps: undefined,
     iconProps: undefined,
+    size: 'md'
   },
   valid: {
     colors: propTypesColors,

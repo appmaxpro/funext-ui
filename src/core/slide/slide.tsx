@@ -93,32 +93,32 @@ function getTranslateValue(
 
   if (direction === "start") {
     if (containerRect) {
-      return `translateX(${containerRect.right + offsetX - rect.left}px)`;
+      return `translate3d(${containerRect.right + offsetX - rect.left}px, 0, 0)`;
     }
 
-    return `translateX(${containerWindow.innerWidth + offsetX - rect.left}px)`;
+    return `translate3d(${containerWindow.innerWidth + offsetX - rect.left}px, 0, 0)`;
   }
 
   if (direction === "end") {
     if (containerRect) {
-      return `translateX(-${rect.right - containerRect.left - offsetX}px)`;
+      return `translate3d(-${rect.right - containerRect.left - offsetX}, 0, 0)`;
     }
 
-    return `translateX(-${rect.left + rect.width - offsetX}px)`;
+    return `translate3d(-${rect.left + rect.width - offsetX}px, 0, 0)`;
   }
 
   if (direction === "up") {
     if (containerRect) {
-      return `translateY(${containerRect.bottom + offsetY - rect.top}px)`;
+      return `translateY(0, ${containerRect.bottom + offsetY - rect.top}px, 0)`;
     }
-    return `translateY(${containerWindow.innerHeight + offsetY - rect.top}px)`;
+    return `translateY(0, ${containerWindow.innerHeight + offsetY - rect.top}px, 0)`;
   }
 
   // direction === 'down'
   if (containerRect) {
-    return `translateY(-${rect.top - containerRect.top + rect.height - offsetY}px)`;
+    return `translateY(0, -${rect.top - containerRect.top + rect.height - offsetY}px, 0)`;
   }
-  return `translateY(-${rect.top + rect.height - offsetY}px)`;
+  return `translateY(0, -${rect.top + rect.height - offsetY}px, 0)`;
 }
 
 function resolveContainer(containerPropProp: any) {

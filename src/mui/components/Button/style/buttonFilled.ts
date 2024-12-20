@@ -4,23 +4,33 @@ const buttonFilled: object = {
   transparent: {
     bg: "bg-transparent",
   },
+  inherit:{
+    background: "bg-hd-sm",
+    color: "text-slate-900",
+    focus: "focus:opacity-[0.9] focus:bg-hd-md",
+    active: "active:opacity-[0.85]",
+    hover: "hover:bg-hd-md"
+  },
   white: {
     background: "bg-white",
     color: "text-slate-900",
-    focus: "focus:opacity-[0.9]",
+    focus: "focus:opacity-[0.9] focus:bg-hd-xs",
     active: "active:opacity-[0.85]",
+    hover: "hover:bg-hd-sm"
   },
   black: {
     background: "bg-slate-900",
     color: "text-white",
     focus: "focus:opacity-[0.9]",
     active: "active:opacity-[0.85]",
+    hover: "hover:bg-slate-800"
   },
   primary: {
     background: "bg-primary",
     color: "text-white",
-    focus: "text-opacity-[0.9]",
-    active: "text-opacity-[0.85]"
+    focus: "focus:text-opacity-[0.9] focus:bg-primary-600",
+    active: "active:text-opacity-[0.85]",
+    hover: "hover:bg-primary-700"
   },
   sky: {
     background: "bg-sky",

@@ -3,6 +3,13 @@ const buttonGhost: object = {
   transparent: {
     bg: "bg-transparent",
   },
+  inherit:{
+    background: "bg-hd-sm",
+    color: "text-hd-xxl",
+    focus: "focus:bg-hd-md",
+    active: "active:opacity-[0.85]",
+    hover: "hover:bg-hd-md"
+  },
   white: {
     background: "bg-white/10",
     color: "text-white",
@@ -84,7 +91,6 @@ const buttonGhost: object = {
   pink: {
     bg: "bg-pink-500/20",
     color: "text-pink-900",
-    shadow: "shadow-sm shadow-pink-500/20",
     focus: "focus:opacity-[0.9]",
     active: "active:opacity-[0.85]",
   },

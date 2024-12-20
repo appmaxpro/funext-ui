@@ -63,8 +63,6 @@ export const iconButton: IconButtonStyleTypes = {
   },
   styles: {
     base: {
-      disabled: "disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none",
-      position: "relative",
     },
     sizes: {
       sm: {

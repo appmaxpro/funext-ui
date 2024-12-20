@@ -10,6 +10,7 @@ const colors = {
   'hd-md': 'rgb(var(--tw-hd-md-rgb) / <alpha-value>)',
   'hd-lg': 'rgb(var(--tw-hd-lg-rgb) / <alpha-value>)',
   'hd-xl': 'rgb(var(--tw-hd-xl-rgb) / <alpha-value>)',
+  'hd-xxl': 'rgb(var(--tw-hd-xxl-rgb) / <alpha-value>)',
   'body-text': 'rgb(var(--tw-body-color-rgb) / <alpha-value>)',
   
   ringColor: 'rgb(var(--tw-primary-700-rgb) / <alpha-value>)',
@@ -70,6 +71,20 @@ const colors = {
     '900': '#111827',
     '950': '#030712'
   },
+  yellow: {
+    DEFAULT: '#FFFF00',
+    50: '#FFFFE5',
+    100: '#FFFFCC',
+    200: '#FFFF99',
+    300: '#FFFF66',
+    400: '#FFFF33',
+    500: '#FFFF00',
+    600: '#DBDB00',
+    700: '#B8B800',
+    800: '#949400',
+    900: '#707000',
+    950: '#5E5E00'
+  },
   orange: {
     50: "#fff3e0",
     100: "#ffe0b2",
@@ -119,16 +134,18 @@ const colors = {
     '900': "#0c4a6e",
   },
   blue: {
-    50: "#e3f2fd",
-    100: "#bbdefb",
-    200: "#90caf9",
-    300: "#64b5f6",
-    400: "#42a5f5",
-    500: "#2196f3",
-    600: "#1e88e5",
-    700: "#1976d2",
-    800: "#1565c0",
-    900: "#0d47a1",
+    DEFAULT: "#3b82f6",  
+    50: "#eff5ff",
+    100: "#dbe8fe",
+    200: "#bfd7fe",
+    300: "#93bbfd",
+    400: "#609afa",
+    500: "#3b82f6",
+    600: "#2570eb",
+    700: "#1d64d8",
+    800: "#1e55af",
+    900: "#1e478a",
+    950: "#172e54"
   },
   indigo: {
     50: "#e8eaf6",

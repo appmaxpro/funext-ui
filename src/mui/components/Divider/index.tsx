@@ -66,7 +66,7 @@ const DividerRoot = styled('div', {
   flexShrink: 0,
   borderWidth: 0,
   borderStyle: 'solid',
-  borderColor: (theme.vars || theme).palette.divider,
+  borderColor: `var(--tw-border-color, ${(theme.vars || theme).palette.divider})`,
   borderBottomWidth: 'thin',
   variants: [
     {

@@ -21,9 +21,15 @@ export interface DialogHeaderProps extends SxComponentProps<"div"> {
 }
 
 const DialogHeaderRoot = styled('div', {
-  name: 'DialogHeader',
-  slot: 'Root'
-})<SxComponentProps<any>>('');
+  name: 'Header',
+  slot: 'MuxDialog'
+})<SxComponentProps<any>>({
+  display: 'flex',
+  alignItems: 'center',
+  flex: '0 0 auto',
+  padding: '12px 16px',
+  flexWrap: 'nowrap'
+});
 
 export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
   ({ className, titleClassName, children, onClose, actions, divider, ...rest }, ref) => {

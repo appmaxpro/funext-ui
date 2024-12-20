@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react'
 import Tour from './Tour'
 import { ProviderProps, TourProps } from './types'
+import { useRtl } from '../../styles'
 
 const defaultState = {
   isOpen: false,
@@ -31,7 +32,7 @@ const TourProvider: React.FC<ProviderProps> = ({
   const [steps, setSteps] = useState(defaultSteps)
   const [meta, setMeta] = useState('')
   const [disabledActions, setDisabledActions] = useState(false)
-
+  const rtl = useRtl();
   const value = {
     isOpen,
     setIsOpen,
@@ -46,6 +47,7 @@ const TourProvider: React.FC<ProviderProps> = ({
     setDisabledActions,
     meta,
     setMeta,
+    rtl,
     ...props,
   }
 

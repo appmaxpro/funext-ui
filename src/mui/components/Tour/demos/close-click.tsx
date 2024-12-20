@@ -7,7 +7,7 @@ export default function App () {
   return (
     <TourProvider 
       steps={steps}
-      onClickClose={({ setCurrentStep, currentStep, steps, setIsOpen }) => {
+      onCloseClick={({ setCurrentStep, currentStep, steps, setIsOpen }) => {
         if (steps) {
           if (currentStep === steps.length - 1) {
             setIsOpen(false)

@@ -47,13 +47,10 @@ export const dialog: DialogStylesType = {
     base: {
       backdrop: {
         position: "absolute",
-        display: "flex",
-        placeItems: "items-center justify-center",
-        width: "w-screen",
-        height: "h-screen",
-        backgroundColor: "bg-black",
-        backgroundOpacity: "bg-opacity-60",
-        backdropFilter: "backdrop-blur-[2px]",
+        backgroundColor: "bg-black dark:bg-white",
+        backgroundOpacity: "bg-opacity-50",
+        transition: "transition-all"	
+        //backdropFilter: "backdrop-blur-[2px]",
       },
       dialog:{
           display: "flex",

@@ -149,7 +149,7 @@ const animation = {
   },
 };
 
-export declare type Backdrop = React.HTMLAttributes<'div'> & {
+export declare type Backdrop = React.HTMLAttributes<"div"> & {
   className?: string;
   animate?: AnimationProps | false;
   duration?: number;
@@ -445,7 +445,7 @@ export const PopperPortal = ({
   keepMounted,
   focusProps,
   trigger,
-  type = 'popper',
+  type = "popper",
   ...rest
 }: PopperPortalProps) => {
   const { open, openState, setOpenState } = context;
@@ -561,13 +561,16 @@ const PopperRoot = styled("div", {
 })("");
 
 const PopperBackdrop = styled("div", {
-  name: "MuxPopperBackdrop",
-  slot: "Root",
-})<SxComponentProps<any>>("");
+  name: "Backdrop",
+  slot: "MuxPopper",
+})<SxComponentProps<any>>({
+  zIndex: -1,
+  inset: 0,
+});
 
 const PopperContentRoot = styled("div", {
-  name: "MuxPopperContent",
-  slot: "Root",
+  name: "Content",
+  slot: "MuxPopper",
 })("");
 
 export const PopperContent = React.forwardRef<
@@ -583,6 +586,7 @@ export const PopperContent = React.forwardRef<
       internal,
       children,
       contentProps,
+      onClick,
       sx,
       ...props
     },
@@ -601,7 +605,7 @@ export const PopperContent = React.forwardRef<
     } = usePopper();
     const isPresent = useIsPresent();
     //const [isPresent, safeToRemove] = usePresence()
-    const { refs, context, x, y, strategy } = floating;
+    const { refs, context, x, y, strategy, floatingStyles } = floating;
 
     const mergedRef = useMergeRefs([ref, refs.setFloating]);
     const disableAnimation = typeof animate === "boolean" ? !animate : false;
@@ -623,8 +627,7 @@ export const PopperContent = React.forwardRef<
               ? props.style(floating)
               : {
                   position: strategy,
-                  top: y ?? "",
-                  left: x ?? "",
+                  ...floatingStyles,
                   ...props.style,
                 },
         } as any)}
@@ -684,14 +687,14 @@ export const PopperContent = React.forwardRef<
         ),
       [backdrop],
     );
-    
-    
+
     const backdropContent = backdrop ? (
       <PopperBackdrop
         {...backdrop}
         key={"backdrop-" + labelId}
         className={
-          backdrop.className ?? "bg-slate-800/[.3] dark:bg-slate-300/[.3]"
+          backdrop.className ??
+          "transition-all	bg-slate-950/[.3] dark:bg-slate-100/[.3]"
         }
         style={{
           position: strategy,
@@ -705,19 +708,21 @@ export const PopperContent = React.forwardRef<
           animate: open ? "mount" : "unmount",
           as: m.div,
         })}
-      >
-        {content}
-      </PopperBackdrop>
-    ) : (
-      content
-    );
+      />
+    ) : null;
 
     const focusContent = focusProps ? (
-      <FloatingFocusManager {...focusProps} context={context}>
+      <>
         {backdropContent}
-      </FloatingFocusManager>
+        <FloatingFocusManager {...focusProps} context={context}>
+          {content}
+        </FloatingFocusManager>
+      </>
     ) : (
-      backdropContent
+      <>
+        {backdropContent}
+        {content}
+      </>
     );
 
     return overlay ? (

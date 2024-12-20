@@ -139,7 +139,8 @@ export function useAutocomplete(props) {
     value: valueProp,
     action,
     inOpen,
-    renderOutside
+    renderOutside,
+    required
   } = props;
 
   const id = useId(idProp);
@@ -957,7 +958,10 @@ export function useAutocomplete(props) {
             handleClose(event, 'escape');
             return;
           }
-          if (highlightedIndexRef.current !== -1 && popupOpen) {
+          if(!multiple && inputValue === '' && !required) {
+            handleValue(event, multiple ? [] : null, 'clear');
+          }
+          else if (highlightedIndexRef.current !== -1 && popupOpen) {
             const option = filteredOptions[highlightedIndexRef.current];
             const disabled = getOptionDisabled ? getOptionDisabled(option) : false;
 
@@ -1010,8 +1014,11 @@ export function useAutocomplete(props) {
             popupOpen && handleClose(event, 'escape');
             return;
           }
+          if(!multiple && inputValue === '' && !required) {
+            handleValue(event, null, 'clear');
+          }
           // Remove the value on the left of the "cursor"
-          if (multiple && !readOnly && inputValue === '' && value.length > 0) {
+          if (multiple && inputValue === '' && value.length > 0) {
             const index = focusedTag === -1 ? value.length - 1 : focusedTag;
             const newValue = value.slice();
             newValue.splice(index, 1);
@@ -1027,7 +1034,7 @@ export function useAutocomplete(props) {
             return;
           }
           // Remove the value on the right of the "cursor"
-          if (multiple && !readOnly && inputValue === '' && value.length > 0 && focusedTag !== -1) {
+          if (multiple && inputValue === '' && value.length > 0 && focusedTag !== -1) {
             const index = focusedTag;
             const newValue = value.slice();
             newValue.splice(index, 1);

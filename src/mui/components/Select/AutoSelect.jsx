@@ -354,7 +354,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     name: "MuxAuoSelect",
   });
   const {
-    select: { defaultProps },
+    input: { defaultProps },
   } = useTailwindTheme();
 
   /* eslint-disable @typescript-eslint/no-unused-vars */

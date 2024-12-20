@@ -25,7 +25,7 @@ export type StylesKeys = StyleKey
 
 export const defaultStyles: Styles = {
   maskWrapper: () => ({
-    opacity: 0.7,
+    opacity: 0.5,
     left: 0,
     top: 0,
     position: 'fixed',

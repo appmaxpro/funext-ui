@@ -35,13 +35,14 @@ const useUtilityClasses = (ownerState:any) => {
       variant,
       `size${capitalize(size)}`,
       `color${capitalize(color)}`,
-      disableElevation && 'disableElevation',
+      (disableElevation && variant === 'filled' && 'disableElevation'),
       fullWidth && 'fullWidth',
       !disable && 'canHover'
     ],
     label: ['label'],
     startIcon: ['icon', 'startIcon', `iconSize${capitalize(size)}`],
     endIcon: ['icon', 'endIcon', `iconSize${capitalize(size)}`],
+    midIcon: ['icon', 'midIcon', `iconSize${capitalize(size)}`],
   };
 
   const composedClasses = composeClasses(slots, getButtonUtilityClass, classes);
@@ -58,7 +59,7 @@ const commonIconStyles = [
     props: { size: 'sm' },
     style: {
       '& > *:nth-of-type(1)': {
-        fontSize: 18,
+        fontSize: "1.125rem",
       },
     },
   },
@@ -66,7 +67,7 @@ const commonIconStyles = [
     props: { size: 'md' },
     style: {
       '& > *:nth-of-type(1)': {
-        fontSize: 20,
+        fontSize: "1.5rem",
       },
     },
   },
@@ -74,7 +75,7 @@ const commonIconStyles = [
     props: { size: 'lg' },
     style: {
       '& > *:nth-of-type(1)': {
-        fontSize: 22,
+        fontSize: "1.875rem",
       },
     },
   },
@@ -113,7 +114,7 @@ export const ButtonRoot = styled(ButtonBase, {
       padding: '6px 16px',
       border: 0,
       borderRadius: theme.shape.borderRadius,
-      transition: 'box-shadow,border-color,'+theme.transitions.create(
+      transition: 'box-shadow,border-color,color,opacity,'+theme.transitions.create(
         'background-color',
         {
           duration: theme.transitions.duration.short,
@@ -357,6 +358,18 @@ export const ButtonRoot = styled(ButtonBase, {
     };
   }),
 );
+export const ButtonMidIcon = styled('span', {
+  name: 'MuxButton',
+  slot: 'MidIcon',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+
+    return [styles.midIcon, styles[`iconSize${capitalize(ownerState.size)}`]];
+  },
+})({
+  display: 'inherit',
+  variants: commonIconStyles
+});
 
 export const ButtonStartIcon = styled('span', {
   name: 'MuxButton',

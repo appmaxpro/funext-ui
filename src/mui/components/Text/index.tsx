@@ -66,6 +66,7 @@ export const TextRoot = styled("span", {
       ownerState.noWrap && styles.noWrap,
       ownerState.gutterBottom && styles.gutterBottom,
       ownerState.paragraph && styles.paragraph,
+      ownerState.fw && `fw${styles.fw}`,
     ];
   },
 })(({ theme }) => ({

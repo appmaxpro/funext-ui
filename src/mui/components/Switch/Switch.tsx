@@ -19,6 +19,7 @@ import {
   generateUtilityClass,
   SxThemeProps,
   useTheme,
+  useTailwindTheme,
 } from "../../styles";
 import { capitalize } from "../../utils";
 import { OverridableStringUnion, StandardProps } from "../../props";
@@ -105,9 +106,9 @@ const SwitchRoot = styled("span", {
 })({
   display: "inline-flex",
   width: 34 + 12 * 2,
-  height: 14 + 12 * 2,
+  height: 18 + 10 * 2,
   overflow: "hidden",
-  padding: 12,
+  padding: 10,
   boxSizing: "border-box",
   position: "relative",
   flexShrink: 0,
@@ -128,17 +129,20 @@ const SwitchRoot = styled("span", {
     {
       props: { size: "lg" },
       style: {
-        width: 34 + 18 * 2,
-        height: 14 + 18 * 2,
-        padding: '18px 12px',
+        width: 76,
+        height: 36 + 10 * 2,
+        padding: 15,
         [`& .${switchClasses.thumb}`]: {
-          width: 24,
-          height: 24,
+          width: 18,
+          height: 18,
+        },
+        [`& .${switchClasses.track}`]: {
+          height: 20,
         },
         [`& .${switchClasses.switchBase}`]: {
-          padding: 11,
+          padding: 16,
           [`&.${switchClasses.checked}`]: {
-            transform: "translateX(24px)",
+            transform: "translateX(26px)",
           },
         },
       },
@@ -147,16 +151,19 @@ const SwitchRoot = styled("span", {
       props: { size: "sm" },
       style: {
         width: 40,
-        height: 24,
+        height: 18 + 7 * 2,
         padding: 7,
         [`& .${switchClasses.thumb}`]: {
-          width: 16,
-          height: 16,
+          width: 12,
+          height: 12,
+        },
+        [`& .${switchClasses.track}`]: {
+          height: 14,
         },
         [`& .${switchClasses.switchBase}`]: {
-          padding: 4,
+          padding: 8,
           [`&.${switchClasses.checked}`]: {
-            transform: "translateX(16px)",
+            transform: "translateX(12px)",
           },
         },
       },
@@ -183,7 +190,7 @@ const SwitchSwitchBase = styled(SwitchBase, {
     top: 0,
     left: 0,
     zIndex: 1, // Render above the focus ripple.
-
+    padding: 11,
     transition: theme.transitions.create(["left", "transform"], {
       duration: theme.transitions.duration.shortest,
     }),
@@ -242,7 +249,7 @@ const SwitchTrack = styled("span", {
   overridesResolver: (props, styles) => styles.track,
 })(
   memoTheme(({ theme }) => ({
-    height: "100%",
+    height: 18,
     width: "100%",
     borderRadius: '999px',
     zIndex: -1,
@@ -263,9 +270,9 @@ const SwitchThumb = styled("span", {
 })(
   memoTheme(({ theme }) => ({
     boxShadow: (theme.vars || theme).shadows[1],
-    backgroundColor: "var(--tw-body-bg)",
-    width: 20,
-    height: 20,
+    backgroundColor: "var(--tw-gray-50)",
+    width: 16,
+    height: 16,
     borderRadius: "50%",
     variants: [
       {
@@ -341,12 +348,15 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
     const checkboxId = React.useId();
     const theme = useTheme();
     const props = useMuiDefaultProps({ props: inProps, name: "MuxSwitch" });
+    const { switch: toggle } = useTailwindTheme();
+    const { defaultProps, valid, styles } = toggle;
+    
     const {
       className,
       error,
       color: inColor = "primary",
       edge = false,
-      size = "md",
+      size = defaultProps?.size ?? "md",
       ripple = true,
       label,
       labelPosition,
@@ -369,7 +379,6 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
     };
 
     const classes = useUtilityClasses(ownerState);
-    console.log("Switch :classes:", classes) 
     const icon = (
       <SwitchThumb className={classes.thumb} ownerState={ownerState} />
     );

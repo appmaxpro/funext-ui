@@ -1,14 +1,21 @@
 import React, { MouseEventHandler } from 'react'
 import { StylesObj, stylesMatcher } from './styles'
 import { safe, getWindow, getPadding, RectResult } from '../utils'
+import { right } from '@popperjs/core'
 
+const defaultSize = {
+  left: 0,
+  top: 0,
+  width: 0,
+  height: 0
+}
 const Mask: React.FC<MaskProps> = ({
   padding = 10,
   wrapperPadding = 0,
   onClick,
   onClickHighlighted,
   styles = {},
-  sizes,
+  sizes = defaultSize,
   className,
   highlightedAreaClassName,
   maskId,
@@ -20,10 +27,10 @@ const Mask: React.FC<MaskProps> = ({
   const [pt, pr, pb, pl] = getPadding(padding)
   const [wpt, wpr, wpb, wpl] = getPadding(wrapperPadding)
   const { w, h } = getWindow()
-  const width = safe(sizes?.width + pl + pr)
-  const height = safe(sizes?.height + pt + pb)
-  const top = safe(sizes?.top - pt - wpt)
-  const left = safe(sizes?.left - pl - wpl)
+  const width = safe(sizes.width + pl + pr)
+  const height = safe(sizes.height + pt + pb)
+  const top = safe(sizes.top - pt - wpt)
+  const left = safe(sizes.left - pl - wpl)
   const windowWidth = w - wpl - wpr
   const windowHeight = h - wpt - wpb
 

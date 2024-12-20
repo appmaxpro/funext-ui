@@ -186,7 +186,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
     let {
       variant,
       size,
-      color,
+      color = 'primary',
       open,
       onClose,
       animate,
@@ -277,7 +277,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
             dense
             //@ts-ignore
             color={
-              variant === "outlined" || variant === "ghost" ? color : "inherit"
+              variant === "outlined" || variant === "ghost" ? color : "default"
             }
             className={actionClasses}
             disabled={rest.disabled}
@@ -294,6 +294,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
 
     const child = (
       <ChipRoot
+        ripple={!!rest.onClick}
         {...rest}
         ownerState={ownerState}
         className={finalClassName}

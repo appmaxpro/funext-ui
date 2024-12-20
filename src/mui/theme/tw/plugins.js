@@ -40,8 +40,6 @@ const plugins = {
     
     const gray = theme('colors')['gray'] || {};
     const colors = extractColorVars(theme('colors'));
-    const bodyColor = get(gray['900']);
-    const tertiaryColor = get(gray['500']);
     
     var defaults = {};
     var white = defaults['white'] || '#ffffff';
@@ -71,7 +69,8 @@ const plugins = {
       hd_sm: '#F3F6F9', //#f6f8fa
       hd_md: colors['--tw-slate-200'],
       hd_lg: colors['--tw-slate-300'],
-      hd_xl: colors['--tw-slate-400'],
+      hd_xl: colors['--tw-slate-500'],
+      hd_xxl: colors['--tw-slate-700'],
 
       divide: colors['--tw-slate-300'],
 
@@ -79,6 +78,7 @@ const plugins = {
       black: black,
       light: light,
       dark: dark,
+      theme_table_border_color: '#e0e0e003',
       
       ...defaults.lightScheme
     }
@@ -105,12 +105,14 @@ const plugins = {
       hd_sm: colors['--tw-slate-900'],
       hd_md: colors['--tw-slate-800'],
       hd_lg: colors['--tw-slate-700'],
-      hd_xl: colors['--tw-slate-600'],
+      hd_xl: colors['--tw-slate-500'],
+      hd_xxl: colors['--tw-slate-300'],
 
       white: black,
       black: white,
       light: dark,
       dark: light,
+      theme_table_border_color: '#51515103',
 
       divide: colors['--tw-slate-700'],
       ...defaults.darkScheme

@@ -17,13 +17,6 @@ export const dialogFooter: DialogFooterStylesType = {
   },
   styles: {
     base: {
-      display: "flex",
-      alignItems: "items-center",
-      justifyContent: "justify-end",
-      flexShrink: "shrink-0",
-      flexWrap: "flex-wrap",
-      p: "p-3",
-      color: "text-slate",
     },
     divider: {
       borderTop: "border-t"

@@ -1,6 +1,8 @@
 import React from "react";
 import { useDrag } from "react-dnd";
 import { Divider } from "../mui";
+import { styled } from "..";
+import Separator from "../mui/components/internal/svg-icons/Separator";
 
 export function GridColumResizer(props: React.HTMLAttributes<HTMLSpanElement>) {
   const [, drag, preview] = useDrag(
@@ -14,9 +16,24 @@ export function GridColumResizer(props: React.HTMLAttributes<HTMLSpanElement>) {
     [],
   );
   return (
-    <span ref={drag} {...props}>
+    <ColumnSeparatorRoot ref={drag} {...props}>
       {preview && <span ref={preview} />}
-      <Divider vertical />
-    </span>
+      <Separator size="md"/>
+    </ColumnSeparatorRoot>
   );
 }
+
+const ColumnSeparatorRoot = styled("div", {
+  name: "MuxDataGrid",
+  slot: "columnSeparator",
+})({
+  position: "absolute",
+  overflow: "hidden",
+  zIndex: 3,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  maxWidth: 10,
+  color: "var(--tw-hd-lg)",
+});

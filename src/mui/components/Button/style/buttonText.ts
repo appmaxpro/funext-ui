@@ -1,10 +1,14 @@
 
 const buttonText: object = {
-  inherit: {
-    color: "text-inherit",
-  },
   transparent: {
     bg: "bg-transparent",
+  },
+  inherit:{
+    background: "bg-hd-sm",
+    color: "text-inherit",
+    focus: "focus:bg-hd-md",
+    active: "active:opacity-[0.85]",
+    hover: "hover:bg-hd-md"
   },
   default: {
     hover: "hover:bg-hd-md/75",

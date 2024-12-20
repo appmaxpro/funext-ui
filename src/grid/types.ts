@@ -129,6 +129,8 @@ export interface GridProps {
   allowRowExpand?: boolean;
   stickyHeader?: boolean;
   stickyFooter?: boolean;
+  hideHeader?: boolean;
+  mode?: 'table' | 'list',
   rowHeight?: number | string;
   maxRowHeight?: number | string;
   addNewText?: string | React.ReactNode;

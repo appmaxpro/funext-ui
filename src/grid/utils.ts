@@ -64,11 +64,13 @@ export function getColumnWidth(
   value?: number,
   isResize = false,
 ) {
+  
   return Math.max(
     GRID_CONFIG.COLUMN_MIN_WIDTH,
     isResize ? 0 : column.width || 0,
     column.minWidth || 0,
     value || 0,
+    (column.title?.length ?? 0 ) * 8 + (column.sortable ? 32 : 0) + 32
   );
 }
 

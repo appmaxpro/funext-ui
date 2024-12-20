@@ -1,3 +1,5 @@
+import { useCallback } from "react"
+
 export type StylesKeys =
   | 'badge'
   | 'content'
@@ -33,27 +35,13 @@ export type Styles = {
 export type StyleKey = keyof Styles
 
 export const defaultStyles: Styles = {
-  badge: () => ({
-    position: 'absolute',
-    fontFamily: 'monospace',
-    background: 'var(--reactour-accent,#007aff)',
-    height: '1.875em',
-    lineHeight: 2,
-    paddingLeft: '0.8125em',
-    paddingRight: '0.8125em',
-    fontSize: '1em',
-    borderRadius: '1.625em',
-    color: 'white',
-    textAlign: 'center',
-    boxShadow: '0 0.25em 0.5em rgba(0, 0, 0, 0.3)',
-    top: '-0.8125em',
-    left: '-0.8125em',
+  badge: ({ rtl }) => ({
+    top: 0,
+    [rtl ? 'right': 'left']: rtl ? -16 : 0,
+    [rtl ? 'left': 'right']: 'unset',
   }),
   content: () => ({
-    backgroundColor: '#fff',
     padding: '24px 30px',
-    boxShadow: '0 0.5em 3em rgba(0, 0, 0, 0.3)',
-    color: 'inherit',
   }),
   controls: () => ({
     display: 'flex',
@@ -72,9 +60,8 @@ export const defaultStyles: Styles = {
 
   }),
   arrow: ({ disabled }) => ({
-    color: disabled ? '#caccce' : '#646464',
     width: 16,
-    height: 12,
+    height: 16,
     flex: '0 0 16px',
   }),
   dot: ({ current, disabled, showNumber }) => ({
@@ -111,8 +98,8 @@ export const defaultStyles: Styles = {
   }),
   close: ({ rtl }) => ({
     position: 'absolute',
-    top: 4,
-    [rtl ? 'left': 'right']: 4,
+    top: -10,
+    [rtl ? 'left': 'right']: -10,
   }),
   svg: () => ({
     display: 'block',
@@ -128,3 +115,5 @@ export function stylesMatcher(styles: StylesObj) {
     return custom ? custom(base, state) : base
   }
 }
+
+export const useStylesMatcher = () => useCallback(stylesMatcher, [])

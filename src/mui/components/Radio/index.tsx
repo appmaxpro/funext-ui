@@ -11,6 +11,7 @@ import {
   clsx,
   useMuiDefaultProps,
   SxThemeProps,
+  useTailwindTheme,
 } from "../../styles";
 import SwitchBase, { SwitchBaseProps } from "../internal/SwitchBase";
 import { capitalize } from "../../utils";
@@ -174,14 +175,15 @@ const defaultIcon = <RadioButtonIcon />;
 export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
   function Radio(inProps, ref) {
     const props = useMuiDefaultProps({ props: inProps, name: "MuxRadio" });
-
+    const { radio } = useTailwindTheme();
+    
     const {
       checked: checkedProp,
       checkedIcon = defaultCheckedIcon,
       color:inColor = "primary",
       icon = defaultIcon,
       name: nameProp,
-      size = "md",
+      size = radio?.defaultProps?.size ?? "md",
       className,
       disabled: disabledProp,
       ripple = true,

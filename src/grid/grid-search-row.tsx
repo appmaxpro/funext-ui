@@ -25,6 +25,7 @@ export const GridSearchRow = React.memo(function GridSearchRow(
             key={column.id ?? column.name}
             data={rest}
             index={index}
+            type="header"
           >
             {ColumnRenderer && (
               <ColumnRenderer column={rest} columnIndex={index} />

@@ -9,19 +9,27 @@ import Navigation, {
 import IconButton, { IconButtonProps } from '../../IconButton';
 import { MaterialIcon } from '../../../../icons/material-icon';
 
-export interface PopoverComponents {
-  Badge: ComponentType<BadgeProps>
-  Close: ComponentType<IconButtonProps>
-  Content: ComponentType<ContentProps>
-  Navigation: ComponentType<NavigationProps>
-  Arrow: ComponentType<ArrowProps>
+export interface PopoverSlots {
+  Badge: ComponentType<BadgeProps>;
+  Close: ComponentType<IconButtonProps>;
+  Content: ComponentType<ContentProps>;
+  Navigation: ComponentType<NavigationProps>;
+  Arrow: ComponentType<ArrowProps>;
 }
 
-export type PopoverComponentsType = Partial<PopoverComponents>
+export interface PopoverSlotProps {
+  badge?: BadgeProps;
+  close?: IconButtonProps;
+  content?: ContentProps;
+  navigation?: NavigationProps;
+  arrow?: ArrowProps;
+}
+
+export type PopoverSlotsType = Partial<PopoverSlots>;
 
 export const components = {
   Badge,
-  Close: (props:IconButtonProps) => (<IconButton {...props}><MaterialIcon icon='close'/></IconButton>),
+  Close: (props:IconButtonProps) => (<IconButton variant='filled' color='inherit' icon='close' {...props} />),
   Content,
   Navigation,
   Arrow,
@@ -29,10 +37,10 @@ export const components = {
 
 export type PopoverComponentGeneric = typeof components
 
-export const defaultComponents = (
-  comps: PopoverComponentsType
-): PopoverComponentGeneric =>
+export const defaultSlots = (
+  comps?: PopoverSlotsType
+): PopoverSlots =>
   ({
     ...components,
     ...comps,
-  }) as PopoverComponentGeneric
+  })

@@ -115,6 +115,10 @@
   min-height: 0;
   min-width: 0;
   max-height: 100%;
+  padding: var(--ax-panel-body-padding);
+  &.noFrame{
+    padding: 0;
+  }
 }
 
 .content {

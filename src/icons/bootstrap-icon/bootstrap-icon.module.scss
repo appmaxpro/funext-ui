@@ -6,3 +6,7 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
   align-items: center;
   font-size: inherit;
 }
+
+.icon::before {
+  scale: .8;
+}

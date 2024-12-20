@@ -25,13 +25,13 @@ import {
 } from "../../types/components/badge";
 import { mapThemeColor } from "../../hooks";
 import { SxBox } from "../Box";
+import { SxComponentProps } from "src/mui/styles";
 
-export interface BadgeProps {
+export interface BadgeProps extends SxComponentProps {
   color?: color;
   invisible?: invisible;
   withBorder?: withBorder;
   overlap?: overlap;
-  className?: className;
   content?: content;
   children?: children;
   placement?: placement;

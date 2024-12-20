@@ -1,35 +1,51 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useEnhancedEffect } from "../../hooks";
 import debounce from "@mui/utils/debounce";
 
-const callbackDebounce = debounce(function(cb: () => void) {
-   
-}, 300);
+const callbackDebounce = debounce(function (cb: () => void) {}, 200);
 
-export function useInViewport<T extends HTMLElement = HTMLDivElement>(): {
-  visible: boolean;
-  ref: React.RefObject<T>;
-} {
+export function useInViewport<T extends HTMLElement = HTMLDivElement>(
+  debugId?: string,
+) {
+  const [node, setNode] = useState<T | null>(null);
+
+  const ref = useCallback((nodeElement: T | null) => {
+    setNode(nodeElement);
+  }, []);
+
+  const visible = useInViewportWithRef(node, debugId);
+  return { ref, visible, node };
+}
+
+export function useInViewportWithRef<T extends HTMLElement = HTMLDivElement>(
+  node: MutableRefObject<T | null> | T | null,
+  debugId?: string,
+): boolean {
   const [visible, setVisible] = useState(false);
-  const ref = React.useRef<T>(null);
 
-  useEnhancedEffect(() => {
-    const { current } = ref;
-    if (current && !visible) {
+  useEffect(() => {
+    console.log("useInViewport: for:", debugId, ", element:", node);
+    const element = node instanceof HTMLElement ? node : node?.current;
+    if (element) {
       function setVisibility(visibility: boolean) {
-        if (ref.current) {
+        if ((node instanceof HTMLElement ? node : node?.current)) {
           setVisible(visibility);
         }
       }
-      const hasIOSupport = !!window.IntersectionObserver
+      const hasIOSupport = !!window.IntersectionObserver;
       if (!hasIOSupport) {
         setVisible(true);
-        return
+        return;
       }
 
       let requestFrame: number;
       const observer = new IntersectionObserver(([entry]) => {
-        if(entry.target === ref.current){
+        if (entry.target === element) {
           const visible = entry.isIntersecting;
           if (
             "requestAnimationFrame" in window &&
@@ -44,13 +60,14 @@ export function useInViewport<T extends HTMLElement = HTMLDivElement>(): {
           }
         }
       });
-      observer.observe(current);
+      observer.observe(element);
       return () => {
-        observer.unobserve(current);
+        observer.unobserve(element);
         observer.disconnect();
       };
     }
-  }, [visible]);
+  }, [node, setVisible]);
 
-  return { visible, ref };
+  return visible;
 }
+

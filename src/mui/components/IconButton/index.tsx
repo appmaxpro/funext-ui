@@ -6,7 +6,14 @@ import { twMerge } from "tailwind-merge";
 import { cn } from "../../utils/cn";
 import findMatch from "../../utils/findMatch";
 import objectsToString from "../../utils/objectsToString";
-import { styled } from "../../styles";
+import {
+  composeClasses,
+  generateUtilityClass,
+  generateUtilityClasses,
+  memoTheme,
+  styled,
+  Theme,
+} from "../../styles";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -24,73 +31,163 @@ import type {
 import { mapThemeColor } from "../../hooks";
 import { ButtonBase } from "../Button";
 import type { ButtonBaseProps } from "../Button/ButtonBase";
+import { capitalize } from "../../utils";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+import { MaterialIcon, MaterialIconProps } from "../../../icons/material-icon";
 
 export interface IconButtonProps extends ButtonBaseProps {
   variant?: variant;
   size?: size;
   color?: color | "transparent" | "inherit";
-  fullWidth?: boolean;
   dense?: boolean;
+  disableElevation?: boolean;
+  focusVisible?: boolean;
+  icon?: MaterialIconProps['icon']
+
 }
 
-let hasStyled = false;
 
-try {
-  //console.log("styled:", styled);
-  hasStyled = true;
-} catch (e) {
-  console.error(e);
+export function getButtonUtilityClass(slot: string): string {
+  return generateUtilityClass("MuxIconButton", slot);
 }
+
+export const iconButtonClasses = generateUtilityClasses("MuxIconButton", [
+  "root",
+  "text",
+  "outlined",
+  "filled",
+  "ghost",
+  "disableElevation",
+  "focusVisible",
+  "disabled",
+  "sizeMd",
+  "sizeSm",
+  "sizeLg",
+  "dense",
+]);
+
+const useUtilityClasses = (ownerState: any) => {
+  const { color, disableElevation, size, variant, classes, disable, dense } =
+    ownerState;
+
+  const slots = {
+    root: [
+      "root",
+      variant,
+      `size${capitalize(size)}`,
+      `color${capitalize(color)}`,
+      disableElevation && variant === "filled" && "disableElevation",
+      dense && "dense",
+    ],
+  };
+
+  const composedClasses = composeClasses(slots, getButtonUtilityClass, classes);
+
+  return {
+    ...classes, // forward the focused, disabled, etc. classes to the ButtonBase
+    ...composedClasses,
+  };
+};
 
 let IconButtonRoot = styled(ButtonBase, {
   name: "MuxIconButton",
   slot: "Root",
-})({
-  color: "inherit",
-  textAlign: "center",
-  flex: "0 0 auto",
-  borderRadius: "50%",
-  overflow: "visible",
-  variants: [
-    {
-      props: {
-        size: "sm",
-      },
-      style: {
-        padding: "0.375rem",
-        fontSize: "1.125rem",
-      },
+  shouldForwardProp: (prop) => rootShouldForwardProp(prop) || prop === 'classes',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+
+    return [
+      styles.root,
+      styles[ownerState.variant],
+      styles[`${ownerState.variant}${capitalize(ownerState.color)}`],
+      styles[`size${capitalize(ownerState.size)}`],
+      styles[`${ownerState.variant}Size${capitalize(ownerState.size)}`],
+      ownerState.disableElevation && styles.disableElevation,
+    ];
+  },
+})(
+  memoTheme(({ theme }: { theme: Theme }) => ({
+    textAlign: "center",
+    flex: "0 0 auto",
+    borderRadius: "50%",
+    overflow: "visible",
+    transition:
+      "box-shadow,border-color,opacity,color," +
+      theme.transitions.create("background-color", {
+        duration: theme.transitions.duration.standard,
+      }),
+    [`&.${iconButtonClasses.disabled}`]: {
+      //color: theme.palette.action.disabled,
+      opacity: .5
     },
-    {
-      props: {
-        size: "md",
+    variants: [
+      {
+        props: {
+          variant: "filled",
+          disableElevation: false,
+        },
+        style: {
+          boxShadow: theme.shadows[2],
+          "&:hover": {
+            boxShadow: theme.shadows[4],
+            // Reset on touch devices, it doesn't add specificity
+            "@media (hover: none)": {
+              boxShadow: theme.shadows[2],
+            },
+          },
+          "&:active": {
+            boxShadow: theme.shadows[8],
+          },
+          [`&.${iconButtonClasses.focusVisible}`]: {
+            boxShadow: theme.shadows[6],
+          },
+          [`&.${iconButtonClasses.disabled}`]: {
+            color: theme.palette.action.disabled,
+            boxShadow: theme.shadows[0],
+            backgroundColor: theme.palette.action.disabledBackground,
+          },
+        },
       },
-      style: {
-        padding: "0.5rem",
-        fontSize: "1.5rem", //1.75rem
+      {
+        props: {
+          size: "sm",
+        },
+        style: {
+          padding: "0.375rem",
+          fontSize: "1.125rem",
+        },
       },
-    },
-    {
-      props: {
-        size: "lg",
+      {
+        props: {
+          size: "md",
+        },
+        style: {
+          padding: "0.5rem",
+          fontSize: "1.5rem", //1.75rem
+        },
       },
-      style: {
-        padding: "0.625rem",
-        fontSize: ".875rem",
+      {
+        props: {
+          size: "lg",
+        },
+        style: {
+          padding: "0.625rem",
+          fontSize: "1.875rem",
+        },
       },
-    },
-    {
-      props: {
-        size: "md",
-        dense: true,
+      {
+        props: {
+          size: "md",
+          dense: true,
+        },
+        style: {
+          padding: "4px",
+          fontSize: "20px",
+        },
       },
-      style: {
-        padding: "4px",
-        fontSize: "20px",
-      },
-    },
-  ],
-});
+    ],
+  })),
+);
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   (
@@ -101,9 +198,12 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       ripple,
       focusRipple = true,
       className,
-      fullWidth,
       dense,
       disabled,
+      disableElevation = false,
+      focusVisible = true,
+      icon,
+      children,
       ...rest
     },
     ref,
@@ -113,13 +213,12 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
     const { valid, defaultProps, styles } = iconButton;
     const { base, variants, sizes } = styles;
 
-    const { classes, ownerState } = React.useMemo(() => {
+    const { themeClassName, classes, ownerState } = React.useMemo(() => {
       // 2. set default props
       variant = variant ?? defaultProps.variant;
       size = size ?? defaultProps.size;
       color = mapThemeColor(color, defaultProps.color);
       ripple = ripple ?? defaultProps.ripple;
-      className = twMerge(defaultProps.className || "", className);
       // 2. set styles
       const buttonBase = objectsToString(base);
       const variantName = findMatch(valid.variants, variant, "text");
@@ -128,41 +227,39 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 
       const buttonVariant = objectsToString(buttonVariantColor);
 
-      const sizeName = findMatch(valid.sizes, size, "md");
-      const buttonSize = objectsToString(sizes[sizeName]);
-      const classes = cn(
-        buttonBase,
-        buttonSize,
-        buttonVariant,
-        dense && "mt-ic-dense",
-        `mt-ic-button mt-size-${sizeName}`,
-        `mt-color-${color}`,
-        className,
-      );
+      //const sizeName = findMatch(valid.sizes, size, "md");
+      //const buttonSize = objectsToString(sizes[sizeName]);
+      const themeClassName = cn(buttonBase, buttonVariant, defaultProps.className, className);
 
       const ownerState = {
+        ...rest,
         size,
         color,
         variant,
-        disabled,
+        disabled: disabled ?? false,
         dense,
+        disableElevation,
+        focusVisible,
       };
-
-      return { classes, ownerState };
-    }, [iconButton, variant, color, size, className, disabled]);
+      const classes = useUtilityClasses(ownerState);
+      return { classes, ownerState, themeClassName };
+    }, [iconButton, variant, color, size, className, disabled, focusVisible]);
 
     // 5. return
     return (
       <IconButtonRoot
         {...rest}
         ref={ref}
-        className={classes}
+        className={themeClassName}
         ripple={ripple}
         type={rest.type || "button"}
         ownerState={ownerState}
         focusRipple={focusRipple}
         disabled={disabled}
-      />
+        classes={classes}
+      >
+       {children ?? (icon && <MaterialIcon icon={icon}/>)}  
+    </IconButtonRoot>
     );
   },
 );

@@ -111,11 +111,8 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
   const ContentPane = scrollbar?.custom ? Scrollable : "div";
 
   const content = (
-    <div className={styles.body}>
-      <ContentPane className={clsx(styles.content, noFrame && styles.noFrame)} onScroll={onScroll}>
-        {children}
-      </ContentPane>
-      {hasFooter && <div className={styles.footer}>{footer}</div>}
+    <div className={styles.body} onScroll={onScroll}>
+      {children}
     </div>
   );
 
@@ -130,10 +127,16 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
       onExited={onExited}
       className={styles.bodyWrapper}
     >
-      {content}
+      <>
+        {content}
+        {hasFooter && <div className={styles.footer}>{footer}</div>}
+      </>
     </Collapse>
   ) : (
-    <div className={styles.bodyWrapper}>{content}</div>
+    <div className={styles.bodyWrapper}>
+      {content}
+      {hasFooter && <div className={styles.footer}>{footer}</div>}
+    </div>
   );
 
   return (

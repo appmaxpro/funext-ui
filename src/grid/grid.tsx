@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { useClassNames } from "../core";
 import { useRefs, clsx,  Box, useRtl, styled} from "../mui";
 import { GridBody } from "./grid-body";
@@ -20,7 +20,7 @@ import {
 } from "./utils";
 import { defaultTableStyles } from "./styles";
 
-function debounce(func: () => void, timeout: number = 1000) {
+function debounce(func: () => void, timeout: number = 600) {
   let timer: any;
   return (...args: any) => {
     clearTimeout(timer);
@@ -103,11 +103,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       striped,
       overflow,
       tableStyles: styles = defaultTableStyles,
-      bodyAs
-    } = props;
-    const isRTL = useRtl();
-
-    const {
+      bodyAs,
       hasRowExpanded,
       onRowClick,
       onRowDoubleClick,
@@ -120,9 +116,6 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       onRecordSave,
       onRecordDiscard,
       onColumnCustomize,
-    } = props;
-
-    const {
       rowRendererAll,
       cellRenderer,
       rowRenderer,
@@ -137,11 +130,19 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       editRowColumnRenderer,
       searchRowRenderer,
       searchColumnRenderer,
+      mode = rowRendererAll ? 'list' : 'table',
+      hideHeader = mode === 'list',
+      
+    } = props;
+    const isRTL = useRtl();
+
+    const {
+      
     } = props;
 
     const handleRef = useRefs(containerRef, ref);
     const totalRows = state.rows.length;
-
+    const headerRef = useRef<HTMLDivElement>(null);
     const getContainerWidth = React.useCallback(() => {
       const container = containerRef.current;
       if (container) {
@@ -155,7 +156,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
     const sizingColumns = React.useCallback(() => {
       setState((state) => {
         const columns = [...state.columns];
-        if (!columns.length) return;
+        if (!columns.length || mode == 'list') return;
         if (
           allowCheckboxSelection &&
           !columns.find((col) => col.name === "__select__")
@@ -185,7 +186,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             sortable: false,
             searchable: false,
             action: true,
-            width: 32,
+            width: 42,
           });
         }
         if (
@@ -213,7 +214,7 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
           const unComputedColumns = displayColumns.filter(
             (col) => !col.computed,
           );
-          const remainWidth =
+          let remainWidth =
             totalWidth -
             computedColumns.reduce(
               (total, col) =>
@@ -224,15 +225,42 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
                 ),
               0,
             );
-          const colWidth = remainWidth / unComputedColumns.length;
+          
+          if(unComputedColumns.length) {
+            const colWidth = remainWidth / unComputedColumns.length;
+            //const collection = headerRef?.current?.children;
 
-          state.columns = columns.map((col) => {
-            if (col.computed) return col;
-            return {
-              ...col,
-              width: getColumnWidth(col, colWidth, true),
-            };
-          });
+            state.columns = columns.map((col, index) => {
+              if (col.computed) return col;
+              //const node = collection?.item?.(index)
+              //console.log("column index:", index, ", width:", node?.clientWidth)
+              return {
+                ...col,
+                width:  getColumnWidth(col, colWidth, true),
+              };
+            });
+          }
+          remainWidth =
+            totalWidth - displayColumns.reduce(
+            (total, col) =>
+              total +
+              Math.max(
+                parseFloat(`${col.width || 0}`),
+                parseFloat(`${col.minWidth || 0}`),
+              ),
+            0,
+          );
+          if (remainWidth > 0) {
+            const noneActionColumns = displayColumns.filter((col) => !col.action);
+            const plus = noneActionColumns.length ? remainWidth / noneActionColumns.length : 0;
+            state.columns = columns.map((col, index) => {
+              if (col.action || col.visible === false) return col;
+              return {
+                ...col,
+                width:  (col.width ?? 0) + plus,
+              };
+            });
+          }
         }
       });
     }, [
@@ -241,6 +269,8 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       allowRowReorder,
       getContainerWidth,
       setState,
+      mode,
+      headerRef
     ]);
 
     // handle column sorting
@@ -1290,11 +1320,23 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
       let cancelled = false;
       let id = 0;
       let lastWidth = getContainerWidth();
-
+      let lastCalc = 0;
+      let overdue = 0;
       // observe resize for grid container
       const observeGrid = new ResizeObserver(
         debounce(() => {
           if (cancelled) return;
+          const now = Date.now();
+          if ((now - lastCalc) < 2000) {
+            overdue++;
+          } else {
+            overdue = 0;
+          }
+          lastCalc = now;
+          if (overdue > 3) {
+            return;
+          }
+          
           const currentWidth = getContainerWidth();
           if (currentWidth !== lastWidth) {
             lastWidth = currentWidth;
@@ -1407,57 +1449,60 @@ export const Grid = React.forwardRef<HTMLDivElement, TYPES.GridProps>(
             : {})}
           onScroll={handleScroll}
         >
-          <GridHeader
-            className={clsx(classNames(styles.header?.header, {
-              [styles.header?.sticky!]: stickyHeader,
-              [styles.header?.options!]: allowColumnOptions,
-              
-            }))}
-            groupBy={state.groupBy}
-            orderBy={state.orderBy}
-            columns={displayColumns}
-            cellRenderer={headerCellRenderer}
-            rowRenderer={headerRowRenderer}
-            checkType={checkType}
-            selectionType={selectionType}
-            shadow={headerShadow}
-            {...(allowColumnOptions ? { allColumns: state.columns } : {})}
-            {...(allowSearch
-              ? {
-                  searchRowRenderer,
-                  searchColumnRenderer,
-                }
-              : {})}
-            {...(!isEditMode
-              ? {
-                  ...(allowColumnResize
-                    ? {
-                        onColumnResizeStart: handleColumnResizeStart,
-                        onColumnResize: handleColumnResize,
-                        onColumnResizeEnd: handleColumnResizeEnd,
-                      }
-                    : {}),
-                  ...(allowSorting && {
-                    onColumnSort: handleSort,
-                  }),
-                  ...(allowGrouping
-                    ? {
-                        onColumnDrop: handleGroupColumnDrop,
-                        onColumnGroupAdd: handleGroupColumnAdd,
-                        onColumnGroupRemove: handleGroupColumnRemove,
-                      }
-                    : {}),
-                  ...(allowColumnCustomize ? { onColumnCustomize } : {}),
-                  ...(allowColumnHide
-                    ? {
-                        onColumnShow: handleColumnShow,
-                        onColumnHide: handleColumnHide,
-                      }
-                    : {}),
-                  onCheckAll: handleCheckAll,
-                }
-              : {})}
-          />
+          {!hideHeader &&
+            <GridHeader
+              className={clsx(classNames(styles.header?.header, {
+                [styles.header?.sticky!]: stickyHeader,
+                [styles.header?.options!]: allowColumnOptions,
+                
+              }))}
+              ref={headerRef}
+              groupBy={state.groupBy}
+              orderBy={state.orderBy}
+              columns={displayColumns}
+              cellRenderer={headerCellRenderer}
+              rowRenderer={headerRowRenderer}
+              checkType={checkType}
+              selectionType={selectionType}
+              shadow={headerShadow}
+              {...(allowColumnOptions ? { allColumns: state.columns } : {})}
+              {...(allowSearch
+                ? {
+                    searchRowRenderer,
+                    searchColumnRenderer,
+                  }
+                : {})}
+              {...(!isEditMode
+                ? {
+                    ...(allowColumnResize
+                      ? {
+                          onColumnResizeStart: handleColumnResizeStart,
+                          onColumnResize: handleColumnResize,
+                          onColumnResizeEnd: handleColumnResizeEnd,
+                        }
+                      : {}),
+                    ...(allowSorting && {
+                      onColumnSort: handleSort,
+                    }),
+                    ...(allowGrouping
+                      ? {
+                          onColumnDrop: handleGroupColumnDrop,
+                          onColumnGroupAdd: handleGroupColumnAdd,
+                          onColumnGroupRemove: handleGroupColumnRemove,
+                        }
+                      : {}),
+                    ...(allowColumnCustomize ? { onColumnCustomize } : {}),
+                    ...(allowColumnHide
+                      ? {
+                          onColumnShow: handleColumnShow,
+                          onColumnHide: handleColumnHide,
+                        }
+                      : {}),
+                    onCheckAll: handleCheckAll,
+                  }
+                : {})}
+            />
+          }
           <GridBody
             columns={displayColumns}
             rows={state.rows}

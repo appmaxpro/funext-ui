@@ -9,17 +9,17 @@ import { StylesObj as MaskStylesObj } from './mask';
 import {StylesObj as PopoverStylesObj} from './components/styles';
 
 import { RectResult } from './utils'
-import { PopoverComponentsType } from './components'
+import { PopoverSlotProps, PopoverSlotsType } from './components'
 import { StylesObj } from './styles'
 import { PopoverProps } from '../Popover'
 import { Position, PositionProps } from './components/Popover';
 import { BadgeProps } from '../Badge'
 import { IconButtonProps } from '../IconButton'
+import { PanelProps } from '../Panel';
 
 type SharedProps = KeyboardHandler & {
   steps: StepType[]
   styles?: StylesObj & MaskStylesObj & PopoverStylesObj;
-  popoverProps?: PopoverProps;
   padding?: Padding
   position?: Position
   disableInteraction?:
@@ -40,7 +40,7 @@ type SharedProps = KeyboardHandler & {
   afterOpen?: (target: Element | null) => void
   beforeClose?: (target: Element | null) => void
   onClickMask?: (clickProps: ClickProps) => void
-  onClickClose?: (clickProps: ClickProps) => void
+  onCloseClick?: (clickProps: ClickProps) => void
   onClickHighlighted?: (e: MouseEvent, clickProps: ClickProps) => void
   //  MouseEventHandler<SVGRectElement>
   badgeContent?: (badgeProps: BadgeStepProps) => any
@@ -52,22 +52,23 @@ type SharedProps = KeyboardHandler & {
   scrollSmooth?: boolean
   inViewThreshold?: number | { x?: number; y?: number }
   accessibilityOptions?: A11yOptions
-  rtl?: boolean
-  components?: PopoverComponentsType
+  rtl?: boolean;
+  Slots?: PopoverSlotsType;
+  slotProps?: PopoverSlotProps;
   ContentComponent?: ComponentType<PopoverContentProps>
   Wrapper?: ComponentType
 }
 
-export type PopoverContentProps = {
+export type PopoverContentProps = Partial<PanelProps> & {
   styles?: StylesObj & MaskStylesObj;
-  popoverProps?: PopoverProps;
   badgeProps?: BadgeProps;
   closeProps?: IconButtonProps;
   badgeContent?: (badgeProps: BadgeStepProps) => any
-  components?: PopoverComponentsType
+  Slots?: PopoverSlotsType;
+  slotProps?: PopoverSlotProps;
   accessibilityOptions?: A11yOptions
   disabledActions?: boolean
-  onClickClose?: (clickProps: ClickProps) => void
+  onCloseClick?: (clickProps: ClickProps) => void
   setCurrentStep: Dispatch<React.SetStateAction<number>>
   currentStep: number
   transition?: boolean
@@ -190,8 +191,9 @@ export type BtnFnProps = {
 }
 
 export type NavButtonProps = {
-  onClick?: () => void
-  kind?: 'next' | 'prev'
-  hideArrow?: boolean
+  onClick?: () => void;
+  kind?: 'next' | 'prev';
+  hideArrow?: boolean;
+  className?: string;
 }
 export type { StylesObj }

@@ -20,6 +20,7 @@ export interface SwitchButtonStylesType {
     containerProps?: objectType;
     labelProps?: objectType;
     circleProps?: objectType;
+    size?: 'sm' | 'md' | 'lg';
   };
   valid?: {
     colors?: string[];
@@ -40,6 +41,7 @@ export const switchButton: SwitchButtonStylesType = {
     containerProps: undefined,
     labelProps: undefined,
     circleProps: undefined,
+    size: 'md'
   },
   valid: {
     colors: propTypesColors,

@@ -3,10 +3,11 @@ import React, {
   Dispatch,
   ComponentType,
   PropsWithChildren,
-} from 'react'
-import { StylesObj, stylesMatcher } from '../styles'
-import { StepType, BtnFnProps, NavButtonProps } from '../types'
-import IconButton from '../../IconButton'
+} from "react";
+import { StylesObj, stylesMatcher } from "../styles";
+import { StepType, BtnFnProps, NavButtonProps } from "../types";
+import IconButton from "../../IconButton";
+import { clsx } from "../../../styles";
 
 const Navigation: React.FC<NavigationProps> = ({
   styles = {},
@@ -22,25 +23,27 @@ const Navigation: React.FC<NavigationProps> = ({
   disableAll,
   rtl,
   Arrow = DefaultArrow,
+  classes,
 }) => {
-  const stepsLength = steps.length
-  const getStyles = stylesMatcher(styles)
-
+  const stepsLength = steps.length;
+  const getStyles = stylesMatcher(styles);
+  const { dot, activeDot, currentDot, inactiveDot, button, control } =
+    classes ?? {};
   const Button: React.FC<PropsWithChildren<NavButtonProps>> = ({
     onClick,
-    kind = 'next',
+    kind = "next",
     children,
     hideArrow,
   }) => {
     function clickHandler() {
       if (!disableAll) {
-        if (onClick && typeof onClick === 'function') {
-          onClick()
+        if (onClick && typeof onClick === "function") {
+          onClick();
         } else {
-          if (kind === 'next') {
-            setCurrentStep(Math.min(currentStep + 1, stepsLength - 1))
+          if (kind === "next") {
+            setCurrentStep(Math.min(currentStep + 1, stepsLength - 1));
           } else {
-            setCurrentStep(Math.max(currentStep - 1, 0))
+            setCurrentStep(Math.max(currentStep - 1, 0));
           }
         }
       }
@@ -48,45 +51,51 @@ const Navigation: React.FC<NavigationProps> = ({
 
     return (
       <IconButton
-        disabled={disableAll
+        disabled={
+          disableAll
             ? disableAll
-            : kind === 'next'
-            ? stepsLength - 1 === currentStep
-            : currentStep === 0
+            : kind === "next"
+              ? stepsLength - 1 === currentStep
+              : currentStep === 0
         }
-        style={getStyles('button', {
+        style={getStyles("button", {
           kind,
           disabled: disableAll
             ? disableAll
-            : kind === 'next'
-            ? stepsLength - 1 === currentStep
-            : currentStep === 0,
+            : kind === "next"
+              ? stepsLength - 1 === currentStep
+              : currentStep === 0,
         })}
         onClick={clickHandler}
         aria-label={`Go to ${kind} step`}
+        className={button}
       >
         {!hideArrow ? (
           <Arrow
             styles={styles}
-            inverted={rtl ? kind === 'prev' : kind === 'next'}
+            inverted={rtl ? kind === "prev" : kind === "next"}
             disabled={
               disableAll
                 ? disableAll
-                : kind === 'next'
-                ? stepsLength - 1 === currentStep
-                : currentStep === 0
+                : kind === "next"
+                  ? stepsLength - 1 === currentStep
+                  : currentStep === 0
             }
           />
         ) : null}
         {children}
       </IconButton>
-    )
-  }
+    );
+  };
 
   return (
-    <div style={getStyles('controls', {})} dir={rtl ? 'rtl' : 'ltr'}>
+    <div
+      className={control}
+      style={getStyles("controls", {})}
+      dir={rtl ? "rtl" : "ltr"}
+    >
       {!hideButtons ? (
-        prevButton && typeof prevButton === 'function' ? (
+        prevButton && typeof prevButton === "function" ? (
           prevButton({
             Button,
             setCurrentStep,
@@ -100,28 +109,36 @@ const Navigation: React.FC<NavigationProps> = ({
         )
       ) : null}
       {!hideDots ? (
-        <div style={getStyles('navigation', {})}>
+        <div style={getStyles("navigation", {})}>
           {Array.from({ length: stepsLength }, (_, i) => i).map((index) => {
             return (
               <button
-                style={getStyles('dot', {
+                style={getStyles("dot", {
                   current: index === currentStep,
                   disabled: disableDots || disableAll,
                 })}
                 onClick={() => {
-                  if (!disableDots && !disableAll) setCurrentStep(index)
+                  if (!disableDots && !disableAll) setCurrentStep(index);
                 }}
                 key={`navigation_dot_${index}`}
                 aria-label={
                   steps[index]?.navDotAriaLabel || `Go to step ${index + 1}`
                 }
+                className={clsx(
+                  dot,
+                  index < currentStep
+                    ? activeDot
+                    : index === currentStep
+                      ? currentDot
+                      : inactiveDot,
+                )}
               />
-            )
+            );
           })}
         </div>
       ) : null}
       {!hideButtons ? (
-        nextButton && typeof nextButton === 'function' ? (
+        nextButton && typeof nextButton === "function" ? (
           nextButton({
             Button,
             setCurrentStep,
@@ -135,52 +152,59 @@ const Navigation: React.FC<NavigationProps> = ({
         )
       ) : null}
     </div>
-  )
-}
+  );
+};
 
 type BaseProps = {
-  styles?: StylesObj
-}
+  styles?: StylesObj;
+};
 
 export type NavigationProps = BaseProps & {
-  setCurrentStep: Dispatch<React.SetStateAction<number>>
-  steps: StepType[]
-  currentStep: number
-  disableDots?: boolean
-  nextButton?: (props: BtnFnProps) => ReactNode | null
-  prevButton?: (props: BtnFnProps) => ReactNode | null
-  setIsOpen: Dispatch<React.SetStateAction<boolean>>
-  hideButtons?: boolean
-  hideDots?: boolean
-  disableAll?: boolean
-  rtl?: boolean
-  Arrow?: ComponentType<ArrowProps>
-}
+  setCurrentStep: Dispatch<React.SetStateAction<number>>;
+  steps: StepType[];
+  currentStep: number;
+  disableDots?: boolean;
+  nextButton?: (props: BtnFnProps) => ReactNode | null;
+  prevButton?: (props: BtnFnProps) => ReactNode | null;
+  setIsOpen: Dispatch<React.SetStateAction<boolean>>;
+  hideButtons?: boolean;
+  hideDots?: boolean;
+  disableAll?: boolean;
+  rtl?: boolean;
+  Arrow?: ComponentType<ArrowProps>;
+  classes?: {
+    dot?: string;
+    activeDot?: string;
+    currentDot?: string;
+    inactiveDot?: string;
+    button?: string;
+    control?: string;
+  };
+};
 
-export default Navigation
+export default Navigation;
 
 export type ArrowProps = BaseProps & {
-  inverted?: boolean
-  disabled?: boolean
-}
+  inverted?: boolean;
+  disabled?: boolean;
+};
 
 export const DefaultArrow: React.FC<ArrowProps> = ({
   styles = {},
   inverted = false,
   disabled,
 }) => {
-  const getStyles = stylesMatcher(styles)
+  const getStyles = stylesMatcher(styles);
   return (
-    
-      <svg
+    <svg
       viewBox="0 0 18.4 14.4"
-      style={getStyles('arrow', { inverted, disabled })}
+      style={getStyles("arrow", { inverted, disabled })}
     >
       <path
         d={
           inverted
-            ? 'M17 7.2H1M10.8 1L17 7.2l-6.2 6.2'
-            : 'M1.4 7.2h16M7.6 1L1.4 7.2l6.2 6.2'
+            ? "M17 7.2H1M10.8 1L17 7.2l-6.2 6.2"
+            : "M1.4 7.2h16M7.6 1L1.4 7.2l6.2 6.2"
         }
         fill="none"
         stroke="currentColor"
@@ -189,5 +213,5 @@ export const DefaultArrow: React.FC<ArrowProps> = ({
         strokeMiterlimit="10"
       />
     </svg>
-  )
-}
+  );
+};

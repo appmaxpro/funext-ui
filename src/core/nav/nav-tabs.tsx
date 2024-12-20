@@ -52,6 +52,7 @@ export interface NavTabItem {
     active?: boolean;
     className?: string;
     children?: React.ReactNode;
+    icon?: React.ReactNode;
   }>;
 
   /**
@@ -210,12 +211,6 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
           const left = element.offsetLeft - margin;
           const right = element.offsetLeft + element.offsetWidth + margin;
 
-          console.log("NavTabs:", {
-            left,
-            right,
-            scrollLeft,
-            scrollRight
-          })
           const diff =
             right > scrollRight
               ? right - scrollRight
@@ -223,7 +218,6 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
                 ? -(scrollLeft - left)
                 : 0;
           
-          console.log("NavTabs scroll:", diff)      
           if (diff) {
             stripElement.scroll({
               left: scrollLeft + diff,
@@ -239,7 +233,6 @@ export const NavTabs = forwardRef<HTMLDivElement, NavTabsProps>(
       (id: string | null, element: HTMLElement | null, persist = true) => {
         persist && setActiveTab(id);
         setActiveElement(element);
-        console.log("setActive: id:", id, ", element:", element)
         if (element) {
           scrollIn(element);
         }
@@ -479,7 +472,7 @@ function NavTabInner(props: { item: NavTabItem; active?: boolean }) {
   const { icon, title, render: Title } = item;
   if (Title) {
     return (
-      <Title item={item} active={active} className={styles.title}>
+      <Title item={item} active={active} className={styles.title} icon={icon ? <NavTabIcon item={item} /> : undefined}>
         {icon && <NavTabIcon item={item} />}
         {title && <div className={styles.text}>{title}</div>}
       </Title>

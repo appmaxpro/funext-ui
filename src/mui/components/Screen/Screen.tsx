@@ -1,10 +1,10 @@
-import React, { MutableRefObject, useMemo } from "react";
+import React, { MutableRefObject, useCallback, useEffect, useMemo, useState } from "react";
 import { useTheme, Breakpoint, Breakpoints } from "../../styles";
 import { debounce} from "../../utils";
 import { useMediaQuery } from "@mui/system";
 import { useEnhancedEffect } from "../../hooks";
 const breakpointKeys = ["xs", "sm", "md", "lg", "xl"];
-const resizeDebounce = debounce((fn)=> fn(), 700);
+const resizeDebounce = debounce((fn)=> fn(), 200);
 
 export type SizeContextValue = {
   lgDown?: boolean;
@@ -19,18 +19,22 @@ export type SizeContextValue = {
   xsUp?: boolean;
   current?: Breakpoint;
   width?: number;
+  height?: number;
   up: (breakpoint: Breakpoint, inclusive?: boolean) => boolean;
   down: (breakpoint: Breakpoint, inclusive?: boolean) => boolean;
+  valid: boolean;
 };
 
 const ScreenSizeContext = React.createContext<SizeContextValue>({
   up: () => true,
   down: () => false,
+  valid: false
 });
 
 const ContainerSizeContext = React.createContext<SizeContextValue>({
   up: () => true,
   down: () => false,
+  valid: false
 });
 
 export const isWidthUp = (
@@ -76,13 +80,14 @@ function computeSize(
   if (oldWidth === width) {
     return;
   }
-  let change = {
+  let change:SizeContextValue = {
     width,
     up: (breakpoint: Breakpoint, inclusive: boolean = false) =>
       isWidthUp(breakpoints, breakpoint, width, inclusive),
 
     down: (breakpoint: Breakpoint, inclusive: boolean = false) =>
       isWidthDown(breakpoints, breakpoint, width, inclusive),
+    valid: true
   };
   let current;
   for (let i = 0; i < breakpoints.keys.length; i += 1) {
@@ -90,13 +95,14 @@ function computeSize(
     const breakpointUp = `${breakpoint}Up`;
     const breakpointDown = `${breakpoint}Down`;
     const isDown = isWidthDown(breakpoints, breakpoint, width!);
+    const isUp = isWidthUp(breakpoints, breakpoint, width!);
     Reflect.set(
       change,
       breakpointUp,
-      isWidthUp(breakpoints, breakpoint, width!),
+      isUp,
     );
     Reflect.set(change, breakpointDown, isDown);
-    if (isDown) {
+    if (isUp) {
       current = breakpoint;
     }
   }
@@ -115,6 +121,7 @@ export const ScreenSizeProvider = ({
   const [value, setValue] = React.useState<SizeContextValue>({
     up: (breakpoint: Breakpoint, inclusive?: boolean) => true,
     down: (breakpoint: Breakpoint, inclusive?: boolean) => true,
+    valid: false
   });
   function getDimensions() {
     const newState = computeSize(
@@ -123,9 +130,14 @@ export const ScreenSizeProvider = ({
       theme.breakpoints,
     );
     if (newState) {
+      newState.height = window.innerHeight;
       setValue(newState);
       return;
     }
+    else if(window.innerHeight != value.height){
+      value.height = window.innerHeight;
+    }
+
   }
 
   useEnhancedEffect(() => {
@@ -148,39 +160,64 @@ export const ScreenSizeProvider = ({
 };
 
 
-export function useResizeDetector<T extends HTMLElement = HTMLDivElement>() {
-  const ref = React.useRef<T | null>(null);
-  const size = useResizeDetectorRef(ref);
-  return {ref, size}
+export function useResizeDetectorRef<T extends HTMLElement = HTMLDivElement>(withHeight?:boolean, debugId?: string) {
+  const [node, setNode] = useState<T | null>(null);
+  const ref = useCallback((nodeElement: T | null) => {
+    setNode(nodeElement);
+  }, []);
+
+  const size = useResizeDetector<T>(node, withHeight, );
+  return {ref, size, node}
 }
 
-export function useResizeDetectorRef(
-  ref: MutableRefObject<HTMLElement | null>,
-) {
+export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
+  ref: MutableRefObject<T | null> | T | null,
+  withHeight?:boolean,
+  debugId?: string
+): SizeContextValue {
+  const parent = useContainerSize();
   const theme = useTheme();
   const [value, setValue] = React.useState<SizeContextValue>({
     up: (breakpoint: Breakpoint, inclusive?: boolean) => true,
     down: (breakpoint: Breakpoint, inclusive?: boolean) => true,
+    valid: false
   });
 
   function getDimensions(rect: DOMRectReadOnly) {
     const newState = computeSize(rect.width, value.width, theme.breakpoints);
+    console.log("useResizeDetector: change:", debugId, ", newState:", newState)
     if (newState) {
+      newState.height = rect.height;
       setValue(newState);
       return;
+    } 
+    else if (withHeight) {
+      if (rect.height != value.height) {
+        setValue({...value, height: rect.height});  
+      }
+    }
+    else if (rect.height != value.height) {
+      value.height = rect.height;
     }
   }
 
-  useEnhancedEffect(() => {
-    const { current } = ref;
-    if (current == null) return;
-
+  useEffect(() => {
+    const current  = ref instanceof HTMLElement ? ref : ref?.current;
+    
+    if (current == null) {
+      if(debugId)
+          console.warn("useResizeDetector:", debugId, " has no element\nParent:", parent);
+      return;
+    }
+    
     const observer = new ResizeObserver((entries) => {
+      console.log("useResizeDetector: resizeDebounce");
       resizeDebounce(()=> {
         for (const entry of entries) {
           if (entry.target === current) {
-            getDimensions(entry.contentRect)
-            break;
+            getDimensions(entry.contentRect);
+            console.log("useResizeDetector: resize:", entry.contentRect, "\nclientRect:", current.getBoundingClientRect(), "\ntarget:", current)
+           // break;
           }
         }
       })
@@ -188,12 +225,24 @@ export function useResizeDetectorRef(
     });
 
     observer.observe(current);
-
+    getDimensions(current.getBoundingClientRect())
+    console.log("useResizeDetector: connect:", current);
     return () => {
       observer.unobserve(current);
       observer.disconnect();
+      console.log("useResizeDetector: disconnect:", current);
     };
   }, [ref]);
+
+  useEnhancedEffect(() => {
+    const current  = ref instanceof HTMLElement ? ref : ref?.current;
+    if (!value.valid && parent?.valid) {
+      console.warn("useResizeDetector:", debugId, " try to set parent\nParent:", parent);
+    }
+    if (current && !value.valid && parent?.valid) {
+        setValue(parent);
+    }
+  }, [ref, parent, value])
 
   return value;
 }

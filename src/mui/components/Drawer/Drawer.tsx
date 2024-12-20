@@ -123,7 +123,7 @@ const DrawerRoot = styled(Popper, {
       },
       {
         props: ({ ownerState }: any) => {
-          console.log("DrawerRoot:ownerState:", ownerState);
+          //console.log("DrawerRoot:ownerState:", ownerState);
           return ownerState.direction === "start";
         },
         style: {
@@ -171,35 +171,6 @@ const DrawerRoot = styled(Popper, {
   })),
 );
 
-const DrawerDockedRoot2 = styled("div", {
-  shouldForwardProp: rootShouldForwardProp,
-  name: "MuxDrawer",
-  slot: "Docked",
-  skipVariantsResolver: false,
-  overridesResolver,
-})({
-  flex: "0 0 auto",
-  minWidth: 0,
-  minHeight: 0,
-  variants: [
-    {
-      props: {
-        variant: "persistent",
-      },
-      style: {
-        overflow: "hidden",
-      },
-    },
-    {
-      props: {
-        variant: "permanent",
-      },
-      style: {
-        overflow: "hidden",
-      },
-    },
-  ],
-});
 
 const DrawerDockedRoot = styled('div', {
   shouldForwardProp: rootShouldForwardProp,
@@ -400,7 +371,6 @@ export interface DrawerProps
  */
 export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
   function Drawer(inProps, ref) {
-    console.log("inProps:", inProps);
     const props = useMuiDefaultProps({ props: inProps, name: "MuxDrawer" });
     const theme = useTheme();
     const isRtl = useRtl();
@@ -431,7 +401,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       ...other
     } = props;
 
-    console.log("panelProps:", panelProps)
+    
     const TransitionComponent = Slide;
     // Let's assume that the Drawer will always be rendered on user space.
     // We use this state is order to skip the appear transition during the
@@ -443,10 +413,8 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
 
     const [openState, setOpenState] = React.useState(false);
 
-    React.useEffect(() => {}, [open]);    
-
     const ownerDirection = getDirection(direction, isRtl);
-    console.log({ ownerDirection, isRtl });
+    console.log("Drawer:render");
     const ownerState = {
       ...props,
       direction,
@@ -503,9 +471,11 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
         temporary={variant === "temporary"}
         onEntered={() => {
           setOpenState(true);
+          console.log("Drawer:OpenState");
         }}
         onExited={() => {
           setOpenState(false);
+          console.log("Drawer:CloseState");
         }}
         container={
           container ?? (variant === "persistent" && drawerRef.current

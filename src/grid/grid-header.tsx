@@ -3,7 +3,6 @@ import {
   GridHeaderColumn,
   GridHeaderColumnProps,
   ResizeHandler,
-  
 } from "./grid-header-column";
 import { GridSearchRow } from "./grid-search-row";
 import { GridColumn } from "./grid-column";
@@ -46,100 +45,99 @@ export interface GridHeaderProps
   shadow?: boolean;
 }
 
-export const GridHeader = React.memo(function GridHeader(
-  props: GridHeaderProps,
-) {
-  const {
-    className,
-    columns = [],
-    allColumns = [],
-    orderBy,
-    checkType,
-    selectionType,
-    groupBy,
-    searchRowRenderer,
-    searchColumnRenderer,
-    cellRenderer,
-    rowRenderer,
-    onCheckAll,
-    onColumnDrop,
-    onColumnSort,
-    onColumnCustomize,
-    onColumnShow,
-    onColumnHide,
-    onColumnGroupAdd,
-    onColumnGroupRemove,
-    onColumnResizeStart,
-    onColumnResize,
-    onColumnResizeEnd,
-    shadow
-  } = props;
-  const RowRenderer = rowRenderer || GridHeaderRowRoot;
-  const headerMenu = (
-    allColumns && onColumnShow && onColumnHide &&
-    <GridHeaderMenu
-        groupBy={groupBy}
-        columns={allColumns}
-        onColumnShow={onColumnShow}
-        onColumnHide={onColumnHide}
-        onColumnCustomize={onColumnCustomize}
-        onColumnDrop={onColumnDrop}
-        onColumnGroupRemove={onColumnGroupRemove}
-      />
-  );
-  return (
-    <GridHeaderRoot className={className}>
-      <RowRenderer className={styles.row}>
-        {columns.map((column, index) => {
-          const sortColumn = (orderBy || []).find(
-            (col) => col.name === column.name,
-          );
-          const isLast = index === columns.length - 1;
-          return (
-            <GridHeaderColumn
-              key={column.id ?? column.name}
-              index={index}
-              data={column}
-              sort={sortColumn ? sortColumn.order : null}
-              groupBy={groupBy}
-              columns={allColumns}
-              renderer={cellRenderer}
-              onCheckAll={onCheckAll}
-              onSort={onColumnSort}
-              onGroup={onColumnGroupAdd}
-              onUngroup={onColumnGroupRemove}
-              onShow={onColumnShow}
-              onHide={onColumnHide}
-              onResize={onColumnResize}
-              onResizeStart={onColumnResizeStart}
-              onResizeEnd={onColumnResizeEnd}
-              onCustomize={onColumnCustomize}
-              lastHeader={isLast && headerMenu}
-              {...(isRowCheck(column) ? { checkType, selectionType } : {})}
-
-            />
-          );          
-        })}
-        
-      </RowRenderer>
-
-      {searchRowRenderer && searchColumnRenderer && (
-        <GridSearchRow
-          {...{
-            columns,
-            searchRowRenderer,
-            searchColumnRenderer,
-          }}
+export const GridHeader = React.memo(
+  React.forwardRef<HTMLDivElement, GridHeaderProps>(
+    (props: GridHeaderProps, ref) => {
+      const {
+        className,
+        columns = [],
+        allColumns = [],
+        orderBy,
+        checkType,
+        selectionType,
+        groupBy,
+        searchRowRenderer,
+        searchColumnRenderer,
+        cellRenderer,
+        rowRenderer,
+        onCheckAll,
+        onColumnDrop,
+        onColumnSort,
+        onColumnCustomize,
+        onColumnShow,
+        onColumnHide,
+        onColumnGroupAdd,
+        onColumnGroupRemove,
+        onColumnResizeStart,
+        onColumnResize,
+        onColumnResizeEnd,
+        shadow,
+      } = props;
+      const RowRenderer = rowRenderer || GridHeaderRowRoot;
+      const headerMenu = allColumns && onColumnShow && onColumnHide && (
+        <GridHeaderMenu
+          groupBy={groupBy}
+          columns={allColumns}
+          onColumnShow={onColumnShow}
+          onColumnHide={onColumnHide}
+          onColumnCustomize={onColumnCustomize}
+          onColumnDrop={onColumnDrop}
+          onColumnGroupRemove={onColumnGroupRemove}
         />
-      )}      
-    </GridHeaderRoot>
-  );
-});
+      );
+      return (
+        <GridHeaderRoot className={className} ref={ref}>
+          <RowRenderer className={styles.row}>
+            {columns.map((column, index) => {
+              const sortColumn = (orderBy || []).find(
+                (col) => col.name === column.name,
+              );
+              const isLast = index === columns.length - 1;
+              return (
+                <GridHeaderColumn
+                  key={column.id ?? column.name}
+                  index={index}
+                  data={column}
+                  sort={sortColumn ? sortColumn.order : null}
+                  groupBy={groupBy}
+                  columns={allColumns}
+                  renderer={cellRenderer}
+                  onCheckAll={onCheckAll}
+                  onSort={onColumnSort}
+                  onGroup={onColumnGroupAdd}
+                  onUngroup={onColumnGroupRemove}
+                  onShow={onColumnShow}
+                  onHide={onColumnHide}
+                  onResize={onColumnResize}
+                  onResizeStart={onColumnResizeStart}
+                  onResizeEnd={onColumnResizeEnd}
+                  onCustomize={onColumnCustomize}
+                  lastHeader={isLast && headerMenu}
+                  {...(isRowCheck(column) ? { checkType, selectionType } : {})}
+                />
+              );
+            })}
+          </RowRenderer>
 
-const GridHeaderRoot = styled('div', {
-  name: 'MuxGridHeader',
-})('');
+          {searchRowRenderer && searchColumnRenderer && (
+            <GridSearchRow
+              {...{
+                columns,
+                searchRowRenderer,
+                searchColumnRenderer,
+              }}
+            />
+          )}
+        </GridHeaderRoot>
+      );
+    },
+  ),
+);
 
-const GridHeaderRowRoot = styled('div', {
-  name: 'MuxGridHeaderRow',
-})('');
+const GridHeaderRoot = styled("div", {
+  name: "MuxGridHeader",
+})("");
+
+const GridHeaderRowRoot = styled("div", {
+  name: "MuxGridHeaderRow",
+})("");

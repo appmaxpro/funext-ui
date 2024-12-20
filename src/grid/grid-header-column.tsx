@@ -19,6 +19,7 @@ import {
   MenuList,
   clsx,
   IconButton,
+  Text,
 } from "../mui";
 
 import { MaterialIcon } from "../icons/material-icon";
@@ -28,6 +29,7 @@ import styles from "./grid.module.scss";
 import * as TYPES from "./types";
 import { isRowCheck } from "./utils";
 import { useTranslation } from "./translate";
+import { positions } from "@mui/system";
 
 export type ResizeHandler = (
   e: React.DragEvent<HTMLElement>,
@@ -147,6 +149,9 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
     [handleHide],
   );
 
+  const canResize = data.name !== "__reorder__" && !data.action;
+  const isSelect = data.name === "__select__";
+
   function renderColumn(column: TYPES.GridColumn, index: number) {
     if (isRowCheck(column)) {
       return (
@@ -156,7 +161,6 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
       );
     }
 
-    const canResize = column.name !== "__reorder__" && !column.action;
     const canSort = onSort && column.sortable !== false;
     const hasMenu =
       !column.action &&
@@ -165,10 +169,9 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
         canSort || onGroup || onUngroup || onShow || onHide || onCustomize,
       );
     return (
+      <>
         <span
-          className={classNames(styles.headerColumnTitle, {
-            [styles.resizable]: Boolean(onResize),
-          })}
+          className={classNames(styles.headerColumnTitle, {})}
           onClick={(e) => {
             const dropdownEl = targetRef.current;
             if (
@@ -180,20 +183,29 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
             canSort && onSort?.(e, data, index);
           }}
         >
-          <span className="inline-flex items-center grow" title={column.title}>
-            <span>{column.action ? " " : column.title}</span>
+          <span
+            className="inline-flex items-center flex-1"
+            title={column.title}
+          >
+            <Text as="span" variant="inherit">
+              {column.action ? " " : column.title}
+            </Text>
             {canSort && (
               <IconButton
-                  size="sm"
-                  className={classNames( styles.headerColumnMenuButton, "ms-1 p-1.5", {
+                size="sm"
+                className={classNames(
+                  styles.headerColumnMenuButton,
+                  "ms-1 p-1.5",
+                  {
                     [styles.active]: show || !!sort,
-                  })}
-                  onClick={()=>{}}
-                >
-              <MaterialIcon
-                className={sort === "asc" ? styles.ascSortIcon : undefined}
-                icon="sort"
-              />
+                  },
+                )}
+                onClick={() => {}}
+              >
+                <MaterialIcon
+                  className={sort === "asc" ? styles.ascSortIcon : undefined}
+                  icon="sort"
+                />
               </IconButton>
             )}
           </span>
@@ -330,22 +342,32 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
             </Menu.Button>
           )}
           {lastHeader}
-          {canResize && onResizeStart && onResize && onResizeEnd ? (
-            <GridColumResizer
-              className={styles.columnResizer}
-              draggable={true}
-              onDragStart={(e: React.DragEvent<HTMLElement>) =>
-                onResizeStart(e, column, index)
-              }
-              onDragEnd={(e: React.DragEvent<HTMLElement>) =>
-                onResizeEnd(e, column, index)
-              }
-              onDrag={(e: React.DragEvent<HTMLElement>) =>
-                onResize(e, column, index)
-              }
-            />
-          ) : null}
         </span>
+        {(canResize || isSelect) && (
+          <GridColumResizer
+            className={styles.columnResizer}
+            draggable={canResize}
+            onDragStart={
+              canResize && onResizeStart
+                ? (e: React.DragEvent<HTMLElement>) =>
+                    onResizeStart(e, column, index)
+                : undefined
+            }
+            onDragEnd={
+              canResize && onResizeEnd
+                ? (e: React.DragEvent<HTMLElement>) =>
+                    onResizeEnd(e, column, index)
+                : undefined
+            }
+            onDrag={
+              canResize && onResize
+                ? (e: React.DragEvent<HTMLElement>) =>
+                    onResize(e, column, index)
+                : undefined
+            }
+          />
+        )}
+      </>
     );
   }
 
@@ -355,6 +377,7 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
     styles.action && styles["no-padding"],
     lastHeader && !data.action && styles["no-padding-end"],
     !lastHeader && !data.action && styles["padding"],
+    canResize && onResizeStart && onResize && onResizeEnd && styles.resizable,
   );
   return (
     <GridColumn

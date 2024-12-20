@@ -9,17 +9,25 @@ import objectsToString from "../../utils/objectsToString";
 import { useTailwindTheme } from "../../theme";
 import { styled, SxThemeProps, type SxComponentProps } from "../../styles";
 // types
-import type { divider, className, children } from "../../types/components/dialog";
-
+import type {
+  divider,
+  className,
+  children,
+} from "../../types/components/dialog";
 
 export interface DialogBodyProps extends SxComponentProps<"div"> {
   divider?: boolean;
 }
 
-const DialogBodyRoot = styled('div', {
-  name: 'MuxDialogBody',
-  slot: 'Root'
-})<SxComponentProps<any>>('');
+const DialogBodyRoot = styled("div", {
+  name: "Body",
+  slot: "MuxDialog",
+})<SxComponentProps<any>>({
+  flex: "1 1 auto",
+  // Add iOS momentum scrolling for iOS < 13.0
+  WebkitOverflowScrolling: "touch",
+  overflowY: 'auto',
+});
 
 export const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ divider, className, children, ...rest }, ref) => {
@@ -32,7 +40,9 @@ export const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
 
     // 3. set styles
     const dialogBodyClasses = twMerge(
-      classnames(objectsToString(base.initial), { [objectsToString(base.divider)]: divider }),
+      classnames(objectsToString(base.initial), {
+        [objectsToString(base.divider)]: divider,
+      }),
       defaultProps.className,
       className,
     );

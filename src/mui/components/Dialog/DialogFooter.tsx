@@ -20,9 +20,16 @@ export interface DialogFooterProps extends SxComponentProps<"div"> {
 }
 
 const DialogFooterRoot = styled('div', {
-  name: 'DialogFooter',
+  name: 'Footer',
   slot: 'MuxDialog'
-})<SxComponentProps<any>>('') ;
+})<SxComponentProps<any>>({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  flex: '0 0 auto',
+  padding: 8,
+  
+}) ;
 
 export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
   ({ className, children, divider, ...rest }, ref) => {

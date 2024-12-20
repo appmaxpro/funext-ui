@@ -21,7 +21,8 @@ import {
   MenuListProps,
   MenuDivider,
   TooltipProps,
-  Divider
+  Divider,
+  ButtonMidIcon
 } from "../../mui";
 
 
@@ -45,6 +46,7 @@ export interface CommandItemProps {
   };
   icon?: (props?: { className?: string }) => JSX.Element | null;
   iconProps?: MaterialIconProps;
+  arrowIconProps?: MaterialIconProps;
   iconOnly?: boolean;
   iconSide?: "start" | "end";
   
@@ -102,6 +104,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
     onClick,
     items = [],
     showDownArrow = false,
+    arrowIconProps,
     showAsMenuItem,
     className,
     asSplit,
@@ -152,7 +155,7 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
   const isSplit = asSplit ?? (onClick && items.length > 0 && !showAsMenuItem);
   const Wrapper = ButtonGroup;
 
-  const showArrow = showDownArrow && !isSplit && items.length > 0;
+  const showArrow = (showDownArrow || arrowIconProps) && !isSplit && items.length > 0;
 
   const buttonProps =
     isSplit || items.length === 0
@@ -247,8 +250,8 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                 endIcon={
                   ((iconComp && iconSide === "end") || showArrow) && <>
                       {iconSide === "end" ? iconComp : null}
-                      {showArrow && <MaterialIcon
-                        icon="arrow_drop_down"/>}
+                      {showArrow && <MaterialIcon 
+                        icon="keyboard_arrow_down" {...arrowIconProps}/>}
                   </>
                 }
                 startIcon={
@@ -281,16 +284,18 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
                 className={clsx(styles.item, 'min-w-0', className)}
                 showTip={!items.length}
                 {...splitProps}
-                endIcon={
-                  (asSplit && iconComp)
-                  ? iconComp 
-                  : <MaterialIcon
-                    icon="arrow_drop_down"
-                  />
-                }
                 variant={variant}
                 size={size}
-                />
+                >
+                  <ButtonMidIcon ownerState={{size:size??'md'}}>
+                    {(asSplit && iconComp)
+                    ? iconComp 
+                    : <MaterialIcon
+                      icon="arrow_drop_down"
+                      {...arrowIconProps}
+                    />}
+                  </ButtonMidIcon>
+              </StyledButton>
             
             </SubMenuButton>
           )}
