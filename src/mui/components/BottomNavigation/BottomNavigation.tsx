@@ -1,5 +1,4 @@
 import React from "react";
-import { isFragment } from 'react-is';
 import { OverrideProps } from "../../props";
 import {
   clsx,
@@ -9,7 +8,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import ButtonBase, {
   ButtonBaseTypeMap,
@@ -31,7 +30,12 @@ export const bottomNavigationClasses: BottomNavigationClasses = generateUtilityC
   'MuxBottomNavigation',
   ['root'],
 );
-
+function isReactFragment(node:any) {
+  if (node && node.type) {
+    return node.type === React.Fragment;
+  }
+  return node === React.Fragment;
+}
 
 export interface BottomNavigationOwnProps {
   /**
@@ -81,7 +85,7 @@ export type BottomNavigationProps<
 };
 
 
-const useUtilityClasses = (ownerState) => {
+const useUtilityClasses = (ownerState:any) => {
   const { classes } = ownerState;
 
   const slots = {
@@ -105,7 +109,7 @@ const BottomNavigationRoot = styled('div', {
 );
 
 export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationProps>(function BottomNavigation(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxBottomNavigation' });
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxBottomNavigation' });
   const {
     children,
     className,
@@ -128,7 +132,7 @@ export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationPro
     <BottomNavigationRoot
       as={component}
       className={clsx(classes.root, className)}
-      ref={ref}
+      ref={ref as any}
       ownerState={ownerState}
       {...other}
     >
@@ -138,10 +142,10 @@ export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationPro
         }
 
         if (process.env.NODE_ENV !== 'production') {
-          if (isFragment(child)) {
+          if (isReactFragment(child)) {
             console.error(
               [
-                "MUI: The BottomNavigation component doesn't accept a Fragment as a child.",
+                "MUX: The BottomNavigation component doesn't accept a Fragment as a child.",
                 'Consider providing an array instead.',
               ].join('\n'),
             );
@@ -151,6 +155,7 @@ export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationPro
         const childValue = child.props.value === undefined ? childIndex : child.props.value;
 
         return React.cloneElement(child, {
+          //@ts-ignore
           selected: childValue === value,
           showLabel: child.props.showLabel !== undefined ? child.props.showLabel : showLabels,
           value: childValue,

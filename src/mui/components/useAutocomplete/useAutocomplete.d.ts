@@ -399,7 +399,7 @@ export interface UseAutocompleteReturnValue<
    * Resolver for the input element's props.
    * @returns props that should be spread on the input element
    */
-  getInputProps: () => React.InputHTMLAttributes<HTMLInputElement> & {
+  getInputProps: (outside?:boolean) => React.InputHTMLAttributes<HTMLInputElement> & {
     ref: React.Ref<HTMLInputElement>;
   };
   /**
@@ -411,7 +411,7 @@ export interface UseAutocompleteReturnValue<
    * Resolver for the `clear` button element's props.
    * @returns props that should be spread on the *clear* button element
    */
-  getClearProps: () => React.HTMLAttributes<HTMLButtonElement>;
+  getClearProps: (outside?:boolean) => React.HTMLAttributes<HTMLButtonElement>;
   /**
    * Resolver for the popup icon's props.
    * @returns props that should be spread on the popup icon

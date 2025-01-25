@@ -17,8 +17,6 @@ export const step: StepStyleTypes = {
         zIndex: "z-10",
         display: "grid",
         placeItems: "place-items-center",
-        width: "w-10",
-        height: "h-10",
         borderRadius: "rounded-full",
         backgroundColor: "bg-primary-300",
         color: "text-item-5",
@@ -34,7 +32,7 @@ export const step: StepStyleTypes = {
         color: "text-white",
       },
       completed: {
-        backgroundColor: "bg-green",
+        backgroundColor: "bg-green-500",
         color: "text-white",
       },
     },

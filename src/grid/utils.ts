@@ -111,33 +111,35 @@ export function doSort(
   columns: GridColumn[] = [],
 ) {
   if (!sorts) return data;
-  return data.sort((obj1, obj2) => {
-    for (let i = 0; i < sorts.length; i++) {
-      const { name, order: by } = sorts[i];
-      const isDesc = by === "desc";
-      const field = columns.find((col) => col.name === name);
-      const isNumber =
-        field &&
-        field.type &&
-        ["decimal", "integer", "long"].includes(field.type);
-
+  type KGridSortColumn = {get: (data: any) => number, dir: 1 | -1};
+  const kSorts: KGridSortColumn[] = []
+  for (let i = 0; i < sorts.length; i++) {
+    const { name, order: by } = sorts[i];
+    const dir = by === "desc" ? -1 : 1;
+    const field = columns.find((col) => col.name === name);
+    const isNumber =
+      field &&
+      field.type &&
+      ["number", "decimal", "integer", "long"].includes(field.type);
       const formatter = (data: any) => {
         const value = data[name];
         return field && field.formatter
           ? field.formatter(field, value, data)
           : value;
       };
-      const getValue = (data: any) =>
+      const get = (data: any) =>
         isNumber ? Number(data[field.name] || 0) : formatter(data);
-
-      const value1 = getValue(obj1);
-      const value2 = getValue(obj2);
-
-      if (value1 < value2) return isDesc ? 1 : -1;
-      if (value1 > value2) return isDesc ? -1 : 1;
-    }
-    return 0;
+      kSorts.push({get, dir}) 
+  }
+  kSorts.forEach(({get, dir}) => {
+    data = data.sort((obj1, obj2) => {
+      const value1 = get(obj1);
+      const value2 = get(obj2);
+      return (value1 >= value2 ? 1 : -1) * dir;
+    })
   });
+
+  return data;
 }
 
 export function doGroup(

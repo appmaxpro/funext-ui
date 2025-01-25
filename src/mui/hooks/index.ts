@@ -16,4 +16,5 @@ export {default as useForceUpdate} from "./use-force-update";
 export {default as useUpdateEffect}from "./use-update-effect";
 export {default as useTimeout} from "./useTimeout";
 export {default as useMediaQuery} from "./useMediaQuery";
+export {default as useIf} from "./use-if";
 export * from "./useRequestAnimationFrame";

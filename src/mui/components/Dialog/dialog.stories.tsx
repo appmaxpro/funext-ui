@@ -110,7 +110,7 @@ export function DialogCustomAnimation() {
 
 export function DialogSizes() {
   const [size, setSize] = React.useState(null);
- 
+  const [fullWidth, setFullWidth] = React.useState(false);
   const handleOpen = (value) => setSize(value);
  
   return (
@@ -137,6 +137,9 @@ export function DialogSizes() {
           Open Dialog XXL
         </Button>
       </div>
+      <div className="flex gap-3">
+        <Checkbox checked={fullWidth} onChange={()=> setFullWidth(!fullWidth)} label="Full width"/>
+      </div>
       <Dialog
         open={
           size === "xs" ||
@@ -148,6 +151,7 @@ export function DialogSizes() {
         }
         size={size || "md"}
         handler={handleOpen}
+        fullWidth={fullWidth}
       >
         <DialogHeader>Its a simple dialog.</DialogHeader>
         <DialogBody>
@@ -159,7 +163,7 @@ export function DialogSizes() {
         <DialogFooter>
           <Button
             variant="text"
-            color="red"
+            color="error"
             onClick={() => handleOpen(null)}
             className="mr-1"
           >
@@ -167,7 +171,7 @@ export function DialogSizes() {
           </Button>
           <Button
             
-            color="green"
+            color="success"
             onClick={() => handleOpen(null)}
           >
             <span>Confirm</span>
@@ -199,7 +203,6 @@ export function DialogWithForm() {
             </Text>
             <Text
               className="mb-3 font-normal"
-              variant="paragraph"
               color="gray"
             >
               Enter your email and password to Sign In.
@@ -286,9 +289,6 @@ export function SelectCategoriesDialog() {
                 </Text>
               </div>
             }
-            containerProps={{
-              className: "-mt-5",
-            }}
           />
           <Checkbox
             label={
@@ -305,9 +305,6 @@ export function SelectCategoriesDialog() {
                 </Text>
               </div>
             }
-            containerProps={{
-              className: "-mt-5",
-            }}
           />
           <Checkbox
             checked={checked['3']}
@@ -326,9 +323,6 @@ export function SelectCategoriesDialog() {
                 </Text>
               </div>
             }
-            containerProps={{
-              className: "-mt-5",
-            }}
           />
         </DialogBody>
         <DialogFooter divider>

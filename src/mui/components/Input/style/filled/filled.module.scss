@@ -3,18 +3,17 @@
   border-style: solid;
   border-width: 0;
   transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1), 
-   box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  &:focus-within {
-    & .notched {
-      border-width: 2px;
-    }
-    & > .label {
-      transform: translate(12px, 4px) scale(0.75);
-      &.lg {
-        transform: translate(16px, 4px) scale(0.75);
-      }
-    }
+  box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  &:focus-within .notched{
+    border-width: 2px;
   }
+
+  &:focus-within .label,
+  & .input:has(input:not(:placeholder-shown)) ~ .label,
+  & .label.floated {
+    max-width: calc(133% - 32px);
+    transform: translate(12px, 4px) scale(0.75);
+  }  
 }
 
 .label {
@@ -26,28 +25,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 200ms, transform 200ms, max-width 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+  z-index: 1;
+  pointer-events: none;
   max-width: calc(100% - 24px);
   position: absolute;
   left: 0;
   top: 0;
   transform-origin: top left;
   transform: translate(12px, 16px) scale(1);
-  transition: color 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms, 
-    transform 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms, 
-    max-width 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
-  z-index: 1;
-  pointer-events: none;
-  
-  &.floated {
-    max-width: calc(133% - 32px);
-    transform: translate(12px, 4px) scale(0.75);
-  }
   &.lg {
     transform: translate(16px, 24px) scale(1);
-    &.floated {
-      max-width: calc(133% - 32px);
-      transform: translate(16px, 4px) scale(0.75);
-    }
+  }
+}
+
+.input{
+  &.has-label{
+    margin-top: 14px;
   }
 }
 
@@ -64,56 +58,26 @@
   border-color: inherit;
   overflow: hidden;
   min-width: 0%;
-  transition: border-color 300ms cubic-bezier(0.4, 0, 0.2, 1)
+  transition: border-color 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-label+.input{
-  margin-top: 14px;
-}
-
-label+div > input:not(:empty) {
-  max-width: calc(133% - 32px);
-  transform: translate(12px, 4px) scale(0.75);
-  &.lg {
-    max-width: calc(133% - 32px);
-    transform: translate(16px, 4px) scale(0.75);
-  }
-}
-
 
 [dir="rtl"] {
-   
+
   .label {
     left: unset;
     right: 0;
     transform-origin: top right;
-    transform: translate(-14px, 8px) scale(1);
-    &.floated {
-      transform: translate(-20px, -10px) scale(0.75);
-    }
+    transform: translate(-14px, 16px) scale(1);
     &.lg {
-      transform: translate(-14px, 16px) scale(1);
-      &.floated {
-        transform: translate(-20px, -12px) scale(0.75);
-      }
+      transform: translate(-14px, 24px) scale(1);
     }
   }
 
   .root{
-    &:focus-within {
-      & > .label {
-        transform: translate(-20px, -10px) scale(0.75);
-        &.lg {
-          transform: translate(-20px, -12px) scale(0.75);
-        }
-      }
-    }
-  }
-
-  label+div > input:not(:empty) {
-    transform: translate(-20px, -10px) scale(0.75);
-    &.lg {
-      transform: translate(-20px, -12px) scale(0.75);
+    &:focus-within .label,
+    & .input:has(input:not(:placeholder-shown)) ~ .label,
+    & .label.floated{
+      transform: translate(-14px, 4px) scale(0.75);
     }
   }
 }

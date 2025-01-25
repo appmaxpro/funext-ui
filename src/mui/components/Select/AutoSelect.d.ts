@@ -316,6 +316,8 @@ export interface AutoSelectProps<Value, Multiple extends boolean | undefined>
   extraAdornment?: React.ReactNode;
 
   disablePopper?: boolean;
+
+  onCompleteState?: (openState: boolean) => void;
 }
 
 /**

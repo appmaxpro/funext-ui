@@ -116,7 +116,6 @@ export const CommandItem = forwardRef<HTMLElement, CommandItemProps>(function(pr
   const targetRef = useForwardedRef(ref);
 
   const showMenu = useCallback(() => {
-    console.log("showMenu");
     setShow(true);
   }, []);
 

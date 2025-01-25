@@ -20,15 +20,15 @@ function getGetThemeBreakpoints(ownerState: GridOwnerState, theme: Props['theme'
 }
 
 function getSelfSpacingVar(axis: 'row' | 'column') {
-  return `--Grid-${axis}Spacing`;
+  return `--g-${axis}-spacing`;
 }
 
 function getParentSpacingVar(axis: 'row' | 'column') {
-  return `--Grid-parent-${axis}Spacing`;
+  return `--g-parent-${axis}-spacing`;
 }
 
-const selfColumnsVar = '--Grid-columns';
-const parentColumnsVar = '--Grid-parent-columns';
+const selfColumnsVar = '--g-columns';
+const parentColumnsVar = '--g-parent-columns';
 
 export const generateGridSizeStyles = ({ theme, ownerState }: Props) => {
   const styles = {};
@@ -162,7 +162,10 @@ export const generateGridDirectionStyles = ({ theme, ownerState }: Props) => {
     getGetThemeBreakpoints(ownerState, theme),
     ownerState.direction,
     (appendStyle, value) => {
-      appendStyle(styles, { flexDirection: value });
+      appendStyle(styles, { 
+        flexDirection: value,
+        ...(ownerState.center ? {[`${value}`.includes("column") ? 'justifyContent' :  'alignItems']: 'center'} : {} )
+      });
     },
   );
   return styles;

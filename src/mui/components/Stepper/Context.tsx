@@ -11,6 +11,7 @@ interface StepperContextValue{
   connector?: React.ReactNode;
   nonLinear?: boolean;
   orientation: 'horizontal' | 'vertical';
+  completed?: boolean;
 }
 
 interface StepContextValue{

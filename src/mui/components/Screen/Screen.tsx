@@ -185,14 +185,18 @@ export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
 
   function getDimensions(rect: DOMRectReadOnly) {
     const newState = computeSize(rect.width, value.width, theme.breakpoints);
-    console.log("useResizeDetector: change:", debugId, ", newState:", newState)
+    
     if (newState) {
       newState.height = rect.height;
+      //console.log("useResizeDetector: change:", debugId, ", newState:", newState)
+      
       setValue(newState);
       return;
     } 
     else if (withHeight) {
       if (rect.height != value.height) {
+
+        //console.log("useResizeDetector: change height:", rect.height)
         setValue({...value, height: rect.height});  
       }
     }
@@ -211,12 +215,11 @@ export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
     }
     
     const observer = new ResizeObserver((entries) => {
-      console.log("useResizeDetector: resizeDebounce");
       resizeDebounce(()=> {
         for (const entry of entries) {
           if (entry.target === current) {
             getDimensions(entry.contentRect);
-            console.log("useResizeDetector: resize:", entry.contentRect, "\nclientRect:", current.getBoundingClientRect(), "\ntarget:", current)
+            //console.log("useResizeDetector: resize:", entry.contentRect, "\nclientRect:", current.getBoundingClientRect(), "\ntarget:", current)
            // break;
           }
         }
@@ -226,18 +229,18 @@ export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
 
     observer.observe(current);
     getDimensions(current.getBoundingClientRect())
-    console.log("useResizeDetector: connect:", current);
+    //console.log("useResizeDetector: connect:", current);
     return () => {
       observer.unobserve(current);
       observer.disconnect();
-      console.log("useResizeDetector: disconnect:", current);
+      //console.log("useResizeDetector: disconnect:", current);
     };
   }, [ref]);
 
   useEnhancedEffect(() => {
     const current  = ref instanceof HTMLElement ? ref : ref?.current;
     if (!value.valid && parent?.valid) {
-      console.warn("useResizeDetector:", debugId, " try to set parent\nParent:", parent);
+      //console.warn("useResizeDetector:", debugId, " try to set parent\nParent:", parent);
     }
     if (current && !value.valid && parent?.valid) {
         setValue(parent);

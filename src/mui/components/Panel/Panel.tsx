@@ -163,7 +163,7 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel
     square,
     variant,
     hasShadow: !!elevation,
-    fill: !className.includes('bg-') && (variant === 'filled' || fill),
+    fill: fill || (!className.includes('bg-') && (variant === 'filled')),
     hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
     hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };
@@ -191,17 +191,15 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel
       {...(other as any)}
       style={{
         ...(elevation && {
-          '--panel-shadow': (theme.vars || theme).shadows[elevation],
-          ...(theme.vars && {
-            '--panel-overlay': theme.vars.overlays?.[elevation],
-          }),
+          '--panel-shadow': ((theme.vars || theme).shadows as any)[elevation] ?? `var(--tw-shadow-${elevation})`,
+          /*
           ...(!theme.vars &&
             theme.palette.mode === 'dark' && {
               '--panel-overlay': `linear-gradient(${alpha(
                 '#fff',
                 getOverlayAlpha(elevation),
               )}, ${alpha('#fff', getOverlayAlpha(elevation))})`,
-            }) as any,
+            }) as any,*/
         }),
         ...other.style,
       } as any}

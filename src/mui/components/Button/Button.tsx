@@ -5,7 +5,7 @@ import resolveProps from '@mui/utils/resolveProps';
 import { 
   styled ,
   memoTheme,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   clsx,
   composeClasses,
   alpha,
@@ -114,10 +114,12 @@ export const ButtonRoot = styled(ButtonBase, {
       padding: '6px 16px',
       border: 0,
       borderRadius: theme.shape.borderRadius,
-      transition: 'box-shadow,border-color,color,opacity,'+theme.transitions.create(
+      outline: `2px solid transparent`,
+      outlineOffset: 1,
+      transition: 'box-shadow 600ms, border-color 250ms, color 250ms, opacity 250ms, outline 900ms, '+theme.transitions.create(
         'background-color',
         {
-          duration: theme.transitions.duration.short,
+          duration: 550,
         },
       ),
       '&:hover': {
@@ -126,6 +128,10 @@ export const ButtonRoot = styled(ButtonBase, {
       [`&.${buttonClasses.disabled}`]: {
         color: theme.palette.action.disabled,
       },
+      [`&.${buttonClasses.focusVisible}`]: {
+        outlineColor: `currentcolor`,
+        outlineOffset: -2
+      },
       variants: [
         {
           props: { button: 'button' },
@@ -133,6 +139,7 @@ export const ButtonRoot = styled(ButtonBase, {
             ...theme.typography.button,
           }
         },
+
         {
           props: { variant: 'filled' },
           style: {
@@ -422,7 +429,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
   const contextProps = React.useContext(ButtonGroupContext);
   const buttonGroupButtonContextPositionClassName = React.useContext(ButtonGroupButtonContext);
   const resolvedProps = resolveProps(contextProps as any, inProps);
-  const props = useMuiDefaultProps({ props: resolvedProps, name: 'MuxButton' });
+  const props = useMuxDefaultProps({ props: resolvedProps, name: 'MuxButton' });
   const { button: { defaultProps }} = useTailwindTheme();
   
   const {
@@ -437,7 +444,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
     focusRipple = true,
     endIcon: endIconProp,
     startIcon: startIconProp,
-    focusVisibleClassName,
+    focusVisibleClassName = '',
     fullWidth = false,    
     type,
     ...other
@@ -478,7 +485,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
 
   return (
     <ButtonRoot
-      ownerState={ownerState}
+      
       className={clsx(contextProps.className, className, positionClassName)}
       component={component}
       disabled={disabled}
@@ -488,6 +495,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       {...other}
+      ownerState={ownerState}
       classes={classes}
     >
       {startIcon}

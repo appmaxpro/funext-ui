@@ -75,8 +75,9 @@ export const alert: AlertStylesType = {
       },
       action: {
         position: "!absolute",
-        top: "top-3",
+        top: "top-1",
         right: "end-3",
+        justify: "justify-self-end	"
       },
     },
     variants: {

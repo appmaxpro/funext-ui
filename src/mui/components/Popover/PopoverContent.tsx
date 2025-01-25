@@ -20,7 +20,7 @@ import {FloatingArrow, getArrowOrigin}  from "./FloatingArrow";
 import type { NewAnimatePresenceProps } from "../../types/generic";
 import type { className, children } from "../../types/components/popover";
 
-import {SxComponentProps, styled, useRtl} from '../../styles'
+import {SxComponentProps, clsx, styled, useRtl} from '../../styles'
 
 
 const PopoverRoot = styled(m.div, {
@@ -142,7 +142,7 @@ export const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentPro
                     "aria-labelledby": labelId,
                     "aria-describedby": descriptionId,
                   })}
-                  className={popoverClasses}
+                  className={clsx(popoverClasses, 'z-modal')}
                   initial="unmount"
                   exit="unmount"
                   animate={open ? "mount" : "unmount"}

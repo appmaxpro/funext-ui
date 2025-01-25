@@ -41,7 +41,7 @@ export interface PanelOwnProps {
    * It accepts values between 0 and 24 inclusive.
    * @default 1
    */
-  elevation?: number;
+  elevation?: number | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   /**
    * If `true`, rounded corners are disabled.
    * @default false

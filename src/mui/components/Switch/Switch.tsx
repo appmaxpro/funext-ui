@@ -12,7 +12,7 @@ import SwitchBase, {
 import {
   styled,
   memoTheme,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   clsx,
   composeClasses,
   generateUtilityClasses,
@@ -191,7 +191,7 @@ const SwitchSwitchBase = styled(SwitchBase, {
     left: 0,
     zIndex: 1, // Render above the focus ripple.
     padding: 11,
-    transition: theme.transitions.create(["left", "transform"], {
+    transition: "box-shadow,left,"+ theme.transitions.create("transform", {
       duration: theme.transitions.duration.shortest,
     }),
     [`&.${switchClasses.checked}`]: {
@@ -347,7 +347,7 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
   function Switch(inProps, ref) {
     const checkboxId = React.useId();
     const theme = useTheme();
-    const props = useMuiDefaultProps({ props: inProps, name: "MuxSwitch" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxSwitch" });
     const { switch: toggle } = useTailwindTheme();
     const { defaultProps, valid, styles } = toggle;
     
@@ -363,6 +363,8 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
       labelProps,
       boxProps,
       id = checkboxId,
+      focusRipple = true,
+      focusVisibleClassName="ring-2",
       sx,
       ...other
     } = props;
@@ -375,7 +377,8 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
       edge,
       size,
       ripple,
-      hasColor: !other.disabled && color && theme.palette.twColors?.includes(color)
+      hasColor: !other.disabled && color && theme.palette.twColors?.includes(color),
+      focusRipple
     };
 
     const classes = useUtilityClasses(ownerState);
@@ -400,10 +403,12 @@ export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
           {...other}
           id={id}
           ripple={ripple}
+          focusRipple={focusRipple}
           data-ripple-color={ownerState.hasColor ? 'color' : undefined}
           className={
             classes.switchBase
           }
+          focusVisibleClassName={focusVisibleClassName}
         />
         <SwitchTrack className={clsx(classes.track, switchClasses.track)} ownerState={ownerState} />
       </SwitchRoot>

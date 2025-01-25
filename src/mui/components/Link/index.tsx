@@ -5,7 +5,7 @@ import {
   clsx,
   styled,
   useTheme,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   composeClasses,
   alpha,
   getPath,

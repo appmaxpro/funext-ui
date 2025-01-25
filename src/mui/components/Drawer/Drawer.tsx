@@ -4,7 +4,7 @@ import Popper from "../Popper";
 import {
   type SxComponentProps,
   composeClasses,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   memoTheme,
   clsx,
   styled,
@@ -154,7 +154,6 @@ const DrawerRoot = styled(Popper, {
           maxHeight: "100%",
         },
       },
-
       {
         props: {
           direction: "bottom",
@@ -371,7 +370,7 @@ export interface DrawerProps
  */
 export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
   function Drawer(inProps, ref) {
-    const props = useMuiDefaultProps({ props: inProps, name: "MuxDrawer" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxDrawer" });
     const theme = useTheme();
     const isRtl = useRtl();
     const defaultTransitionDuration = {
@@ -414,7 +413,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     const [openState, setOpenState] = React.useState(false);
 
     const ownerDirection = getDirection(direction, isRtl);
-    console.log("Drawer:render");
+    //console.log("Drawer:render");
     const ownerState = {
       ...props,
       direction,
@@ -433,6 +432,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       <DrawerPanel
         elevation={variant === "temporary" ? elevation : 0}
         square
+        fill={variant === "temporary"}
         {...(panelProps as any)}
         className={clsx(classes.panel, panelProps.className)}
         ownerState={ownerState}
@@ -468,14 +468,14 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
         }
         timeout={transitionDuration}
         appear={mounted.current}
-        temporary={variant === "temporary"}
+        //temporary={variant === "temporary"}
         onEntered={() => {
           setOpenState(true);
-          console.log("Drawer:OpenState");
+          //console.log("Drawer:OpenState");
         }}
         onExited={() => {
           setOpenState(false);
-          console.log("Drawer:CloseState");
+          //console.log("Drawer:CloseState");
         }}
         container={
           container ?? (variant === "persistent" && drawerRef.current
@@ -515,10 +515,11 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
           style: {
             zIndex: theme.zIndex.drawer
           }
+
         }}
+        dismiss={onClose ? {} : undefined}
         {...other}
         {...popperProps}
-        animate={false}        
         root={root ?? (typeof container === 'function' ? container() : container) }
         placement={
           ownerDirection === "start"

@@ -35,8 +35,7 @@ export const GridGroupRow = React.memo(function GridGroupRow(
         )}
       <IconButton
         size="sm"
-        dense
-        className="me-0.5 p-1"
+        className="me-0.5 text-xl"
         onClick={(e) => onClick && data && onClick(e as any, data, index)}
       >
         <MaterialIcon

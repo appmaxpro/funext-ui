@@ -8,7 +8,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import ButtonBase, {
   ButtonBaseTypeMap,
@@ -75,6 +75,8 @@ export interface BottomNavigationActionOwnProps {
    * You can provide your own value. Otherwise, we fallback to the child position index.
    */
   value?: any;
+
+  selected?: boolean;
 }
 
 export type BottomNavigationActionTypeMap<
@@ -96,7 +98,7 @@ export type BottomNavigationActionProps<
   component?: React.ElementType;
 };
 
-const useUtilityClasses = (ownerState) => {
+const useUtilityClasses = (ownerState:any) => {
   const { classes, showLabel, selected } = ownerState;
 
   const slots = {
@@ -142,13 +144,13 @@ const BottomNavigationActionRoot = styled(ButtonBase, {
     },
     variants: [
       {
-        props: ({ showLabel, selected }) => !showLabel && !selected,
+        props: ({ showLabel, selected }:any) => !showLabel && !selected,
         style: {
           paddingTop: 14,
         },
       },
       {
-        props: ({ showLabel, selected, label }) =>
+        props: ({ showLabel, selected, label }:any) =>
           !showLabel && !selected && !label,
         style: {
           paddingTop: 0,
@@ -174,7 +176,7 @@ const BottomNavigationActionLabel = styled("span", {
     },
     variants: [
       {
-        props: ({ showLabel, selected }) => !showLabel && !selected,
+        props: ({ showLabel, selected }:any) => !showLabel && !selected,
         style: {
           opacity: 0,
           transitionDelay: "0s",
@@ -186,7 +188,7 @@ const BottomNavigationActionLabel = styled("span", {
 
 export const BottomNavigationAction = React.forwardRef<HTMLElement,BottomNavigationActionProps> (
   function BottomNavigationAction(inProps, ref) {
-    const props = useMuiDefaultProps({
+    const props = useMuxDefaultProps({
       props: inProps,
       name: "MuxBottomNavigationAction",
     });
@@ -206,8 +208,9 @@ export const BottomNavigationAction = React.forwardRef<HTMLElement,BottomNavigat
     const ownerState = props;
     const classes = useUtilityClasses(ownerState);
 
-    const handleChange = (event) => {
+    const handleChange = (event:React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       if (onChange) {
+        //@ts-ignore
         onChange(event, value);
       }
 

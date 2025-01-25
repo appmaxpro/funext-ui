@@ -25,7 +25,13 @@ import type {
 import { twMerge } from "tailwind-merge";
 import deepmerge from "deepmerge";
 import { useControlled, useRefs, mapThemeColor } from "../../hooks";
-import { SxComponentProps, SxThemeProps, clsx, styled, globalCss } from "../../styles";
+import {
+  SxComponentProps,
+  SxThemeProps,
+  clsx,
+  styled,
+  globalCss,
+} from "../../styles";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 
 const InputRoot = styled("div", {
@@ -36,7 +42,7 @@ const InputRoot = styled("div", {
     {
       props: {
         disableBorder: true,
-        variant: 'filled'
+        variant: "filled",
       },
       style: {
         borderColor: "transparent!important",
@@ -72,7 +78,7 @@ const BasicInputRoot = styled("input", {
     border: 0,
   },
   ["&:disabled"]: {
-    cursor: 'not-allowed',
+    cursor: "not-allowed",
   },
   variants: [
     {
@@ -88,11 +94,11 @@ const BasicInputRoot = styled("input", {
     {
       props: ({ ownerState }) => !ownerState.disableInjectingGlobalStyles,
       style: {
-        animationName: 'mux-auto-fill-cancel',
-        animationDuration: '10ms',
-        '&:-webkit-autofill': {
-          animationDuration: '5000s',
-          animationName: 'mux-auto-fill',
+        animationName: "mux-auto-fill-cancel",
+        animationDuration: "10ms",
+        "&:-webkit-autofill": {
+          animationDuration: "5000s",
+          animationName: "mux-auto-fill",
         },
       },
     },
@@ -126,11 +132,11 @@ const BasicInputRoot = styled("input", {
         multiLines: false,
       },
       style: {
-        whiteSpace: 'nowrap',
-        overflowX: 'auto',
-        overflowY: 'hidden',
-        scrollbarWidth: 'none'
-      }
+        whiteSpace: "nowrap",
+        overflowX: "auto",
+        overflowY: "hidden",
+        scrollbarWidth: "none",
+      },
     },
     {
       props: {
@@ -138,10 +144,9 @@ const BasicInputRoot = styled("input", {
         multiLines: true,
       },
       style: {
-        overflow: 'auto',
-
-      }
-    }
+        overflow: "auto",
+      },
+    },
   ],
 });
 
@@ -172,6 +177,32 @@ const InputContainerRoot = styled("div", {
   ],
 });
 
+const commonIconStyles = [
+  {
+    props: { size: "md" },
+    style: {
+      "& .MuxIconButton-sizeInherit": {
+        fontSize: "1.5rem",
+        padding: 4,
+        "& .material-symbols": {
+          scale: 1,
+        },
+      },
+    },
+  },
+  {
+    props: { size: "lg" },
+    style: {
+      "& .MuxIconButton-sizeInherit": {
+        fontSize: "1.625rem",
+        padding: 4,
+        "& .material-symbols": {
+          scale: 1,
+        },
+      },
+    },
+  },
+];
 //forceInline && ('grow flex-wrap' || 'flex-nowrap shrink')
 const AdornmentStartRoot = styled("div", {
   name: "MuxInput",
@@ -195,13 +226,13 @@ const AdornmentStartRoot = styled("div", {
     {
       props: {
         multiLines: true,
-        vertical: false
+        vertical: false,
       },
       style: {
-        flexDirection: 'column',
+        flexDirection: "column",
         alignItems: "start",
-        justifyContent: 'center'
-      }
+        justifyContent: "center",
+      },
     },
     {
       props: {
@@ -243,6 +274,7 @@ const AdornmentStartRoot = styled("div", {
         paddingBottom: "16.5px",
       },
     },
+    ...commonIconStyles,
   ],
 });
 
@@ -262,14 +294,15 @@ const AdornmentEndRoot = styled("div", {
     {
       props: {
         multiLines: true,
-        vertical: false
+        vertical: false,
       },
       style: {
-        flexDirection: 'column',
+        flexDirection: "column",
         alignItems: "start",
-        justifyContent: 'center'
-      }
+        justifyContent: "center",
+      },
     },
+    ...commonIconStyles,
   ],
 });
 
@@ -280,8 +313,8 @@ export type RenderInput = {
 };
 
 const InputGlobalStyles = globalCss({
-  '@keyframes mux-auto-fill': { from: { display: 'block' } },
-  '@keyframes mux-auto-fill-cancel': { from: { display: 'block' } },
+  "@keyframes mux-auto-fill": { from: { display: "block" } },
+  "@keyframes mux-auto-fill-cancel": { from: { display: "block" } },
 });
 
 export interface BasicInputProps extends SxComponentProps {
@@ -353,7 +386,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       fullWidth,
       type,
       resize,
-      multiLines:multi = false,
+      multiLines: multi = false,
       adornmentsProps,
       startAdornment,
       endAdornment,
@@ -377,24 +410,28 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ) => {
     // 1. init
     const { input: inputTheme } = useTailwindTheme();
-    const { defaultProps, valid, styles, onFocus, onBlur } = inputTheme;
+    const { defaultProps, valid, styles } = inputTheme;
     const { base, variants } = styles;
 
-    const notInput = as && as !== 'textarea' && as !== 'input';
-    const multiLines = (as === 'textarea' || rows || multi)
+    const notInput = as && as !== "textarea" && as !== "input";
+    const multiLines = as === "textarea" || rows || multi;
 
     disableBorder ??= defaultProps.disableBorder;
 
     const myInputRef = useRef();
 
-    const inputRef = useRefs(ref, myInputRef) ; //useForwardedRef(ref);
+    const inputRef = useRefs(ref, myInputRef); //useForwardedRef(ref);
 
     const [focus, setFocus] = useState(focused);
     const [printed, setPrinted] = useState(false);
 
+    const controlled = React.useRef(
+      val !== null && val !== undefined,
+    );
 
-    const { current: isControlled } = React.useRef(val !== null && val !== undefined);
-    
+    const hasValue = React.useRef(
+      (controlled.current ? `${val}` :  '').length > 0
+    );
 
     const [value, setValue] = useControlled({
       name: "input",
@@ -403,57 +440,65 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       defaultState: defaultValue,
     });
 
-    const inputValue = useDeferredValue(value);
+    const state = React.useRef({
+      onChange,
+      setFocus,
+      restOnFocus: rest.onFocus,
+      restOnBlur: rest.onBlur,
+      setValue,
+    });
 
-    const checkDirty = React.useCallback(
-      (obj:any) => {
-        /*
-        if (isFilled(obj)) {
-          if (onFilled) {
-            onFilled();
+    React.useEffect(() => {
+      state.current = {
+        onChange,
+        setFocus,
+        restOnFocus: rest.onFocus,
+        restOnBlur: rest.onBlur,
+        setValue,
+      };
+    });
+
+    React.useEffect(() => {
+      controlled.current = val !== null && val !== undefined;
+      hasValue.current = (controlled.current ? `${val}` :  `${value ?? ''}`).length > 0
+    }, [value, val])
+
+    //const inputValue = useDeferredValue(value);
+
+    const handleChange = React.useCallback(
+      (
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ...args: any
+      ) => {
+        if (!controlled.current) {
+          const element = event.target || myInputRef.current;
+          if (element == null) {
+            throw /* minify-error */ new Error(
+              "MUX: Expected valid input target. " +
+                "Did you use a custom `inputComponent` and forget to forward refs? " +
+                "See https://mui.com/r/input-component-ref-interface for more info.",
+            );
           }
-        } else if (onEmpty) {
-          onEmpty();
+          state.current.setValue(element?.value);
         }
-          */
+
+        // Perform in the willUpdate
+        if (state.current.onChange) {
+          state.current.onChange(event as any);
+        }
       },
-      [/*onFilled, onEmpty*/],
+      [],
     );
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, ...args:any) => {
-      if (!isControlled) {
-        const element = event.target || myInputRef.current;
-        if (element == null) {
-          throw /* minify-error */ new Error(
-            'MUX: Expected valid input target. ' +
-              'Did you use a custom `inputComponent` and forget to forward refs? ' +
-              'See https://mui.com/r/input-component-ref-interface for more info.',
-          );
-        }
-        setValue(element?.value);
-        checkDirty({
-          value: element.value,
-        });
-      }
-    
-      // Perform in the willUpdate
-      if (onChange) {
-        onChange(event as any);
-      }
-    };
+    const handleFocus = React.useCallback((event: any) => {
+      state.current.setFocus(true);
+      state.current.restOnFocus?.(event);
+    }, []);
 
-
-    const handleFocus = (event: any) => {
-      setFocus(true);
-      rest.onFocus?.(event);
-      onFocus?.(event);
-    };
-
-    const handleBlur = (event: any) => {
-      setFocus(false);
-      rest.onBlur?.(event);
-      onBlur?.(event);
-    };
+    const handleBlur = React.useCallback((event: any) => {
+      state.current.setFocus(false);
+      state.current.restOnBlur?.(event);
+    }, []);
 
     const otherColor = (hasError && "error") || (hasSuccess && "success");
     // 2. set default props
@@ -477,16 +522,23 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     const isOutline = variant === "outlined";
     const isFilled = variant === "filled";
-
+    const isShrink =
+      shrink ||
+      focus ||
+      focused ||
+      hasValue.current ||
+      hasStartAdro;
+    
     const {
       rootCls,
       labelCls,
       asteriskCls,
       inputCls,
-      startAdorCls,
-      endAdorCls,
+      startCls,
+      endCls,
       nativeCls,
       notchedCls,
+      ownerState,
     } = useMemo(() => {
       //(rest as React.ComponentProps<"input">).type
       // 3. set styles
@@ -496,32 +548,30 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
       const inputSize = inputVariant.sizes[findMatch(valid.sizes, size, "md")];
 
-      const inputColor = inputVariant.colors.input && objectsToString(
-        inputVariant.colors.input[tColor],
-      );
+      const inputColor =
+        inputVariant.colors.input &&
+        objectsToString(inputVariant.colors.input[tColor]);
 
-      const rootColor = inputVariant.colors.root && objectsToString(
-        inputVariant.colors.root[tColor],
-      );
-
-      const isShrink = shrink || focus || focused || ((inputValue)?.toString() ?? "").length || hasStartAdro;
+      const rootColor =
+        inputVariant.colors.root &&
+        objectsToString(inputVariant.colors.root[tColor]);
 
       const adornments =
         (hasAdornments &&
           Object.assign(
             {},
-            base.adornments, 
-            inputVariant.base.adornments, 
-            inputSize.adornments, 
-            adornmentsProps
-          )
-        ) || ({} as any);
+            base.adornments,
+            inputVariant.base.adornments,
+            inputSize.adornments,
+            adornmentsProps,
+          )) ||
+        ({} as any);
 
-      const startAdorCls =
+      const startCls =
         (hasStart && classnames(objectsToString(adornments.start))) ||
         undefined;
 
-      const endAdorCls =
+      const endCls =
         (hasEnd && classnames(objectsToString(adornments.end))) || undefined;
 
       const rootCls = twMerge(
@@ -533,7 +583,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           hasError && objectsToString(inputVariant.error.root),
           hasSuccess && objectsToString(inputVariant.success.root),
         ),
-        (!(hasError || hasSuccess) && rootColor),
+        !(hasError || hasSuccess) && rootColor,
         rootProps?.className,
         className,
         fullWidth && "w-full",
@@ -543,7 +593,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         `size-${size}`,
         "group",
         focus && "is-focused",
-        (isShrink || !hasLabel) && "is-shrink"
+        (isShrink || !hasLabel) && "is-shrink",
       );
 
       const inputCls = twMerge(
@@ -556,6 +606,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             [objectsToString(inputSize.adornments)]: hasAdornments,
           },
           isShrink && objectsToString(inputVariant.shrink.input),
+          hasLabel && objectsToString(inputVariant.label?.input),
           hasAdornments && adornments.vertical && "flex-col",
         ),
         inputColor,
@@ -568,8 +619,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
       if (variant !== "outlined") {
       }
-      const notchedCls = (isOutline || isFilled) 
-        ? classnames(
+      const notchedCls =
+        isOutline || isFilled
+          ? classnames(
               objectsToString({
                 ...inputVariant.base.notched,
                 ...inputSize.notched,
@@ -580,11 +632,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
       let labelCls;
       if (hasLabel) {
-        const labelShrink = isShrink && objectsToString(inputVariant.shrink.label);
+        const labelShrink =
+          isShrink && objectsToString(inputVariant.shrink.label);
 
-        const labelColor = objectsToString(
-          inputVariant.colors.label[tColor],
-        );
+        const labelColor = objectsToString(inputVariant.colors.label[tColor]);
 
         let labelFocus =
           isShrink && labelColor
@@ -599,7 +650,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {
               [labelFocus]: focus || focused,
             },
-            labelShrink
+            labelShrink,
           ),
           labelColor,
           hasError && objectsToString(inputVariant.error.label),
@@ -618,15 +669,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         }
       }
 
-
       const nativeCls = twMerge(
         classnames(
           objectsToString(base.native),
           objectsToString(inputVariant.base.native),
           objectsToString(adornments.native),
           objectsToString(inputSize.native),
-          multiLines && !resize && '!resize-none',
-          hasLabel && !isShrink && 'placeholder:opacity-0',
+          multiLines && !resize && "!resize-none",
+          hasLabel && !isShrink && "placeholder:opacity-0",
           {
             [objectsToString(inputVariant.shrink.native)]: isShrink,
           },
@@ -634,6 +684,20 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         nativePx,
         nativeClassName,
       );
+      const ownerState = {
+        variant,
+        inline: forceInline,
+        color,
+        multiLines,
+        size,
+        focused,
+        hasAdornment: hasStartAdro || hasError,
+        disableBorder,
+        disabled,
+        readOnly,
+        notInput,
+        disableInjectingGlobalStyles,
+      };
       return {
         rootCls,
         labelCls,
@@ -643,67 +707,52 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             classnames(objectsToString(base.asterisk))) ||
           undefined,
         inputCls,
-        startAdorCls,
-        endAdorCls,
+        startCls,
+        endCls,
         nativeCls,
         notchedCls,
+        ownerState,
       };
     }, [
       variant,
       size,
       color,
-      label,
-      shrink,
+      hasLabel,
+      isShrink,
       className,
-      startAdornment,
-      endAdornment,
+      hasStart,
+      hasEnd,
       focus,
-      inputRef,
       type,
       multiLines,
-      isControlled ? val : value,
-      nativeClassName
+      nativeClassName,
+      disabled,
+      forceInline,
+      readOnly,
+      notInput,
     ]);
 
     useEffect(() => {
-      const isFocused = document.activeElement ===  (inputRef as any).current;
-      //setFocus(isFocused);
-    }, [inputRef]);
-
-    useEffect(() => {
-      if (["input","textarea"].includes( inputRef.current?.tagName?.toLowerCase() ?? '') ) {
-       if(inputRef.current?.value !== inputValue) {
-        setValue(inputRef.current?.value);
-
-       }
+      if (
+        ["input", "textarea"].includes(
+          inputRef.current?.tagName?.toLowerCase() ?? "",
+        )
+      ) {
+        if (inputRef.current?.value !== value) {
+          setValue(inputRef.current?.value);
+        }
       }
-    }, [inputRef, inputValue]);
-
-    
-    const ownerState = {
-      variant,
-      inline: forceInline,
-      color,
-      multiLines,
-      size,
-      focused,
-      hasAdornment: hasStartAdro || hasError,
-      disableBorder,
-      disabled,
-      readOnly,
-      notInput,
-      disableInjectingGlobalStyles
-    };
+    }, [inputRef, value]);
 
     let NativeComponent = notInput || !multiLines ? as : AutoResizeTextarea;
-    let nativeProps:any = rest;
-    
-    if(NativeComponent === AutoResizeTextarea) {
+    let nativeProps: any = rest;
+
+    if (NativeComponent === AutoResizeTextarea) {
       if (rows) {
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV !== "production") {
           if (minRows || maxRows) {
             console.warn(
-              'MUX: You can not use the `minRows` or `maxRows` props when the input `rows` prop is set.',
+              "MUX: You can not use the `minRows` or `maxRows` props when the input `rows` prop is set.",
             );
           }
         }
@@ -721,93 +770,89 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
       type = undefined;
     }
-    
+
     // 4. return
-    const input = (
-      notInput
-      ? <BasicInputRoot
+    const input = notInput ? (
+      <BasicInputRoot
         {...(nativeProps as React.ComponentProps<"div">)}
         ref={inputRef as any}
-        className={clsx(nativeCls, !multiLines ? 'whitespace-nowrap	' : '')}
+        className={clsx(nativeCls, !multiLines ? "whitespace-nowrap	" : "")}
         //onFocus={handleFocus}
         //onBlur={handleBlur}
         as={as}
-        aria-invalid={hasError ? 'true' : undefined}
+        aria-invalid={hasError ? "true" : undefined}
         ownerState={ownerState}
       >
         {value ? value : !hasLabel ? placeholder : null}
       </BasicInputRoot>
-      : <BasicInputRoot
-            {...(nativeProps as React.ComponentProps<"input">)}
-            ref={inputRef as any}
-            aria-invalid={hasError ? 'true' : undefined}
-            className={nativeCls}
-            placeholder={placeholder || ""}
-            value={(isControlled ? val : value) as string}
-            //defaultValue={defaultValue}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onChange={handleChange}
-            disabled={disabled}
-            readOnly={readOnly}
-            as={NativeComponent}
-            ownerState={ownerState}
-            type={type}
-        />
+    ) : (
+      <BasicInputRoot
+        {...(nativeProps as React.ComponentProps<"input">)}
+        ref={inputRef as any}
+        aria-invalid={hasError ? "true" : undefined}
+        className={nativeCls}
+        placeholder={placeholder || ""}
+        value={(controlled ? val : (value ?? '')) as string}
+        //defaultValue={defaultValue}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onChange={handleChange}
+        disabled={disabled}
+        readOnly={readOnly}
+        as={NativeComponent}
+        ownerState={ownerState}
+        type={type}
+      />
     );
     const start = hasStart ? (
-      <AdornmentStartRoot ownerState={ownerState} className={startAdorCls}>
+      <AdornmentStartRoot ownerState={ownerState} className={startCls}>
         {startAdornment}
         {forceInline ? input : null}
       </AdornmentStartRoot>
     ) : undefined;
 
-    return (
-      <InputRoot
-        {...rootProps}
-        className={rootCls}
+    const inputLabel = hasLabel && (
+      <InputLabelRoot
+        {...labelProps}
+        className={labelCls}
         ownerState={ownerState}
       >
-        {(hasLabel && !isOutline) && (
-          <InputLabelRoot
-            {...labelProps}
-            className={labelCls}
-            ownerState={ownerState}
-          >
-            {label} {rest.required && ' '}
-            {rest.required ? <span className={asteriskCls}>*</span> : null}
-          </InputLabelRoot>
-        )}
+        {label} {rest.required && " "}
+        {rest.required ? <span className={asteriskCls}>*</span> : null}
+      </InputLabelRoot>
+    );
+
+    return (
+      <InputRoot {...rootProps} className={rootCls} ownerState={ownerState}>
+        {!isFilled && !isOutline && inputLabel}
+
         <InputContainerRoot className={inputCls} ownerState={ownerState}>
           {start}
           {!forceInline ? input : null}
           {hasEnd ? (
-            <AdornmentEndRoot className={endAdorCls}>
+            <AdornmentEndRoot ownerState={ownerState} className={endCls}>
               {endAdornment}
             </AdornmentEndRoot>
           ) : undefined}
 
-          {(isOutline && !disableBorder) ? (
+          {isOutline && !disableBorder ? (
             <fieldset className={notchedCls}>
-              <legend>{hasLabel && <span>{label} {rest.required && ' *'}</span>}</legend>
+              <legend>
+                {hasLabel && (
+                  <span>
+                    {label} {rest.required && " *"}
+                  </span>
+                )}
+              </legend>
             </fieldset>
           ) : null}
         </InputContainerRoot>
-        {(hasLabel && isOutline) && (
-          <InputLabelRoot
-            {...labelProps}
-            className={labelCls}
-            ownerState={ownerState}
-          >
-            {label} {rest.required && ' '}
-            {rest.required ? <span className={asteriskCls}>*</span> : null}
-          </InputLabelRoot>
-        )}
-        {(isFilled && !disableBorder) ? (
-            <fieldset className={notchedCls}>
-            </fieldset>
-          ) : null}
-        {(!disableInjectingGlobalStyles && typeof InputGlobalStyles === 'function')  && <InputGlobalStyles/>}
+        {(isFilled || isOutline) && inputLabel}
+        {isFilled && !disableBorder ? (
+          <fieldset className={notchedCls}></fieldset>
+        ) : null}
+        {!disableInjectingGlobalStyles &&
+          typeof InputGlobalStyles === "function" && <InputGlobalStyles />}
       </InputRoot>
     );
   },

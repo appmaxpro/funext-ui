@@ -35,7 +35,7 @@ import {
   styled,  
   clsx, 
   composeClasses, 
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   SxThemeProps,
   type Theme
 } from '../../styles';
@@ -421,7 +421,7 @@ export interface LinearProgressProps
 const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
   (inProps, ref) => {
     
-    const props = useMuiDefaultProps({ props: inProps, name: 'MuiLinearProgress' });
+    const props = useMuxDefaultProps({ props: inProps, name: 'MuiLinearProgress' });
     const { progress } = useTailwindTheme();
     const { defaultProps, valid, styles } = progress;
     const { base, variants, sizes } = styles;

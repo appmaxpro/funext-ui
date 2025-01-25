@@ -334,7 +334,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
               "opacity 361ms cubic-bezier(0.4, 0, 0.2, 1), transform 240ms cubic-bezier(0.4, 0, 0.2, 1)",
           }}
           onTransitionEnd={() => {
-            console.log("onTransitionEnd:");
+            //console.log("onTransitionEnd:");
             //@ts-ignore
             !open &&
               (timeoutRef.current = setTimeout(() => setOpenStated(open), 400));
@@ -362,7 +362,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
         </div>
       </div>
     );
-    console.log("openState:", openState, ", open:", open);
+    ///console.log("openState:", openState, ", open:", open);
     let finalChild = lockScroll ? (
       <FloatingOverlay lockScroll>{menuComponent}</FloatingOverlay>
     ) : (
@@ -393,7 +393,7 @@ const MenuListContent = React.forwardRef<HTMLUListElement, MenuListProps>(
  */
 const scaleTranslate = (props: any) => {
   const { x, y, scaleX, scaleY } = props;
-  console.log("scaleTranslate:", props);
+  //console.log("scaleTranslate:", props);
   return `scale(${scaleX}, ${scaleY}) translate3d(${x}, ${y}, 0)`;
 };
 

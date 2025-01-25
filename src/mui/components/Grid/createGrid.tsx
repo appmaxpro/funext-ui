@@ -4,7 +4,7 @@ import {
   Breakpoints,
   defaultTheme,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   composeClasses,
   generateUtilityClass,
   useTheme,
@@ -49,7 +49,7 @@ const defaultCreateStyledComponent = (styled as CreateMUIStyled<any>)(
 );
 
 function useThemePropsDefault<T extends {}>(props: T) {
-  return useMuiDefaultProps({
+  return useMuxDefaultProps({
     props,
     name: "MuxGrid",
   });

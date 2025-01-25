@@ -6,7 +6,7 @@ import {
   styled,  
   clsx, 
   composeClasses, 
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   SxThemeProps
 } from '../../styles';
 
@@ -232,7 +232,7 @@ const CircularProgressCircle = styled('circle', {
  * attribute to `true` on that region until it has finished loading.
  */
 export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressProps>(function CircularProgress(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxCircularProgress' }) as CircularProgressProps;
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxCircularProgress' }) as CircularProgressProps;
   const {
     className,
     color = 'primary',

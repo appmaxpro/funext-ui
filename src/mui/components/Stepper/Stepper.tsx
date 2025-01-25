@@ -31,8 +31,14 @@ export interface StepperProps extends SxComponentProps<"div"> {
   lineClassName?: className;
   activeLineClassName?: className;
   alternativeLabel?: boolean;
+  stepClasses?: {
+    inactive?: string;
+    active?: string;
+    completed?: string;
+  }
   connector?: React.ReactNode;
-  orientation: "horizontal" | "vertical";
+  orientation?: "horizontal" | "vertical";
+  completed?: boolean;
 }
 
 const StepperRoot = styled("div", {
@@ -47,12 +53,14 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
       className,
       lineClassName,
       activeLineClassName,
+      stepClasses,
       alternativeLabel,
       connector,
       orientation = "horizontal",
       isFirstStep,
       isLastStep,
       children,
+      completed,
       ...rest
     },
     ref,
@@ -86,10 +94,8 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
     }, [children]);
 
     const width = React.useMemo(() => {
-      if (!isReachEnd) {
-        return widthPerStep * activeStep!;
-      }
-    }, [activeStep, isReachEnd, widthPerStep]);
+      return widthPerStep * activeStep!;
+    }, [activeStep, widthPerStep]);
 
     const mergedRef = useMergeRefs([ref, containerRef]);
 
@@ -113,9 +119,9 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
         activeLineClassName,
       );
 
-      const inactiveClasses = objectsToString(stepBase.inactive);
-      const activeClasses = objectsToString(stepBase.active);
-      const completedClasses = objectsToString(stepBase.completed);
+      const inactiveClasses = twMerge(objectsToString(stepBase.inactive), stepClasses?.inactive);
+      const activeClasses = twMerge(objectsToString(stepBase.active), stepClasses?.active);
+      const completedClasses = twMerge(objectsToString(stepBase.completed), stepClasses?.completed);
       return {
         stepperClasses,
         lineClasses,
@@ -124,7 +130,7 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
         activeClasses,
         completedClasses,
       };
-    }, [theme, className, lineClassName, activeLineClassName]);
+    }, [theme, className, lineClassName, activeLineClassName, stepClasses]);
 
 
     
@@ -132,9 +138,10 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
       return (
         step &&
         React.cloneElement(step as any, {
+          ...(step as any).props,
           index,
           last: index + 1 === childrenArray.length,
-          ...(step as any).props,
+          
         })
       );
     });
@@ -148,6 +155,7 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
         inactiveClasses,
         activeClasses,
         completedClasses,
+        completed
       }),
       [
         activeStep,
@@ -157,6 +165,7 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
         inactiveClasses,
         activeClasses,
         completedClasses,
+        completed
       ],
     );
     // 4. return

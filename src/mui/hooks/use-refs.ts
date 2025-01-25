@@ -35,7 +35,7 @@ export function useRefs<T=any>(
           (ref as MutableRefObject<T>).current = value;
       });
     },
-    [refs],
+    [...refs],
   );
   return combinedRef as unknown as MergedRef<MergedRefType<T>>;
 }

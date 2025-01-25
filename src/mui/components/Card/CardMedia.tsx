@@ -1,6 +1,7 @@
-import { clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, SxThemeProps, useMuiDefaultProps } from '../../styles';
+import { clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, SxThemeProps, useMuxDefaultProps } from '../../styles';
 import { OverridableComponent, OverrideProps } from '../../props';
 import React from 'react';
+import { isReactComponent } from '../../utils';
 
 
 export interface CardMediaClasses {
@@ -110,10 +111,10 @@ const MEDIA_COMPONENTS = ['video', 'audio', 'picture', 'iframe', 'img'];
 const IMAGE_COMPONENTS = ['picture', 'img'];
 
 export const CardMedia = React.forwardRef<HTMLElement, CardMediaProps>(function CardMedia(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxCardMedia' });
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxCardMedia' });
   const { children, className, component = 'div', image, src, style, ...other } = props;
 
-  const muxImg = (component as any).muxName === 'Img';
+  const muxImg = isReactComponent(component) ? (component as any).muxName === 'Img' : false;
   const isMediaComponent = muxImg || MEDIA_COMPONENTS.includes(component as any);
 
   const composedStyle =

@@ -41,7 +41,7 @@ import Panel from "../Panel";
 const AlertRoot = styled(m.div, {
   name: "MuxAlert",
   slot: "Root",
-})('');
+})("");
 
 const AlertDivRoot = styled(Panel, {
   name: "MuxAlert",
@@ -122,12 +122,6 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         findMatch(valid.colors, color, "sky")
       ];
 
-    const rippleColor = alertVariantMap?.color;
-    const rippleColorClass =
-      rippleColor && rippleColor.startsWith("text-")
-        ? rippleColor.replace("text-", "bg-")
-        : null;
-
     const alertVariant = objectsToString(alertVariantMap);
     const classes = twMerge(classnames(alertBase, alertVariant), className);
     const actionClasses = classnames(alertAction);
@@ -136,50 +130,54 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 
     const child = open && (
       <AlertDivRoot
-          {...(rest as any)}
-          ref={ref}
-          role="alert"
-          className={classes}
-        >
+        {...(rest as any)}
+        ref={ref}
+        role="alert"
+        className={classes}
+      >
         {icon && <div className="shrink">{icon}</div>}
         <div
-          className={`flex-1-auto ${icon ? "ms-3" : ""}${title ? " flex flex-col" : ""}`}
+          className={`flex-1-auto max-w-full overflow-hidden ${icon ? "ms-3" : ""}${title || onClose ? " flex flex-col" : ""}`}
         >
-          {typeof title === "string" ? (
-            <Text variant="h6">{title}</Text>
-          ) : (
-            title
-          )}
+          {(onClose || title) ? (
+            <div className="flex justify-between flex-nowrap min-h-6 w-full">
+              {typeof title === "string" ? (
+                <Text variant="h6">{title}</Text>
+              ) : (
+                title
+              )}
+              {onClose && (
+                <IconButton
+                  onClick={onClose as any}
+                  dense
+                  color={
+                    variant === "outlined" || variant === "ghost"
+                      ? color
+                      : "transparent"
+                  }
+                  className={actionClasses}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </IconButton>
+              )}
+            </div>
+          ) : null}
           {children}
         </div>
-        {onClose && !action && (
-          <IconButton
-            onClick={onClose as any}
-            dense
-            color={
-              variant === "outlined" || variant === "ghost"
-                ? color
-                : "transparent"
-            }
-            rippleClassName={rippleColorClass}
-            className={actionClasses}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="h-6 w-6"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </IconButton>
-        )}
+
         {action || null}
       </AlertDivRoot>
     );
@@ -215,7 +213,6 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
               exit="unmount"
               animate={open ? "mount" : "unmount"}
               variants={appliedAnimation}
-              
               {...motionProps}
             >
               {child}

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { isDevelopment } from "../utils";
 
 function isDispatchFunction<T>(
   newState: React.SetStateAction<T>,
@@ -40,7 +41,7 @@ export function useControlled<T>(options: {
     options.prop,
   ]);
 
-  if (process.env.NODE_ENV !== "production") {
+  if (isDevelopment) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       if (isControlled !== (options.state !== undefined)) {

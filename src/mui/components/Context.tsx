@@ -6,7 +6,7 @@ import type {
   ReferenceType,
   Strategy,
 } from "@floating-ui/react";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 
 
 export interface MuxFloating {
@@ -34,7 +34,10 @@ export const useFloatingContext = ()=> React.useContext(MuxFloatingContext);
 export const StyledContext = React.createContext<ClassNamesContent['css']>(()=> '');
 export const useStyled = ()=> React.useContext(StyledContext);
 
-const InViewContext = React.createContext<boolean>(false);
+const InViewContext = React.createContext<{visible: boolean; hasVisible: boolean}>({
+  visible: false,
+  hasVisible: false
+});
 
 export const InViewProvider = ({
   children,
@@ -43,11 +46,21 @@ export const InViewProvider = ({
   children: React.ReactNode;
   visible: boolean;
 }) => {
+  const wasVisible = React.useRef(visible);
+  useEffect(()=> {
+    if (visible && !wasVisible.current) {
+      wasVisible.current = true;
+    }
+  }, [visible]);
+
+  const value = useMemo(()=> ({visible, hasVisible: visible || wasVisible.current}), [visible, wasVisible.current]);
+
   return (
-    <InViewContext.Provider value={visible}>
+    <InViewContext.Provider value={value}>
       {children}
     </InViewContext.Provider>
   );
 };
+export const InViewConsumer = InViewContext.Consumer;
 
 export const useInViewContext = () => React.useContext(InViewContext);

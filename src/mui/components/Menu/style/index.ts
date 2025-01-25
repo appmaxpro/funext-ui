@@ -76,8 +76,8 @@ export const menu: MenuStylesType = {
       },
       item: {
         initial: {
-          py: 'py-2',
-          px: 'px-2.5',
+          py: 'py-3 md:py-2',
+          px: 'px-3',
         },
         disabled: {
           opacity: "opacity-60",

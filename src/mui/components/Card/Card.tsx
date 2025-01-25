@@ -29,14 +29,15 @@ import { CardBody, CardBodyProps } from "./CardBody";
 import { CardFooter, CardFooterProps } from "./CardFooter";
 import { getThemeColorClass, mapThemeColor } from "../../hooks";
 import { CardMedia } from "./CardMedia";
-import { CardActionArea, CardActions } from "./CardActions";
+import { CardActions} from "./CardActions";
+import { CardActionArea} from "./CardActionArea";
 
 export * from "./CardBody";
 export * from "./CardHeader";
 export * from "./CardFooter";
 export * from "./CardMedia";
 export * from "./CardActions";
-export * from "./CardActions";
+export * from "./CardActionArea";
 export * from '../../types/components/card';
 
 export interface CardClasses {
@@ -50,7 +51,7 @@ export function getCardUtilityClass(slot: string): string {
   return generateUtilityClass('MuxCard', slot);
 }
 
-const cardClasses: CardClasses = generateUtilityClasses('MuxCard', ['root']);
+export const cardClasses: CardClasses = generateUtilityClasses('MuxCard', ['root']);
 
 
 const useUtilityClasses = (ownerState:any) => {
@@ -88,7 +89,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
   // 3. set styles
   const cardRoot = objectsToString(base.initial);
   const cardVariant = objectsToString(
-    variants[findMatch(valid.variants, variant, "filled")][
+    variants[findMatch(valid.variants, variant, "outlined")][
       findMatch(valid.colors, color, "default")
     ],
   );
@@ -101,7 +102,7 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
 
   return {
     ...props,
-    ...getThemeColorClass(color, className, undefined, variant === 'filled' ? 'bg' : 'border'),
+    ...getThemeColorClass(color, className, undefined, variant === 'filled' ? 'bg' : variant === 'outlined' ? 'border' : undefined),
     variant,
   }
 }
@@ -140,7 +141,7 @@ export const CardFc = React.forwardRef<HTMLDivElement, CardProps>(
     square,
     variant,
     hasShadow: !!elevation,
-    hasBg: !className.includes('bg-') && (variant === 'filled' || fill),
+    fill: fill || (!className.includes('bg-') && variant === 'filled'),
     hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
     hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };
@@ -167,7 +168,8 @@ export const CardFc = React.forwardRef<HTMLDivElement, CardProps>(
       ref={ref as any}
       style={{
         ...(elevation && {
-          '--panel-shadow': (theme.vars || theme).shadows[elevation],
+          '--panel-shadow': ((theme.vars || theme).shadows as any)[elevation],
+          /*
           ...(theme.vars && {
             '--panel-overlay': theme.vars.overlays?.[elevation],
           }),
@@ -177,7 +179,7 @@ export const CardFc = React.forwardRef<HTMLDivElement, CardProps>(
                 '#fff',
                 getOverlayAlpha(elevation),
               )}, ${alpha('#fff', getOverlayAlpha(elevation))})`,
-            }) as any,
+            }) as any,*/
         }),
         ...other.style,
       }}/>

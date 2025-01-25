@@ -30,7 +30,7 @@ import IconButton from "../IconButton";
 import { mapThemeColor } from "../../hooks";
 import { MaterialIcon } from "../../../icons/material-icon";
 
-import { clsx, composeClasses, generateUtilityClass, memoTheme, styled, Theme, useMuiDefaultProps } from "../../styles";
+import { clsx, composeClasses, generateUtilityClass, memoTheme, styled, Theme, useMuxDefaultProps } from "../../styles";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 import Button, {
   ButtonEndIcon,
@@ -152,22 +152,32 @@ const ChipRoot = styled(ButtonRoot, {
     },
     {
       props: {
-        size: "md",
-        xsm: true,
-      },
-      style: {
-        padding: '2px 6px',
-        fontSize: theme.typography.pxToRem(12),
-      },
-    },
-    {
-      props: {
         size: "sm",
         xsm: true,
       },
       style: {
         padding: '0 4px',
         fontSize: theme.typography.pxToRem(10),
+      },
+    },
+    {
+      props: {
+        size: "md",
+        xsm: true,
+      },
+      style: {
+        padding: '3px 6px',
+        fontSize: theme.typography.pxToRem(12),
+      },
+    },
+    {
+      props: {
+        size: "lg",
+        xsm: true,
+      },
+      style: {
+        padding: '4px 6px',
+        fontSize: theme.typography.pxToRem(14),
       },
     },
   ],
@@ -181,7 +191,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
     const { defaultProps, valid, styles } = chip;
     const { base, variants, sizes } = styles;
 
-    props = useMuiDefaultProps({ props, name: "MuxChip" });
+    props = useMuxDefaultProps({ props, name: "MuxChip" });
 
     let {
       variant,
@@ -277,7 +287,7 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
             dense
             //@ts-ignore
             color={
-              variant === "outlined" || variant === "ghost" ? color : "default"
+              variant === "outlined" || variant === "ghost" ? color : "inherit"
             }
             className={actionClasses}
             disabled={rest.disabled}

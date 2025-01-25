@@ -223,7 +223,7 @@ export interface PopperContextProps<T = HTMLElement | null> {
 
 export interface SharedPopperProps {
   focusProps?: PopperFocusProps;
-  animate?: AnimationProps | boolean;
+  animate?: AnimationProps | ((context: UseFloatingReturn) => AnimationProps | null);
   backdrop?: Backdrop;
   overlay?: Overlay;
   contentProps?: SxComponentProps;
@@ -375,7 +375,7 @@ export function usePopperContext(
       descriptionId,
       openState,
       setOpenState,
-      JSON.stringify(arrow),
+      arrow,
     ],
   );
 
@@ -467,28 +467,6 @@ export const PopperPortal = ({
   }
 
   const shouldOpen = openState || open;
-  const popperProvider = (
-    <PopperContext.Provider value={context}>
-      {trigger ? <PopperHandler>{trigger}</PopperHandler> : null}
-      <NewAnimatePresence
-        presenceAffectsLayout={false}
-        onExitComplete={() => {
-          console.log("AnimatePresence:onExitComplete");
-          setOpenState(false);
-        }}
-      >
-        {shouldOpen ? (
-          renderContent ? (
-            <PopperContent {...rest} internal>
-              {children}
-            </PopperContent>
-          ) : (
-            children
-          )
-        ) : null}
-      </NewAnimatePresence>
-    </PopperContext.Provider>
-  );
   // 7. return
   return (
     <LazyMotion features={domAnimation}>
@@ -499,7 +477,7 @@ export const PopperPortal = ({
             <NewAnimatePresence
               presenceAffectsLayout={false}
               onExitComplete={() => {
-                console.log("AnimatePresence:onExitComplete");
+                //console.log("AnimatePresence:onExitComplete");
                 setOpenState(false);
               }}
             >
@@ -608,14 +586,22 @@ export const PopperContent = React.forwardRef<
     const { refs, context, x, y, strategy, floatingStyles } = floating;
 
     const mergedRef = useMergeRefs([ref, refs.setFloating]);
-    const disableAnimation = typeof animate === "boolean" ? !animate : false;
-    const animation = !disableAnimation ? animate : undefined;
+
+    const animation = useMemo(()=> {
+      return (typeof animate === "function" 
+         ? animate(floating) 
+         : typeof animate === "object" 
+         ? animate 
+         : undefined)
+    }, [open, floating, animate])
 
     useEffect(() => {
       if (!animation || isPresent) {
-        setOpenState(!animation ? false : isPresent);
+        setOpenState(!animation ? open : isPresent);
       }
-    }, [animation, isPresent, setOpenState]);
+    }, [animation, open, isPresent, setOpenState]);
+
+    const hasAnimate = !!animation;
 
     const content = (
       <PopperRoot
@@ -668,7 +654,7 @@ export const PopperContent = React.forwardRef<
 
     const backdropAnimate = useMemo(
       () =>
-        !disableAnimation &&
+        hasAnimate &&
         backdrop &&
         backdrop.animate !== false &&
         merge(
@@ -685,7 +671,7 @@ export const PopperContent = React.forwardRef<
           },
           backdrop!.animate || ({} as any),
         ),
-      [backdrop],
+      [backdrop, hasAnimate],
     );
 
     const backdropContent = backdrop ? (

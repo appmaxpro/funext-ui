@@ -3,7 +3,7 @@ import * as React from 'react';
 import { 
   SxComponentProps, 
   styled, 
-  useMuiDefaultProps ,
+  useMuxDefaultProps ,
   clsx,
   composeClasses,
   generateUtilityClasses ,
@@ -83,7 +83,7 @@ const ListItemAvatarRoot = styled('div', {
  * A simple wrapper to apply `List` styles to an `Avatar`.
  */
 export const ListItemAvatar = React.forwardRef<HTMLElement, ListItemAvatarProps>(function ListItemAvatar(inProps, ref) {
-  const props = useMuiDefaultProps({
+  const props = useMuxDefaultProps({
     props: inProps,
     name: 'MuiListItemAvatar',
   });

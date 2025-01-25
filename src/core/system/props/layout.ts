@@ -51,8 +51,10 @@ export interface FlexProps {
   flexWrap?: Responsive<CSS.Property.FlexWrap>;
   order?: Responsive<CSS.Property.Order>;
   justifyContent?: Responsive<CSS.Property.JustifyContent>;
+  justify?: Responsive<CSS.Property.JustifyContent>;
   alignContent?: Responsive<CSS.Property.AlignContent>;
   alignItems?: Responsive<CSS.Property.AlignItems>;
+  items?: Responsive<CSS.Property.AlignItems>;
   alignSelf?: Responsive<CSS.Property.AlignSelf>;
   placeContent?: Responsive<CSS.Property.PlaceContent>;
   placeItems?: Responsive<CSS.Property.PlaceItems>;
@@ -85,8 +87,10 @@ export const FlexConfig: Config<FlexProps> = {
   flexWrap: computeVar("flex", value => value ? 'wrap' : ''),
   order: computeVar("order"),
   justifyContent: computeVar("justify", (v) => v.replace('flex-', '').replace('content-', '')),
+  justify: computeVar("justify", (v) => v.replace('flex-', '').replace('content-', '')),
   alignContent: computeVar("content", replaceFlex),
   alignItems: computeVar("items", replaceFlex),
+  items: computeVar("items", replaceFlex),
   alignSelf: computeVar("self"),
   placeContent: computeVar("place-content", replaceFlex),
   placeItems: computeVar("place-items"),

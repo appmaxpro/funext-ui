@@ -32,9 +32,7 @@ export interface CardStylesType {
 
 const card: CardStylesType = {
   defaultProps: {
-    variant: "filled",
-    color: "body",
-    shadow: true,
+    variant: "outlined",
     className: "",
   },
   valid: {

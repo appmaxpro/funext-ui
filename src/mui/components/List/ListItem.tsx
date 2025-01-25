@@ -19,14 +19,7 @@ const ListItemRoot = styled("li", {
   justifyContent: "start",
 });
 
-const ListItemButtonRoot = styled(ButtonBase, {
-  name: 'MuxListItemButton',
-  slot: 'Root',
-})({
-  justifyContent: 'start'
-});
-
-export interface ListItemProps extends SxComponentProps<"li"> {
+export interface ListItemProps extends Omit<SxComponentProps<"li">, 'title'> {
   className?: string;
   disabled?: boolean;
   selected?: boolean;
@@ -35,11 +28,13 @@ export interface ListItemProps extends SxComponentProps<"li"> {
   children: ReactNode;
   startIcon?: ReactNode;
   endIcon?: ReactNode;
+  title?: ReactNode;
   button?: boolean;
   href?: string;
   divider?: boolean;
   gutters?: boolean;
   dense?: boolean;
+  component?: React.ComponentType;
 }
 
 export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
@@ -50,22 +45,31 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
       selected,
       active,
       hover,
-      children,
+
       itemType,
-      startIcon,
-      endIcon,
+      startIcon: startIconProp,
+      endIcon: endIconProp,
+      title: titleProps,
+      children: childrenProps,
       button,
       divider,
       gutters,
       dense,
       as,
+      component=as,
+      
       ...rest
     },
     ref,
   ) => {
     // 1. init
 
-    const { getItemStyle } = useListContext()!;
+    const {
+      startIcon = startIconProp,
+      endIcon = endIconProp,
+      getItemStyle,
+      ul
+    } = useListContext()!;
 
     const hasHover: any = hover ?? (button ? true : undefined);
 
@@ -110,23 +114,39 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
         <ListItemSuffix>{endIcon}</ListItemSuffix>
       );
 
+    const li = (ul && (!component || component !== 'li'))
+
+    const title = titleProps ?? childrenProps;
+    const children = titleProps ? childrenProps : null;
+    const itemChild = children ? (
+      <div className={itemStyles}>
+        {prefixComp}
+        {title}
+        {suffixComp}
+      </div>
+    ) : (
+      <>
+        {prefixComp}
+        {title}
+        {suffixComp}
+      </>
+    );
     const item = (
       <ListItemRoot
         {...(rest as any)}
+        as={component}
         disabled={typeof as === "string" && disabled ? `true` : undefined}
         area-disabled={disabled ? "true" : undefined}
         active={typeof active === "boolean" ? undefined : active}
         ref={ref}
-        as={as}
         className={itemStyles}
       >
-        {prefixComp}
+        {itemChild}
         {children}
-        {suffixComp}
       </ListItemRoot>
     );
 
-    if (as === "li" || !as) {
+    if (component === 'li' || !li) {
       return item;
     }
 

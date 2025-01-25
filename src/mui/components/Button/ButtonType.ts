@@ -1,18 +1,18 @@
-import * as React from 'react';
-import { 
-  DistributiveOmit, 
+import * as React from "react";
+import {
+  DistributiveOmit,
   OverridableStringUnion,
-  OverrideProps, 
-  OverridableComponent, 
-  OverridableTypeMap
-} from '../../props';
+  OverrideProps,
+  OverridableComponent,
+  OverridableTypeMap,
+} from "../../props";
 
-import { ExtendButtonBase, ExtendButtonBaseTypeMap } from './ButtonBase';
-import { 
-  generateUtilityClass, 
-  generateUtilityClasses ,
-  SxThemeProps
-} from '../../styles';
+import { ExtendButtonBase, ExtendButtonBaseTypeMap } from "./ButtonBase";
+import {
+  generateUtilityClass,
+  generateUtilityClasses,
+  SxThemeProps,
+} from "../../styles";
 
 export interface ButtonClasses {
   /** Styles applied to the root element. */
@@ -76,37 +76,40 @@ export interface ButtonClasses {
 export type ButtonClassKey = keyof ButtonClasses;
 
 export function getButtonUtilityClass(slot: string): string {
-  return generateUtilityClass('MuxButton', slot);
+  return generateUtilityClass("MuxButton", slot);
 }
 
-export const buttonClasses: ButtonClasses = generateUtilityClasses('MuxButton', [
-  'root',
-  'text',
-  'outlined',
-  'filled',
-  'ghost',
-  'disableElevation',
-  'focusVisible',
-  'disabled',
-  'colorInherit',
-  'colorPrimary',
-  'colorSecondary',
-  'colorSuccess',
-  'colorError',
-  'colorInfo',
-  'colorWarning',
-  'sizeMd',
-  'sizeSm',
-  'sizeLg',
-  'fullWidth',
-  'startIcon',
-  'endIcon',
-  'icon',
-  'iconSizeSm',
-  'iconSizeMd',
-  'iconSizeLg',
-  'canHover'
-]);
+export const buttonClasses: ButtonClasses = generateUtilityClasses(
+  "MuxButton",
+  [
+    "root",
+    "text",
+    "outlined",
+    "filled",
+    "ghost",
+    "disableElevation",
+    "focusVisible",
+    "disabled",
+    "colorInherit",
+    "colorPrimary",
+    "colorSecondary",
+    "colorSuccess",
+    "colorError",
+    "colorInfo",
+    "colorWarning",
+    "sizeMd",
+    "sizeSm",
+    "sizeLg",
+    "fullWidth",
+    "startIcon",
+    "endIcon",
+    "icon",
+    "iconSizeSm",
+    "iconSizeMd",
+    "iconSizeLg",
+    "canHover",
+  ],
+);
 
 export interface ButtonPropsVariantOverrides {}
 
@@ -130,7 +133,15 @@ export interface ButtonOwnProps {
    * @default 'primary'
    */
   color?: OverridableStringUnion<
-    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | 'dark' | 'light',
+    | "inherit"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning"
+    | "dark"
+    | "light",
     ButtonPropsColorOverrides
   >;
   /**
@@ -148,6 +159,10 @@ export interface ButtonOwnProps {
    * @default false
    */
   disableFocusRipple?: boolean;
+  /**
+   * Element placed before the children.
+   */
+  startIcon?: React.ReactNode;
   /**
    * Element placed after the children.
    */
@@ -167,11 +182,8 @@ export interface ButtonOwnProps {
    * `small` is equivalent to the dense button styling.
    * @default 'medium'
    */
-  size?: OverridableStringUnion<'sm' | 'md' | 'lg', ButtonPropsSizeOverrides>;
-  /**
-   * Element placed before the children.
-   */
-  startIcon?: React.ReactNode;
+  size?: OverridableStringUnion<"sm" | "md" | "lg", ButtonPropsSizeOverrides>;
+
   /**
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */
@@ -180,12 +192,15 @@ export interface ButtonOwnProps {
    * The variant to use.
    * @default 'text'
    */
-  variant?: OverridableStringUnion<'text' | 'outlined' | 'filled' | 'ghost', ButtonPropsVariantOverrides>;
+  variant?: OverridableStringUnion<
+    "text" | "outlined" | "filled" | "ghost",
+    ButtonPropsVariantOverrides
+  >;
 }
 
 export type ButtonTypeMap<
   AdditionalProps = {},
-  RootComponent extends React.ElementType = 'button',
+  RootComponent extends React.ElementType = "button",
 > = ExtendButtonBaseTypeMap<{
   props: AdditionalProps & ButtonOwnProps;
   defaultComponent: RootComponent;
@@ -197,23 +212,28 @@ export type ButtonTypeMap<
  * can make extension quite tricky
  */
 export interface ExtendButtonTypeMap<TypeMap extends OverridableTypeMap> {
-  props: TypeMap['props'] &
-    (TypeMap['props'] extends { classes?: Record<string, string> }
-      ? DistributiveOmit<ButtonTypeMap['props'], 'classes'>
-      : ButtonTypeMap['props']);
-  defaultComponent: TypeMap['defaultComponent'];
+  props: TypeMap["props"] &
+    (TypeMap["props"] extends { classes?: Record<string, string> }
+      ? DistributiveOmit<ButtonTypeMap["props"], "classes">
+      : ButtonTypeMap["props"]);
+  defaultComponent: TypeMap["defaultComponent"];
 }
 
 export type ExtendButton<TypeMap extends OverridableTypeMap> = ((
-  props: { href: string } & OverrideProps<ExtendButtonBaseTypeMap<TypeMap>, 'a'>,
+  props: { href: string } & OverrideProps<
+    ExtendButtonBaseTypeMap<TypeMap>,
+    "a"
+  >,
 ) => React.JSX.Element) &
   OverridableComponent<ExtendButtonBaseTypeMap<TypeMap>>;
 
-
 export type ButtonProps<
-  RootComponent extends React.ElementType = ButtonTypeMap['defaultComponent'],
+  RootComponent extends React.ElementType = ButtonTypeMap["defaultComponent"],
   AdditionalProps = {},
-> = OverrideProps<ButtonTypeMap<AdditionalProps, RootComponent>, RootComponent> & {
+> = OverrideProps<
+  ButtonTypeMap<AdditionalProps, RootComponent>,
+  RootComponent
+> & {
   component?: React.ElementType;
 };
 

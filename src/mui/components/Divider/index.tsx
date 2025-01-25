@@ -5,7 +5,7 @@ import {
   clsx, 
   alpha, 
   composeClasses, 
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   type SxComponentProps
 } 
 from '../../styles';
@@ -228,7 +228,7 @@ const DividerWrapper = styled('span', {
 }));
 
 const Divider = React.forwardRef<HTMLElement,DividerProps>((inProps, ref) => {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxDivider' }) as DividerProps;
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxDivider' }) as DividerProps;
   const {
     absolute = false,
     children,

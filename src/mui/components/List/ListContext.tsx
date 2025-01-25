@@ -40,7 +40,7 @@ const defaultListContext: ListContextProps = {
     default: undefined,
     all: undefined,
     ripple: undefined,
-    rippleClassName: undefined,
+    rippleClassName: undefined
   },
 };
 
@@ -68,12 +68,12 @@ const createItemInteractive = (name: string, def: ItemInteractive) => {
   };
 };
 
-export const ListContextProvider = ({
+export const ListContextProvider:React.FC<ListContextProviderProps> = ({
   value,
   children,
 }: ListContextProviderProps) => {
   const {
-    className,
+    className:listClassName,
     item = {} as ListContextValues["item"],
     ripple = true,
     hover: hasHover,
@@ -86,7 +86,8 @@ export const ListContextProvider = ({
     ul,
     prefix,
     suffix,
-    global
+    global,
+    ...otherValues
   } = value;
 
   const { list } = useTailwindTheme();
@@ -97,8 +98,7 @@ export const ListContextProvider = ({
     const asObject = (val: any) =>
       !val ? undefined : typeof val === "object" ? val : { cp: val };
 
-    const listStyle = { ...styles?.base?.list, ...value.list };
-    const styleList = styles?.base?.list;
+    const listStyle = { ...styles?.base?.list, ...otherValues.list, divider: divider === true ? styles?.base?.divider : divider  };
     const styleItem = styles?.base?.item;
     const interactiveStyles = styleItem?.interactive;
 
@@ -110,7 +110,7 @@ export const ListContextProvider = ({
       focus: itemFocus,
       selected: itemSelected,
       disabled: itemDisabled,
-      ...otherItem
+      initial: ctxItemInitial,
     } = item as any;
 
     const defaultItemActive = {
@@ -131,10 +131,12 @@ export const ListContextProvider = ({
       ...(asObject(itemSelected) ?? interactiveStyles?.selected),
     };
 
+    console.log("defaultItemSelected:", defaultItemSelected)
+
     const defaultItemDisabled = {
       ...styleItem?.initial,
       ...styleItem?.disabled,
-      ...otherItem.initial,
+      ...ctxItemInitial,
       ...createItemInteractive(
         "disabled",
         asObject(itemDisabled) ?? interactiveStyles?.disabled ?? {},
@@ -163,19 +165,19 @@ export const ListContextProvider = ({
     const initial = twMerge(
       objectsToString({
         ...styleItem?.initial,
-        ...otherItem.initial,
-        divider: divider === true ? styleItem?.divider : divider,
+        ...ctxItemInitial,
+        
         gutters: gutters === true ? styleItem?.gutters : gutters,
         dense: dense === true ? styleItem?.dense : dense,
       }),
     );
     const initialDefault = twMerge(initial, className);
     return {
-      ul,
+      ...otherValues,
       list: twMerge(
         objectsToString(listStyle),
         listTheme.defaultProps?.className,
-        value.className,
+        listClassName,
       ),
       item: {
         initial: initialDefault,
@@ -197,9 +199,14 @@ export const ListContextProvider = ({
       },
       prefix: twMerge(objectsToString(styles?.base?.itemPrefix), prefix),
       suffix: twMerge(objectsToString(styles?.base?.itemSuffix), suffix),
-      global
+      global,
+      divider,
+      gutters,
+      dense,
+      ul,
+      
     };
-  }, [className, hasActive, hasFocus, hasHover, hasSelect, item?.className]);
+  }, [listClassName, hasActive, hasFocus, hasHover, hasSelect, item?.className]);
 
   const itemStyle = useCallback(
     (
@@ -219,21 +226,16 @@ export const ListContextProvider = ({
         return (
           useHover ?? hasHover ? defaults.item.all : defaults.item.default
         )?.replace(new RegExp("active:", 'g'), "");
-      }
-
-      
-
+      }      
       return useHover ?? hasHover ? defaults.item.all : defaults.item.initial;
     },
-    [className, hasActive, hasFocus, hasHover, hasSelect, item?.className],
+    [defaults],
   );
 
-  const values = {
+  const values = useMemo(() => ({
     ...defaults,
     getItemStyle: itemStyle,
-  };
-
-  //console.log("ListContext:", values)
+  }), [itemStyle]);
 
   return <ListContext.Provider value={values}>{children}</ListContext.Provider>;
 };

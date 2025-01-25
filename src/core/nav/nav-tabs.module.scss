@@ -157,20 +157,23 @@
 }
 
 .tab {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   z-index: 0; // XXX: Chrome overlapped rendering
   --ripple-background: var(--tw-secondary-bg-subtle);
   opacity: .9;
+
+  & .title {
+    color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   &.active {
-    .title {
-      opacity: 1;
-      color: var(
+    opacity: 1;
+    color: var(
         --ax-theme-nav-tabs-active-color,
         var(--ax-nav-tabs-active-color)
       );
-    }
+    
     .icon {
       color: var(
         --ax-theme-nav-tabs-icon-active-color,
@@ -183,9 +186,7 @@
     }
   }
   &:hover {
-    .title {
-      opacity: 1;
-    }
+    opacity: 1;
     .icon {
       color: var(
         --ax-theme-nav-tabs-icon-hover-color,

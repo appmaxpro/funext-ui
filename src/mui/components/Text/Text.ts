@@ -50,6 +50,7 @@ export interface TextOwnProps extends Omit<SystemProps<Theme>, 'color'> {
   color?:
     | Colors
     | OverridableStringUnion<
+        | 'inherit'
         | 'primary'
         | 'secondary'
         | 'success'

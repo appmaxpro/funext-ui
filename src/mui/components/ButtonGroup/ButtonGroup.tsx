@@ -5,7 +5,7 @@ import getValidReactChildren from '@mui/utils/getValidReactChildren';
 import { 
   styled, 
   memoTheme, 
-  useMuiDefaultProps ,
+  useMuxDefaultProps ,
   alpha,
   composeClasses,
   clsx
@@ -305,7 +305,7 @@ const ButtonGroupRoot = styled('div', {
 );
 
 export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(function ButtonGroup(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxButtonGroup' });
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxButtonGroup' });
   const {
     children,
     className,

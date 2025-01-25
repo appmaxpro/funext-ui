@@ -39,9 +39,7 @@ export const Backdrop = () => {
         direction="start"
         open={show}
         onClose={hideDrawer}
-        backdrop={{
-          className: "inset-0 bg-slate-800/[.3] dark:bg-slate-300/[.3]",
-        }}
+        backdrop={{}}
         dismiss={{}}
         className="h-full"
         panelProps={{

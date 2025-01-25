@@ -247,7 +247,6 @@ export function Tree(props: TYPES.TreeProps) {
     });
   }, [data]);
   
-  $data.forEach(console.log);
 
   return (
     <div

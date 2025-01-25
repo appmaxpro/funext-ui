@@ -28,7 +28,7 @@ export const stepper: StepperStyleTypes = {
           height: "h-0.5",
           width: "w-full",
           transform: "-translate-y-2/4",
-          backgroundColor: "bg-primary-300",
+          backgroundColor: "bg-gray dark:bg-gray-50",
         },
         active: {
           backgroundColor: "bg-primary",

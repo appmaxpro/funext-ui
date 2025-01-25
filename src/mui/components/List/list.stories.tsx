@@ -7,14 +7,14 @@ import BiInboxFill from "bootstrap-icons/icons/inbox-fill.svg?react";
 import BiMailBox from "bootstrap-icons/icons/mailbox.svg?react";
 import BiSendCheckFill from "bootstrap-icons/icons/send-check-fill.svg?react";
 import BiSendFill from "bootstrap-icons/icons/send-fill.svg?react";
-import React, { ReactElement, useState } from "react";
+import React, { forwardRef, ReactElement, useState } from "react";
 
-import { Box } from "../box";
-import { Collapse } from "../collapse";
-import { Icon } from "../icon";
-import { IconProps } from "../icon/icon";
-import { withStyled } from "../styled";
-import { List, ListItem } from "./list";
+import { Box } from "../../../core/box";
+import { Collapse } from "../../../core/collapse";
+import { Icon } from "../../../core/icon";
+import { IconProps } from "../../../core/icon/icon";
+import { withStyled } from "../../../core/styled";
+import { List, ListItem, ListItemAvatar, ListProps } from ".";
 
 import {
   List as MuiList,
@@ -22,11 +22,19 @@ import {
   ListItemButton,
   ListItemSuffix,
   ListItemPrefix,
+  ListItemText,
+  ListItemIcon as MuxListItemIcon,
   Chip as MuiChip,
   Card as MuiCard,
-} from "../../mui";
-import { MaterialIcon } from "../../icons/material-icon";
+  styled,
+  Divider,
+  Panel,
+  Text,
+  Avatar,
+  Stack
+} from "../..";
 
+import { MaterialIcon } from "../../../icons/material-icon";
 
 const config = {
   component: List,
@@ -111,7 +119,6 @@ export const Disabled = () => {
   );
 };
 
-
 function getListItemWrapperStyles(selected: boolean, disabled?: boolean) {
   return classNames(
     "command-palette-list-item block grow text-justify gap-2.5 py-2.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none flex items-center justify-between",
@@ -120,36 +127,40 @@ function getListItemWrapperStyles(selected: boolean, disabled?: boolean) {
       : "bg-transparent",
     disabled
       ? "cursor-default pointer-events-none opacity-50"
-      : "cursor-pointer"
+      : "cursor-pointer",
   );
 }
 
 export const Flush = () => {
   return (
     <Box flexDirection="column" gap={4}>
-      <List flush>
+      <List>
         <ListItem>An item</ListItem>
         <ListItem>A second item</ListItem>
         <ListItem>A third item</ListItem>
         <ListItem>A fourth item</ListItem>
         <ListItem>And a fifth one</ListItem>
       </List>
-      <MuiCard 
-        className="w-96" 
-        color="blue" 
-        variant="filled" 
-        raised 
-        sx={{mt:4, ml: 2}}
-        elevation={3}>
-
-        <MuiList className="text-item" hover itemStyle={{
-          hover: 'bg-header-med-hover hover:text-item hover:text-opacity-90',
-          disabled: '',
-          padding: 'px-3 py-2'
-        }}>
+      <MuiCard
+        className="w-96"
+        color="blue"
+        variant="filled"
+        raised
+        sx={{ mt: 4, ml: 2 }}
+        elevation={3}
+      >
+        <MuiList
+          className="text-item"
+          hover
+          itemStyle={{
+            hover: "bg-header-med-hover hover:text-item hover:text-opacity-90",
+            disabled: "",
+            className: "px-3 py-2",
+          }}
+        >
           <MuiListItem as="a" href="#" hover>
             <ListItemPrefix>
-              <MaterialIcon icon="inbox"/>
+              <MaterialIcon icon="inbox" />
             </ListItemPrefix>
             Inbox
             <ListItemSuffix>
@@ -163,7 +174,7 @@ export const Flush = () => {
           </MuiListItem>
           <ListItemButton ripple>
             <ListItemPrefix>
-              <MaterialIcon icon="home"/>
+              <MaterialIcon icon="home" />
             </ListItemPrefix>
             Spam
             <ListItemSuffix>
@@ -177,7 +188,7 @@ export const Flush = () => {
           </ListItemButton>
           <MuiListItem as="a" href="#" disabled>
             <ListItemPrefix>
-              <MaterialIcon icon="settings"/>
+              <MaterialIcon icon="settings" />
             </ListItemPrefix>
             Trash
             <ListItemSuffix>
@@ -200,16 +211,16 @@ export const FolderList = () => {
     <List>
       {[BiArchive, BiCardImage, BiBank].map((icon, i) => (
         <ListItem key={i}>
-          <Box d="flex" alignItems="center">
+          <Box d="flex" items="center">
             <Box
               me={2}
               p={2}
               bg="secondary"
               color="white"
-              rounded="circle"
+              rounded="full"
               d="flex"
-              alignItems="center"
-              justifyContent="center"
+              items="center"
+              justify="center"
             >
               <Icon as={icon} />
             </Box>
@@ -230,7 +241,7 @@ export const FolderList = () => {
 
 export const Numbered = () => {
   return (
-    <List numbered>
+    <List>
       <ListItem>An item</ListItem>
       <ListItem>A second item</ListItem>
       <ListItem>A third item</ListItem>
@@ -248,32 +259,38 @@ function ListItemIcon({ icon }: { icon: IconProps["as"] }) {
   );
 }
 
-const NestedList = withStyled(List)(({ children, ...props }, ref) => {
-  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
-
-  function open(item: string) {
-    setActiveMenuItem(item);
-  }
-
-  function close() {
-    setActiveMenuItem(null);
-  }
-
-  return (
-    <List ref={ref} style={{ paddingLeft: 16 }} {...props}>
-      {React.Children.map(children, (item) => {
-        if (item && (item as ReactElement).type === NestedListItem) {
-          return React.cloneElement(item as ReactElement, {
-            isOpen: activeMenuItem === (item as ReactElement).props.title,
-            onOpen: open,
-            onClose: close,
-          });
-        }
-        return item;
-      })}
-    </List>
-  );
+const NestedListRoot = styled(List)({
+  paddingLeft: 16,
 });
+
+const NestedList = forwardRef<HTMLElement, ListProps>(
+  ({ children, ...props }, ref) => {
+    const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
+
+    function open(item: string) {
+      setActiveMenuItem(item);
+    }
+
+    function close() {
+      setActiveMenuItem(null);
+    }
+
+    return (
+      <NestedListRoot ref={ref} {...props}>
+        {React.Children.map(children, (item) => {
+          if (item && (item as ReactElement).type === NestedListItem) {
+            return React.cloneElement(item as ReactElement, {
+              isOpen: activeMenuItem === (item as ReactElement).props.title,
+              onOpen: open,
+              onClose: close,
+            });
+          }
+          return item;
+        })}
+      </NestedListRoot>
+    );
+  },
+);
 
 function NestedListItem({
   children,
@@ -299,19 +316,11 @@ function NestedListItem({
   };
 
   return (
-    <ListItem>
-      <Box
-        d="flex"
-        justifyContent="space-between"
-        style={{ cursor: "pointer" }}
-        onClick={toggle}
-      >
-        <Box as="span">
-          {icon && <ListItemIcon icon={icon} />}
-          {title}
-        </Box>
-        <Icon as={isOpen ? BiChevronUp : BiChevronDown} />
-      </Box>
+    <ListItem
+      startIcon={icon && <ListItemIcon icon={icon} />}
+      endIcon={<Icon as={isOpen ? BiChevronUp : BiChevronDown} />}
+      title={title}
+    >
       <Collapse in={isOpen}>{children}</Collapse>
     </ListItem>
   );
@@ -319,7 +328,7 @@ function NestedListItem({
 
 export const Nested = () => {
   return (
-    <NestedList>
+    <NestedList className="border rounded">
       <ListItem>
         <ListItemIcon icon={BiSendFill} />
         Sent mail
@@ -329,10 +338,10 @@ export const Nested = () => {
         Drafts
       </ListItem>
       <NestedListItem title="Inbox" icon={BiInboxFill}>
-        <NestedList flush>
+        <NestedList>
           <ListItem>Primary</ListItem>
           <NestedListItem title="Social">
-            <List flush>
+            <List>
               <ListItem>Facebook</ListItem>
               <ListItem>Twitter</ListItem>
               <ListItem>Linkedin</ListItem>
@@ -340,7 +349,7 @@ export const Nested = () => {
           </NestedListItem>
           <ListItem>Promotions</ListItem>
           <NestedListItem title="Updates">
-            <List flush>
+            <List>
               <ListItem>Github</ListItem>
               <ListItem>Redmine</ListItem>
             </List>
@@ -372,4 +381,162 @@ export const Nested = () => {
   );
 };
 
+export function SelectedListItem() {
+  const [selectedIndex, setSelectedIndex] = React.useState(1);
+
+  const handleListItemClick = (event, index) => {
+    setSelectedIndex(index);
+  };
+
+  return (
+    <Panel className="bg-blue w-full min-h-full py-6">
+      <Box
+        sx={{
+          mr: "auto",
+          ml: "auto",
+          mt: "auto",
+          width: "100%",
+          maxWidth: 360,
+          bgcolor: "background.paper",
+        }}
+      >
+        <List
+          component="nav"
+          aria-label="main mailbox folders"
+          itemStyle={{
+            className: "px-2",
+            selected: "bg-blue-600/5",
+          }}
+          prefix="text-xl"
+          select
+        >
+          <ListItemButton
+            selected={selectedIndex === 0}
+            onClick={(event) => handleListItemClick(event, 0)}
+          >
+            <MuxListItemIcon>
+              <MaterialIcon icon="inbox" />
+            </MuxListItemIcon>
+            <ListItemText primary="Inbox" />
+          </ListItemButton>
+          <ListItemButton
+            selected={selectedIndex === 1}
+            onClick={(event) => handleListItemClick(event, 1)}
+          >
+            <MuxListItemIcon>
+              <MaterialIcon icon="drafts" />
+            </MuxListItemIcon>
+            <ListItemText primary="Drafts" />
+          </ListItemButton>
+        </List>
+        <Divider />
+        <List
+          component="nav"
+          aria-label="secondary mailbox folder"
+          itemStyle={{
+            className: "px-2",
+            selected: "bg-blue-400/15",
+          }}
+          select
+        >
+          <ListItemButton
+            selected={selectedIndex === 2}
+            onClick={(event) => handleListItemClick(event, 2)}
+          >
+            <ListItemText primary="Trash" />
+          </ListItemButton>
+          <ListItemButton
+            selected={selectedIndex === 3}
+            onClick={(event) => handleListItemClick(event, 3)}
+          >
+            <ListItemText primary="Spam" />
+          </ListItemButton>
+        </List>
+      </Box>
+    </Panel>
+  );
+}
+
+
+export function AlignItemsList() {
+  return (
+    <Panel className="bg-hd-md w-full min-h-full h-full py-6 m-auto px-10">
+    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+      <ListItem className="items-start">
+        <ListItemAvatar>
+          <Avatar alt="Remy Sharp" src="https://mui.com/static/images/avatar/1.jpg" />
+        </ListItemAvatar>
+        <ListItemText
+          primary="Brunch this weekend?"
+          secondary={
+            <React.Fragment>
+              <Text
+                component="span"
+                variant="body2"
+                sx={{ color: 'text.primary', display: 'inline' }}
+              >
+                Ali Connors
+              </Text>
+              {" — I'll be in your neighborhood doing errands this…"}
+            </React.Fragment>
+          }
+        />
+      </ListItem>
+      <Divider variant="inset" component="li" />
+      <ListItem className="items-start">
+        <ListItemAvatar>
+          <Avatar alt="Travis Howard" src="https://mui.com/static/images/avatar/2.jpg" />
+        </ListItemAvatar>
+        <ListItemText
+          primary="Summer BBQ"
+          secondary={
+            <React.Fragment>
+              <Text
+                component="span"
+                variant="body2"
+                sx={{ color: 'text.primary', display: 'inline' }}
+              >
+                to Scott, Alex, Jennifer
+              </Text>
+              {" — Wish I could come, but I'm out of town this…"}
+            </React.Fragment>
+          }
+        />
+      </ListItem>
+      <Divider variant="inset" component="li" />
+      <ListItem className="items-start">
+        <ListItemAvatar>
+          <Avatar alt="Cindy Baker" src="https://mui.com/static/images/avatar/3.jpg" />
+        </ListItemAvatar>
+        <ListItemText
+          primary="Oui Oui"
+          secondary={
+            <React.Fragment>
+              <Text
+                component="span"
+                variant="body2"
+                sx={{ color: 'text.primary', display: 'inline' }}
+              >
+                Sandra Adams
+              </Text>
+              {' — Do you have Paris recommendations? Have you ever…'}
+            </React.Fragment>
+          }
+        />
+      </ListItem>
+    </List>
+    </Panel>
+  );
+}
+export function LetterAvatars() {
+  return (
+    <Panel className="bg-hd-md w-full min-h-full h-full py-10 m-auto px-10">
+      <Stack gap={2}>
+        <Avatar>H</Avatar>
+        <Avatar color="pink">N</Avatar>
+        <Avatar color="purple">OP</Avatar>
+      </Stack>
+    </Panel>
+  );
+}
 export default config;

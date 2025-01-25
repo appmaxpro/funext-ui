@@ -1,4 +1,5 @@
 import Color from 'color';
+import * as React from 'react'
 export {default as isDevelopment}  from '#is-development';
 export {default as isBrowser}  from '#is-browser';
 export {default as withMT} from '../theme/tw/withMT';
@@ -162,3 +163,31 @@ export function capitalize(string?: string, safe:boolean = true): string | undef
 
 export const alpha = (color:any, alpha:number) => Color(color).alpha(alpha).string();
  
+export function isReactComponent<TProps>(
+  component: unknown
+): component is React.ComponentType<TProps> {
+  const isFn = typeof component === 'function';
+  return (
+    isFn ||
+    isClassComponent(component) ||
+    isExoticComponent(component)
+  )
+}
+
+function isClassComponent(component: any) {
+  return (
+    typeof component === 'function' &&
+    (() => {
+      const proto = Object.getPrototypeOf(component)
+      return proto.prototype && proto.prototype.isReactComponent
+    })()
+  )
+}
+
+function isExoticComponent(component: any) {
+  return (
+    typeof component === 'object' &&
+    typeof component.$$typeof === 'symbol' &&
+    ['react.memo', 'react.forward_ref'].includes(component.$$typeof.description)
+  )
+}

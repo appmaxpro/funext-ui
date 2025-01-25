@@ -15,7 +15,7 @@ const inputOutlined = {
   styles,
   base: {
     root: {
-      add: styles['in-outline']
+      add: styles['root']
     },
     input: {
       fontSize: "text-base",

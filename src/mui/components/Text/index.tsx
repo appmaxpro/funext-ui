@@ -15,7 +15,7 @@ import { capitalize } from "../../utils/core";
 import {
   clsx,
   styled,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   extendSxProp,
   composeClasses,
   alpha,

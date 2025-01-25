@@ -1,4 +1,4 @@
-import React, { isValidElement } from "react";
+import React, { isValidElement, useMemo } from "react";
 import type {ReactNode, ElementType, ComponentType} from "react";
 
 // context
@@ -11,7 +11,6 @@ import { ListItemPrefix, type ListItemPrefixProps } from "./ListItemPrefix";
 import { ListItemSuffix, type ListItemSuffixProps } from "./ListItemSuffix";
 import { useListContext } from "./ListContext";
 import { SxComponentProps, styled } from "../../styles";
-import { ListItemRipple } from "./ListItemRipple";
 import { ButtonBase, type ButtonBaseProps } from "../Button";
 
 //const has
@@ -29,6 +28,9 @@ export interface ListItemButtonProps extends ButtonBaseProps<any> {
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   li?: boolean,
+  divider?: boolean;
+  gutters?: boolean;
+  dense?: boolean;
 }
 
 export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>(
@@ -38,14 +40,17 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     component=as,
     disabled, 
     selected, 
-    startIcon,
-    endIcon,
+    startIcon: startIconProp,
+    endIcon: endIconProp,
     active,
     hover = true,
     children, 
     tabIndex,
     role,
-    li=true,
+    divider,
+    gutters,
+    dense,
+    li: liProps,
     ...rest 
   }, ref) => {
     // 1. init
@@ -53,14 +58,44 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     const {defaultProps} = list;
 
     const {
-      item: {ripple: contextRipple, rippleClassName}, 
-      getItemStyle
-    } = useListContext(true)!;
+      startIcon = startIconProp,
+      endIcon = endIconProp,
+      item, 
+      getItemStyle,
+      ul
+    } = useListContext()!;
+
+    const li = liProps ?? (ul && (!component || component !== 'li'))
     
     // 2. set default props
-    const ripple = rest.ripple ?? contextRipple ?? defaultProps.ripple;
+    const ripple = rest.ripple ?? item?.ripple ?? defaultProps.ripple;
 
-    const itemStyles = twMerge(getItemStyle(disabled, selected, active, hover), className);
+
+    const itemStyles = useMemo(
+          () =>
+            twMerge(
+              getItemStyle(
+                disabled,
+                selected,
+                active,
+                hover,
+                divider,
+                gutters,
+                dense,
+              ),
+              className,
+            ),
+          [
+            disabled,
+            selected,
+            active,
+            hover,
+            className,
+            divider,
+            gutters,
+            dense,
+          ],
+        );
     //console.log("itemStyles:", itemStyles)
     
     const prefixComp = !isValidElement(startIcon) || (startIcon as any).type === ListItemPrefix 
@@ -86,6 +121,7 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
       selected={selected}
       ripple={ripple}
       ref={ref}
+      rippleClassName={item.rippleClassName}
       className={itemStyles}>
         {prefixComp}  
         {children}

@@ -4,7 +4,7 @@ import Collapse from "../Collapse";
 import {
   type SxComponentProps,
   composeClasses,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   memoTheme,
   clsx,
   styled,
@@ -128,7 +128,7 @@ export interface StepContentProps
 
 export const StepContent = React.forwardRef<HTMLDivElement, StepContentProps>(
   function StepContent(inProps, ref) {
-    const props = useMuiDefaultProps({
+    const props = useMuxDefaultProps({
       props: inProps,
       name: "MuxStepContent",
     });

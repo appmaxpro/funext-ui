@@ -102,6 +102,8 @@ export interface GridBaseProps {
   media?: boolean;
 
   containerName?: string;
+
+  center?: boolean;
 }
 
 export type GridOwnerState = Pick<
@@ -118,6 +120,7 @@ export type GridOwnerState = Pick<
   | "spacing" 
   | "media"
   | "containerName"
+  | "center"
 >;
 
 export interface GridTypeMap<

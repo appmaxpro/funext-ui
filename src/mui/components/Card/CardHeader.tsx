@@ -1,5 +1,5 @@
 import React from "react";
-import { SxComponentProps, SxThemeProps, clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, useMuiDefaultProps } from "../../styles";
+import { SxComponentProps, SxThemeProps, clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, useMuxDefaultProps } from "../../styles";
 import { OverrideProps, OverridableComponent } from "../../props";
 import { TextProps, Text } from "../Text";
 import textClasses from "../Text/textClasses";
@@ -221,7 +221,7 @@ const CardHeaderContent = styled('div', {
 });
 
 export const CardHeader = React.forwardRef<HTMLElement, CardHeaderPropsWithComponent>(function CardHeader(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuxCardHeader' });
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuxCardHeader' });
   const {
     action,
     avatar,

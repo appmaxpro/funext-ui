@@ -6,11 +6,6 @@ import React, {
 } from "react";
 
 // utils
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
-import { useRipple } from "../../ripple";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -32,7 +27,7 @@ import {
   generateUtilityClasses,
   memoTheme,
   styled,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import { useControlled, useForwardedRef, mapThemeColor } from "../../hooks";
 import CheckBoxOutlineBlankIcon from "../internal/svg-icons/CheckBoxOutlineBlank";
@@ -122,6 +117,14 @@ const CheckboxRoot = styled(SwitchBase, {
           },
         }),
       },
+      {
+        props: {
+          color: 'inherit'
+        },
+        style: {
+          color: 'inherit'
+        },
+      },
     ],
   })),
 );
@@ -131,7 +134,7 @@ const defaultIcon = <CheckBoxOutlineBlankIcon />;
 const defaultIndeterminateIcon = <IndeterminateCheckBoxIcon />;
 
 export interface CheckboxProps extends SwitchBaseProps {
-  color?: color;
+  color?: color | 'inherit';
   indeterminate?: boolean;
   indeterminateIcon?: React.ReactNode;
   error?: boolean;
@@ -153,27 +156,28 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     // 2. set default props
     let color = mapThemeColor(error ? "error" : inColor, defaultProps.color);
 
-    const muiProps = useMuiDefaultProps({ props: inProps, name: 'MuxCheckbox' });
+    const muiProps = useMuxDefaultProps({ props: inProps, name: 'MuxCheckbox' });
 
     let {
       indeterminate,
       indeterminateIcon: indeterminateIconProp = defaultIndeterminateIcon,
       checkedIcon = defaultCheckedIcon,
       icon: iconProp = defaultIcon,
-      rippleClassName,
       ripple = defaultProps.ripple,
       labelProps = defaultProps.labelProps,
+      focusRipple = true,
+      focusVisibleClassName="ring-2",
       className,
       size = defaultProps.size ?? 'md',
       inputProps,
       ...props
     } = muiProps;
 
-    const rippleClass = rippleClassName ?? `bg-${color ?? "primary"}`;
 
     //const inputRef = useForwardedRef(ref);
     const ownerState = {
       ...props,
+      focusRipple,
       indeterminate,
       color,
       size,
@@ -209,7 +213,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         ownerState={ownerState}
         ref={ref}
         ripple={ripple}
-        rippleClassName={rippleClass}
+        focusVisibleClassName={focusVisibleClassName}
+        focusRipple={focusRipple}
         labelProps={labelProps}
         {...props}
         print={props.checked}

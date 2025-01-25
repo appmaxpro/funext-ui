@@ -8,7 +8,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   useSlot,
 } from "../../styles";
 import {
@@ -17,9 +17,14 @@ import {
   OverrideProps,
   SlotProps,
 } from "../../props";
-
+import type { AlertProps } from "../Alert";
+import { cn } from "../../utils/cn";
+import findMatch from "../../utils/findMatch";
+import objectsToString from "../../utils/objectsToString";
 import { MaterialIcon, MaterialIconProps } from "../../..";
-
+// context
+import { useTailwindTheme } from "../../theme";
+import { mapThemeColor } from "../../hooks";
 export interface AvatarClasses {
   /** Styles applied to the root element. */
   root: string;
@@ -93,6 +98,7 @@ export interface AvatarOwnProps {
   imgProps?: React.ImgHTMLAttributes<HTMLImageElement> & {
     sx?: SxThemeProps;
   };
+  Img?: React.ComponentType<React.ImgHTMLAttributes<HTMLImageElement> & {sx?: SxThemeProps}>;
   /**
    * The `sizes` attribute for the `img` element.
    */
@@ -114,10 +120,18 @@ export interface AvatarOwnProps {
    * The shape of the avatar.
    * @default 'circular'
    */
-  variant?: OverridableStringUnion<
+  shape?: OverridableStringUnion<
     "circular" | "rounded" | "square",
     AvatarPropsVariantOverrides
   >;
+
+  /**
+   * This file contains the types and prop-types for Button and IconButton component.
+   */
+
+  // typescript types
+  variant: AlertProps["variant"];
+  color: AlertProps["color"];
 }
 
 export interface AvatarTypeMap<
@@ -150,10 +164,10 @@ export type AvatarProps<
 };
 
 const useUtilityClasses = (ownerState: any) => {
-  const { classes, variant, colorDefault } = ownerState;
+  const { classes, variant, shape, colorDefault, color } = ownerState;
 
   const slots = {
-    root: ["root", variant, colorDefault && "colorDefault"],
+    root: ["root", variant, shape, color, colorDefault && "colorDefault"],
     img: ["img"],
     fallback: ["fallback"],
   };
@@ -190,13 +204,13 @@ const AvatarRoot = styled("div", {
     userSelect: "none",
     variants: [
       {
-        props: { variant: "rounded" },
+        props: { shape: "rounded" },
         style: {
           borderRadius: (theme.vars || theme).shape.borderRadius,
         },
       },
       {
-        props: { variant: "square" },
+        props: { shape: "square" },
         style: {
           borderRadius: 0,
         },
@@ -312,7 +326,7 @@ function useLoaded({ crossOrigin, referrerPolicy, src, srcSet }: any) {
 
 export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   function Avatar(inProps, ref) {
-    const props = useMuiDefaultProps({ props: inProps, name: "MuxAvatar" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxAvatar" });
     const {
       alt,
       children: childrenProp,
@@ -324,22 +338,39 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       sizes,
       src,
       srcSet,
-      variant = "circular",
+      shape = "circular",
+      variant = "filled",
+      color: colorProps,
+      Img = AvatarImg,
       ...other
     } = props;
 
-    let children:any = null;
-
+    let children: any = null;
+    const { alert } = useTailwindTheme();
+    const { valid, defaultProps, styles } = alert;
+    const { base, variants } = styles;
     // Use a hook instead of onError on the img element to support server-side rendering.
     const loaded = useLoaded({ ...imgProps, src, srcSet });
     const hasImg = src || srcSet;
     const hasImgNotFailing = hasImg && loaded !== "error";
 
+    const color = mapThemeColor(colorProps);
+
+    const variantColorMap = color
+      ? variants[findMatch(valid.variants, variant, "filled")][
+          findMatch(valid.colors, color, "primary")
+        ]
+      : null;
+
+    const cnClassName = cn(objectsToString(variantColorMap), className);
+
     const ownerState = {
       ...props,
-      colorDefault: !hasImgNotFailing,
+      colorDefault: !hasImgNotFailing && !variantColorMap,
       component,
+      shape,
       variant,
+      color
     };
     // This issue explains why this is required: https://github.com/mui/material-ui/issues/42184
     //@ts-ignore
@@ -360,7 +391,7 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     });
 
     if (hasImgNotFailing) {
-      children = <ImgSlot {...imgSlotProps} />;
+      children = <ImgSlot {...imgSlotProps} as={Img}/>;
       // We only render valid children, non valid children are rendered with a fallback
       // We consider that invalid children are all falsy values, except 0, which is valid.
     } else if (!!childrenProp || childrenProp === 0) {
@@ -369,14 +400,18 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       children = alt[0];
     } else {
       children = (
-        <AvatarFallback ownerState={ownerState} className={classes.fallback} icon="person"/>
+        <AvatarFallback
+          ownerState={ownerState}
+          className={classes.fallback}
+          icon="person"
+        />
       );
     }
 
     return (
       <AvatarRoot
         as={component}
-        className={clsx(classes.root, className)}
+        className={clsx(classes.root, cnClassName)}
         ref={ref}
         {...other}
         ownerState={ownerState}

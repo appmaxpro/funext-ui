@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-
+import  React from "react";
 import { MaterialIcon } from "../../icons/material-icon";
 import { ClickAwayListener } from "../click-away-listener";
 import { clsx } from "../clsx";
@@ -28,9 +28,11 @@ import {
   ListItemButton,
   ListItemButtonProps,
   Portal,
+  useTheme,
 } from "../..";
 import { twJoin } from "tailwind-merge";
 import { useOpenCmdk } from "../../mui/components/Cmdkx/hooks";
+import { positions, useMediaQuery } from "@mui/system";
 
 export interface NavMenuItem {
   /**
@@ -171,6 +173,7 @@ export interface NavMenuProps {
 
   className?: string;
   useCmdkSearch?: boolean;
+  enableCmdKye?: boolean;
 }
 
 export function NavMenu({
@@ -254,6 +257,7 @@ function useNavMenu({
   searchOptions,
   searchActive,
   onItemClick,
+  enableCmdKye
 }: VariantProps) {
   const [showSearch, setSearchShow] = useState(searchActive ?? false);
   const [active, setActive] = useState<string | null>(null);
@@ -291,9 +295,8 @@ function useNavMenu({
   );
 
   useOpenCmdk((open: boolean) => {
-    console.log("useOpenCmdk:", open)
     setShowSearch(true);
-  }, searchEnabled);
+  }, searchEnabled && enableCmdKye);
 
   useEffect(() => {
     if (searchActive !== undefined) {
@@ -735,7 +738,7 @@ function MenuItem({ item, state, onItemClick, onClick:clickAction, className, ..
         ) : undefined
       }
       onClick={handleClick}
-      
+      focusVisibleClassName="outline-1"
     >
       <div className={styles.text}>{title}</div>
     </List.ItemButton>
@@ -1037,14 +1040,6 @@ function PortalSearchMenu({
   );
 }
 
-function getSelectButtonStyles(selected: boolean, disabled?: boolean) {
-  //ps-4 pe-2 py-2.5
-  return clsx(
-    "flex w-full gap-2.5 px-2 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none",
-    selected && !disabled ? "bg-slate-200/50 dark:bg-slate-800" : "",
-    disabled ? "pointer-events-none opacity-50" : "",
-  );
-}
 
 export const CmdkMenuSearch = ({
   item,
@@ -1063,22 +1058,22 @@ export const CmdkMenuSearch = ({
   const ref = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLElement | null>(null);
   const [openState, setOpenState] = useState(false);
+  const theme = useTheme();
+  const upMd = useMediaQuery(theme.breakpoints.up("md"));
+  const md = useMediaQuery(theme.breakpoints.down("md"));
+  const sm = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <MuxPopper
-      className="MuxSearchCmdk-popper overflow-hidden w-full max-w-xl max-h-full"
-      style={{
-        position: 'static'
-      }}
+      className="MuxSearchCmdk-popper overflow-hidden flex max-w-full max-h-full w-full md:max-w-xl"
       placement="bottom"
-      strategy="fixed"
+      
       open={open}
       dismiss={{
       }}
       keepMounted
       animate={animation}
       backdrop={{
-        className:
-          "backdrop z-modal fixed inset-0 mx-auto flex items-center justify-center w-screen h-screen bg-slate bg-opacity-80 z-100",
         animate: backdropAnimation,
       }}
       focusProps={{
@@ -1087,10 +1082,7 @@ export const CmdkMenuSearch = ({
       }}
       overlay={{
         lockScroll: true,
-        className: "z-modal",
-      }}
-      contentProps={{
-        className: "flex justify-center mx-auto",
+        className: "z-modal flex justify-center items-center",
       }}
       aria-modal="true"
       roles={{ role: "dialog" }}
@@ -1101,13 +1093,21 @@ export const CmdkMenuSearch = ({
       onCompleteState={(open)=> {
         //console.log("onCompleteState:", open);
       }}
+      style={{
+        top: md ? 0 : 'auto',
+        position: "relative",
+        height: upMd ? 'fit-content'  : '100%'
+      }}
+      
     >
       <Card
         variant="elevation"
-        className="cmdk-palette-content antialiased bg-body shadow-lg rounded-lg divide-y transition-height w-full h-full"
+        className="cmdk-palette-content antialiased md:rounded-lg divide-y transition-height w-full h-full"
         ref={cardRef as any}
+        elevation={16}
+        fill
       >
-        <Card.Body className="p-0">
+        <Card.Body className="p-0 flex flex-col grow h-full">
           <AutoSelect
             open
             autoComplete={false}
@@ -1124,7 +1124,6 @@ export const CmdkMenuSearch = ({
             forcePopupIcon={false}
             clearIcon={<MaterialIcon icon="cancel" />}
             onChange={(value:any) => {
-              console.log("onItemClick:", value);
               onItemClick?.(value);
               //toggleSearch();
             }}
@@ -1151,19 +1150,16 @@ export const CmdkMenuSearch = ({
             }}
             slotProps={{
               panel: {
-                className: "overflow-hidden",
                 variant: "elevation",
                 elevation: 0,
               },
               listbox: {
-                className: "px-1 py-4 max-h-80 scroll-py-2",
+                className: "px-1 py-4" + (sm ? " max-h-none" : ""),
                 hover: true,
                 active: true,
                 focus: true,
                 select: true,
-                listStyle:{
-                  className: "px-1 py-4 max-h-80 scroll-py-2",
-                },
+                divider: true,
                 itemStyle:{
                   rippleClassName: "bg-primary/40",
                   className: "rounded-md px-2 py-2",

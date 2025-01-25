@@ -35,10 +35,10 @@ const roundedSide = (name: string) => (value: any) => {
 
 export const BorderConfig: Config<BorderProps> = {
   border: border("border"),
-  borderTop: border("border-top"),
-  borderBottom: border("border-bottom"),
-  borderStart: border("border-start"),
-  borderEnd: border("border-end"),
+  borderTop: border("border-t"),
+  borderBottom: border("border-b"),
+  borderStart: border("border-s"),
+  borderEnd: border("border-e"),
   borderWidth: border("border"),
   borderColor: border("border"),
   borderTranslucent: (value) => {
@@ -51,8 +51,8 @@ export const BorderConfig: Config<BorderProps> = {
     }
   },
   rounded: rounded(),
-  roundedTop: roundedSide("rounded-top"),
-  roundedBottom: roundedSide("rounded-bottom"),
-  roundedStart: roundedSide("rounded-start"),
-  roundedEnd: roundedSide("rounded-end"),
+  roundedTop: roundedSide("rounded-t"),
+  roundedBottom: roundedSide("rounded-b"),
+  roundedStart: roundedSide("rounded-s"),
+  roundedEnd: roundedSide("rounded-e"),
 };

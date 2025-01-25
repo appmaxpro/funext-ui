@@ -7,7 +7,7 @@ import {
   styled, 
   SxThemeProps, 
   SystemThemeProps, 
-  useMuiDefaultProps 
+  useMuxDefaultProps 
 } from '../../styles';
 import React from 'react';
 import {GridProps, GridTypeMap} from './GridProps';
@@ -36,7 +36,7 @@ export const Grid = createGrid({
     overridesResolver: (props:any, styles:any) => styles.root,
   }),
   componentName: 'MuxGrid',
-  useThemeProps: (inProps) => useMuiDefaultProps({ props: inProps, name: 'MuxGrid' }),
+  useThemeProps: (inProps) => useMuxDefaultProps({ props: inProps, name: 'MuxGrid' }),
 }) as OverridableComponent<GridTypeMap>;
 
 export const Row = React.forwardRef<Omit<GridProps, 'direction' | 'columnSpacing' | 'rowSpacing'>, HTMLDivElement>(function(props, ref){

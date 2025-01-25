@@ -9,7 +9,7 @@ import { ListItemButton, type ListItemButtonProps } from "./ListItemButton";
 import { ListItemAvatar, type ListItemAvatarProps } from "./ListItemAvatar";
 import { ListItemPrefix, type ListItemPrefixProps } from "./ListItemPrefix";
 import { ListItemSuffix, type ListItemSuffixProps } from "./ListItemSuffix";
-import {ItemDivider, type ItemDividerProps} from "./ItemDivider";
+import { ItemDivider, type ItemDividerProps } from "./ItemDivider";
 
 import {
   ListContextProvider,
@@ -20,9 +20,12 @@ import {
 import { SxComponentProps, styled, clsx } from "../../styles";
 import { twMerge } from "tailwind-merge";
 import ListSubheader from "./ListSubheader";
+import ItemText from "./ItemText";
+
 export * from "./ListSubheader";
-export * from "./ListSubheader";
+export * from "./ItemText";
 export * from "./ListContext";
+export * from "./ListItemAvatar";
 
 const ListRoot = styled("ul", {
   name: "MuxList",
@@ -72,7 +75,15 @@ const List = React.forwardRef<HTMLElement, ListProps>((props, ref) => {
   try {
     const context = useListContext(false);
     //console.log("List ListContext:", context);
-    if (!isolate && context && !context.global && context.ul == ul) {
+    if (
+      !isolate &&
+      context &&
+      !context.global &&
+      context.ul == ul &&
+      context.divider == divider &&
+      context.dense == dense &&
+      context.gutters == gutters
+    ) {
       return (
         <ListRoot
           {...(rest as any)}
@@ -103,7 +114,7 @@ const List = React.forwardRef<HTMLElement, ListProps>((props, ref) => {
         dense,
         ul,
         prefix,
-        suffix
+        suffix,
       }}
     >
       <ListContextConsumer>
@@ -124,14 +135,19 @@ const List = React.forwardRef<HTMLElement, ListProps>((props, ref) => {
 
 List.displayName = "Mux.List";
 
+type ListItemIconProps = ListItemPrefixProps;
+
 export type {
   ListItemProps,
   ListItemPrefixProps,
   ListItemSuffixProps,
   ListItemButtonProps,
   ListItemAvatarProps,
-  ItemDividerProps
+  ItemDividerProps,
+  ListItemIconProps
 };
+
+const ListItemIcon = ListItemPrefix;
 
 export {
   ListItem,
@@ -140,18 +156,22 @@ export {
   ListItemSuffix,
   ListItemAvatar,
   ItemDivider,
+  ListItemIcon
 };
 
 const MList = Object.assign(List, {
   Item: ListItem,
   ItemButton: ListItemButton,
+  ItemText,
   ItemPrefix: ListItemPrefix,
+  ItemIcon: ListItemIcon,
   ItemSuffix: ListItemSuffix,
   Avatar: ListItemAvatar,
   Icon: ListItemAvatar,
   Divider: ItemDivider,
   Subheader: ListSubheader,
-  ContextProvider: ListContextProvider
+  ContextProvider: ListContextProvider,
+  
 });
 
 export default MList;

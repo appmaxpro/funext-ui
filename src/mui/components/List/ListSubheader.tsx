@@ -4,7 +4,7 @@ import {
   SxThemeProps,
   styled,
   composeClasses,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   clsx,
   memoTheme,
 } from "../../styles";
@@ -182,7 +182,7 @@ export const ListSubheader = React.forwardRef<
   HTMLLIElement,
   ListSubheaderProps
 >(function ListSubheader(inProps, ref) {
-  const props = useMuiDefaultProps({
+  const props = useMuxDefaultProps({
     props: inProps,
     name: "MuxListSubheader",
   }) as ListSubheaderProps;

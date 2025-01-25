@@ -9,7 +9,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import Panel, { PanelProps } from "../Panel";
 import { StandardProps } from "../../props";
@@ -127,7 +127,7 @@ export const SnackbarContent = React.forwardRef<
   HTMLElement,
   SnackbarContentProps
 >(function SnackbarContent(inProps, ref) {
-  const props = useMuiDefaultProps({
+  const props = useMuxDefaultProps({
     props: inProps,
     name: "MuiSnackbarContent",
   });

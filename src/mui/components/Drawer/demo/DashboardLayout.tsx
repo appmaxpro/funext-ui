@@ -138,7 +138,7 @@ function DashboardLayout(props: DashboardLayoutProps) {
   const [isMobileNavigationExpanded, setIsMobileNavigationExpanded] =
     React.useState(false);
 
-  const {mdDown:isUnderMdViewport, smUp:isOverSmViewport} = useScreenSize()
+  const {mdDown:isUnderMdViewport, smUp:isOverSmViewport, smDown} = useScreenSize()
 
   //const isUnderMdViewport = useMediaQuery(theme.breakpoints.down("md"));
   // isOverSmViewport = useMediaQuery(theme.breakpoints.up("sm"));
@@ -401,7 +401,7 @@ function DashboardLayout(props: DashboardLayoutProps) {
         </Box>
       </AppBar>
 
-      {!hideNavigation ? (
+      {(!hideNavigation) ? (
         <React.Fragment>
           <Drawer
             container={layoutRef.current as any}
@@ -410,10 +410,11 @@ function DashboardLayout(props: DashboardLayoutProps) {
             onClose={handleSetNavigationExpanded(false)}
             keepMounted={true}
             panelProps={{
-              'data-panel': "Drawer1",
+              'data-panel': "Temporary",
               fill: true,
               className: drawerClasses.panel
             }}
+            backdrop={smDown ? {} : undefined}
             sx={{
               display: {
                 xs: "block",
@@ -451,7 +452,7 @@ function DashboardLayout(props: DashboardLayoutProps) {
               ...getDrawerSharedSx(isDesktopMini, false),
             }}
             panelProps={{
-              'data-panel': "Drawer3",
+              'data-panel': "Permanent",
               fill: true,
               className: drawerClasses.panel
             }}

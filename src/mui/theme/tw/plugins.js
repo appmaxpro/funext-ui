@@ -58,7 +58,7 @@ const plugins = {
       body_tertiary_color: colors['--tw-slate-700'],
       body_tertiary_bg: colors['--tw-slate-100'],
 
-      border_color: colors['--tw-slate-300'],
+      border_color: color(colors['--tw-slate-400']).whiten(.8).hex(),
       border_color_min: colors['--tw-slate-200'],
 
       header_min: colors['--tw-slate-50'],
@@ -79,7 +79,7 @@ const plugins = {
       light: light,
       dark: dark,
       theme_table_border_color: '#e0e0e003',
-      
+      shadow_color: '#2e263d',
       ...defaults.lightScheme
     }
 
@@ -115,6 +115,7 @@ const plugins = {
       theme_table_border_color: '#51515103',
 
       divide: colors['--tw-slate-700'],
+      shadow_color: '#131120',
       ...defaults.darkScheme
     }
 
@@ -132,11 +133,33 @@ const plugins = {
           }))
           .reduce((prev, cur)=> ({...prev, ...cur}), {});
     }
-
+    colors['--tw-ring-color'] = 'rgb(var(--tw-primary-700) / <alpha-value>)';
+    colors['--tw-ring-color'] = '#2e263d';
+    Object.assign(colors, {
+      '--tw-shd-opacity-xs': '0.14',
+      '--tw-shd-opacity-sm': '0.16',
+      '--tw-shd-opacity-md': '0.16',
+      '--tw-shd-opacity-lg': '0.18',
+      '--tw-shd-opacity-xl': '0.18',
+      '--tw-shadow-xs': `0px 2px 6px rgb(var(--tw-shadow-color-rgb) / var(--tw-shd-opacity-xs))`,
+      '--tw-shadow-sm': `0px 2px 10px rgb(var(--tw-shadow-color-rgb) / var(--tw-shd-opacity-sm))`,
+      '--tw-shadow-md': `0px 4px 14px rgb(var(--tw-shadow-color-rgb) / var(--tw-shd-opacity-md))`,
+      '--tw-shadow-lg': `0px 6px 20px rgb(var(--tw-shadow-color-rgb) / var(--tw-shd-opacity-lg))`,
+      '--tw-shadow-xl': `0px 8px 26px rgb(var(--tw-shadow-color-rgb) / var(--tw-shd-opacity-xl))`,
+    })
     addBase({
       ':root': colors,
-      ':root, [data-theme=light]': makeScheme(lightScheme),
-      '[data-theme=dark]':makeScheme(darkScheme),
+      ':root, [data-theme=light]': {
+        ...makeScheme(lightScheme),
+      },
+      '[data-theme=dark]':{
+        ...makeScheme(darkScheme),
+        '--tw-shd-opacity-xs': '0.2',
+        '--tw-shd-opacity-sm': '0.24',
+        '--tw-shd-opacity-md': '0.26',
+        '--tw-shd-opacity-lg': '0.28',
+        '--tw-shd-opacity-xl': '0.3',
+      },
     });
   },
 

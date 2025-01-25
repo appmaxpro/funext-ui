@@ -9,7 +9,7 @@ import {
   memoTheme,
   styled,
   clsx,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   SxThemeProps,
   useTailwindTheme,
 } from "../../styles";
@@ -174,7 +174,7 @@ const defaultIcon = <RadioButtonIcon />;
 
 export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
   function Radio(inProps, ref) {
-    const props = useMuiDefaultProps({ props: inProps, name: "MuxRadio" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxRadio" });
     const { radio } = useTailwindTheme();
     
     const {
@@ -187,13 +187,13 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
       className,
       disabled: disabledProp,
       ripple = true,
-      rippleClassName,
+      focusRipple = true,
+      focusVisibleClassName="ring-2",
       error,
       ...other
     } = props;
 
     let color = mapThemeColor(error ? "error" : inColor);
-    const rippleClass = rippleClassName ?? `bg-${color ?? "primary"}`;
 
     let disabled = disabledProp;
 
@@ -205,6 +205,7 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
       ripple,
       color,
       size,
+      focusRipple
     };
 
     const classes = useUtilityClasses(ownerState);
@@ -228,7 +229,8 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
         ref={ref}
         className={clsx(classes.root, className)}
         ripple={ripple}
-        rippleClassName={rippleClass}
+        focusRipple={focusRipple}
+        focusVisibleClassName={focusVisibleClassName}
         {...other}
       />
     );

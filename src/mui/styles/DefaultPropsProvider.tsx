@@ -27,7 +27,7 @@ export function useDefaultProps<Props extends Record<string, any>>({props:inProp
   return useSystemDefaultProps({props, name});
 }
 
-export function useMuiDefaultProps<Props extends Record<string, any>>(params: {
+export function useMuxDefaultProps<Props extends Record<string, any>>(params: {
   props: Props;
   name: string;
 }) {

@@ -81,7 +81,7 @@ const CustomMenuItem = ({
   return (
     <MenuItem
       {...props}
-      className={clsx(styles.headerMenuItem, !padding ? "p-0" : "p-2")}
+      className={clsx(styles.headerMenuItem, !padding ? "p-0 md:p-0" : "p-2")}
       onClick={onClick}
       onKeyDown={(e: any) => {
         e.preventDefault();

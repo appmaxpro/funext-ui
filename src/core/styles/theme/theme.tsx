@@ -107,6 +107,7 @@ export function CoreThemeProvider({
   
   useEffect(() => {
     if (isSystemDark && !isDark) {
+      /*
       for (let s = 0; s < document.styleSheets.length; s++) {
         const styleSheet = document.styleSheets.item(s);
         const cssRules = styleSheet?.cssRules || new CSSRuleList();
@@ -124,9 +125,9 @@ export function CoreThemeProvider({
             continue;
           }
 
-          /**
-           * Replace the prefers-color-scheme media query to apply the desired theme.
-           * It refers to the system media query in order to keep the mechanic in sync by reversing it.
+          
+          // Replace the prefers-color-scheme media query to apply the desired theme.
+          // It refers to the system media query in order to keep the mechanic in sync by reversing it.
            
           const newRuleMediaText = ruleMediaText.replace(
             /(dark|light)/,
@@ -135,9 +136,10 @@ export function CoreThemeProvider({
 
           cssRule.media.deleteMedium(ruleMediaText);
           cssRule.media.appendMedium(newRuleMediaText);
-          */
+          
         }
       }
+       */ 
     }
   }, [isDark, isSystemDark]);
 

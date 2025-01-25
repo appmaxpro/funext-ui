@@ -24,6 +24,10 @@ const alertFilled: object = {
     bg: "bg-orange-500",
     color: "text-white",
   },
+  yellow: {
+    bg: "bg-yellow-500",
+    color: "text-white",
+  },
   amber: {
     bg: "bg-amber-500",
     color: "text-black",

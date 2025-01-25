@@ -11,7 +11,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   useRtl,
   useSlot,
   useTheme
@@ -253,7 +253,7 @@ const SnackbarRoot = styled('div', {
 );
 
 export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Snackbar(inProps, ref) {
-  const props = useMuiDefaultProps({ props: inProps, name: 'MuiSnackbar' });
+  const props = useMuxDefaultProps({ props: inProps, name: 'MuiSnackbar' });
   const theme = useTheme();
   const defaultTransitionDuration = {
     enter: theme.transitions.duration.enteringScreen,

@@ -13,7 +13,7 @@ export interface ListStylesType {
     base?: {
       list?: any;
       navList?: object;
-      
+      divider?: string;
       item?: {
         initial?: any;
         selected?: object;
@@ -50,7 +50,9 @@ export const list: ListStylesType = {
         //gap: "gap-1",
         minWidth: "min-w-[160px]",
         //padding: "py-2",
+        
       },
+      divider: 'divider-y',
       navList: {
         display: "flex",
         flexDirection: "flex-col",
@@ -63,16 +65,14 @@ export const list: ListStylesType = {
           width: "w-full",
           textAlign: "text-start",
           transition: "transition-all",
-          outline: "outline-none",
+          py: 'py-2',
+          px: 'px-2'
         },
         interactive:{
           active: {
-            bg: '',
-            opacity: '',
-            color: ''
           },
           selected: {
-            bg: 'slate-50/50',
+            bg: 'blue-500/10',
             color: 'slate-700'
           },
           disabled: {

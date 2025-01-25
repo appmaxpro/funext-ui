@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Meta } from "@storybook/react";
 
 import { Box } from "../Box";
@@ -6,6 +6,7 @@ import { Input } from "./.";
 import { IconButton, Input as MuiInput } from "../..";
 import { withStyled } from "../../../core/styled";
 import { MaterialIcon } from "../../../icons/material-icon";
+import React from "react";
 
 const config = {
   component: Input,
@@ -21,9 +22,17 @@ const config = {
 
 export const Basic = () => {
   const [value, setValue] = useState("");
+  const ref = useRef<HTMLInputElement|null>(null);
+
+  const setRef = useCallback((input)=> {
+    if (ref.current != input) {
+      console.log("Basic change ref:", input);
+      ref.current = input;
+    }
+  }, []);
 
   return (
-    <MuiInput value={value} onChange={(e: any) => setValue(e.target.value)} />
+    <MuiInput ref={setRef} value={value} onChange={(e: any) => setValue(e.target.value)} />
   );
 };
 
@@ -121,7 +130,7 @@ export const Sizing = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              size="sm"
+              size="inherit"
               variant="text"
               className="p-[6px]"
             >
@@ -129,7 +138,7 @@ export const Sizing = () => {
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} size="sm" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -142,12 +151,12 @@ export const Sizing = () => {
           label="Adornment lg"
           size="lg"
           startAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -170,7 +179,7 @@ export const Sizing = () => {
           shrink
           size="lg"
           startAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="close" />
             </IconButton>
           }
@@ -237,13 +246,13 @@ export const Filled = () => {
             <IconButton
               onClick={() => {}}
               variant="text"
-              dense
+              size="inherit"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} dense variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -258,14 +267,14 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              size="md"
+              size="inherit"
               variant="text"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -290,14 +299,14 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              dense
+              size="inherit"
               variant="text"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} dense variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -342,14 +351,14 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              dense
+              size="inherit"
               variant="text"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} dense variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -366,14 +375,14 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              size="md"
+              size="inherit"
               variant="text"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -404,14 +413,14 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              dense
+              size="inherit"
               variant="text"
             >
               <MaterialIcon icon="close" />
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} dense variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }
@@ -425,7 +434,7 @@ export const Filled = () => {
           startAdornment={
             <IconButton
               onClick={() => {}}
-              size="md"
+              size="inherit"
               variant="text"
               className="p-[6px]"
             >
@@ -433,7 +442,7 @@ export const Filled = () => {
             </IconButton>
           }
           endAdornment={
-            <IconButton onClick={() => {}} size="md" variant="text">
+            <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
           }

@@ -7,7 +7,7 @@ import {
   memoTheme,
   styled,
   SxComponentProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import { capitalize } from "../../utils";
 import { OverridableStringUnion } from "../../props";
@@ -88,7 +88,7 @@ const SvgIconRoot = styled("svg", {
 
 export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
   function SvgIcon(inProps, ref) {
-    const props = useMuiDefaultProps({ props: inProps, name: "MuiSvgIcon" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuiSvgIcon" });
     const {
       children,
       className,

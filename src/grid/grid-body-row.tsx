@@ -98,7 +98,7 @@ export const GridBodyRow = React.memo(function GridBodyRow(
         const { expand, disable } = expandState;
         return (
           <IconButton
-             size="sm" dense
+             size="sm"
              className={clsx(styles.expandRowIcon, {
               [styles.disabled]: disable,
             })}

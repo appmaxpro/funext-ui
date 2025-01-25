@@ -11,6 +11,7 @@ import shadows from './shadows';
 import createTransitions from './createTransitions';
 import {zIndex} from './types';
 import extendedSxConfig from './extendedSxConfig';
+import { isDevelopment } from '../utils';
 
 function createThemeNoVars(options:any = {}, ...args:Array<any>) {
   const {
@@ -57,7 +58,7 @@ function createThemeNoVars(options:any = {}, ...args:Array<any>) {
   muiTheme = deepmerge(muiTheme, other);
   muiTheme = args.reduce((acc, argument) => deepmerge(acc, argument), muiTheme);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     // TODO v6: Refactor to use globalStateClassesMapping from @mui/utils once `readOnly` state class is used in Rating component.
     const stateClasses = [
       'active',
@@ -80,7 +81,7 @@ function createThemeNoVars(options:any = {}, ...args:Array<any>) {
       for (key in node) {
         const child = node[key];
         if (stateClasses.includes(key) && Object.keys(child).length > 0) {
-          if (process.env.NODE_ENV !== 'production') {
+          if (isDevelopment) {
             const stateClass = generateUtilityClass('', key);
             console.error(
               [
@@ -136,7 +137,7 @@ function createThemeNoVars(options:any = {}, ...args:Array<any>) {
 let warnedOnce = false;
 
 export function createMuiTheme(...args:Array<any>) {
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (!warnedOnce) {
       warnedOnce = true;
       console.error(

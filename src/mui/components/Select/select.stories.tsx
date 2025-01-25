@@ -34,10 +34,15 @@ import {
   Card,
   useMediaQuery,
 } from "../..";
-import { FloatingContext, useClick } from "@floating-ui/react";
+import {
+  FloatingContext,
+  useClick,
+  UseFloatingReturn,
+} from "@floating-ui/react";
 import { twJoin } from "tailwind-merge";
 import { AutoSelectRenderInputParams, getScrollClasses } from "../../..";
 import { zIndex } from "../../theme/types";
+import { fontSize } from "@mui/system";
 
 //import './scroll.scss'
 
@@ -208,10 +213,9 @@ const ControllableSelectStates = ({ attrs }) => {
   const animation = {
     unmount: {
       opacity: 0,
-      transformOrigin: "top",
-      transform: "scale(0.9)",
-      y: 0,
-      //height: '0px',
+      transformOrigin: "left top",
+      //y: '-100%',
+      height: 0,
       transition: {
         duration: 0.2,
         ease: [0.17, 0.67, 0.83, 0.67],
@@ -220,9 +224,9 @@ const ControllableSelectStates = ({ attrs }) => {
     },
     mount: {
       opacity: 1,
-      transformOrigin: "top",
-      transform: "scale(1)",
-      y: 100,
+      transformOrigin: "left top",
+      //y: 0,
+      height: "auto",
       transition: {
         duration: 0.2,
         ease: [0.17, 0.67, 0.83, 0.67],
@@ -231,6 +235,29 @@ const ControllableSelectStates = ({ attrs }) => {
     },
   };
 
+  const animateFn = useCallback((context: UseFloatingReturn) => {
+    const arrowXx = context.x ?? 0;
+    const arrowYy = context.y ?? 0;
+    const rect = context.refs.reference.current?.getBoundingClientRect();
+    const refWidth = rect?.width;
+    const arrowW = 0;
+    const arrowH = 0;
+    const transformX = arrowXx + arrowW / 2;
+    const transformY = arrowYy + arrowH;
+    const [side] = context.placement.split("-");
+    const transformOrigin = {
+      top: `${transformX}px${arrowH ? ` calc(100% + ${arrowH}px)` : " 100%"}`,
+      bottom: `${transformX}px${arrowH ? ` ${-arrowH}px` : " 0px"}`,
+      left: `${arrowH ? `calc(100% + ${arrowH}px) ` : "100% "}${transformY}px`,
+      right: `${arrowH ? `${-arrowH}px ` : "0px "}${transformY}px`,
+    }[side];
+
+    return {
+      unmount: { ...animation.unmount },
+      mount: { ...animation.mount },
+    };
+  }, []);
+
   return (
     <div>
       <div>{`value: ${value !== null ? `'${value.title}'` : "null"}`}</div>
@@ -238,7 +265,6 @@ const ControllableSelectStates = ({ attrs }) => {
       <br />
       <AutoSelect
         value={value}
-        //open={false}
         autoHighlight
         onChange={(newValue: any) => {
           setValue(newValue);
@@ -247,10 +273,14 @@ const ControllableSelectStates = ({ attrs }) => {
         options={!!attrs.loading ? [] : OPTIONS}
         slotProps={{
           popper: {
-            animate: animation,
-            //strategy: 'fixed',
+            animate: animateFn,
+            strategy: "fixed",
             keepMounted: true,
-            disablePortal: true,
+            disablePortal: !!attrs.disablePortal,
+            style: (context) => ({
+              ...context.floatingStyles,
+              top: 0,
+            }),
           },
           listbox: {
             sx: {
@@ -275,7 +305,6 @@ const ControllableSelectStates = ({ attrs }) => {
         optionEquals={(o, v) => o?.value === v?.value}
         {...attrs}
         open={attrs.open ? true : undefined}
-        //open={!!attrs.open}
         label="Controllable"
         menuHeader={
           <MuiBox
@@ -436,6 +465,7 @@ export const Basic = () => {
         {renderCheckBox("open")}
         {renderCheckBox("loading")}
         {renderCheckBox("disableBorder")}
+        {renderCheckBox("disablePortal")}
       </MuiBox>
     </MuiBox>
   );
@@ -619,7 +649,6 @@ export const Renderers = () => {
     <div style={{ width: 250 }}>
       <DefaultSelect
         multiple
-        open
         autoComplete={false}
         itemFocusClassName="bg-slate/20"
         itemFocusVisibleClassName="bg-slate/30"
@@ -654,12 +683,14 @@ function getSelectButtonStyles(selected: boolean, disabled?: boolean) {
 
 export const SelectButton = () => {
   const [inputValue, setInputValue] = useState("");
-  const [value, setValue] = useState(OPTIONS[0]);
+  
   const ref = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef();
   const openRef = useRef(false);
   const butId = useId().replace(":", "");
+  const multiple = true;
+  const [value, setValue] = useState(multiple ? [] : null);
   //const [ref]
   const animation = {
     unmount: {
@@ -686,7 +717,7 @@ export const SelectButton = () => {
               minWidth: 260,
             }}
           >
-            {value ? value.title : "Not selection "}
+            {multiple ? ('Select '+value?.length +" items") : (value?.title ?? "Not selection ")}
           </Button>
         }
         interactions={(context) => [useClick(context)]}
@@ -728,41 +759,51 @@ export const SelectButton = () => {
             ref.current?.focus();
           }}
         >
+          <Card.Header
+            className="py-1"
+            title={<Text fw={500}>Select options</Text>}
+          />
           <Card.Body className="p-0">
             <DefaultSelect
               //multiple
               open
               autoComplete={false}
-              itemFocusClassName="bg-hd-sx"
-              itemFocusVisibleClassName="bg-hd-sm"
+              itemFocusClassName="bg-blue-50"
+              itemFocusVisibleClassName="bg-blue-100"
               options={OPTIONS}
-              clearOnBlur
+              //clearOnBlur
               autoFocus
               disablePopper
-              disableCloseOnSelect
-              freeSolo
-              clearOnSelect
+              //clearOnSelect
               forcePopupIcon={false}
               clearIcon={inputValue ? undefined : false}
               onInputChange={setInputValue}
               onChange={(value) => {
-                document.getElementById(butId)?.click();
-                setValue(value as unknown as Fruit);
+                if(!multiple)
+                  document.getElementById(butId)?.click();
+                setValue(value);
                 setInputValue("");
               }}
               value={value}
-              renderTags={() => null}
-              className="border-b"
+              className="mx-2"
               placeholder="Search text"
               ref={ref}
+              {...(multiple && {
+                multiple,
+                disableCloseOnSelect: true,
+                renderInputValue: () => null 
+              })}
               renderOption={(props, option, state, ownerState) => (
                 <ListItemButton
                   ripple={false}
+                  startIcon={
+                    <Checkbox checked={state.selected} />
+                  }
                   {...props}
                   as="li"
                   className={twJoin(
-                    getSelectButtonStyles(state.selected, ownerState.disabled),
-                    "py-1 fs-12",
+                    "flex w-full gap-2.5 px-2 focus:outline-none",
+                    "py-0 fs-12",
                   )}
                 >
                   {option.value}
@@ -778,12 +819,31 @@ export const SelectButton = () => {
                 <MuiInput
                   {...props}
                   autoFocus
-                  disableBorder
                   startAdornment={
                     <MaterialIcon icon="search" size={20} className="px-1.5" />
                   }
                 />
               )}
+              menuHeader={
+                multiple &&
+                <div className="w-full grow border-y mt-1 p">
+                  <ListItemButton
+                    ripple={false}
+                    startIcon={<Checkbox checked={value.length === OPTIONS.length} 
+                    indeterminate={!!value?.length && value.length !== OPTIONS.length} />}
+                    as="div"
+                    className={twJoin(
+                      "flex w-full gap-2.5 px-2 focus:outline-none",
+                      "fs-12",
+                    )}
+                    onChange={
+                      () => setValue(value!.length === OPTIONS.length ? [] : OPTIONS)
+                    }
+                  >
+                    Select all
+                  </ListItemButton>
+                </div>
+              }
             />
           </Card.Body>
         </Card>
@@ -801,6 +861,7 @@ export const Cmdk = () => {
   const openRef = useRef(false);
   const butId = useId().replace(":", "");
   const theme = useTheme();
+  const upMd = useMediaQuery(theme.breakpoints.up("md"));
   const md = useMediaQuery(theme.breakpoints.down("md"));
 
   //const [ref]
@@ -845,23 +906,19 @@ export const Cmdk = () => {
   return (
     <Box className="w-full flex justify-center mt-10 px-5 relative">
       <Popper
-        className={
-          "overflow-hidden flex max-w-full max-h-full w-full md:max-w-xl"
-        }
+        className="overflow-hidden flex max-w-full max-h-full w-full md:max-w-xl"
         placement="bottom"
         strategy="absolute"
         dismiss={{}}
         animate={animation}
         backdrop={{
-          className:
-            "backdrop fixed inset-0 flex items-center justify-center w-screen h-screen bg-slate bg-opacity-80 z-100",
           animate: backdropAnimation,
-          style: {
-            zIndex: 100,
-          },
         }}
         style={{
-          ...(md && { top: 0 }),
+          top: 0,
+          bottom: 0,
+          position: "relative",
+          height: md ? '100'  : undefined
         }}
         focusProps={{
           modal: true,
@@ -869,6 +926,7 @@ export const Cmdk = () => {
         }}
         overlay={{
           lockScroll: true,
+          className: "z-modal flex justify-center items-center",
         }}
         aria-modal="true"
         roles={{ role: "dialog" }}
@@ -899,14 +957,11 @@ export const Cmdk = () => {
             widthRef.current = undefined;
           }
         }}
-        contentProps={{
-          className: "flex justify-center mx-auto w-full",
-        }}
       >
         <Card
           variant="elevation"
           elevation={3}
-          className="cmdk-palette-content antialiased w-full h-full max-h-full bg-body border shadow-menu rounded-lg divide-y transition-height"
+          className="cmdk-palette-content antialiased w-full h-full max-h-full bg-body border shadow-menu md:rounded-lg divide-y transition-height"
           ref={cardRef}
           style={{
             width: widthRef.current,
@@ -1006,7 +1061,26 @@ export const AutoSelectCmdk = () => {
   const sm = useMediaQuery(theme.breakpoints.down("sm"));
   const [popperType, setPopperType] = useState(0);
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const inputValueRef = useRef('');
+  const [open, setOpen] = useState(false);
+  const heightRef = useRef(0);
+  const inputValueRef = useRef("");
+
+  const handleOpenState = useCallback(
+    (open) => {
+      //console.log("handleOpenState:", open, ",popperType:", popperType);
+      if (popperType) {
+        setTimeout(() => {
+          heightRef.current = open
+            ? floatingContextRef.current?.refs?.floating?.current
+                ?.clientHeight ?? 0
+            : 0;
+          console.log("SetHeight:height:", heightRef.current);
+        }, 1000);
+      }
+    },
+    [popperType],
+  );
+
   //const [ref]
   const animation = {
     unmount: {
@@ -1033,9 +1107,9 @@ export const AutoSelectCmdk = () => {
     unmount: {
       opacity: 0,
       y: "100%",
-      bottom: (md || sm) ? 0 : undefined,
+      bottom: md || sm ? 0 : undefined,
       transition: {
-        duration: 0.320,
+        duration: 0.32,
         ease: "easeIn",
       },
     },
@@ -1087,22 +1161,15 @@ export const AutoSelectCmdk = () => {
         itemFocusVisibleClassName="bg-hd-md"
         options={OPTIONS}
         openOnFocus={false}
-        //clearOnBlur
         autoSelect={false}
         autoFocus
-        //disableCloseOnSelect
-        //freeSolo
-        //clearOnSelect
+        clearOnSelect={!!popperType}
+        clearOnBlur={false}
         forcePopupIcon={true}
-        /*
-        onChange={(value) => {
-          setValue(value);
-        }}
-        value={value}*/
         sx={{ width: "300px" }}
-        renderTags={() => null}
         placeholder="Search text"
         ref={ref}
+        onCompleteState={handleOpenState}
         renderOption={(props, option, state, ownerState) => (
           <ListItemButton
             ripple={false}
@@ -1122,6 +1189,7 @@ export const AutoSelectCmdk = () => {
             : {
                 panel: {
                   elevation: 0,
+                  //...(heightRef.current && {height: heightRef.current})
                 },
                 listbox: {
                   className: clsx(
@@ -1141,41 +1209,30 @@ export const AutoSelectCmdk = () => {
                   ),
                   placement: "bottom",
                   strategy: "absolute",
-                  animate:
-                    popperType == 2
-                      ? animationDrawer
-                      : popperType == 1
-                        ? animation
-                        : undefined,
+                  animate: popperType == 2 ? animationDrawer : animation,
 
-                  backdrop: !sm || true
-                    ? {
-                        className:
-                          "backdrop fixed inset-0 flex items-center justify-center w-screen h-screen bg-black dark:bg-white bg-opacity-50",
-                        animate: backdropAnimation,
-                        onClick:
-                          popperType == 2
-                            ? (event) => {
-                                const parentCard =
-                                  cardRef.current?.parentElement;
-                                let parent =
-                                  event.target as unknown as HTMLElement;
-                                while (parent) {
-                                  if (parent === parentCard) {
-                                    return;
-                                  }
-                                  parent =
-                                    parent.parentElement as unknown as HTMLElement;
-                                }
-                                floatingContextRef.current?.onOpenChange(
-                                  false,
-                                  event as any,
-                                  "blur",
-                                );
+                  backdrop: {
+                    animate: backdropAnimation,
+                    onClick:
+                      popperType == 2
+                        ? (event) => {
+                            const parentCard = cardRef.current?.parentElement;
+                            let parent = event.target as unknown as HTMLElement;
+                            while (parent) {
+                              if (parent === parentCard) {
+                                return;
                               }
-                            : undefined,
-                      }
-                    : undefined,
+                              parent =
+                                parent.parentElement as unknown as HTMLElement;
+                            }
+                            floatingContextRef.current?.onOpenChange(
+                              false,
+                              event as any,
+                              "blur",
+                            );
+                          }
+                        : undefined,
+                  },
                   style: ({ context, floatingStyles }) => {
                     floatingContextRef.current = context;
                     if (popperType == 1)
@@ -1183,15 +1240,23 @@ export const AutoSelectCmdk = () => {
                         position: context.strategy,
                         top: md ? 0 : context.y,
                         left: context.x,
-                        height: sm ? "100%" : undefined,
+                        height: sm
+                          ? "100%"
+                          : heightRef.current
+                            ? heightRef.current
+                            : undefined,
                       };
 
                     return {
                       position: context.strategy,
                       left: context.x,
-                      height: sm ? "100vh" : "auto",
-                      maxHeight: sm ? '100vh' : '90vh',
-                      bottom: 0
+                      height: sm
+                        ? "100vh"
+                        : heightRef.current
+                          ? heightRef.current
+                          : "auto",
+                      maxHeight: sm ? "100vh" : "90vh",
+                      bottom: 0,
                     };
                   },
                   focusProps: {
@@ -1199,7 +1264,7 @@ export const AutoSelectCmdk = () => {
                     initialFocus: -1,
                   },
                   overlay: {
-                    lockScroll: !sm,
+                    lockScroll: true,
                     style: {
                       overflow: "hidden",
                       zIndex: theme.zIndex.modal,
@@ -1215,7 +1280,7 @@ export const AutoSelectCmdk = () => {
           !popperType
             ? undefined
             : (getRootProps, getInputProps, ClearIndicator, open, children) => {
-                const { ref, ...rest } = getInputProps();
+                const { ref, ...rest } = getInputProps(true);
                 return (
                   <Card
                     variant="elevation"
@@ -1245,7 +1310,7 @@ export const AutoSelectCmdk = () => {
                           className="focus-within-show hover-show"
                         >
                           <ClearIndicator
-                            size="md"
+                            size="sm"
                             sx={{ visibility: "visible" }}
                           />
                         </Box>
@@ -1265,7 +1330,9 @@ export const AutoSelectCmdk = () => {
                 );
               }
         }
+        //open={open}
       />
+      <Checkbox checked={open} onChange={() => setOpen(!open)} label="Open?" />
     </Box>
   );
 };

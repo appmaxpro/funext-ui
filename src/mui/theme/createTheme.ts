@@ -1,6 +1,6 @@
 import createPalette from './createPalette';
 import createThemeWithVars from './createThemeWithVars';
-
+import spacing from './spacing';
 import type { 
   Theme, 
   ThemeOptions
@@ -78,7 +78,21 @@ export default function createTheme(
   };
 
   if (cssVariables === false) {
-    const theme = createThemeNoVars(options as ThemeOptions, ...args) as unknown as Theme & {
+    const themOptions = {
+      ...spacing,
+      shape: {
+        borderRadius: 6,
+        customBorderRadius: {
+          xs: 2,
+          sm: 4,
+          md: 6,
+          lg: 8,
+          xl: 10
+        }
+      },
+      ...options
+    }
+    const theme = createThemeNoVars(themOptions as ThemeOptions, ...args) as unknown as Theme & {
       defaultColorScheme?: 'light' | 'dark';
       colorSchemes?: Partial<Record<string, any>>;
     };
@@ -89,7 +103,7 @@ export default function createTheme(
 
     theme.defaultColorScheme = defaultColorSchemeInput;
     theme.colorSchemes = colorSchemesInput as Record<string, ColorSystem>;
-
+    spacing
     if (theme.palette.mode === 'light') {
       theme.colorSchemes.light = { palette: theme.palette } as ColorSystem;
       attachColorScheme(theme, 'dark', colorSchemesInput.dark);

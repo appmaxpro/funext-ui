@@ -37,7 +37,7 @@ import { MaterialIcon, MaterialIconProps } from "../../../icons/material-icon";
 
 export interface IconButtonProps extends ButtonBaseProps {
   variant?: variant;
-  size?: size;
+  size?: size | 'inherit';
   color?: color | "transparent" | "inherit";
   dense?: boolean;
   disableElevation?: boolean;

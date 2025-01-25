@@ -89,6 +89,11 @@ const inputFilled = {
       placeholder: "placeholder:opacity-100"
     }
   },
+  label: {
+    input: {
+      className: styles['has-label']
+    },
+  }
 };
 
 export default inputFilled;

@@ -9,7 +9,7 @@ import {
   generateUtilityClasses,
   memoTheme,
   styled,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
 } from "../../styles";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 

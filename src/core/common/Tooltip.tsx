@@ -78,7 +78,6 @@ export const useTooltip = ({
         setMouseIn(false) ;
         setCounter(counter + 1);
         timeoutRef.current = false;
-        console.log("resetMouseRef");
     }
   });
 
@@ -88,7 +87,6 @@ export const useTooltip = ({
     }
     setMouseIn(true) ;
     timeoutRef.current && clearTimeout(timeoutRef.current);
-    console.log("onMouseEnter");
   });
 
   const onMouseLeave = React.useCallback((event)=>{
@@ -99,7 +97,6 @@ export const useTooltip = ({
     setMouseIn(false) ;
     timeoutRef.current && clearTimeout(timeoutRef.current);
     timeoutRef.current = false;
-    console.log("onMouseLeave");
   });
 
   const onTargetMouseLeave = React.useCallback((event)=>{
@@ -109,7 +106,6 @@ export const useTooltip = ({
     mouseRef.current = true;
     timeoutRef.current && clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(resetMouseRef, 300);
-    console.log("onTargetMouseLeave");
   });
 
   const data = useFloating({

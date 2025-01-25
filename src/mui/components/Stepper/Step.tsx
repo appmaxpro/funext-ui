@@ -13,8 +13,6 @@ import {
 } from "./Context";
 
 export interface StepProps extends SxComponentProps<"div"> {
-  activeClassName?: string;
-  completedClassName?: string;
   index?: number;
   last?: boolean;
   disabled?: boolean;
@@ -28,17 +26,7 @@ const StepRoot = styled("div", {
 
 export const Step = React.forwardRef<HTMLDivElement, StepProps>(
   (
-    {
-      index = -1,
-      last = false,
-      className,
-      activeClassName,
-      completedClassName,
-      disabled,
-      expanded,
-      children,
-      ...rest
-    },
+    props,
     ref,
   ) => {
     // 1. init
@@ -48,23 +36,32 @@ export const Step = React.forwardRef<HTMLDivElement, StepProps>(
     } = step;
 
     const {
+      index = -1,
+      last = false,
+      className,
+      disabled,
+      expanded,
+      children,
+      ...rest
+    } = props;
+
+    const {
       activeStep,
       stepClasses,
       inactiveClasses,
       activeClasses,
       completedClasses,
+      completed
     } = useStepperContext();
 
-    const completed = activeStep > index || (index === activeStep && last) ;
+    //const completed = activeStep > index || (index === activeStep && last) ;
     
     const targetClasses =
-      index === activeStep
-        ? last
-          ? completedClasses
-          : activeClasses
-        : index > activeStep
-          ? completedClasses
-          : inactiveClasses;
+      completed || index < activeStep
+      ?  completedClasses
+      : index === activeStep
+        ? activeClasses
+        : inactiveClasses;
     // 3. set styles
     const classes = useMemo(
       () =>
@@ -77,18 +74,21 @@ export const Step = React.forwardRef<HTMLDivElement, StepProps>(
       [base, stepClasses, targetClasses, className],
     );
 
+    const value = {
+      index,
+      last,
+      disabled,
+      active: index === activeStep,
+      expanded,
+
+    }
+
     // 4. return
     return (
       <StepContextProvider
-        value={{
-          index,
-          last,
-          disabled,
-          active: index === activeStep,
-          expanded,
-        }}
+        value={value}
       >
-        <StepRoot {...rest} ref={ref} className={classes}>
+        <StepRoot {...rest} ownerState={props} ref={ref} className={classes}>
           {children}
         </StepRoot>
       </StepContextProvider>

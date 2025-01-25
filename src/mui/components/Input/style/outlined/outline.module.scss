@@ -1,3 +1,22 @@
+.root{
+  &:focus-within .notched{
+    border-width: 2px;
+  }
+
+  &:focus-within .notched,
+  & .input:has(input:not(:placeholder-shown)) ~.notched,
+  & .notched.flt legend{
+    max-width: 100%;
+  }
+
+  &:focus-within .label,
+  & .input:has(input:not(:placeholder-shown)) ~ .label,
+  & .label.floated {
+    max-width: calc(133% - 32px);
+    transform: translate(14px, -8px) scale(0.75);
+  }  
+}
+
 .label {
   
   padding: 0;
@@ -12,24 +31,13 @@
   font-size: 1rem;
   line-height: 1.4375em;
   letter-spacing: 0.00938em;
-  transform-origin: top left;
-  transform: translate(14px, 8px) scale(1);
-  transition: color 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms, 
-    transform 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms, 
-    max-width 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+  transition: color 200ms, transform 200ms, max-width 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
   z-index: 1;
   pointer-events: none;
-  
-  &.floated {
-    max-width: calc(133% - 32px);
-    transform: translate(14px, -8px) scale(0.75);
-  }
+  transform-origin: top left;
+  transform: translate(14px, 8px) scale(1);
   &.lg {
     transform: translate(14px, 16px) scale(1);
-    &.floated {
-      max-width: calc(133% - 32px);
-      transform: translate(14px, -9px) scale(0.75);
-    }
   }
 }
 
@@ -73,66 +81,25 @@
       visibility: hidden;
     }
   }
-  &.flt {
-    
-    & legend{
-        max-width: 100%;
-    }
-  }
-}
-
-.in-outline{
-  &:focus-within {
-    & div > .notched{
-      border-width: 2px;
-      & legend{
-        max-width: 100%;
-      }
-    }
-    & > .label {
-      max-width: calc(133% - 32px);
-      transform: translate(14px, -8px) scale(0.75);
-      &.lg {
-        transform: translate(14px, -9px) scale(0.75);
-      }
-    }
-  }
-}
-
-.input:has(input:not(:placeholder-shown)) ~ .label {
-  max-width: calc(133% - 32px);
-  transform: translate(14px, -8px) scale(0.75);
-  &.lg {
-    transform: translate(14px, -9px) scale(0.75);
-  }
 }
 
 [dir="rtl"] {
-   
+
   .label {
     left: unset;
     right: 0;
     transform-origin: top right;
     transform: translate(-14px, 8px) scale(1);
-    &.floated {
-      transform: translate(-14px, -8px) scale(0.75);
-    }
     &.lg {
       transform: translate(-14px, 16px) scale(1);
-      &.floated {
-        transform: translate(-14px, -9px) scale(0.75);
-      }
     }
   }
 
-  .in-outline{
-    &:focus-within {
-      & > .label {
-        transform: translate(-14px, -8px) scale(0.75);
-        &.lg {
-          transform: translate(-14px, -9px) scale(0.75);
-        }
-      }
+  .root{
+    &:focus-within .label,
+    & .input:has(input:not(:placeholder-shown)) ~ .label,
+    & .label.floated{
+      transform: translate(-14px, -8px) scale(0.75);
     }
   }
 }

@@ -25,6 +25,8 @@ export interface ListContextValues {
     disabled?: ItemInteractive | string;
     initial?: any;
   };
+  startIcon?: ReactNode;
+  endIcon?: ReactNode;
   hover?: boolean;
   select?: boolean;
   active?: boolean;
@@ -61,8 +63,13 @@ export interface ListContextProps {
     ripple?: boolean;
     rippleClassName?: string;
   };
-  ul?: boolean;
+  startIcon?: ReactNode;
+  endIcon?: ReactNode;
+  divider?: boolean | string;
+  gutters?: boolean | string;
+  dense?: boolean | string;
   prefix?: string;
   suffix?: string;
   global?: boolean;
+  ul?: boolean;
 }

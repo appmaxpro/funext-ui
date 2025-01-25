@@ -6,9 +6,9 @@ import { styled } from "..";
 
 const defaultColClasses = {
   classes: {
-    root: 'MuxGridColumn'
-  }
-}
+    root: "MuxGridColumn",
+  },
+};
 export const GridColumn = memo(function GridColumn(
   props: TYPES.GridColumnProps & {
     renderChildren?: (
@@ -27,7 +27,7 @@ export const GridColumn = memo(function GridColumn(
     renderer,
     renderChildren,
     onClick,
-    type
+    type,
   } = props;
 
   const children = renderChildren ? renderChildren(data, value) : _children;
@@ -53,24 +53,29 @@ export const GridColumn = memo(function GridColumn(
 
   const classNames = useClassNames();
   const $width = Math.max(width || 0, minWidth || 0);
+  const header = type === "header";
+
   return (
     <ColumnComponent
       {...(renderer ? {} : { ref: columnRef })}
       {...rendererProps}
       onClick={(e) => onClick && onClick(e, data, index)}
-      className={classNames(styles.column, className, data.$css, {
-        [styles.center]: ["row-checked"].includes(data.type || ""),
-        [styles.selected]: selected,
-        [styles.action]: data.action && type !== 'header',
-        [styles.padding]: !data.action && type !== 'header',
-
-      }, )}
+      className={classNames(
+        styles.column,
+        data.type === "row-checked"
+          ? styles.center
+          : data.action && !header && styles.action,
+        selected && styles.selected,
+        !padding && !header && styles.padding,
+        className,
+        !header && data.$css,
+      )}
       style={
         $width > 0
           ? {
               width: $width,
               maxWidth: $width,
-              ...(padding && {padding: padding})
+              ...(padding && { padding: padding }),
             }
           : { flex: 1 }
       }
@@ -80,11 +85,10 @@ export const GridColumn = memo(function GridColumn(
   );
 });
 
-const MuxGridColumn = styled('div', {
+const MuxGridColumn = styled("div", {
   //name: 'MuxGridColumn',
   //slot: '',
 })({
-  display: 'flex',
-  alignItems: 'center'
+  display: "flex",
+  alignItems: "center",
 });
- 

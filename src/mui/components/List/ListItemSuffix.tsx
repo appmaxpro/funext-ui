@@ -18,14 +18,8 @@ const ListItemSuffixRoot = styled('div', {
 
 export interface ListItemSuffixProps extends SxComponentProps<"div">{};
 
-
 export const ListItemSuffix = React.forwardRef<HTMLDivElement, ListItemSuffixProps>(({className, children, ...rest}, ref) => {
-  // 1. init
-  const { list } = useTailwindTheme();
-  const {
-    styles: { base },
-  } = list;
-
+  
   const { suffix } = useListContext()!;
 
   // 3. set styles

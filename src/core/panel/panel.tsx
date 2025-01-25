@@ -111,7 +111,7 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
   const ContentPane = scrollbar?.custom ? Scrollable : "div";
 
   const content = (
-    <div className={styles.body} onScroll={onScroll}>
+    <div className={clsx(styles.body, noFrame && styles.noFrame)} onScroll={onScroll}>
       {children}
     </div>
   );
@@ -127,22 +127,16 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
       onExited={onExited}
       className={styles.bodyWrapper}
     >
-      <>
         {content}
-        {hasFooter && <div className={styles.footer}>{footer}</div>}
-      </>
     </Collapse>
   ) : (
-    <div className={styles.bodyWrapper}>
-      {content}
-      {hasFooter && <div className={styles.footer}>{footer}</div>}
-    </div>
+    content
   );
 
   return (
     <div
       ref={ref}
-      className={clsx(styles.panel, dialogCtx && styles['in-dialog'], className, styles[collapseState])}
+      className={clsx(styles.panel, noFrame && styles.noFrame, dialogCtx && styles['in-dialog'], className, styles[collapseState])}
       {...restProps}
     >
       {hasHeader && (
@@ -154,10 +148,13 @@ export const ToolPanel = forwardRef<HTMLDivElement, ToolPanelProps>((props, ref)
           className={clsx({
             [styles.hide]: headerHide,
             [styles.shadow]: headerShadow,
+            [styles.noFrame]: noFrame
+            
           })}
         />
       )}
       {body}
+      {hasFooter && <div className={styles.footer}>{footer}</div>}
     </div>
   );
 });

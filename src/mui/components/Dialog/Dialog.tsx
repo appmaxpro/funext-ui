@@ -64,7 +64,7 @@ import {
   memoTheme,
   styled,
   SxThemeProps,
-  useMuiDefaultProps,
+  useMuxDefaultProps,
   useTheme,
   type SxComponentProps,
 } from "../../styles";
@@ -233,6 +233,10 @@ const DialogPanel = styled(Panel, {
     margin: 32,
     position: "relative",
     overflowY: "auto",
+    transition: 'width,height,'+ theme.transitions.create('box-shadow', {
+      duration: theme.transitions.duration.enteringScreen,
+      easing: theme.transitions.easing.sharp
+    }),
     "@media print": {
       overflowY: "visible",
       boxShadow: "none",
@@ -357,7 +361,7 @@ export interface DialogProps extends SxComponentProps<"div"> {
    * Props applied to the [`Panel`](https://mui.com/material-ui/api/panel/) element.
    * @default {}
    */
-  PanelProps?: Partial<PanelProps<React.ElementType>>;
+  panelProps?: Partial<PanelProps<React.ElementType>>;
 
   /**
    * Determine the container for scrolling the dialog.
@@ -388,7 +392,7 @@ export interface DialogProps extends SxComponentProps<"div"> {
 
 const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
   (inProps, ref) => {
-    const props = useMuiDefaultProps({ props: inProps, name: "MuxDialog" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxDialog" });
     const id = useId();
     const labelId = `${id}-label`;
     const descriptionId = `${id}-description`;
@@ -411,7 +415,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       fullScreen = size === "xxl",
       fullWidth = fullScreen,
       PanelComponent = Panel,
-      PanelProps = {},
+      panelProps = {},
       scroll = "panel",
       onClick,
       ...rest
@@ -583,8 +587,8 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
               aria-labelledby={ariaLabelledbyProp}
               aria-modal={ariaModal}
               fill
-              {...PanelProps}
-              className={clsx(classes.panel, PanelProps.className)}
+              {...panelProps}
+              className={clsx(classes.panel, panelProps.className)}
               ownerState={ownerState}
               
             >

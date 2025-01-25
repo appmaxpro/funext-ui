@@ -1,5 +1,6 @@
 import { MaterialSymbol , type PolymorphicMaterialSymbolProps } from "react-material-symbols";
 import 'react-material-symbols/rounded';
+import './styles.css';
 
 //import { TForeground } from "../../core";
 //import { clsx, Box } from "../../mui";

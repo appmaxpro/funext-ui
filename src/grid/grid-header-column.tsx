@@ -94,7 +94,7 @@ function GridHeaderCheckbox({
         ? {
             onChange: (e) => onCheckAll((e.target as HTMLInputElement).checked),
           }
-        : { defaultChecked: false })}
+        : { checked: false })}
       tabIndex={-1}
     />
   );
@@ -370,11 +370,11 @@ export const GridHeaderColumn = React.memo(function GridHeaderColumn(
       </>
     );
   }
-
+  const rowChecked = data.type === "row-checked"
   const className = clsx(
     data.$headerCss,
-    data.action && styles.action,
-    styles.action && styles["no-padding"],
+    !rowChecked && data.action && styles.action,
+    !rowChecked && styles.action && styles["no-padding"],
     lastHeader && !data.action && styles["no-padding-end"],
     !lastHeader && !data.action && styles["padding"],
     canResize && onResizeStart && onResize && onResizeEnd && styles.resizable,

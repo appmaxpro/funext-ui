@@ -14,7 +14,7 @@ const colors = {
   'body-text': 'rgb(var(--tw-body-color-rgb) / <alpha-value>)',
   
   ringColor: 'rgb(var(--tw-primary-700-rgb) / <alpha-value>)',
-
+  borderColor: 'rgb(var(--tw-border-color-rgb) / <alpha-value>)',
   primary: {  
     DEFAULT: "#635bff",  
     50: "#eef2ff",
