@@ -28,3 +28,11 @@ atlassian-ide-plugin.xml
 # misc
 .DS_*
 *.log
+.next
+./demos
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
+package-lock.json
+/packages/icons/lib
+/packages/icons/material-icon
