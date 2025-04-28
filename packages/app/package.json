@@ -1,0 +1,93 @@
+{
+  "name": "@funext/app",
+  "version": "0.1.0",
+  "author": "Funext App",
+  "description": "Dashboard framework powered by Funext.",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "require": "./node/index.js"
+    },
+    "./*": {
+      "types": "./src/*/index.d.ts",
+      "import": "./src/*/index.js",
+      "require": "./node/*/index.js"
+    }
+  },
+  "keywords": [
+    "react",
+    "mui",
+    "crud",
+    "admin",
+    "dashboard"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "clean": "rimraf build",
+    "prebuild": "pnpm clean",
+    "build": "pnpm build:node && pnpm build:stable && pnpm build:types && pnpm build:copy-files",
+    "build:node": "node ../../scripts/build.mjs node",
+    "build:stable": "node ../../scripts/build.mjs stable",
+    "build:copy-files": "node ../../scripts/copyFiles.mjs",
+    "build:types": "tsc -b tsconfig.build.json",
+    "predev": "pnpm clean",
+    "dev": "mkdir -p build && concurrently \"pnpm build:stable --watch\" \"pnpm build:types --watch --preserveWatchOutput\" \"pnpm build:copy-files\"",
+    "check-types": "pnpm build:types && tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:dev": "vitest",
+    "test:browser": "vitest run --browser.enabled",
+    "test:browser:dev": "vitest --browser.enabled"
+  },
+  "dependencies": {
+    "invariant": "2.2.4",
+    "path-to-regexp": "6.3.0",
+    "use-sync-external-store": "^1.2.0",
+    "history": "^5.3.0"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.26.0",
+    "@vitejs/plugin-react": "4.3.4",
+    "@funext/icons": "workspace:*",
+    "@funext/ui": "workspace:^",
+    "@types/invariant": "2.2.37",
+    "@types/prop-types": "15.7.14",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@types/sinon": "^17.0.3",
+    "@types/use-sync-external-store": "^0.0.6",
+    "@vitest/browser": "2.1.9",
+    "next": "^15.1.6",
+    "next-router-mock": "^0.9.13",
+    "playwright": "^1.47.2",
+    "react-router": "7.1.5",
+    "sinon": "^19.0.2",
+    "vitest": "2.1.9"
+  },
+  "peerDependencies": {
+    "@funext/icons": "workspace:*",
+    "@funext/ui": "workspace:*",
+    "next": "^14 || ^15",
+    "react": "^18 || ^19",
+    "react-router": "^7"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "react-router": {
+      "optional": true
+    }
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "directory": "build"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

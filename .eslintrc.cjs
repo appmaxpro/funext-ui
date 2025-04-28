@@ -15,22 +15,8 @@ module.exports = {
       { allowConstantExport: true },
     ],
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-      },
-    ],
+    "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/ban-types": "warn",
-    "no-shadow": "off",
-    "@typescript-eslint/no-shadow": "warn",
     "prefer-const": "warn",
-    "no-restricted-imports": [
-      "error",
-      {
-        "patterns": ["@mui/*/*/*"]
-      }
-    ]
   },
 };

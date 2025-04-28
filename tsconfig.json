@@ -1,33 +1,29 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    // aligning with Node18 recommendation: https://www.npmjs.com/package/@tsconfig/node18
-    "target": "es2022",
-    "lib": ["es2020", "dom"],
-    "jsx": "preserve",
-    "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noEmit": true,
-    "experimentalDecorators": true,
-    "baseUrl": "./",
-    "allowSyntheticDefaultImports": true,
-    "noErrorTruncation": false,
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "esModuleInterop": true,
     "allowJs": true,
-    "paths": {
-      "@funext/ui": ["./src"],
-    },
-    "types": ["node", "react"]
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": [
-    "**/*.stories.*",
-    "**/dist",
-    "**/node_modules",
-    "dist/",
-    "stories/"
-  ],
-
+  "exclude": ["**/dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
-
 }

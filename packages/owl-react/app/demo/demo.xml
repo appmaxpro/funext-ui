@@ -1,0 +1,71 @@
+<templates>
+  <div t-name="Navbar" class="navbar">Navbar</div>
+
+  <div t-name="ControlPanel" class="controlpanel">
+    <h2>Control Panel</h2>
+    <MobileSearchView t-if="ui.isMobile" />
+  </div>
+
+  <div t-name="FormView" class="formview">
+    <h2>Form View</h2>
+    <AdvancedComponent t-if="!ui.isMobile" />
+  </div>
+
+  <div t-name="Chatter" class="chatter">
+    <h2>Chatter</h2>
+    <t t-foreach="messages" t-as="item" t-key="item"><div>Message <t t-esc="item"/></div></t>
+  </div>
+
+  <div t-name="MobileSearchView">Mobile searchview</div>
+
+  <div t-name="AdvancedComponent">
+    <div class="pb-5">
+      This component is only created in desktop mode. OwlCounter: <t t-esc="state.counter"/>
+      <div>
+        <button t-on-click="onClick">Button!</button>
+      </div>
+    </div>
+    <ReactButton onClick="onRectClick" >
+      <span class="inner ReactButton">Hello Rect Button</span>
+      <br/>
+      <span class="inner ReactButton">Next</span>
+      Text
+    </ReactButton>
+    <div class="">
+      ReactCounter: <t t-esc="state.reactCounter"/>
+    </div>
+    
+    <div class="single mt-5">
+      <ReactButton>
+        Single Button
+      </ReactButton>
+    </div>
+  </div>
+
+  <t t-name="maincontent">
+    <FormView />
+    <Chatter />
+  </t>
+
+  <div t-name="Root" class="app" 
+    t-ref="root-ref"
+    t-att-class="{mobile: ui.isMobile, desktop: !ui.isMobile}">
+      <Navbar/>
+      <ControlPanel/>
+      <div class="content-wrapper" t-if="!ui.isMobile">
+        <div class="content">
+          <t t-call="maincontent"/>
+        </div>
+      </div>
+      <t t-elif="ui.isSm">
+        <t t-tag="{{my_tag}}">
+           <t t-call="maincontent"/>
+        </t>
+      </t>
+      <t t-else="">
+        <t t-call="maincontent"/>
+      </t>
+  </div>
+  
+
+</templates>

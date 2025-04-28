@@ -1,0 +1,32 @@
+{
+  /**
+   ** Commented-out options have their default values.
+   **/
+  "include": [
+    "src/**/*.ts",
+    "src/*.ts"
+  ],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "target": "es2019",
+    "module": "es6",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "types": [
+      "jest",
+      "node"
+    ],
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
+
+  }
+}

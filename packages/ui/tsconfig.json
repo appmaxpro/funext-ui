@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    // aligning with Node18 recommendation: https://www.npmjs.com/package/@tsconfig/node18
+    "target": "es2022",
+    "lib": ["es2020", "dom"],
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "baseUrl": "./",
+    "allowSyntheticDefaultImports": true,
+    "noErrorTruncation": false,
+    "allowJs": true,
+    "paths": {
+      "": ["./src/*"],
+      "@funext/ui/*": ["./src/*"],
+      "react": ["./node_modules/@types/react"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": [
+    "**/*.stories.*",
+    "**/dist",
+    "**/node_modules",
+    "dist/",
+    "stories/"
+  ],
+
+  "references": [{ "path": "../../tsconfig.node.json" }]
+
+}
