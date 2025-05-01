@@ -12,7 +12,7 @@ import { createGlobalScopedContext } from "../lib/createGlobalScopedContext";
 
 
 export interface MuxFloating {
-  context: FloatingContext<ReferenceType> | UseFloatingReturn<ReferenceType>;
+  context: FloatingContext<ReferenceType>;
   type: string;
 }
 

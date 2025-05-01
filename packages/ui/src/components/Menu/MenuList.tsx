@@ -36,8 +36,8 @@ import List, { ListProps } from "../List";
 import { useRefs } from "../../hooks";
 import { Box } from "../Box";
 import { Presence } from "../../lib/presence";
-import {scaleFadeMenu} from "./animate";
 import { Portal } from "../../lib/portal";
+import { scaleFadeStyle } from "../internal/animation";
 
 const PanelRoot = styled(Panel, {
   name: "MuxMenu",
@@ -52,7 +52,7 @@ const PanelRoot = styled(Panel, {
     minWidth: 200,
     borderRadius: 6,
   }),
-  scaleFadeMenu,
+  scaleFadeStyle,
 ) as StyledComponent<any>;
 
 const Arrow = styled(FloatingArrow)(({ theme }) => ({

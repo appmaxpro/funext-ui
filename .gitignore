@@ -34,5 +34,5 @@ atlassian-ide-plugin.xml
 !.vscode/launch.json
 !.vscode/extensions.json
 package-lock.json
-/packages/icons/lib
-/packages/icons/material-icon
+./packages/icons/lib
+./pnpm-lock.yaml

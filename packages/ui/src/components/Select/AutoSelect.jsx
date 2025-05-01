@@ -24,7 +24,8 @@ import {
 import autoSelectClasses, {
   getAutoSelectUtilityClass,
 } from "./autoSelectClasses";
-import { MaterialIcon } from "../../../icons/material-icon";
+import Close from "../internal/svg-icons/Close";
+import { ChevronDown } from "../internal/svg-icons/chevron";
 
 const useUtilityClasses = (ownerState) => {
   const {
@@ -378,7 +379,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     blurOnSelect = false,
     clearOnSelect,
     className,
-    clearIcon = <MaterialIcon icon="close" />,
+    clearIcon = <Close/>,
     clearOnBlur = freeSolo,
     selectOnFocus = !freeSolo,
     clearOnEscape = false,
@@ -423,7 +424,7 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     openOnFocus = false,
     openText = "Open",
     options = [],
-    popupIcon = <MaterialIcon icon="keyboard_arrow_down" />,
+    popupIcon = <ChevronDown/>,
     renderGroup: renderGroupProp,
     label,
     placeholder,

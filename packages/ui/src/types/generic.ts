@@ -1,9 +1,6 @@
-import type { 
-  AnimatePresenceProps, 
-  Transition,  
-  AnimationProps as MAP,
-} from "framer-motion";
+
 import type { UseDismissProps, Placement, Strategy, OffsetOptions} from "@floating-ui/react";
+import { PresenceProps } from "../lib/presence";
 
 // typescript types
 export type Colors =
@@ -34,27 +31,6 @@ export type AnimationProps = {
   unmount?: object;
 };
 
-export type MotionVariantsProps = {
-  initials?: Array<string>;
-  mounts?: Array<string>;
-  unmounts?: Array<string>;
-  //mounts?: Array<string>;
-  //unmounts?: Array<string>;
-  variants?: MAP['variants'];
-};
-
-const mTest:MotionVariantsProps = {
-   initials: ['gg', 'bb'],
-   variants: {
-    gg: {
-
-    },
-    bb: {
-
-    }
-   }
-}
-
 
 export {Placement, Strategy, OffsetOptions};
 
@@ -62,7 +38,7 @@ export interface DismissProps extends UseDismissProps {}
 
 export type OffsetProps = OffsetOptions;
 
-export interface NewAnimatePresenceProps extends Omit<AnimatePresenceProps, "children"> {
+export interface NewAnimatePresenceProps extends Omit<PresenceProps, "children"> {
   children: React.ReactNode;
 }
 
@@ -101,15 +77,14 @@ export const propTypesPlacements: string[] = [
 ];
 
 export interface ArrowProps {
-  padding?: number;
-  props: {
-    className?: string;
-    fill?: string;
-    stroke?: string;
-    height?:number;
-    width?: number;
-    strokeWidth?: number;
-    tipRadius?: number;
-    style?: React.CSSProperties;
-  }
+  className?: string;
+  fill?: string;
+  stroke?: string;
+  height?:number;
+  width?: number;
+  strokeWidth?: number;
+  tipRadius?: number;
+  style?: React.CSSProperties;
 }
+
+export type OverlayProps = React.ComponentProps<'div'> & {lockScroll?: boolean};

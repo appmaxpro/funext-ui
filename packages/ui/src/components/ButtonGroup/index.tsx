@@ -1,2 +1,3 @@
+'use client';
 export * from './ButtonGroup';
-export * from './StyledButtonGroup';
+export {default} from './ButtonGroup';

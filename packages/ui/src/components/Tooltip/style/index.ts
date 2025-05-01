@@ -7,7 +7,7 @@ import type {
   animate,
   className,
   ArrowProps
-} from "../../../types/components/popover";
+} from "../../Popover/Popover";
 
 export interface TooltipStylesType {
   defaultProps?: {

@@ -10,12 +10,12 @@ import {
   composeClasses,
   clsx
 }from '../../styles';
-import ButtonGroupProps, { getButtonGroupUtilityClass, buttonGroupClasses } from './ButtonGroupType';
+import ButtonGroupProps, { getButtonGroupUtilityClass, buttonGroupClasses } from './types';
 import ButtonGroupContext, {ButtonGroupButtonContext} from './ButtonGroupContext';
 
 import { capitalize } from '../../utils';
 
-export * from './ButtonGroupType';
+export * from './types';
 
 const overridesResolver = (props:any, styles:any) => {
   const { ownerState } = props;
@@ -408,7 +408,7 @@ export const ButtonGroup = React.forwardRef<HTMLElement, ButtonGroupProps>(funct
   );
 });
 
-export * from './ButtonGroupType';
+export * from './types';
 export * from './ButtonGroupContext';
 
 export default ButtonGroup;

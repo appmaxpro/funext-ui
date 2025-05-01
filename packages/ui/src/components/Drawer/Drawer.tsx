@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import Popper from "../Popper";
+
 import {
   type SxComponentProps,
   composeClasses,
@@ -20,14 +20,19 @@ import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 import { capitalize, isElement } from "../../utils";
 import { StandardProps } from "../../props";
 
-import { Slide, SlideProps } from "../../../../../ux/src/core/slide";
 import Panel, { PanelProps } from "../Panel";
 import { TransitionProps } from "react-transition-group/Transition";
-import { PopperProps } from "../Popper";
-import { OpenChangeReason } from "@floating-ui/react";
-import { height, minHeight, minWidth } from "@mui/system";
+import {
+  OpenChangeReason,
+  useDismiss,
+  useInteractions,
+} from "@floating-ui/react";
 import { useForwardedRef, useRefs } from "../../hooks";
-import { zIndex } from "src/mui/theme/types";
+import Popper, { PopperProps } from "../Popper";
+import { Slide, SlideProps } from "../../lib/transitions/slide";
+import { useLayer } from "../../lib/layer";
+import { usePopper } from "../Popper/PopperContext";
+import Overlay from "../Overlay";
 
 export interface DrawerClasses {
   /** Styles applied to the root element. */
@@ -62,20 +67,23 @@ export function getDrawerUtilityClass(slot: string): string {
   return generateUtilityClass("MuxDrawer", slot);
 }
 
-export const drawerClasses: DrawerClasses = generateUtilityClasses("MuxDrawer", [
-  "root",
-  "docked",
-  "panel",
-  "panelDirectionStart",
-  "panelDirectionEnd",
-  "panelDirectionTop",
-  "panelDirectionBottom",
-  "panelDirectionDockedStart",
-  "panelDirectionDockedEnd",
-  "panelDirectionDockedTop",
-  "panelDirectionDockedBottom",
-  "modal",
-]);
+export const drawerClasses: DrawerClasses = generateUtilityClasses(
+  "MuxDrawer",
+  [
+    "root",
+    "docked",
+    "panel",
+    "panelDirectionStart",
+    "panelDirectionEnd",
+    "panelDirectionTop",
+    "panelDirectionBottom",
+    "panelDirectionDockedStart",
+    "panelDirectionDockedEnd",
+    "panelDirectionDockedTop",
+    "panelDirectionDockedBottom",
+    "modal",
+  ],
+);
 
 const overridesResolver = (props: any, styles: any) => {
   const { ownerState } = props;
@@ -106,7 +114,7 @@ const useUtilityClasses = (ownerState: any) => {
   return composeClasses(slots, getDrawerUtilityClass, classes);
 };
 
-const DrawerRoot = styled(Popper, {
+const DrawerRoot = styled("div", {
   name: "MuxDrawer",
   slot: "Root",
   overridesResolver,
@@ -169,15 +177,14 @@ const DrawerRoot = styled(Popper, {
   })),
 );
 
-
-const DrawerDockedRoot = styled('div', {
+const DrawerDockedRoot = styled("div", {
   shouldForwardProp: rootShouldForwardProp,
-  name: 'MuxDrawer',
-  slot: 'Docked',
+  name: "MuxDrawer",
+  slot: "Docked",
   skipVariantsResolver: false,
   overridesResolver,
 })({
-  flex: '0 0 auto',
+  flex: "0 0 auto",
 });
 
 const DrawerPanel = styled(Panel, {
@@ -195,16 +202,16 @@ const DrawerPanel = styled(Panel, {
   },
 })(
   memoTheme(({ theme }) => ({
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    flex: '1 0 auto',
+    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    flex: "1 0 auto",
     zIndex: (theme.vars || theme).zIndex.drawer,
     // Add iOS momentum scrolling for iOS < 13.0
-    WebkitOverflowScrolling: 'touch',
+    WebkitOverflowScrolling: "touch",
     // temporary style
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     // We disable the focus ring for mouse, touch and keyboard users.
     // At some point, it would be better to keep it for keyboard users.
@@ -213,7 +220,7 @@ const DrawerPanel = styled(Panel, {
     variants: [
       {
         props: {
-          direction: 'start',
+          direction: "start",
         },
         style: {
           left: 0,
@@ -221,19 +228,19 @@ const DrawerPanel = styled(Panel, {
       },
       {
         props: {
-          direction: 'top',
+          direction: "top",
         },
         style: {
           top: 0,
           left: 0,
           right: 0,
-          height: 'auto',
-          maxHeight: '100%',
+          height: "auto",
+          maxHeight: "100%",
         },
       },
       {
         props: {
-          direction: 'end',
+          direction: "end",
         },
         style: {
           right: 0,
@@ -241,41 +248,43 @@ const DrawerPanel = styled(Panel, {
       },
       {
         props: {
-          direction: 'bottom',
+          direction: "bottom",
         },
         style: {
-          top: 'auto',
+          top: "auto",
           left: 0,
           bottom: 0,
           right: 0,
-          height: 'auto',
-          maxHeight: '100%',
+          height: "auto",
+          maxHeight: "100%",
         },
       },
       {
-        props: ({ ownerState }:any) =>
-          ownerState.direction === 'start' && ownerState.variant !== 'temporary',
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "start" &&
+          ownerState.variant !== "temporary",
         style: {
           borderRight: `1px solid ${(theme.vars || theme).palette.divider}`,
         },
       },
       {
-        props: ({ ownerState }:any) =>
-          ownerState.direction === 'top' && ownerState.variant !== 'temporary',
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "top" && ownerState.variant !== "temporary",
         style: {
           borderBottom: `1px solid ${(theme.vars || theme).palette.divider}`,
         },
       },
       {
-        props: ({ ownerState }:any) =>
-          ownerState.direction === 'end' && ownerState.variant !== 'temporary',
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "end" && ownerState.variant !== "temporary",
         style: {
           borderLeft: `1px solid ${(theme.vars || theme).palette.divider}`,
         },
       },
       {
-        props: ({ ownerState }:any) =>
-          ownerState.direction === 'bottom' && ownerState.variant !== 'temporary',
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "bottom" &&
+          ownerState.variant !== "temporary",
         style: {
           borderTop: `1px solid ${(theme.vars || theme).palette.divider}`,
         },
@@ -360,14 +369,18 @@ export interface DrawerProps
    */
   variant?: "permanent" | "persistent" | "temporary";
 
-  container?: HTMLElement | null | undefined | (() => HTMLElement | null | undefined);
+  container?:
+    | HTMLElement
+    | null
+    | undefined
+    | (() => HTMLElement | null | undefined);
 }
 
 /**
  * The props of the [Popper](/material-ui/api/modal/) component are available
  * when `variant="temporary"` is set.
  */
-export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
+const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
   function Drawer(inProps, ref) {
     const props = useMuxDefaultProps({ props: inProps, name: "MuxDrawer" });
     const theme = useTheme();
@@ -376,7 +389,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       enter: theme.transitions.duration.enteringScreen,
       exit: theme.transitions.duration.leavingScreen,
     };
-    
+
     const {
       direction = "start",
       children,
@@ -399,7 +412,6 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       ...other
     } = props;
 
-    
     const TransitionComponent = Slide;
     // Let's assume that the Drawer will always be rendered on user space.
     // We use this state is order to skip the appear transition during the
@@ -454,6 +466,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     }
 
     const slidingDrawer = (
+      //@ts-ignore
       <TransitionComponent
         in={open}
         direction={
@@ -477,7 +490,8 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
           //console.log("Drawer:CloseState");
         }}
         container={
-          container ?? (variant === "persistent" && drawerRef.current
+          container ??
+          (variant === "persistent" && drawerRef.current
             ? drawerRef.current
             : undefined)
         }
@@ -492,7 +506,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
         <DrawerDockedRoot
           className={clsx(classes.root, classes.docked, className)}
           ownerState={ownerState}
-          ref={drawerRef}
+          ref={drawerRef as any}
           {...other}
         >
           {slidingDrawer}
@@ -502,24 +516,21 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
 
     // variant === temporary
     return (
-      <DrawerRoot
-        className={clsx(classes.root, classes.modal, className)}
+      <Popper
         open={openState || open}
-        ownerState={ownerState}
-        handler={(open, event, reason) => !open && onClose?.(event, reason)}
+        onOpenChange={(open, event, reason) =>
+          !open && onClose?.(event, reason)
+        }
         ref={ref}
-        backdrop={backdrop}
-        overlay={{
+        overlayProps={{
           lockScroll: true,
-          style: {
-            zIndex: theme.zIndex.drawer
-          }
-
+          visible: true,
         }}
-        dismiss={onClose ? {} : undefined}
-        {...other}
+        Overlay={Overlay}
         {...popperProps}
-        root={root ?? (typeof container === 'function' ? container() : container) }
+        root={
+          root ?? (typeof container === "function" ? container() : container)
+        }
         placement={
           ownerDirection === "start"
             ? "left"
@@ -527,15 +538,47 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
               ? "right"
               : ownerDirection
         }
-        style={(context) => ({
-          ...(typeof style === "function" ? (style(context) as any) : style),
-        })}
-        type="drawer"
+        style={style}
       >
-        {slidingDrawer}
-      </DrawerRoot>
+        <FloatingDrawer
+          uiOwnerState={ownerState}
+          className={clsx(classes.root, classes.modal, className)}
+        >
+          {slidingDrawer}
+        </FloatingDrawer>
+      </Popper>
     );
   },
 );
+
+const FloatingDrawer = React.forwardRef<HTMLDivElement, any>((props, ref) => {
+  const { uiOwnerState, className, children } = props;
+
+  const { zIndex, isTopLayer } = useLayer();
+
+  const { context, getFloatingProps: popperFloatingProps } = usePopper();
+
+  const outsidePress = React.useCallback(() => isTopLayer, [isTopLayer]);
+
+  const { getFloatingProps } = useInteractions([
+    useDismiss(context, {
+      outsidePress,
+    }),
+    {
+      floating: popperFloatingProps?.({} as React.HTMLProps<HTMLElement>),
+    },
+  ]);
+
+  const ownerState = {
+    ...uiOwnerState,
+    zIndex,
+  };
+
+  return (
+    <DrawerRoot ownerState={ownerState} className={className} ref={ref}>
+      {children}
+    </DrawerRoot>
+  );
+});
 
 export default Drawer;

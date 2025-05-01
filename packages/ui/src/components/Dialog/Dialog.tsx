@@ -15,40 +15,13 @@ import {
   useMergeRefs,
   FloatingFocusManagerProps,
   FloatingTree,
-  useFloatingParentNodeId,
-  useFloatingNodeId,
-  useFloatingTree,
-  FloatingPortalProps,
-  FloatingRootContext,
+  FloatingContext,
 } from "@floating-ui/react";
 
-// framer-motion
-
-// utils
-import classnames from "classnames";
-import merge from "deepmerge";
-import { twMerge } from "tailwind-merge";
-import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
 
 // types
-import type {
-  NewAnimatePresenceProps,
-  DismissProps,
-  AnimationProps,
-} from "../../types/generic";
-import type {
-  open,
-  handler,
-  size,
-  dismiss,
-  animate,
-  className,
-  children,
-} from "../../types/components/dialog";
+
+import type { DismissProps, handler } from "../Popper/types";
 
 // dialog components
 import { DialogHeader, DialogHeaderProps } from "./DialogHeader";
@@ -63,6 +36,7 @@ import {
   generateUtilityClasses,
   memoTheme,
   styled,
+  StyledComponent,
   SxThemeProps,
   useMuxDefaultProps,
   useTheme,
@@ -72,8 +46,14 @@ import { capitalize, isElement } from "../../utils";
 import Panel, { PanelProps } from "../Panel";
 import { MuxFloatingProvider, useFloatingContext } from "../Context";
 import { Presence } from "../../lib/presence";
-import { LayerProvider, useLayer } from "../../lib/layer";
+import { Layer, LayerProps, LayerProvider, useLayer } from "../../lib/layer";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { PopoverProps } from "../Popover";
+import { PopperProps } from "../Popper";
+import { Portal } from "../../lib/portal";
+import OverlayComp, { OverlayProps } from "../Overlay";
+import { useRefs } from "../../hooks";
+import { EMPTY_RECORD } from "../../lib/constants";
 
 export interface DialogClasses {
   /** Styles applied to the root element. */
@@ -175,10 +155,10 @@ const defaultAnimateCss = css`
   animation: fadeIn 200ms ease-out;
   // Animates the dialog card.
   & > [data-ui="DialogContainer"] {
-    animation: zoomIn 200ms ease-out;
+    animation-name: zoomIn;
   }
   & > [data-ui="DialogBackdrop"] {
-    animation: fadeIn 300ms ease-out;
+    animation: fadeIn;
   }
 `;
 
@@ -197,17 +177,13 @@ export function animationDialogStyle(
   return defaultAnimateCss;
 }
 
-const DialogRoot = styled("div", {
+const DialogRoot = styled(Layer, {
   name: "MuxDialog",
   slot: "Root",
   overridesResolver: (props, styles) => styles.root,
-})<SxComponentProps<any>>(
-  {
-    position: "absolute",
-    inset: 0,
-  },
-  animationDialogStyle,
-);
+})<SxComponentProps<any>>({
+  minWidth: "max-content",
+});
 
 const DialogBackdrop = styled("div", {
   name: "MuxDialog",
@@ -263,7 +239,7 @@ const DialogContainer = styled("div", {
       },
     },
   ],
-});
+}, animationDialogStyle);
 
 const DialogPanel = styled(Panel, {
   name: "MuxDialog",
@@ -378,9 +354,13 @@ const DialogPanel = styled(Panel, {
       },
     ],
   })),
-);
+) as StyledComponent<PanelProps & { animate?: boolean }>;
 
-export interface DialogProps extends SxComponentProps<"div"> {
+const defaultOverlayProps = {
+  visible: true,
+  lockScroll: true,
+};
+export interface DialogProps extends SxComponentProps {
   /**
    * The id(s) of the element(s) that describe the dialog.
    */
@@ -395,21 +375,19 @@ export interface DialogProps extends SxComponentProps<"div"> {
    * @default true
    */
   "aria-modal"?: boolean | "true" | "false";
-  open: boolean;
-  handler?: handler;
 
-  dismiss?: DismissProps | false;
-  animate?: AnimationProps | false;
-  children: children;
-  target?: React.MutableRefObject<HTMLElement | null> | HTMLElement | null;
-  focusProps?: Omit<FloatingFocusManagerProps, "context" | "children">;
+  open?: boolean;
+  onOpenChange?: handler;
+  dismiss?: DismissProps;
+  animate?: boolean;
+  children: React.ReactNode;
   backdropProps?: any;
   elevation?: number;
   /**
    * The component used to render the body of the dialog.
    * @default Panel
    */
-  PanelComponent?: React.JSXElementConstructor<PanelProps>;
+  PanelComponent?:  React.JSXElementConstructor<typeof Panel>;
   /**
    * Props applied to the [`Panel`](https://mui.com/material-ui/api/panel/) element.
    * @default {}
@@ -443,8 +421,12 @@ export interface DialogProps extends SxComponentProps<"div"> {
   size?: Breakpoint | "xxl" | false;
 
   containerProps?: any;
-
-  modal?: boolean;
+  portal?: boolean;
+  zOffset?: number;
+  onActivate?: (props: { activeElement: HTMLElement | null }) => void;
+  Overlay?: React.ComponentType<Partial<OverlayProps>>;
+  overlayProps?: Partial<OverlayProps>;
+  focusProps?: Omit<FloatingFocusManagerProps, "context">;
 }
 
 const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
@@ -453,10 +435,6 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
     const id = useId();
     const labelId = `${id}-label`;
     const descriptionId = `${id}-description`;
-    
-
-    const layer = useLayer();
-    const { isTopLayer } = layer;
 
     let {
       "aria-describedby": ariaDescribedby = descriptionId,
@@ -466,41 +444,35 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       handler,
       size,
       dismiss,
-      animate,
+      animate:animateProps,
       className,
-      target,
-      focusProps,
+      reference: target,
+
       backdropProps = {},
       elevation = 24,
       children,
       fullScreen = size === "xxl",
       fullWidth = fullScreen,
-      PanelComponent = Panel,
-      panelProps = {},
+      PanelComponent,
+      panelProps = EMPTY_RECORD,
       scroll = "panel",
       onClick,
       containerProps,
       modal = true,
+      portal,
+      zOffset,
+      overlayProps = defaultOverlayProps,
+      Overlay = modal ? OverlayComp : undefined,
+      focusProps = modal ? { modal } : undefined,
+      onOpenChange,
       ...rest
     } = props;
     const isFullScreen = fullScreen || size === "xxl";
 
-    const prefersReducedMotion = usePrefersReducedMotion()
-    const hasAnimate = prefersReducedMotion ? false : !animate
-
-    // 1. init
-    const { dialog } = useTailwindTheme();
-    const {
-      defaultProps,
-      valid,
-      styles: { base, sizes },
-    } = dialog;
+    const prefersReducedMotion = usePrefersReducedMotion();
+    const animate = prefersReducedMotion ? false : !!animateProps;
 
     // 2. set default props
-    handler = handler ?? undefined;
-    size = size ?? defaultProps.size;
-    dismiss = dismiss ?? defaultProps.dismiss;
-
     const ownerState = {
       ...props,
       fullScreen: isFullScreen,
@@ -509,25 +481,11 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       scroll,
     };
 
-    // 3. set styles
-    let backdropClasses = backdropProps
-      ? twMerge(
-          classnames(objectsToString(base.backdrop)),
-          backdropProps.className,
-        )
-      : undefined;
-
-    const animated =
-      animate !== false ? (animate ?? defaultProps.animate) : null;
-
-    const theme = useTheme();
-
-    const outsidePress = React.useCallback(() => isTopLayer, [isTopLayer]);
     //const useDismissRef = React.use
     // 5. set @floating-ui
-    const { refs, context, floatingStyles } = useFloating({
+    const { context } = useFloating({
       open,
-      onOpenChange: handler,
+      onOpenChange,
       strategy: "fixed",
       elements: target
         ? {
@@ -536,110 +494,187 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
         : undefined,
     });
 
-    const { getFloatingProps } = useInteractions(
-      [
-        useRole(context),
-        dismiss
-          ? useDismiss(context, {
-              outsidePress,
-              ...dismiss,
-            })
-          : undefined,
-      ].filter(Boolean),
-    );
-
-    const mergedRef = useMergeRefs([ref, refs.floating]);
 
     const classes = useUtilityClasses(ownerState);
-
-    const renderContent: React.ReactNode = useMemo(
-      () => (
-        <DialogRoot
-          {...rest}
-          style={{
-            position: context.strategy,
-            ...rest.style,
-          }}
-          className={clsx(classes.root, className)}
-          ownerState={ownerState}
-          data-ui="Dialog"
-          animate={hasAnimate}
-        >
-          {/* roles are applied via cloneElement from TransitionComponent */}
-          {/* roles needs to be applied on the immediate child of Modal or it'll inject one */}
-          <DialogContainer
-            className={clsx(classes.container)}
-            {...containerProps}
-            ownerState={ownerState}
-            data-ui="DialogContainer"
-          >
-            <DialogPanel
-              {...getFloatingProps({
-                ref: mergedRef,
-                style: {},
-              })}
-              //@ts-ignore
-              as={PanelComponent}
-              elevation={elevation}
-              role="dialog"
-              aria-describedby={ariaDescribedby}
-              aria-labelledby={ariaLabelledbyProp}
-              aria-modal={ariaModal}
-              fill
-              {...panelProps}
-              className={clsx(classes.panel, panelProps.className)}
-              ownerState={ownerState}
-              data-ui="DialogPanel"
-            >
-              <FloatingFocusManager {...focusProps} context={context}>
-                <>{children}</>
-              </FloatingFocusManager>
-            </DialogPanel>
-          </DialogContainer>
-        </DialogRoot>
-      ),
-      [className, classes.container, classes.panel, classes.root, elevation],
-    );
-
-    if (!modal) {
-      return (<MuxFloatingProvider type="dialog" context={context}>
-        <LayerProvider zOffset={theme.zIndex.modal}>
-          {renderContent}
-        </LayerProvider>
-      </MuxFloatingProvider>);
-    }
 
     // 7. return
     return (
       <MuxFloatingProvider type="dialog" context={context}>
-        <LayerProvider zOffset={theme.zIndex.modal}>
-          <Presence present={open}>
-            <FloatingPortal id="mux-portal">
-              <FloatingOverlay
-                className="z-modal overflow-hidden inset-0"
-                lockScroll
-              >
-                {backdropProps && (
-                  <DialogBackdrop
-                    className={backdropClasses}
-                    style={{
-                      position: context.strategy,
-                      ...backdropProps.style,
+        <Presence animate={animate} present={!!open}>
+          {({ present }) => (
+            <DialogPortal
+              portal={!!portal}
+              floatingPortal={!!focusProps}
+              present={present}
+              render={(contentRef: React.ForwardedRef<HTMLDivElement>) => (
+                <DialogRoot
+                  {...rest}
+                  style={{
+                    position: context.strategy,
+                    ...rest.style,
+                  }}
+                  className={clsx(classes.root, className)}
+                  ownerState={ownerState}
+                  data-ui="Dialog"
+                  animate={animate}
+                  zOffset={zOffset}
+                  ref={ref}
+                >
+                  {Overlay && (
+                    <Overlay
+                      area-hidden
+                      data-ui="DialogOverlay"
+                      {...overlayProps}
+                      zIndex={zOffset}
+                      animate={animate}
+                      ownerState={ownerState}
+                    />
+                  )}
+                  <DialogContent
+                    context={context}
+                    focusProps={focusProps as any}
+                    animate={animate}
+                    Content={PanelComponent}
+                    contentProps={{
+                      elevation,
+                      role: "dialog",
+                      "aria-describedby": ariaDescribedby,
+                      "aria-labelledby": ariaLabelledbyProp,
+                      "aria-modal": ariaModal,
+                      fill: true,
+                      ...panelProps,
+                      className: clsx(classes.panel, panelProps.className)
                     }}
-                    data-ui="DialogBackdrop"
-                  />
-                )}
-                {renderContent}
-              </FloatingOverlay>
-            </FloatingPortal>
-          </Presence>
-        </LayerProvider>
+                    containerProps={{
+                      className: classes.container,
+                      ...containerProps,
+                    }}
+                    modal={modal}
+                    dismiss={dismiss}
+                    uiOwnerState={ownerState}
+                    id={id!}   
+                    ref={contentRef} >
+                    {children}
+                  </DialogContent>
+                </DialogRoot>
+              )}
+            />
+          )}
+        </Presence>
       </MuxFloatingProvider>
     );
   },
 );
 
 DialogFc.displayName = "Mux.Dialog";
+
+interface DialogPortalProps {
+  portal?: boolean;
+  floatingPortal?: boolean;
+  present: boolean;
+  render: (ref: React.ForwardedRef<HTMLDivElement>) => React.ReactNode | null;
+}
+const DialogPortal = React.forwardRef<HTMLDivElement, DialogPortalProps>(
+  (props, ref) => {
+    const { present, render, portal, floatingPortal } = props;
+    if (present) {
+      let child = render(ref);
+      if (portal) {
+        child = <Portal floatingPortal={floatingPortal}>{child}</Portal>;
+      }
+      return child;
+    }
+
+    return null;
+  },
+);
+
+interface DialogContentProps  {
+  context: FloatingContext;
+  dismiss?: DismissProps;
+  animate?: boolean;
+  children: React.ReactNode;
+  id: string;
+  focusProps?: Omit<FloatingFocusManagerProps, "context">;
+  onActivate?: (props: { activeElement: HTMLElement | null }) => void;
+  Content?: React.JSXElementConstructor<typeof Panel>;
+  contentProps?: Partial<PanelProps<React.ElementType>>;
+  Overlay?: React.ComponentType<Partial<OverlayProps>>;
+  overlayProps?: Partial<OverlayProps>;
+  modal?: boolean;
+  containerProps: any;
+  uiOwnerState: any;
+}
+
+const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
+  (props, forwardRef) => {
+    const {
+      context,
+      dismiss,
+      animate,
+      children,
+      modal,
+      Content,
+      contentProps,
+      focusProps,
+      containerProps,
+      uiOwnerState,
+      id
+    } = props;
+
+    const layer = useLayer();
+    const { isTopLayer } = layer;
+
+    const outsidePress = React.useCallback(() => isTopLayer, [isTopLayer]);
+
+    const { getFloatingProps } = useInteractions(
+      [
+        useRole(context),
+        useDismiss(context, {
+          enabled: !!dismiss,
+          outsidePress,
+          ...dismiss,
+        }),
+      ].filter(Boolean),
+    );
+
+    const ref = useRefs(forwardRef, context.refs.setFloating as any);
+
+    const finalProps = getFloatingProps({
+      ...(contentProps as any),
+      ownerState: uiOwnerState
+    });
+
+    const child = (
+      <DialogContainer
+        {...containerProps}
+
+        ownerState={uiOwnerState}
+        data-ui="DialogContainer"
+      >
+        <DialogPanel
+          {...finalProps}
+          as={Content as any}
+          animate={animate}
+          data-ui="DialogContent"
+          ref={ref}
+        >
+          {children}
+        </DialogPanel>
+      </DialogContainer>
+    );
+
+    if (!focusProps) {
+      return child;
+    }
+
+    return (
+      <FloatingFocusManager context={context} {...focusProps}>
+        {child}
+      </FloatingFocusManager>
+    );
+  },
+);
 
 export const useDialogContext = useFloatingContext;
 

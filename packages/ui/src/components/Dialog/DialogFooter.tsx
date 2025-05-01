@@ -1,17 +1,9 @@
 import React from "react";
 
-// utils
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
-import { styled, SxComponentProps, StyledComponentOwner } from "../../styles";
+import { styled, SxComponentProps, StyledComponentOwner, clsx } from "../../styles";
 // types
 import type { className, children } from "../../types/components/dialog";
-
-
+import { dialogClasses } from "./types";
 
 export interface DialogFooterProps extends SxComponentProps<"div"> {
   className?: className;
@@ -20,8 +12,7 @@ export interface DialogFooterProps extends SxComponentProps<"div"> {
 }
 
 const DialogFooterRoot = styled('div', {
-  name: 'Footer',
-  slot: 'MuxDialog'
+  name: 'MuxDialogFooter',
 })<SxComponentProps<any>>({
   display: 'flex',
   alignItems: 'center',
@@ -33,19 +24,10 @@ const DialogFooterRoot = styled('div', {
 
 export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
   ({ className, children, divider, ...rest }, ref) => {
-    // 1. init
-    const { dialogFooter } = useTailwindTheme();
-    const {
-      defaultProps,
-      styles: { base },
-    } = dialogFooter;
     
-    // 3. set styles
-    const dialogFooterClasses = twMerge(classnames(objectsToString(base), divider && base.divider), defaultProps.className, className);
-
     // 4. return
     return (
-      <DialogFooterRoot {...rest} ref={ref} className={dialogFooterClasses}>
+      <DialogFooterRoot {...rest} ref={ref} className={clsx(dialogClasses.footer, className) }>
         {children}
       </DialogFooterRoot>
     );

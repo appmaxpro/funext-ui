@@ -1,5 +1,4 @@
 import { DismissProps } from "../generic";
-import type { Transition } from "framer-motion";
 /**
  * This file contains the types and prop-types for Drawer component.
  */
@@ -11,6 +10,5 @@ export type OverlayProps = React.ComponentProps<"div">;
 export type onClose = () => void;
 export type {
   DismissProps,
-  Transition,
 }
 export type OverlayRef = React.Ref<HTMLDivElement>;

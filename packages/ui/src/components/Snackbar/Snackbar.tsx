@@ -1,6 +1,5 @@
 import * as React from 'react';
 import SnackbarContent, { SnackbarContentProps } from './SnackbarContent';
-import { TransitionProps } from '../../../../../ux/src/core/transitions';
 
 import {
   clsx,
@@ -18,14 +17,13 @@ import {
 } from "../../styles";
 import { StandardProps } from "../../props";
 
-import { 
-  Grow, 
-  ClickAwayListener,
-  ClickAwayListenerProps,
-  Slide
-} from '../../..';
+
 import { capitalize } from '../../utils';
 import useSnackbar from './useSnackbar';
+import { ClickAwayListener, ClickAwayListenerProps } from '../../lib/click-away-listener';
+import { TransitionProps } from '../../lib/transitions';
+import { Slide } from '../../lib/transitions/slide';
+import { Grow } from '../../lib/transitions/grow';
 
 export interface SnackbarClasses {
   /** Styles applied to the root element. */
@@ -252,7 +250,7 @@ const SnackbarRoot = styled('div', {
   })),
 );
 
-export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Snackbar(inProps, ref) {
+const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Snackbar(inProps, ref) {
   const props = useMuxDefaultProps({ props: inProps, name: 'MuiSnackbar' });
   const theme = useTheme();
   const defaultTransitionDuration = {
@@ -356,3 +354,4 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
   );
 });
 
+export default Snackbar;

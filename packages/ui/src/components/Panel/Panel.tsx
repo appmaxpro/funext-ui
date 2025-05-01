@@ -1,8 +1,6 @@
 import * as React from 'react';
 
 // context
-import { useTailwindTheme as simpleUseTheme } from "../../theme";
-
 import findMatch from "../../utils/findMatch";
 import objectsToString from "../../utils/objectsToString";
 

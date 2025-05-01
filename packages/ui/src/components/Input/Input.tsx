@@ -369,7 +369,7 @@ export interface TextareaProps
 
 export declare type InputProps = SingleInputProps | TextareaProps;
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       variant,

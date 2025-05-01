@@ -1,17 +1,12 @@
 import React from "react";
 
-// utils
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
-import { styled, type SxComponentProps } from "../../styles";
+import { clsx, styled, type SxComponentProps } from "../../styles";
 // context
-import { useTailwindTheme } from "../../theme";
 
 // types
-import type { className, children } from "../../types/components/dialog";
 import IconButton from "../IconButton";
-import { MaterialIcon } from "../../../icons/material-icon";
+import Close from "../internal/svg-icons/Close";
+import { dialogClasses } from "./types";
 
 export interface DialogHeaderProps extends SxComponentProps<"div"> {
   onClose?: ()=> void;
@@ -21,8 +16,7 @@ export interface DialogHeaderProps extends SxComponentProps<"div"> {
 }
 
 const DialogHeaderRoot = styled('div', {
-  name: 'Header',
-  slot: 'MuxDialog'
+  name: 'MuxDialogHeader',
 })<SxComponentProps<any>>({
   display: 'flex',
   alignItems: 'center',
@@ -33,25 +27,15 @@ const DialogHeaderRoot = styled('div', {
 
 export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
   ({ className, titleClassName, children, onClose, actions, divider, ...rest }, ref) => {
-    // 1. init
-    const { dialogHeader } = useTailwindTheme();
-    const {
-      defaultProps,
-      styles: { base, title },
-    } = dialogHeader;
-
-    // 3. set styles
-    const dialogHeaderClasses = twMerge(classnames(objectsToString(base), divider && base.divider), defaultProps.className, className);
-    const dialogHeaderTitleClasses = twMerge(classnames(objectsToString(title)), titleClassName);
-
+    
     // 4. return
     return (
-      <DialogHeaderRoot {...rest} ref={ref} className={dialogHeaderClasses}>
-        <div className={dialogHeaderTitleClasses}>
+      <DialogHeaderRoot {...rest} ref={ref} className={clsx(dialogClasses.header, className)}>
+        <div className={clsx(dialogClasses.title, className)}>
           {children}
         </div>
         {actions}
-        {onClose && <IconButton onClick={onClose}><MaterialIcon icon="close"/></IconButton>}
+        {onClose && <IconButton onClick={onClose}><Close/></IconButton>}
          
       </DialogHeaderRoot>
     );

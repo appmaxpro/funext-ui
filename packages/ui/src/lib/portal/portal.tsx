@@ -12,7 +12,7 @@ export interface PortalProps {
    */
   __unstable_name?: string;
 
-  floatingPortal?: boolean;
+  floatingPortal?: boolean | string | HTMLElement;
 }
 
 /**
@@ -29,7 +29,10 @@ export function Portal(props: PortalProps): React.ReactPortal | React.ReactNode 
   }
 
   if (floatingPortal) {
-    return (<FloatingPortal root={portalElement}>{children}</FloatingPortal>);
+    const portalRoot = (floatingPortal instanceof HTMLElement ||
+          typeof floatingPortal == 'string') ? floatingPortal : portalElement;
+
+    return (<FloatingPortal root={portalRoot as any}>{children}</FloatingPortal>);
   }
 
   return createPortal(children, portalElement)

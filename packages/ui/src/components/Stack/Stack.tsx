@@ -1,4 +1,4 @@
-import styled from "../../../../../ux/src/core/styled";
+import styled from "@emotion/styled";
 
 export interface StackProps {
   gap?: 0 | 1 | 2 | 3 | 4 | 5;

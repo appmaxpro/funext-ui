@@ -1,5 +1,5 @@
 // @ts-nocheck
-'use client';
+
 import * as React from 'react';
 import resolveProps from '@mui/utils/resolveProps';
 import { 
@@ -19,7 +19,7 @@ import {
   getButtonUtilityClass, 
   buttonClasses,  
   type ButtonProps
-} from './ButtonType';
+} from './types';
 
 import ButtonGroupContext, {ButtonGroupButtonContext} from '../ButtonGroup/ButtonGroupContext';
 import { capitalize } from '../../utils';
@@ -446,5 +446,5 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
 });
 
 Button.displayName = "Mux.Button";
-export * from './ButtonType';
+export * from './types';
 export default Button;

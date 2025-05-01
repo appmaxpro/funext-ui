@@ -89,19 +89,22 @@ const SvgIconRoot = styled("svg", {
 export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
   function SvgIcon(inProps, ref) {
     const props = useMuxDefaultProps({ props: inProps, name: "MuiSvgIcon" });
+    let size = props.fontSize || typeof props.size === 'number' ?  undefined : props.size ?? 'md';
     const {
       children,
       className,
       color = "inherit",
       component = "svg",
-      size = "medium",
+      fontSize = !size && props.size,
       htmlColor,
       inheritViewBox = false,
       titleAccess,
       viewBox = "0 0 24 24",
       ...other
     } = props;
-
+    
+    
+    
     const hasSvgAsChild =
       React.isValidElement(children) && children.type === "svg";
 
@@ -109,8 +112,8 @@ export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
       ...props,
       color,
       component,
+      fontSize,
       size,
-      instanceFontSize: inProps.fontSize,
       inheritViewBox,
       viewBox,
       hasSvgAsChild,
@@ -132,6 +135,7 @@ export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
         color={htmlColor}
         aria-hidden={titleAccess ? undefined : true}
         role={titleAccess ? "img" : undefined}
+        data-ui="Icon"
         ref={ref}
         {...more}
         {...other}
@@ -157,9 +161,9 @@ interface SvgIconOwnerProps extends SxComponentProps<"svg"> {
    * @default 'medium'
    */
   size?: OverridableStringUnion<
-    "inherit" | "lg" | "md" | "sm",
+    "inherit" | "lg" | "md" | "sm" ,
     SvgIconPropsSizeOverrides
-  >;
+  > | number;
   /**
    * Applies a color attribute to the SVG element.
    */

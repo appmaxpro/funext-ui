@@ -4,6 +4,7 @@ import {useRefs} from '../hooks';
 import appendOwnerState from '@mui/utils/appendOwnerState';
 import resolveComponentProps from '@mui/utils/resolveComponentProps';
 import mergeSlotProps from '@mui/utils/mergeSlotProps';
+import { EMPTY_ARRAY } from '../lib/constants';
 
 export type WithCommonProps<T> = T & {
   className?: string;
@@ -58,7 +59,7 @@ export default function useSlot<
     /**
      * The slot's className
      */
-    className: ClassValue | ClassValue[];
+    className?: ClassValue | ClassValue[];
     /**
      * The slot's default styled-component
      */
@@ -100,7 +101,7 @@ export default function useSlot<
   },
 ) {
   const {
-    className,
+    className = EMPTY_ARRAY,
     elementType: initialElementType,
     ownerState,
     externalForwardedProps,

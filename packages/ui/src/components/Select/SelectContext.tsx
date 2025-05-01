@@ -1,8 +1,4 @@
 import React from "react";
-
-// framer-motion
-import { useIsomorphicLayoutEffect } from "framer-motion";
-
 // types
 import type { contextValue, children } from "../../types/components/select";
 

@@ -343,20 +343,19 @@ export interface SwitchProps
   error?: boolean;
 }
 
-export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
+const Switch = React.forwardRef<HTMLElement, SwitchProps>(
   function Switch(inProps, ref) {
     const checkboxId = React.useId();
     const theme = useTheme();
     const props = useMuxDefaultProps({ props: inProps, name: "MuxSwitch" });
-    const { switch: toggle } = useTailwindTheme();
-    const { defaultProps, valid, styles } = toggle;
+   
     
     const {
       className,
       error,
       color: inColor = "primary",
       edge = false,
-      size = defaultProps?.size ?? "md",
+      size =  "md",
       ripple = true,
       label,
       labelPosition,

@@ -21,7 +21,6 @@ import type { AlertProps } from "../Alert";
 import { cn } from "../../utils/cn";
 import findMatch from "../../utils/findMatch";
 import objectsToString from "../../utils/objectsToString";
-import { MaterialIcon, MaterialIconProps } from "../../..";
 // context
 import { useTailwindTheme } from "../../theme";
 import { mapThemeColor } from "../../hooks";
@@ -267,20 +266,13 @@ const AvatarFallback = ({
 }: {
   ownerState: any;
   className?: string;
-  icon: MaterialIconProps["icon"];
+  icon:React.ReactNode;
 }) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
   return (
     <AvatarFallbackRoot ownerState={ownerState} className={className} ref={ref}>
-      <MaterialIcon
-        icon={icon}
-        size={
-          ref.current
-            ? Math.min(ref.current.clientHeight, ref.current.clientWidth)
-            : 20
-        }
-      />
+      {icon}
     </AvatarFallbackRoot>
   );
 };

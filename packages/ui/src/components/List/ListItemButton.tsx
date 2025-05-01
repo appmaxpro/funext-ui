@@ -1,5 +1,4 @@
 import React, { isValidElement, useMemo } from "react";
-import type {ReactNode, ElementType, ComponentType} from "react";
 
 // context
 import { useTailwindTheme } from "../../theme";

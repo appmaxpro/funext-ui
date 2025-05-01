@@ -1,26 +1,26 @@
 import {FocusEvent, forwardRef, useCallback, useEffect, useImperativeHandle, useRef} from 'react'
-import styled from '@emotion/styled'
 import {EMPTY_RECORD} from '../constants'
 import {LayerProvider} from './layerProvider'
 import {useLayer} from './useLayer'
+import { styled, SxComponentProps } from '../../styles'
 
 /**
  * @public
  */
-export interface LayerProps {
-  as?: React.ElementType | keyof React.JSX.IntrinsicElements
+export interface LayerProps extends SxComponentProps {
   /** A callback that fires when the layer becomes the top layer when it was not the top layer before. */
   onActivate?: (props: {activeElement: HTMLElement | null}) => void;
   //zOffset?: number | number[]
   zOffset?: number;
 }
 
-interface LayerChildrenProps {
-  as?: React.ElementType | keyof React.JSX.IntrinsicElements
-  onActivate?: LayerProps['onActivate']
+interface LayerChildrenProps extends Omit<LayerProps, 'zOffset'>{
+
 }
 
-const StyledLayer = styled.div({position: 'relative'})
+const StyledLayer = styled('div')({
+  position: 'relative'
+})
 
 const LayerChildren = forwardRef(function LayerChildren(
   props: LayerChildrenProps & Omit<React.HTMLProps<HTMLDivElement>, 'as'>,

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { BootstrapIcon } from "../../../icons/bootstrap-icon";
 import { Box } from "../Box";
 import { 
   ButtonGroup, 
@@ -15,7 +14,7 @@ import {
   MenuDivider,
   MenuHeader
 } from "../..";
-import { MaterialIcon } from "../../../icons/material-icon";
+import { ChevronDown } from "../internal/svg-icons/chevron";
 
 
 const config = {
@@ -41,7 +40,7 @@ export const Basic = () => {
         ref={setTarget}
         onClick={showMenu}
         variant="outlined"
-        color="green"
+        color="success"
         className="relative"
         >
         Menu
@@ -86,10 +85,10 @@ export const SplitButton = () => {
           onClick={showMenu}
           className="min-w-0 px-2 py-2"
         >
-          <BootstrapIcon icon="caret-down-fill" />
+          <ChevronDown/>
         </Button>
       </ButtonGroup>
-      <Menu target={target} show={show} onHide={hideMenu}>
+      <Menu target={target} open={show} onHide={hideMenu}>
         <MenuItem onClick={hideMenu}>Option 1</MenuItem>
         <MenuItem onClick={hideMenu}>Option 2</MenuItem>
         <MenuItem onClick={hideMenu}>Option 3</MenuItem>

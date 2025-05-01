@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { ButtonGroupProps } from './ButtonGroupType';
+import type { ButtonGroupProps } from './types';
 
 interface ButtonGroupContextType {
   className?: string;

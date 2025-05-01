@@ -1,4 +1,4 @@
-'use client';
+
 import React from "react";
 
 // @floating-ui
@@ -44,12 +44,6 @@ import type {
   ArrowProps
 } from "../../types/components/menu";
 import { isElement } from "../../utils";
-import { usePrevious } from "../../hooks";
-import { 
-  type AnimationProps as MotionAnimationProps,
-  cubicBezier 
-} from "framer-motion"
-import { useFloatingContext } from "../Context";
 import { useSize } from "../../hooks/use-size";
 import { transformOrigin } from "../../lib/helpers/origin";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
@@ -103,8 +97,6 @@ export const Menu = React.forwardRef<
 );
 
 Menu.displayName = "Mux.Menu";
-
-const ease = cubicBezier(0.4, 0, 0.2, 1);
 
 export const MenuCore = React.forwardRef<
   HTMLButtonElement,

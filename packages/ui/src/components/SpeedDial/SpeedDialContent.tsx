@@ -1,9 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
 
-// framer-motion
-import { AnimatePresence, m, LazyMotion, domAnimation } from "framer-motion";
-
 // @floating-ui
 import { 
   useMergeRefs ,
@@ -17,18 +14,26 @@ import { useTailwindTheme } from "../../theme";
 // utils
 import { twMerge } from "tailwind-merge";
 import objectsToString from "../../utils/objectsToString";
+import { styled, StyledComponent, SxComponentProps } from "../../styles";
+import { AnimatedPresence } from "../../lib/presence/presence";
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { slideFadeStyleStyle } from "../internal/animation";
 
-const MotionDiv = m.div;
+const SpeedDialContentRoot = styled('div', {
+    shouldForwardProp: (propName) => propName !== 'animate'
+})(slideFadeStyleStyle) as StyledComponent<SxComponentProps & {animate?: boolean}>
 
-export interface SpeedDialContentProps extends React.ComponentProps<"div"> {}
+export interface SpeedDialContentProps extends SxComponentProps {
+   
+}
 
 export const SpeedDialContent = React.forwardRef<HTMLDivElement, SpeedDialContentProps>(
-  ({ children, className, ...rest }, ref) => {
+  ({ children, className, ...rest}, ref) => {
     // 1. init
     const {
       speedDialContent: { styles },
     } = useTailwindTheme();
-    const { x, y, refs, open, strategy, getFloatingProps, animation, setOpenState } = useSpeedDial();
+    const { x, y, refs, open, strategy, getFloatingProps, setOpenState, ...context } = useSpeedDial();
     const mergedRefs = useMergeRefs([ref, refs.setFloating]);
 
     // 2. set styles
@@ -36,16 +41,10 @@ export const SpeedDialContent = React.forwardRef<HTMLDivElement, SpeedDialConten
      
 
     const childArray = React.Children.toArray(children);
-    const [counter, setCounter] = React.useState(0);
 
-    const onAnimationComplete = () => {
-      setCounter(counter+1);
-      if (counter+1 === childArray.length) {
-        setOpenState(open);
-      }
-    }
+    const prefersReducedMotion = usePrefersReducedMotion();
+    const animate = prefersReducedMotion ? false : context.animate;
 
-    useEffect(()=> setCounter(0), [open]);
 
     const nodeId =  useFloatingParentNodeId();
 
@@ -66,20 +65,18 @@ export const SpeedDialContent = React.forwardRef<HTMLDivElement, SpeedDialConten
         {...getFloatingProps()}
       >
         {React.Children.map(children as any, (child: React.ReactElement, index:number) => (
-          <MotionDiv
+          <AnimatedPresence
             key={`${nodeId}-${index}`}
-            initial="unmount"
-            exit="unmount"
-            animate={open ? "mount" : "unmount"}
-            variants={animation}
-            onAnimationComplete={onAnimationComplete}
+            present={open}
           >
-            {child}
-          </MotionDiv>
+            <SpeedDialContentRoot animate={animate}>
+              {child}
+            </SpeedDialContentRoot>
+          </AnimatedPresence>
         ))}
       </div>
     );
-  },
+  }
 );
 
 

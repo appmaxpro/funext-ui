@@ -10,6 +10,7 @@ import {
   SxThemeProps,
   useMuxDefaultProps,
 } from "../../styles";
+import { BottomNavigationAction } from "./BottomNavigationAction";
 
 export interface BottomNavigationClasses {
   /** Styles applied to the root element. */
@@ -104,7 +105,7 @@ const BottomNavigationRoot = styled('div', {
   })),
 );
 
-export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationProps>(function BottomNavigation(inProps, ref) {
+const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationProps>(function BottomNavigation(inProps, ref) {
   const props = useMuxDefaultProps({ props: inProps, name: 'MuxBottomNavigation' });
   const {
     children,
@@ -161,3 +162,7 @@ export const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationPro
     </BottomNavigationRoot>
   );
 });
+
+Object.assign(BottomNavigation, {Action: BottomNavigationAction})
+
+export default BottomNavigation;

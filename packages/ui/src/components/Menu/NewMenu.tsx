@@ -1,5 +1,5 @@
 "use client";
-import React, { Fragment, useEffect, useMemo, useRef } from "react";
+import React from "react";
 
 // @floating-ui
 import {
@@ -25,14 +25,10 @@ import {
   useMergeRefs,
   autoUpdate,
   arrow as fuArrow,
-  UseFloatingReturn,
-  FloatingTree,
   Strategy,
   FloatingArrow,
   FloatingContext,
   ReferenceType,
-  OpenChangeReason,
-  ElementProps,
   UseInteractionsReturn,
 } from "@floating-ui/react";
 
@@ -41,9 +37,7 @@ import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import objectsToString from "../../utils/objectsToString";
 
-// context
-import { useMenu } from "./MenuContext";
-import { isMenuItemValid, isValidItemType, pickAnimation } from "./utils";
+import { isMenuItemValid } from "./utils";
 
 // types
 import {
@@ -55,11 +49,10 @@ import {
   useTailwindTheme,
 } from "../../styles";
 import Panel, { PanelProps } from "../Panel";
-import List, { ListProps } from "../List";
+import List, { ListItemSuffix, ListProps } from "../List";
 import { useRefs } from "../../hooks";
-import { Box } from "../Box";
 import { Presence } from "../../lib/presence";
-import { scaleFadeMenu } from "./animate";
+import { scaleFadeStyle } from "../internal/animation";
 import { Portal } from "../../lib/portal";
 
 import { MenuContextProvider } from "./MenuContext";
@@ -79,6 +72,10 @@ import type {
 } from "../../types/components/menu";
 import deepmerge from "../../utils/deepmerge";
 import { isRecord } from "../../lib/isRecord";
+import { ChevronLeft, ChevronRight } from "../internal/svg-icons/chevron";
+import { Layer } from "../../lib/layer";
+
+const dismissBubbles = { bubbles: true };
 
 const PanelRoot = styled(Panel, {
   name: "MuxMenu",
@@ -95,7 +92,7 @@ const PanelRoot = styled(Panel, {
     borderRadius: 6,
     maxHeight: "var(--popper-available-height)",
   }),
-  scaleFadeMenu,
+  scaleFadeStyle,
 ) as StyledComponent<any>;
 
 const Arrow = styled(FloatingArrow)(({ theme }) => ({
@@ -123,7 +120,6 @@ export interface MenuProps<T = HTMLElement | null> extends ListProps {
   animate?: boolean;
   lockScroll?: boolean;
   children: React.ReactNode;
-  allowHover?: boolean;
   arrow?: ArrowProps | boolean;
   reference?: React.MutableRefObject<T> | T | null;
   trigger?: React.ReactNode | false;
@@ -131,27 +127,20 @@ export interface MenuProps<T = HTMLElement | null> extends ListProps {
   portal?: boolean;
   strategy?: Strategy;
   panelProps?: Omit<PanelProps, "children">;
+  listProps?: Omit<ListProps, "children">;
 }
 
-export interface MenuListProps extends ListProps {
-  dismissible?: boolean;
-  panelClassName?: string;
-  nav?: boolean;
-  children?: React.ReactNode;
-  panelProps?: Omit<PanelProps, "children">;
-}
-
-export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
+export const Menu = React.forwardRef<HTMLButtonElement, MenuProps>(
   (
     {
       open,
       handler,
       placement,
       offset,
-      dismiss = { bubbles: true },
-      animate,
+      dismiss = dismissBubbles,
+      animate: animateProps,
       lockScroll,
-      arrow = false,
+      arrow:arrowProps = false,
       reference,
       strategy: strategyProp = "fixed",
       nav = true,
@@ -159,6 +148,7 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
       children,
       className,
       panelProps,
+      listProps,
       trigger,
       ...rest
     },
@@ -168,10 +158,12 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
     const { menu } = useTailwindTheme();
     const { defaultProps, styles } = menu;
     const [internalOpen, setInternalOpen] = React.useState(false);
+    const [hasFocusInside, setHasFocusInside] = React.useState(false);
+
 
     const arrowRef = React.useRef<any>(null);
     const prefersReducedMotion = usePrefersReducedMotion();
-    const enableAnimate = prefersReducedMotion ? false : !!animate;
+    const animate = prefersReducedMotion ? false : animateProps ?? defaultProps.animate;
 
     // 2. set default props
     open = open ?? internalOpen;
@@ -179,29 +171,29 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
     //placement = placement ?? defaultProps.placement;
     offset = offset ?? defaultProps.offset;
     dismiss = dismiss ?? defaultProps.dismiss;
-    animate = animate ?? defaultProps.animate;
     lockScroll = lockScroll ?? defaultProps.lockScroll;
 
-    const hasArrowProps = isRecord(arrow);
-
-    let arrowProps = hasArrowProps ? arrow : arrow ? defaultProps.arrow : null;
+    const arrow = isRecord(arrowProps)
+                 ? arrowProps 
+                 : arrowProps === true 
+                 ? defaultProps.arrow 
+                 : undefined;
 
     // 4. set @floating-ui
     const [allowHover, setAllowHover] = React.useState(false);
     //const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
-    
+
     const arrowSize = useSize(arrowRef.current);
     const arrowWidth = arrowSize?.width ?? 0;
     const arrowHeight = arrowSize?.height ?? 0;
 
-    const tree = useFloatingTree();
     const nodeId = useFloatingNodeId();
     const parentId = useFloatingParentNodeId();
     const rtl = useRtl();
     const nested = parentId != null;
     placement =
       placement ?? (nested ? (rtl ? "left-start" : "right-start") : "bottom");
-    const { strategy, refs, context } = useFloating<HTMLButtonElement>({
+    const { refs, context } = useFloating<HTMLButtonElement>({
       open,
       nodeId,
       placement: placement,
@@ -211,13 +203,13 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
         fuiOffset(offset),
         flip(),
         shift(),
-        arrowProps &&
+        arrow &&
           !nested &&
           fuArrow({
             element: arrowRef,
-            padding: arrowProps?.padding ?? 5,
+            padding: arrow.padding ?? 5,
           }),
-        enableAnimate && transformOrigin({ arrowWidth, arrowHeight }),
+        animate && transformOrigin({ arrowWidth, arrowHeight }),
         size({
           apply: ({ elements, rects, availableWidth, availableHeight }) => {
             const { width: anchorWidth, height: anchorHeight } =
@@ -267,9 +259,9 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
         }),
         useRole(context, { role: "menu" }),
         useDismiss(context, dismiss),
-       
       ]);
-    //const referenceRef = useMergeRefs([refs.setReference, ref]);
+
+    const referenceRef = useMergeRefs([refs.setReference, ref]);
 
     const contextValue = React.useMemo(
       () => ({
@@ -279,22 +271,17 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
         //activeIndex,
         //setActiveIndex,
       }),
-      [context, allowHover, nested, /*activeIndex, setActiveIndex*/],
+      [context, allowHover, nested /*activeIndex, setActiveIndex*/],
     );
-
-    const middlewareData = context.middlewareData;
 
     //m(Panel);
     const [initialized, setInitialized] = React.useState(false);
 
-    let childs = React.Children.toArray(children);
+    let menuChildren = React.Children.toArray(children);
 
     if (trigger != false) {
-      trigger ??= childs.shift();
+      trigger ??= menuChildren.shift();
     }
-
-    // 4. set refs
-    const mergedRef = useRefs(ref, refs.setFloating);
 
     React.useEffect(() => {
       if (open && !initialized) {
@@ -307,123 +294,35 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
       return null;
     }
 
-    const { floatingStyles } = context;
-
     // 6. menu component.
 
     const render = (ref: any) => {
       // 2. set default props
       className = className ?? menu.defaultProps.className;
 
-      if (arrowProps) {
-        arrowProps = deepmerge(
-          defaultProps.arrow ?? styles.base.defaultArrow,
-          arrowProps ?? {},
-        );
-      }
-
-      const items = (
-        <ListItems
+      return (
+        <MenuList
+          {...listProps}
           context={context}
           dismiss={dismiss}
           nav={nav}
-          children={childs}
+          children={menuChildren}
           setAllowHover={setAllowHover}
           allowHover={allowHover}
           getFloatingProps={getFloatingProps}
           getItemProps={getItemProps}
+          arrow={arrow}
+          arrowRef={arrowRef}
+          lockScroll={lockScroll}
+          panelProps={panelProps}
+          ref={ref}
         />
       );
-
-      const child = !nav ? (
-        <MenuListRoot
-          className={className}
-          role="menu"
-          data-ui="MenuList"
-          {...rest}
-        >
-          {items}
-        </MenuListRoot>
-      ) : (
-        <FloatingFocusManager
-          context={context}
-          modal={lockScroll && !nested}
-          initialFocus={nested ? -1 : 0}
-          returnFocus={!nested}
-          visuallyHiddenDismiss
-        >
-          <MenuListRoot
-            className={className}
-            role="menu"
-            data-ui="MenuList"
-            {...rest}
-          >
-            {items}
-          </MenuListRoot>
-        </FloatingFocusManager>
-      );
-      const menuComponent = (
-        <div
-          data-state={open ? "open" : "close"}
-          data-ui="Menu"
-          ref={ref}
-          {...getFloatingProps({
-            onKeyDown(event) {
-              if (event.key === "Tab" && !nav) {
-                handler?.(false);
-                if (event.shiftKey) {
-                  event.preventDefault();
-                }
-              }
-            },
-            style: {
-              position: strategy,
-              ...floatingStyles,
-              transform: context.isPositioned
-                ? floatingStyles.transform
-                : "translate(0, -200%)", // keep off the page when measuring
-              minWidth: "max-content",
-              ["--popper-transform-origin" as any]: [
-                middlewareData.transformOrigin?.x,
-                middlewareData.transformOrigin?.y,
-              ].join(" "),
-
-              // hide the content if using the hide middleware and should be hidden
-              // set visibility to hidden and disable pointer events so the UI behaves
-              // as if the PopperContent isn't there at all
-              ...(middlewareData.hide?.referenceHidden && {
-                visibility: "hidden",
-                pointerEvents: "none",
-              }),
-            },
-          })}
-        >
-          <PanelRoot
-            variant="outlined"
-            data-state={open ? "open" : "close"}
-            data-ui="MenuListPanel"
-            animate={enableAnimate}
-            {...panelProps}
-            ref={mergedRef}
-          >
-            {child}
-          </PanelRoot>
-          {middlewareData.arrow && isRecord(arrowProps) && (
-            <Arrow
-              {...(arrowProps as any)?.props}
-              ref={arrowRef as any}
-              context={context}
-              data-state={open ? "open" : "close"}
-              data-ui="MenuArrow"
-            />
-          )}
-        </div>
-      );
-      return menuComponent;
     };
 
     const triggerProps = (trigger as any)?.props;
-
+    const endIcon =  triggerProps?.endIcon  ;
+    const ChevronIcon = rtl ? ChevronLeft : ChevronRight;
     // 5. return
     return (
       <MenuContextProvider value={contextValue as any}>
@@ -433,30 +332,35 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
               trigger as any,
               getReferenceProps({
                 ...triggerProps,
+                ref: referenceRef,
                 onFocus(event) {
                   triggerProps.onFocus?.(event);
-                  //setHasFocusInside(false);
+                  setHasFocusInside(false);
                 },
                 onClick(event) {
                   event.stopPropagation();
                 },
+                'data-open':open ? 'open' : undefined,
+                'data-nested':open && nested ? (hasFocusInside ? 'focus': 'open') : undefined,
                 ...(nested && {
                   // Indicates this is a nested <Menu /> acting as a <MenuItem />.
                   role: "menuitem",
                 }),
+                endIcon: endIcon ?? (nested && 
+                  <ListItemSuffix aria-hidden>
+                      <ChevronIcon className={`transition-transform ${open ? "rotate-90" : ""}`}/>
+                  </ListItemSuffix>
+                ),
               }),
             )}
-          <Presence present={open}>
+          <Presence animate={animate} present={open}>
             {({ present }) => (
-              <FloatingList
-                context={context}
+              <MenuPortal
                 present={present}
-                lockScroll={lockScroll}
-                arrowProps={arrowProps}
+                lockScroll={lockScroll && !nested}
                 portal={portal}
-                nested={nested}
                 render={render}
-                ref={mergedRef}
+                ref={refs.setFloating}
               />
             )}
           </Presence>
@@ -466,26 +370,21 @@ export const MenuCore = React.forwardRef<HTMLButtonElement, MenuProps>(
   },
 );
 
-interface FloatingListProps {
-  context: FloatingContext<ReferenceType>;
+interface MenuPortalProps {
   lockScroll?: boolean;
-  arrowProps?: ArrowProps;
-  nested: boolean;
   portal: boolean;
   present: boolean;
   render: (ref: React.ForwardedRef<HTMLElement>) => React.ReactNode | null;
 }
-const FloatingList = React.forwardRef<HTMLElement, FloatingListProps>(
+const MenuPortal = React.forwardRef<HTMLElement, MenuPortalProps>(
   (props, ref) => {
-    const { context, lockScroll, arrowProps, present, render, portal, nested } =
-      props;
-    const OverlayComp = lockScroll && !nested ? FloatingOverlay : null;
+    const { lockScroll, present, render, portal } = props;
     if (present) {
       let child = render(ref);
       if (portal) {
         child = (
           <Portal floatingPortal>
-            {OverlayComp && <OverlayComp lockScroll />}
+            {lockScroll && <FloatingOverlay lockScroll />}
             {child}
           </Portal>
         );
@@ -497,7 +396,11 @@ const FloatingList = React.forwardRef<HTMLElement, FloatingListProps>(
   },
 );
 
-interface ListItemsProps {
+const StyledLayer = styled(Layer, {
+  shouldForwardProp: (propName) => propName !== "animate"
+})("");
+
+interface MenuListProps extends ListProps {
   context: FloatingContext<ReferenceType>;
   nav?: boolean;
   children: React.ReactNode;
@@ -506,190 +409,262 @@ interface ListItemsProps {
   allowHover: boolean;
   getFloatingProps?: UseInteractionsReturn["getFloatingProps"];
   getItemProps?: UseInteractionsReturn["getItemProps"];
+  lockScroll?: boolean;
+  arrow?: ArrowProps;
+  arrowRef: any;
+  panelProps?: Omit<PanelProps, "children">;
+  animate?: boolean;
 }
 
-const ListItems = React.forwardRef<HTMLElement, ListItemsProps>(
-  (props, ref) => {
-    const {
-      context,
-      nav,
-      dismiss,
-      setAllowHover,
-      allowHover,
-      getFloatingProps:menuFloatingProps,
-      getItemProps:menuItemProps,
-      children,
-    } = props;
-    const tree = useFloatingTree();
-    const nodeId = useFloatingNodeId();
-    const parentId = useFloatingParentNodeId();
-    const rtl = useRtl();
-    const nested = parentId != null;
+const MenuList = React.forwardRef<HTMLElement, MenuListProps>((props, ref) => {
+  const {
+    context,
+    nav,
+    dismiss,
+    setAllowHover,
+    allowHover,
+    getFloatingProps: menuFloatingProps,
+    getItemProps: menuItemProps,
+    children,
+    className,
+    arrow,
+    lockScroll,
+    arrowRef,
+    panelProps,
+    animate,
+    ...rest
+  } = props;
+  const tree = useFloatingTree();
+  const nodeId = useFloatingNodeId();
+  const parentId = useFloatingParentNodeId();
+  const rtl = useRtl();
+  const nested = parentId != null;
 
-    const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
-    const listItemsRef = React.useRef<Array<HTMLButtonElement | HTMLElement | null>>([]);
-    const listContentRef = React.useRef(
-      React.Children.map(children, (child) =>
-        React.isValidElement(child) ? child.props.label : null,
-      ) as Array<string | null>,
-    );
+  const { open, middlewareData, refs, floatingStyles } = context;
 
-    const { getFloatingProps, getItemProps } = useInteractions([
-      //useRole(context, { role: "menu" }),
-      nav
-        ? useListNavigation(context, {
-            listRef: listItemsRef,
-            activeIndex,
-            nested,
-            onNavigate: setActiveIndex,
-            rtl,
-          })
-        : undefined,
-      nav
-        ? useTypeahead(context, {
-            listRef: listContentRef,
-            onMatch: setActiveIndex,
-            activeIndex,
-          })
-        : undefined,
-    ]);
+  const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
+  const listItemsRef = React.useRef<
+    Array<HTMLButtonElement | HTMLElement | null>
+  >([]);
+  const listContentRef = React.useRef(
+    React.Children.map(children, (child) =>
+      React.isValidElement(child) ? child.props.label : null,
+    ) as Array<string | null>,
+  );
 
-    const floatingPropsClb = React.useCallback(
-      (userProps?: React.HTMLProps<HTMLElement>) => {
-        return {
-          ...menuFloatingProps?.(userProps),
-          ...getFloatingProps(userProps)
-        }
-      },
-      [menuFloatingProps, getFloatingProps],
-    );
+  const { getFloatingProps, getItemProps } = useInteractions([
+    //useRole(context, { role: "menu" }),
+    nav
+      ? useListNavigation(context, {
+          listRef: listItemsRef,
+          activeIndex,
+          nested,
+          onNavigate: setActiveIndex,
+          rtl,
+        })
+      : undefined,
+    nav
+      ? useTypeahead(context, {
+          listRef: listContentRef,
+          onMatch: setActiveIndex,
+          activeIndex,
+        })
+      : undefined,
 
-    const itemPropsClb = React.useCallback(
-      (userProps?: React.HTMLProps<HTMLElement>) => {
-        return {
-          ...menuItemProps?.(userProps),
-          ...getItemProps(userProps)
-        }
-      },
-      [menuItemProps, getItemProps],
-    );
+    {
+      floating: menuFloatingProps?.({} as React.HTMLProps<HTMLElement>),
+      item: menuItemProps?.({} as React.HTMLProps<HTMLElement>),
+    },
+  ]);
 
-    React.useEffect(() => {
-      function handleTreeClick(event: Event) {
-        if (dismiss?.itemPress) context.onOpenChange(false, event);
+  React.useEffect(() => {
+    function handleTreeClick(event: Event) {
+      if (dismiss?.itemPress) context.onOpenChange(false, event);
+    }
+
+    function onSubMenuOpen(
+      event: { nodeId: string; parentId: string } & Event,
+    ) {
+      if (event.nodeId !== nodeId && event.parentId === parentId) {
+        context.onOpenChange(false, event);
       }
+    }
 
-      function onSubMenuOpen(
-        event: { nodeId: string; parentId: string } & Event,
-      ) {
-        if (event.nodeId !== nodeId && event.parentId === parentId) {
-          context.onOpenChange(false, event);
-        }
+    tree?.events.on("click", handleTreeClick);
+    tree?.events.on("menuopen", onSubMenuOpen);
+
+    return () => {
+      tree?.events.off("click", handleTreeClick);
+      tree?.events.off("menuopen", onSubMenuOpen);
+    };
+  }, [tree, nodeId, parentId, dismiss]);
+
+  React.useEffect(() => {
+    tree?.events.emit("menuopen", {
+      parentId,
+      nodeId,
+    });
+  }, [tree, open, nodeId, parentId]);
+
+  // Determine if "hover" logic can run based on the modality of input. This
+  // prevents unwanted focus synchronization as menus open and close with
+  // keyboard navigation and the cursor is resting on the menu.
+  React.useEffect(() => {
+    function onPointerMove({ pointerType }: PointerEvent) {
+      if (pointerType !== "touch") {
+        setAllowHover(true);
       }
+    }
 
-      tree?.events.on("click", handleTreeClick);
-      tree?.events.on("menuopen", onSubMenuOpen);
+    function onKeyDown() {
+      setAllowHover(false);
+    }
 
-      return () => {
-        tree?.events.off("click", handleTreeClick);
-        tree?.events.off("menuopen", onSubMenuOpen);
-      };
-    }, [tree, nodeId, parentId, dismiss]);
+    window.addEventListener("pointermove", onPointerMove, {
+      once: true,
+      capture: true,
+    });
 
-    React.useEffect(() => {
-      tree?.events.emit("menuopen", {
-        parentId,
-        nodeId,
-      });
-    }, [tree, open, nodeId, parentId]);
-
-    // Determine if "hover" logic can run based on the modality of input. This
-    // prevents unwanted focus synchronization as menus open and close with
-    // keyboard navigation and the cursor is resting on the menu.
-    React.useEffect(() => {
-      function onPointerMove({ pointerType }: PointerEvent) {
-        if (pointerType !== "touch") {
-          setAllowHover(true);
-        }
-      }
-
-      function onKeyDown() {
-        setAllowHover(false);
-      }
-
-      window.addEventListener("pointermove", onPointerMove, {
-        once: true,
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove, {
         capture: true,
       });
 
-      window.addEventListener("keydown", onKeyDown, true);
-      return () => {
-        window.removeEventListener("pointermove", onPointerMove, {
-          capture: true,
-        });
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [setAllowHover]);
 
-        window.removeEventListener("keydown", onKeyDown, true);
-      };
-    }, [setAllowHover]);
+  const mergedRef = useRefs(ref, refs.setFloating);
 
-    const items = !nav
-      ? children
-      : React.Children.map(
-          children,
-          (child: any, index) =>
-            React.isValidElement(child) &&
-            (!isMenuItemValid(child)
-              ? React.cloneElement(child, {
-                  "aria-disabled": "true",
-                  className: clsx(
-                    (child.props as any).className,
-                    "item-disabled",
-                  ),
-                  ref(node: HTMLElement) {
-                    listItemsRef.current[index] = null;
+  const items = !nav
+    ? children
+    : React.Children.map(
+        children,
+        (child: any, index) =>
+          React.isValidElement(child) &&
+          (!isMenuItemValid(child)
+            ? React.cloneElement(child, {
+                "aria-disabled": "true",
+                className: clsx(
+                  (child.props as any).className,
+                  "item-disabled",
+                ),
+                ref(node: HTMLElement) {
+                  listItemsRef.current[index] = null;
+                },
+              } as any)
+            : React.cloneElement(child, {
+                //@ts-ignore
+                "area-active": activeIndex === index ? "true" : undefined,
+                ...getItemProps({
+                  tabIndex: activeIndex === index ? 0 : -1,
+                  role: "menuitem",
+                  ref(node: HTMLButtonElement) {
+                    listItemsRef.current[index] = node;
                   },
-                } as any)
-              : React.cloneElement(child, {
-                  //@ts-ignore
-                  "area-active": activeIndex === index ? "true" : undefined,
-                  ...getItemProps({
-                    tabIndex: activeIndex === index ? 0 : -1,
-                    role: "menuitem",
-                    className: (child.props as any).className,
-                    ref(node: HTMLButtonElement) {
-                      listItemsRef.current[index] = node;
-                    },
-                    onClick(event) {
-                      (child.props as any).onClick?.(event);
-                      tree?.events.emit("click");
-                    },
-                    onMouseEnter() {
-                      if (allowHover && context.open) {
-                        setActiveIndex(index);
-                      }
-                    },
-                    onFocus(event) {
-                      (child.props as any).onFocus?.(event);
-                      //setHasFocusInside(true);
-                    },
-                  }),
-                })),
-        );
+                  onClick(event) {
+                    (child.props as any).onClick?.(event);
+                    tree?.events.emit("click");
+                  },
+                  onMouseEnter() {
+                    if (allowHover) {
+                      setActiveIndex(index);
+                    }
+                  },
+                  onFocus(event) {
+                    (child.props as any).onFocus?.(event);
+                    //setHasFocusInside(true);
+                  },
+                }),
+              })),
+      );
 
-    return items;
-  },
-);
+  const child = !nav ? (
+    <MenuListRoot
+      className={className}
+      role="menu"
+      data-ui="MenuList"
+      {...rest}
+    >
+      {items}
+    </MenuListRoot>
+  ) : (
+    <FloatingFocusManager
+      context={context}
+      modal={lockScroll && !nested}
+      initialFocus={nested ? -1 : 0}
+      returnFocus={!nested}
+      visuallyHiddenDismiss
+    >
+      <MenuListRoot
+        className={className}
+        role="menu"
+        data-ui="MenuList"
+        {...rest}
+      >
+        {items}
+      </MenuListRoot>
+    </FloatingFocusManager>
+  );
+  const menuComponent = (
+    <div
+      data-state={open ? "open" : "close"}
+      data-ui="Menu"
+      ref={mergedRef as any}
+      {...getFloatingProps({
+        onKeyDown(event) {
+          if (event.key === "Tab" && !nav) {
+            context.onOpenChange(false, event as unknown as Event);
+            if (event.shiftKey) {
+              event.preventDefault();
+            }
+          }
+        },
+        style: {
+          ...floatingStyles,
+          transform: context.isPositioned
+            ? floatingStyles.transform
+            : "translate(0, -200%)", // keep off the page when measuring
+          minWidth: "max-content",
+          ["--popper-transform-origin" as any]: [
+            middlewareData.transformOrigin?.x,
+            middlewareData.transformOrigin?.y,
+          ].join(" "),
 
-export interface MenuTriggerProps extends React.ComponentProps<any> {
-  getReferenceProps: (
-    userProps?: React.HTMLProps<Element>,
-  ) => Record<string, unknown>;
-}
+          // hide the content if using the hide middleware and should be hidden
+          // set visibility to hidden and disable pointer events so the UI behaves
+          // as if the PopperContent isn't there at all
+          ...(middlewareData.hide?.referenceHidden && {
+            visibility: "hidden",
+            pointerEvents: "none",
+          }),
+        },
+      })}
+    >
+      <PanelRoot
+        variant="outlined"
+        data-state={open ? "open" : "close"}
+        data-ui="MenuListPanel"
+        animate={animate}
+        fill
+        {...panelProps}
+      >
+        {child}
+      </PanelRoot>
+      {arrow && (
+        <Arrow
+          {...(arrow as any)?.props}
+          ref={arrowRef as any}
+          context={context}
+          data-state={open ? "open" : "close"}
+          data-ui="MenuArrow"
+        />
+      )}
+    </div>
+  );
 
-export const MenuTrigger = React.forwardRef<HTMLElement, MenuTriggerProps>(
-  ({ children, getReferenceProps, ...rest }, ref) => {
-    const tree = useFloatingTree();
+  return menuComponent;
+});
 
-    return null;
-  },
-);
+

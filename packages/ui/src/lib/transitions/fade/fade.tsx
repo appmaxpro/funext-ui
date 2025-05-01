@@ -1,14 +1,14 @@
 'use client'
 import { cloneElement, forwardRef, isValidElement } from "react";
 import { Transition } from "react-transition-group";
-import { useForwardedRef } from "../hooks";
-import { TransitionProps } from "../transitions/types";
+import { useForwardedRef } from "../../../hooks";
+import { TransitionProps } from "../types";
 import {
   getTransition,
   getTransitionProps,
   getTransitionStyle,
   reflow,
-} from "../transitions/utils";
+} from "../utils";
 
 export interface FadeProps extends TransitionProps {}
 

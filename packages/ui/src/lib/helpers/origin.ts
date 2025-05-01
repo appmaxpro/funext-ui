@@ -61,7 +61,7 @@ export const transformOrigin = (options: {
     const arrowWidth = isArrowHidden ? 0 : options.arrowWidth;
     const arrowHeight = isArrowHidden ? 0 : options.arrowHeight;
 
-    const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
+    const [placedSide, placedAlign] = getPlacementSides(placement);
     const noArrowAlign = { start: "0%", center: "50%", end: "100%" }[
       placedAlign
     ];
@@ -89,7 +89,7 @@ export const transformOrigin = (options: {
   },
 });
 
-function getSideAndAlignFromPlacement(placement: Placement) {
+export function getPlacementSides(placement: Placement) {
   const [side, align = "center"] = placement.split("-");
   return [side as Side, align as Alignment] as const;
 }
