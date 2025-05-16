@@ -189,7 +189,7 @@ export const CardFc = React.forwardRef<HTMLDivElement, CardProps>(
   },
 );
 
-const Card =  Object.assign(CardFc, {
+export const Card =  Object.assign(CardFc, {
   Header: CardHeader,
   Body: CardBody,
   Content: CardBody,

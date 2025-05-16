@@ -1,5 +1,5 @@
 // types
-import type { ItemInteractive } from "../../../types/components/list";
+import type { ItemInteractive } from "../List";
 
 
 
@@ -30,8 +30,8 @@ export interface ListStylesType {
         dense?: string;
         divider?: string;
       };
-      itemPrefix?: object;
-      itemSuffix?: object;
+      itemPrefix?: string;
+      itemSuffix?: string;
     };
   };
 }
@@ -44,18 +44,9 @@ export const list: ListStylesType = {
   },
   styles: {
     base: {
-      list: {
-        display: "flex",
-        flexDirection: "flex-col",
-        //gap: "gap-1",
-        minWidth: "min-w-[160px]",
-        //padding: "py-2",
-        
-      },
+      list: undefined,
       divider: 'divider-y',
       navList: {
-        display: "flex",
-        flexDirection: "flex-col",
         flex: 'flex-1'
       },
       item: {
@@ -74,7 +65,7 @@ export const list: ListStylesType = {
         },
         disabled: {
           opacity: "opacity-50",
-          cursor: "cursor-not-allowed",
+          //cursor: "cursor-not-allowed",
           pointerEvents: "pointer-events-none",
           userSelect: "select-none",
           colorClass: "text-tertiary-disabled",
@@ -83,16 +74,7 @@ export const list: ListStylesType = {
         dense: 'py-1',
         divider: 'border-b'
       },
-      itemPrefix: {
-        display: "flex",
-        placeItems: "items-center justify-center",
-        marginRight: "me-4",
-      },
-      itemSuffix: {
-        display: "flex",
-        placeItems: "items-center justify-center",
-        marginRight: "ms-auto",
-      },
+      
     },
   },
 };

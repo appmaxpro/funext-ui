@@ -11,12 +11,9 @@ import {
 } from '../../styles';
 
 export const itemStyle = memoTheme(({ theme }:{theme:Theme}) => ({
-  display: "flex",
-  alignItems: "center",
   justifyContent: "start",
   width: "100%",
   textAlign: "justify",
-  padding: 2,
   '&[data-gutters]': {
     paddingLeft: 4,
     paddingRight: 4
@@ -27,13 +24,12 @@ export const itemStyle = memoTheme(({ theme }:{theme:Theme}) => ({
   },
   '&[data-divider]': {
     borderBottomWidth: 1,
-    borderColor: 'currentcolor'
   }
 
 }));
 
 export const iconStyle = memoTheme(({ theme }:{theme:Theme}) => ({
-  display: "flex",
+  display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
 }));

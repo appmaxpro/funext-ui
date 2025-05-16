@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#E5130F" />
+    <meta name="description" content="FMS Owner App" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" sizes="180x180" />
+    <title>Owner App</title>
+    <style>
+      .loader {
+        position: fixed; top: calc(50% - 25px); left: calc(50% - 25px);
+        width: 50px; aspect-ratio: 1; box-sizing: content-box; animation: ll 1s infinite linear;
+        border-radius: 50%; border: 8px solid lightgray; border-right-color: black;
+      }
+      @keyframes ll {to{transform: rotate(1turn)}}
+    </style>
+    <script>
+      // Required by some npm packages
+      window.process = { browser: true, env: { ENVIRONMENT: 'BROWSER'} };
+  </script>
+  </head>
+  <body>
+    <noscript>Enable JavaScript to use <a href="https://www.otexpos.com/">Owner App System</a>.</noscript>
+    <div id="root">
+      <div class="loader"></div>
+    </div>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

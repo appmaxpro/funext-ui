@@ -8,7 +8,7 @@ import {
   styled,
   useMuxDefaultProps,
 } from "../../styles";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 import Ripple from "./Ripple";
 import { useTimeout } from "../../hooks";
 import { TransitionGroup } from "react-transition-group";

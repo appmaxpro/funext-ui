@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Breakpoint, Breakpoints, SxThemeProps, Theme } from "../../styles";
 import { SystemProps } from "@mui/system";
-import { OverrideProps } from "../../props";
+import { OverrideProps } from "../../theme/tw/props";
 
 type ResponsiveStyleValue<T> =
   | T

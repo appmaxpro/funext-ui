@@ -10,7 +10,7 @@ import {
   useMuxDefaultProps,
 } from "../../styles";
 import { capitalize } from "../../utils";
-import { OverridableStringUnion } from "../../props";
+import { OverridableStringUnion } from "../../theme/tw/props";
 
 const svgIconClasses = generateUtilityClasses("MuiSvgIcon", ["root"]);
 
@@ -47,7 +47,7 @@ const SvgIconRoot = styled("svg", {
     }),
     variants: [
       {
-        props: (props:any) => !props.hasSvgAsChild,
+        props: (props:any) => !props.hasSvgAsChild && !props.fill,
         style: {
           // the <svg> will define the property that has `currentColor`
           // for example heroicons uses fill="none" and stroke="currentColor"
@@ -89,22 +89,24 @@ const SvgIconRoot = styled("svg", {
 export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
   function SvgIcon(inProps, ref) {
     const props = useMuxDefaultProps({ props: inProps, name: "MuiSvgIcon" });
-    let size = props.fontSize || typeof props.size === 'number' ?  undefined : props.size ?? 'md';
+    let fs = typeof props.size === 'number' ?  props.size : undefined;
     const {
       children,
       className,
       color = "inherit",
       component = "svg",
-      fontSize = !size && props.size,
+      fontSize = fs,
       htmlColor,
       inheritViewBox = false,
       titleAccess,
       viewBox = "0 0 24 24",
+      size: sizeProps,
       ...other
     } = props;
     
     
-    
+    const size = fs ? undefined : sizeProps ?? 'md';
+
     const hasSvgAsChild =
       React.isValidElement(children) && children.type === "svg";
 
@@ -140,6 +142,7 @@ export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
         {...more}
         {...other}
         {...(hasSvgAsChild && children.props)}
+        fontSize={fontSize}
         ownerState={ownerState}
       >
         {hasSvgAsChild ? children.props.children : children}
@@ -211,6 +214,37 @@ export function createSvgIcon(
   function Component(props: SvgIconProps, ref: any) {
     return (
       <SvgIcon data-ui="Icon" data-testid={`${displayName}Icon`} ref={ref} {...props}>
+        {path}
+      </SvgIcon>
+    );
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    // Need to set `displayName` on the inner component for React.memo.
+    // React prior to 16.14 ignores `displayName` on the wrapper.
+    Component.displayName = `${displayName}Icon`;
+  }
+
+  (Component as any).muiName = (SvgIcon as any).muiName;
+
+  return React.memo(React.forwardRef(Component)) as typeof SvgIcon;
+}
+
+export function createRoundedSvgIcon(
+  path: React.ReactNode,
+  displayName: string,
+): typeof SvgIcon {
+  function Component(props: SvgIconProps, ref: any) {
+    return (
+      <SvgIcon data-ui="Icon" data-testid={`${displayName}Icon`} 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        
+        {...props}
+        ref={ref} >
         {path}
       </SvgIcon>
     );

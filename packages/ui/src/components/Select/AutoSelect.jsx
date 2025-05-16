@@ -20,6 +20,7 @@ import {
   ThemeProvider,
   memoTheme,
   useTailwindTheme,
+  twx
 } from "../../styles";
 import autoSelectClasses, {
   getAutoSelectUtilityClass,
@@ -284,7 +285,7 @@ const AutoSelectListbox = styled("ul", {
             },
             [`&.${autoSelectClasses.focused}`]: {
               //backgroundColor: (theme.vars || theme).palette.action.hover,
-              backgroundColor: "rgb(var(--tw-primary-rgb) / 30%)",
+              backgroundColor: "rgb(var(--primary) / 30%)",
               // Reset on touch devices, it doesn't add specificity
               "@media (hover: none)": {
                 backgroundColor: "transparent",
@@ -296,7 +297,7 @@ const AutoSelectListbox = styled("ul", {
             },
             [`&.${autoSelectClasses.focusVisible}`]: {
               //backgroundColor: (theme.vars || theme).palette.action.focus,
-              backgroundColor: "rgb(var(--tw-primary-rgb) / 50%)",
+              backgroundColor: twx.alpha('accent', '50%'),
             },
             '&[aria-selected="true"]': {
               backgroundColor: theme.vars
@@ -357,7 +358,7 @@ const AutoSelectGroupUl = styled("ul", {
 
 export { createFilterOptions };
 
-const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
+export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
   const theme = useTheme();
   //console.log("AutoSelect::inProps-variant:", inProps.variant)
   const props = useMuxDefaultProps({
@@ -666,23 +667,21 @@ const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
 
   const createPopperProps = React.useCallback(
     () => ({
-      target: anchorEl,
+      reference: anchorEl,
       ...(renderOutside
         ? popperSlotProps
         : {
             animate: false,
-            disablePortal,
-            offset: 6,
+            portal: false,
+            sideOffset: 6,
+            alignOffset: 6,
+            boundaryPadding: 10,
             autoFlip: { padding: 10 },
-            autoSize: {
-              padding: 10,
-              apply({ rects, availableHeight, elements }) {
-                Object.assign(elements?.floating?.style, {
-                  width: `${rects?.reference?.width}px`,
-                });
-              },
-            },
+            matchReferenceWidth: true,
+            strategy: 'fixed',
+            hideWhenDetached: true,
             ...popperSlotProps,
+            onPresent: setOpenState
           }),
 
       className: clsx(`${classes.popper} z-modal`, popperSlotProps?.className),

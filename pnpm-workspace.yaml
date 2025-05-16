@@ -1,3 +1,9 @@
 packages:
   - 'packages/*'
-  - 'demos/*'
+ignoredOptionalDependencies:
+  - '@mui\material'
+  - '@mui\x-charts'
+fetchRetryMintimeout:
+  - 2000
+fetchRetryMaxtimeout:
+  - 10000

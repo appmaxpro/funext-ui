@@ -3,10 +3,9 @@ import { Meta } from "@storybook/react";
 
 import { Box } from "../Box";
 import { Input } from "./.";
-import { IconButton, Input as MuiInput } from "../..";
-import { withStyled } from "../../../core/styled";
-import { MaterialIcon } from "../../../icons/material-icon";
+import { Checkbox, IconButton, Input as MuiInput } from "../..";
 import React from "react";
+import { MaterialIcon } from "../internal";
 
 const config = {
   component: Input,
@@ -55,46 +54,6 @@ export const Readonly = () => {
     </Box>
   );
 };
-
-const Range = withStyled(Input)(({ value: valueProp, ...rest }, ref) => {
-  const [value, setValue] = useState(valueProp);
-
-  const handleChange = (event: any) => {
-    setValue(event.target.value);
-  };
-
-  return (
-    <Input
-      type="range"
-      min="0"
-      max="100"
-      ref={ref}
-      value={value}
-      onChange={handleChange}
-      {...rest}
-    />
-  );
-});
-
-const Checkbox = withStyled(Input)((props, ref) => {
-  const [checked, setChecked] = useState(false);
-
-  const handleChange = (event: any) => {
-    setChecked(event.target.checked);
-  };
-
-  return (
-    <Box>
-      <Input
-        ref={ref}
-        type="checkbox"
-        checked={checked}
-        onChange={handleChange}
-        {...props}
-      />
-    </Box>
-  );
-});
 
 export const Sizing = () => {
   const [value, setValue] = useState("");
@@ -594,17 +553,6 @@ export const Types = () => {
         <Input type="color" />
       </FormControl>
 
-      <FormControl label="Range">
-        <Range value="50" />
-      </FormControl>
-
-      <FormControl label="Range (Disabled)">
-        <Range value="50" disabled />
-      </FormControl>
-
-      <FormControl label="Range (Min:Max:Step)">
-        <Range value="50" min="0" max="100" step={5} />
-      </FormControl>
 
       <FormControl label="Hidden">
         <Input type="hidden" value="simple-value" />

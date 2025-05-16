@@ -1,12 +1,15 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import svgrPlugin from "vite-plugin-svgr";
+import tailwindcss from '@tailwindcss/vite'
+
 import path from "path";
 //const tailwindcss = require("@tailwindcss/vite/dist");
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     react({
       babel: {
         presets: [

@@ -14,7 +14,7 @@ import {
 
 import { useStepContext, useStepperContext } from './Context';
 import { capitalize } from '../../utils';
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 
 export interface StepConnectorClasses {
   /** Styles applied to the root element. */

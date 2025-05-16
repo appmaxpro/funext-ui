@@ -2,7 +2,7 @@ import * as React from 'react';
 import { SxProps } from '@mui/system';
 import { Theme } from '../../styles';
 import { BadgeClasses } from './badgeClasses';
-import { CreateSlotsAndSlotProps, OverridableComponent, OverridableStringUnion, OverrideProps, SlotProps } from '../../props';
+import { CreateSlotsAndSlotProps, OverridableComponent, OverridableStringUnion, OverrideProps, SlotProps } from '../../theme/tw/props';
 
 export interface BadgePropsVariantOverrides {}
 export interface BadgePropsColorOverrides {}
@@ -39,17 +39,17 @@ export type BadgeSlotsAndSlotProps = CreateSlotsAndSlotProps<
 >;
 
 export type BadgeOwnerState = Omit<BadgeOwnProps, 'slotProps' | 'slots'> & {
-    badgeContent: React.ReactNode;
+    content: React.ReactNode;
     invisible: boolean;
     max: number;
     displayValue: React.ReactNode;
     showZero: boolean;
-    anchorOrigin: BadgeOrigin;
+    placement: BadgeOrigin;
     color: OverridableStringUnion<
       'primary' | 'secondary' | 'default' | 'error' | 'info' | 'success' | 'warning',
       BadgePropsColorOverrides
     >;
-    overlap: 'rectangular' | 'circular';
+    shape: 'square' | 'circle';
     variant: OverridableStringUnion<'standard' | 'dot', BadgePropsVariantOverrides>;
 };
 
@@ -66,11 +66,11 @@ export interface BadgeOwnProps extends BadgeSlotsAndSlotProps {
    *   horizontal: 'right',
    * }
    */
-  anchorOrigin?: BadgeOrigin;
+  placement?: BadgeOrigin;
   /**
    * The content rendered within the badge.
    */
-  badgeContent?: React.ReactNode;
+  content?: React.ReactNode;
   /**
    * The badge will be added relative to this node.
    */
@@ -124,12 +124,12 @@ export interface BadgeOwnProps extends BadgeSlotsAndSlotProps {
    */
   max?: number;
   /**
-   * Wrapped shape the badge should overlap.
-   * @default 'rectangular'
+   * Wrapped shape the badge should shape.
+   * @default 'square'
    */
-  overlap?: 'rectangular' | 'circular';
+  shape?: 'square' | 'circle';
   /**
-   * Controls whether the badge is hidden when `badgeContent` is zero.
+   * Controls whether the badge is hidden when `content` is zero.
    * @default false
    */
   showZero?: boolean;
@@ -158,18 +158,6 @@ type BadgeBadgeProps = NonNullable<BadgeTypeMap['props']['slotProps']>['badge'];
 export declare const BadgeRoot: React.FC<BadgeRootProps>;
 export declare const BadgeMark: React.FC<BadgeBadgeProps>;
 
-/**
- *
- * Demos:
- *
- * - [Avatar](https://mui.com/material-ui/react-avatar/)
- * - [Badge](https://mui.com/material-ui/react-badge/)
- *
- * API:
- *
- * - [Badge API](https://mui.com/material-ui/api/badge/)
- */
-declare const Badge: OverridableComponent<BadgeTypeMap>;
 
 export type BadgeProps<
   RootComponent extends React.ElementType = BadgeTypeMap['defaultComponent'],
@@ -177,5 +165,3 @@ export type BadgeProps<
 > = OverrideProps<BadgeTypeMap<RootComponent, AdditionalProps>, RootComponent> & {
   component?: React.ElementType;
 };
-
-export default Badge;

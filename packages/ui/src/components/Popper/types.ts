@@ -1,5 +1,5 @@
 import { FloatingContext, ReferenceType } from "@floating-ui/react";
-import type { ReactNode } from "react";
+import React from "react";
 
 // @floating-ui types
 export type {
@@ -27,13 +27,18 @@ export type {
 
 // typescript types
 export type handler = FloatingContext["onOpenChange"];
-export type content = () => ReactNode | ReactNode;
-
-export type PopperContextValue = {
+export type content =( () => React.ReactNode) | React.ReactNode;
+interface PopperContextValue {
   context: FloatingContext<ReferenceType>;
   getReferenceProps: (userProps?: React.HTMLProps<Element>) => any;
   getFloatingProps: (userProps?: React.HTMLProps<HTMLElement>) => any;
+  arrowRef: React.MutableRefObject<HTMLElement|null>;
 };
+
+
+export type {
+  PopperContextValue
+}
 
 /** @public */
 // todo: remove `auto` from PopperWidth

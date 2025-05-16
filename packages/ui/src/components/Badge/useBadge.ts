@@ -4,7 +4,7 @@ export interface UseBadgeParameters {
   /**
    * The content rendered within the badge.
    */
-  badgeContent?: React.ReactNode;
+  content?: React.ReactNode;
   /**
    * If `true`, the badge is invisible.
    * @default false
@@ -26,7 +26,7 @@ export interface UseBadgeReturnValue {
   /**
    * Defines the content that's displayed inside the badge.
    */
-  badgeContent: React.ReactNode;
+  content: React.ReactNode;
   /**
    * If `true`, the component will not be visible.
    */
@@ -44,14 +44,14 @@ export interface UseBadgeReturnValue {
 
 function useBadge(parameters: UseBadgeParameters): UseBadgeReturnValue {
   const {
-    badgeContent: badgeContentProp,
+    content: badgeContentProp,
     invisible: invisibleProp = false,
     max: maxProp = 99,
     showZero = false,
   } = parameters;
 
   const prevProps = usePrevious({
-    badgeContent: badgeContentProp,
+    content: badgeContentProp,
     max: maxProp,
   });
 
@@ -61,13 +61,13 @@ function useBadge(parameters: UseBadgeParameters): UseBadgeReturnValue {
     invisible = true;
   }
 
-  const { badgeContent, max = maxProp } = invisible ? prevProps : parameters;
+  const { content, max = maxProp } = invisible ? prevProps : parameters;
 
   const displayValue: React.ReactNode =
-    badgeContent && Number(badgeContent) > max ? `${max}+` : badgeContent;
+  content && Number(content) > max ? `${max}+` : content;
 
   return {
-    badgeContent,
+    content,
     invisible,
     max,
     displayValue,

@@ -5,7 +5,7 @@ import {
   OverrideProps,
   OverridableComponent,
   OverridableTypeMap,
-} from "../../props";
+} from "../../theme/tw/props";
 
 import { ExtendButtonBase, ExtendButtonBaseTypeMap } from "./ButtonBase";
 import {

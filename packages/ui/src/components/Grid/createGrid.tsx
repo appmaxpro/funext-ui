@@ -14,7 +14,7 @@ import {
 
 } from "../../styles";
 import { CreateMUIStyled, SystemProps } from "@mui/system";
-import { OverridableComponent, OverrideProps } from "../../props";
+import { OverridableComponent, OverrideProps } from "../../theme/tw/props";
 import {
   generateGridStyles,
   generateGridSizeStyles,

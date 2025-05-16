@@ -1,7 +1,7 @@
 'use client';
 import createGrid  from './createGrid';
 //import { SxProps, SystemProps } from '@mui/system';
-import { OverridableComponent, OverrideProps } from '../../props';
+import { OverridableComponent, OverrideProps } from '../../theme/tw/props';
 import { 
   Breakpoint,
   styled, 
@@ -29,7 +29,7 @@ export type GridSlot = 'root';
  *
  * - [Grid API](https://next.mui.com/material-ui/api/grid-2/)
  */
-const Grid = createGrid({
+export const Grid = createGrid({
   createStyledComponent: styled('div', {
     name: 'MuxGrid',
     slot: 'Root',

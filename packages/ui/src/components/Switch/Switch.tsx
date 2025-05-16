@@ -20,9 +20,10 @@ import {
   SxThemeProps,
   useTheme,
   useTailwindTheme,
+  twx,
 } from "../../styles";
 import { capitalize } from "../../utils";
-import { OverridableStringUnion, StandardProps } from "../../props";
+import { OverridableStringUnion, StandardProps } from "../../theme/tw/props";
 import { mapThemeColor } from "../../hooks";
 import { color } from "../../types/components/button";
 export interface SwitchClasses {
@@ -201,10 +202,8 @@ const SwitchSwitchBase = styled(SwitchBase, {
       boxShadow: "none",
     },
     [`&.${switchClasses.disabled} + .${switchClasses.track}`]: {
-      backgroundColor: (theme.vars || theme).palette.action.disabled,
-      opacity: theme.vars
-        ? theme.vars.opacity.switchTrackDisabled
-        : `${theme.palette.mode === "light" ? 0.6 : 0.7}`,
+      backgroundColor: 'var(--act-disabled)',
+      opacity: 'var(--switch-track-disabled)',
     },
     [`& .${switchClasses.input}`]: {
       left: "-100%",
@@ -217,10 +216,9 @@ const SwitchSwitchBase = styled(SwitchBase, {
           hasColor: true
         },
         style: ({ ownerState }: any) => ({
-          color: `var(--tw-${ownerState.color})`,
+          color: twx.color(ownerState.color),
           [`&.${switchClasses.checked} + .${switchClasses.track}`]: {
-            "--tw-bg-opacity": 1,
-            backgroundColor: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-bg-opacity))`,
+            backgroundColor: twx.color(ownerState.color),
           },
         }),
       },
@@ -229,10 +227,7 @@ const SwitchSwitchBase = styled(SwitchBase, {
           !ownerState.disabled && ownerState.ripple,
         style: {
           "&:hover": {
-            backgroundColor: alpha(
-              theme.palette.action.active,
-              theme.palette.action.hoverOpacity,
-            ),
+            backgroundColor: twx.alpha('act-active', 'var(--act-hover-opacity)'),
             "@media (hover: none)": {
               backgroundColor: "transparent",
             },
@@ -256,9 +251,9 @@ const SwitchTrack = styled("span", {
     transition: theme.transitions.create(["opacity", "background-color"], {
       duration: theme.transitions.duration.shortest,
     }),
-    backgroundColor: "var(--tw-hd-lg)",
+    backgroundColor: "var(--border)",
     [`&.${switchClasses.disabled}`]: {
-      backgroundColor: (theme.vars || theme).palette.action.disabled,
+      backgroundColor: 'var(--act-disabled)',
     },
   })),
 );
@@ -270,7 +265,7 @@ const SwitchThumb = styled("span", {
 })(
   memoTheme(({ theme }) => ({
     boxShadow: (theme.vars || theme).shadows[1],
-    backgroundColor: "var(--tw-gray-50)",
+    backgroundColor: "var(--card)",
     width: 16,
     height: 16,
     borderRadius: "50%",
@@ -281,8 +276,7 @@ const SwitchThumb = styled("span", {
           theme.palette.twColors?.includes(ownerState.color as any),
         style: ({ ownerState }: any) => ({
           [`&.${switchClasses.checked}`]: {
-            "--tw-border-opacity": 1,
-            borderColor: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-border-opacity))`,
+            borderColor: twx.color(ownerState.color),
           },
         }),
       },
@@ -343,7 +337,7 @@ export interface SwitchProps
   error?: boolean;
 }
 
-const Switch = React.forwardRef<HTMLElement, SwitchProps>(
+export const Switch = React.forwardRef<HTMLElement, SwitchProps>(
   function Switch(inProps, ref) {
     const checkboxId = React.useId();
     const theme = useTheme();

@@ -15,7 +15,7 @@ import {
   useSlot,
   useTheme
 } from "../../styles";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 
 
 import { capitalize } from '../../utils';
@@ -214,7 +214,7 @@ const SnackbarRoot = styled('div', {
         style: { top: 8, [theme.breakpoints.up('sm')]: { top: 24 } },
       },
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.vertical !== 'top',
+        props: ({ ownerState }:any) => ownerState.anchorOrigin.vertical !== 'bottom',
         style: { bottom: 8, [theme.breakpoints.up('sm')]: { bottom: 24 } },
       },
       {
@@ -250,7 +250,7 @@ const SnackbarRoot = styled('div', {
   })),
 );
 
-const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Snackbar(inProps, ref) {
+export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Snackbar(inProps, ref) {
   const props = useMuxDefaultProps({ props: inProps, name: 'MuiSnackbar' });
   const theme = useTheme();
   const defaultTransitionDuration = {

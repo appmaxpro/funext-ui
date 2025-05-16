@@ -1,11 +1,11 @@
 "use client"
 import * as React from "react";
-import { useRefs } from "../hooks";
 import {
   unstable_ownerDocument as ownerDocument,
   unstable_useEventCallback as useEventCallback,
 } from '@mui/utils';
-import getReactElementRef from "../../../../ui/src/mui/utils/getReactElementRef";
+import { getElementRef } from "../getElementRef";
+import { useRefs } from "../../hooks";
 
 // TODO: return `EventHandlerName extends `on${infer EventName}` ? Lowercase<EventName> : never` once generatePropTypes runs with TS 4.1
 function mapEventPropToEvent(
@@ -93,7 +93,7 @@ export function ClickAwayListener(props: ClickAwayListenerProps): React.JSX.Elem
     };
   }, []);
 
-  const handleRef = useRefs(getReactElementRef(children), nodeRef);
+  const handleRef = useRefs(getElementRef(children), nodeRef);
 
   // The handler doesn't take event.defaultPrevented into account:
   //

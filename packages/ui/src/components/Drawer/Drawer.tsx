@@ -18,7 +18,7 @@ import {
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 
 import { capitalize, isElement } from "../../utils";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 
 import Panel, { PanelProps } from "../Panel";
 import { TransitionProps } from "react-transition-group/Transition";
@@ -27,12 +27,18 @@ import {
   useDismiss,
   useInteractions,
 } from "@floating-ui/react";
-import { useForwardedRef, useRefs } from "../../hooks";
+import { useForwardedRef, usePrevious, useRefs } from "../../hooks";
 import Popper, { PopperProps } from "../Popper";
 import { Slide, SlideProps } from "../../lib/transitions/slide";
-import { useLayer } from "../../lib/layer";
+import { LayerProvider, useLayer } from "../../lib/layer";
 import { usePopper } from "../Popper/PopperContext";
 import Overlay from "../Overlay";
+import { EMPTY_RECORD } from "../../lib/constants";
+import { getPlacementSides } from "../../lib/helpers/origin";
+import { ClickAwayListener } from "../../lib/click-away-listener";
+import Dialog, { DialogContainerRoot, DialogProps } from "../Dialog";
+import { height } from "@mui/system";
+import { getAnimationOrName } from "../internal/animation";
 
 export interface DrawerClasses {
   /** Styles applied to the root element. */
@@ -71,6 +77,7 @@ export const drawerClasses: DrawerClasses = generateUtilityClasses(
   "MuxDrawer",
   [
     "root",
+    "container",
     "docked",
     "panel",
     "panelDirectionStart",
@@ -104,6 +111,7 @@ const useUtilityClasses = (ownerState: any) => {
     root: ["root", `anchor${capitalize(direction)}`],
     docked: [(variant === "permanent" || variant === "persistent") && "docked"],
     modal: ["modal"],
+    container: ["container", `containerDirection${capitalize(direction)}`],
     panel: [
       "panel",
       `panelDirection${capitalize(direction)}`,
@@ -114,23 +122,60 @@ const useUtilityClasses = (ownerState: any) => {
   return composeClasses(slots, getDrawerUtilityClass, classes);
 };
 
-const DrawerRoot = styled("div", {
+const DrawerRoot = styled(Dialog, {
   name: "MuxDrawer",
   slot: "Root",
-  overridesResolver,
+  overridesResolver: (props: any, styles: any) => [styles.root]
+})('');
+
+
+const DrawerContainer = styled('div', {
+  name: "MuxDrawer",
+  slot: "Container",
+  overridesResolver: (props: any, styles: any) => {  
+    return [
+      styles.root,
+      styles.container,
+    ];
+  }
 })(
   memoTheme(({ theme }) => ({
     zIndex: (theme.vars || theme).zIndex.drawer,
     overflow: "hidden",
     variants: [
       {
+        props: {
+          scroll: "panel",
+        },
+        style: {
+          display: "block",
+        },
+      },
+      {
+        props: {
+          scroll: "body",
+        },
+        style: {
+          overflowY: "auto",
+          overflowX: "hidden",
+          textAlign: "center",
+          "&::after": {
+            content: '""',
+            display: "inline-block",
+            verticalAlign: "middle",
+            height: "100%",
+            width: "0",
+          },
+        },
+      },
+      {
         style: ({ ownerState }: any) => ({
           position: ownerState?.strategy,
         }),
       },
       {
-        props: ({ ownerState }: any) => {
-          //console.log("DrawerRoot:ownerState:", ownerState);
+        props: ({ ownerState, ...others }: any) => {
+          //console.log("DrawerContainer:ownerState:", ownerState, ", others:", others);
           return ownerState.direction === "start";
         },
         style: {
@@ -205,58 +250,30 @@ const DrawerPanel = styled(Panel, {
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
-    height: "100%",
+    //height: "100%",
     flex: "1 0 auto",
-    zIndex: (theme.vars || theme).zIndex.drawer,
     // Add iOS momentum scrolling for iOS < 13.0
     WebkitOverflowScrolling: "touch",
-    // temporary style
-    position: "fixed",
-    top: 0,
+    
     // We disable the focus ring for mouse, touch and keyboard users.
     // At some point, it would be better to keep it for keyboard users.
     // :focus-ring CSS pseudo-class will help.
     outline: 0,
     variants: [
       {
-        props: {
-          direction: "start",
-        },
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "start" ||
+          ownerState.direction === "end",
         style: {
-          left: 0,
+          height: '100%',
         },
       },
       {
-        props: {
-          direction: "top",
-        },
+        props: ({ ownerState }: any) =>
+          ownerState.direction === "top" ||
+          ownerState.direction === "bottom",
         style: {
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "auto",
-          maxHeight: "100%",
-        },
-      },
-      {
-        props: {
-          direction: "end",
-        },
-        style: {
-          right: 0,
-        },
-      },
-      {
-        props: {
-          direction: "bottom",
-        },
-        style: {
-          top: "auto",
-          left: 0,
-          bottom: 0,
-          right: 0,
-          height: "auto",
-          maxHeight: "100%",
+          width: '100%',
         },
       },
       {
@@ -264,21 +281,21 @@ const DrawerPanel = styled(Panel, {
           ownerState.direction === "start" &&
           ownerState.variant !== "temporary",
         style: {
-          borderRight: `1px solid ${(theme.vars || theme).palette.divider}`,
+          borderRightWidth: 1,
         },
       },
       {
         props: ({ ownerState }: any) =>
           ownerState.direction === "top" && ownerState.variant !== "temporary",
         style: {
-          borderBottom: `1px solid ${(theme.vars || theme).palette.divider}`,
+          borderBottomWidth: 1,
         },
       },
       {
         props: ({ ownerState }: any) =>
           ownerState.direction === "end" && ownerState.variant !== "temporary",
         style: {
-          borderLeft: `1px solid ${(theme.vars || theme).palette.divider}`,
+          borderLeftWidth: 1,
         },
       },
       {
@@ -286,11 +303,12 @@ const DrawerPanel = styled(Panel, {
           ownerState.direction === "bottom" &&
           ownerState.variant !== "temporary",
         style: {
-          borderTop: `1px solid ${(theme.vars || theme).palette.divider}`,
+          borderTopWidth: 1,
         },
       },
     ],
   })),
+  getAnimationOrName('slideFadeIn')
 );
 
 const oppositeDirection: any = {
@@ -313,7 +331,7 @@ export function getDirection(direction: string, isRtl: boolean) {
 export type onClose = (event?: Event, reason?: OpenChangeReason) => void;
 
 export interface DrawerProps
-  extends StandardProps<PopperProps, DrawerClassKey, "placement" | "handler"> {
+  extends StandardProps<DialogProps, DrawerClassKey, "placement" | "handler"> {
   /**
    * Side from which the drawer will appear.
    * @default 'start'
@@ -380,7 +398,7 @@ export interface DrawerProps
  * The props of the [Popper](/material-ui/api/modal/) component are available
  * when `variant="temporary"` is set.
  */
-const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
+export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
   function Drawer(inProps, ref) {
     const props = useMuxDefaultProps({ props: inProps, name: "MuxDrawer" });
     const theme = useTheme();
@@ -395,16 +413,14 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       children,
       className,
       elevation = 16,
-      popperProps = {},
-      onClose,
       open = false,
       panelProps = {},
       slideProps,
+      popperProps,
       // eslint-disable-next-line react/prop-types
       //TransitionComponent = Slide,
       transitionDuration = defaultTransitionDuration,
       variant = "temporary",
-      backdrop,
       strategy = "absolute",
       style,
       root,
@@ -424,6 +440,18 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     const [openState, setOpenState] = React.useState(false);
 
     const ownerDirection = getDirection(direction, isRtl);
+
+    React.useEffect(() => {
+      if (open) {
+        const tm = setTimeout(() => setOpenState(true), 2000);
+        return () => {
+          clearTimeout(tm);
+        };
+      } else {
+        setOpenState(false);
+      }
+    }, [open, setOpenState]);
+
     //console.log("Drawer:render");
     const ownerState = {
       ...props,
@@ -439,34 +467,46 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
 
     const drawerRef = useForwardedRef(ref);
 
-    const drawer = (
+    const zOffset = useTheme().zIndex.drawer;
+
+    const drawer = variant === "permanent" || variant === "persistent" ? (
       <DrawerPanel
-        elevation={variant === "temporary" ? elevation : 0}
+        elevation={0}
         square
-        fill={variant === "temporary"}
         {...(panelProps as any)}
         className={clsx(classes.panel, panelProps.className)}
         ownerState={ownerState}
       >
         {children}
       </DrawerPanel>
-    );
+    ) : undefined;
 
     if (variant === "permanent") {
       return (
         <DrawerDockedRoot
           className={clsx(classes.root, classes.docked, className)}
           ownerState={ownerState}
-          ref={drawerRef}
           {...other}
+          style={style}
+          ref={drawerRef}
         >
           {drawer}
         </DrawerDockedRoot>
       );
     }
 
-    const slidingDrawer = (
-      //@ts-ignore
+    
+
+    if (variant === "persistent") {
+      return (
+        <DrawerDockedRoot
+          className={clsx(classes.root, classes.docked, className)}
+          ownerState={ownerState}
+          ref={drawerRef as any}
+          {...other}
+        >
+          
+      {/* @ts-ignore*/}
       <TransitionComponent
         in={open}
         direction={
@@ -490,95 +530,54 @@ const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
           //console.log("Drawer:CloseState");
         }}
         container={
-          container ??
-          (variant === "persistent" && drawerRef.current
-            ? drawerRef.current
-            : undefined)
+          container ?? drawerRef.current
         }
         {...slideProps}
       >
         {drawer}
       </TransitionComponent>
-    );
-
-    if (variant === "persistent") {
-      return (
-        <DrawerDockedRoot
-          className={clsx(classes.root, classes.docked, className)}
-          ownerState={ownerState}
-          ref={drawerRef as any}
-          {...other}
-        >
-          {slidingDrawer}
         </DrawerDockedRoot>
       );
     }
+    
+    const side = direction === "start"
+    ? "left"
+    : direction === "end"
+      ? "right"
+      : direction == 'top'
+      ? 'bottom' : 'top';
 
     // variant === temporary
     return (
-      <Popper
-        open={openState || open}
-        onOpenChange={(open, event, reason) =>
-          !open && onClose?.(event, reason)
-        }
-        ref={ref}
-        overlayProps={{
-          lockScroll: true,
-          visible: true,
+      <DrawerRoot
+        Container={DrawerContainer}
+        containerProps={{ownerState , style}}
+        PanelComponent={DrawerPanel}
+        panelProps={{
+          square: true,
+          fill:true,
+          ...(panelProps as any),
+          className:clsx(classes.panel, panelProps.className),
+          'data-side': side,
+          ownerState
         }}
-        Overlay={Overlay}
-        {...popperProps}
-        root={
-          root ?? (typeof container === "function" ? container() : container)
-        }
-        placement={
-          ownerDirection === "start"
-            ? "left"
-            : ownerDirection === "end"
-              ? "right"
-              : ownerDirection
-        }
-        style={style}
+        {...other}
+        className={className}
+        open={open}
+        root={container}
+        strategy={strategy}
+        animation={{
+          animate: true,
+          animation: 'slideFadeIn'
+        }}
+        ref={ref}
       >
-        <FloatingDrawer
-          uiOwnerState={ownerState}
-          className={clsx(classes.root, classes.modal, className)}
-        >
-          {slidingDrawer}
-        </FloatingDrawer>
-      </Popper>
+          {children}
+      </DrawerRoot>
+      
     );
   },
 );
 
-const FloatingDrawer = React.forwardRef<HTMLDivElement, any>((props, ref) => {
-  const { uiOwnerState, className, children } = props;
-
-  const { zIndex, isTopLayer } = useLayer();
-
-  const { context, getFloatingProps: popperFloatingProps } = usePopper();
-
-  const outsidePress = React.useCallback(() => isTopLayer, [isTopLayer]);
-
-  const { getFloatingProps } = useInteractions([
-    useDismiss(context, {
-      outsidePress,
-    }),
-    {
-      floating: popperFloatingProps?.({} as React.HTMLProps<HTMLElement>),
-    },
-  ]);
-
-  const ownerState = {
-    ...uiOwnerState,
-    zIndex,
-  };
-
-  return (
-    <DrawerRoot ownerState={ownerState} className={className} ref={ref}>
-      {children}
-    </DrawerRoot>
-  );
-});
 
 export default Drawer;

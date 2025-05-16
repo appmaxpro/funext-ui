@@ -50,16 +50,18 @@ const DialogBodyRoot = styled("div", {
       },
     ],
 
+    
+
 });
 
 export const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ divider, className, children, ...rest }, ref) => {
     // 1. init
     
-
+    const ownerState = {divider}
     // 4. return
     return (
-      <DialogBodyRoot {...rest} ref={ref} className={clsx(dialogClasses.body, className)} ownerSate={{divider}}>
+      <DialogBodyRoot {...rest} ref={ref} className={clsx(dialogClasses.body, className)} ownerState={ownerState}>
         {children}
       </DialogBodyRoot>
     );

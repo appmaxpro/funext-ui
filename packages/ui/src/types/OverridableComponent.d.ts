@@ -1,5 +1,5 @@
 import * as React from 'react';
-\import { StyledComponentProps, DistributiveOmit } from '../props';
+\import { StyledComponentProps, DistributiveOmit } from '../theme/tw/props';
 
 /**
  * A component whose root component can be controlled via a `component` prop.

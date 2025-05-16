@@ -14,7 +14,7 @@ export function composeEventHandlers<
 ): (event: EventType) => any {
 	return (event) => {
 		theirHandler && theirHandler(event);
-		if (!event.defaultPrevented) {
+		if (!event.defaultPrevented && ourHandler) {
 			return ourHandler(event);
 		}
 	};

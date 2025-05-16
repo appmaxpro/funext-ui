@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Box } from "../box";
-import { Input } from "../../mui";
 import { Scrollable } from "./scrollable";
+import { Box, Input } from "../..";
+import React from "react";
 
 const config = {
   component: Scrollable,

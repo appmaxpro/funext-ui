@@ -1,18 +1,15 @@
-import BiArchive from "bootstrap-icons/icons/archive.svg?react";
-import BiBank from "bootstrap-icons/icons/bank.svg?react";
-import BiCardImage from "bootstrap-icons/icons/card-image.svg?react";
-import BiChevronDown from "bootstrap-icons/icons/chevron-down.svg?react";
-import BiChevronUp from "bootstrap-icons/icons/chevron-up.svg?react";
-import BiInboxFill from "bootstrap-icons/icons/inbox-fill.svg?react";
-import BiMailBox from "bootstrap-icons/icons/mailbox.svg?react";
-import BiSendCheckFill from "bootstrap-icons/icons/send-check-fill.svg?react";
-import BiSendFill from "bootstrap-icons/icons/send-fill.svg?react";
+import BiArchive from "../internal/MaterialIcon";
+import BiBank from "../internal/MaterialIcon";
+import BiCardImage from "../internal/MaterialIcon";
+import BiChevronDown from "../internal/MaterialIcon";
+import BiChevronUp from "../internal/MaterialIcon";
+import BiInboxFill from "../internal/MaterialIcon";
+import BiMailBox from "../internal/MaterialIcon";
+import BiSendCheckFill from "../internal/MaterialIcon";
+import BiSendFill from "../internal/MaterialIcon";
 import React, { forwardRef, ReactElement, useState } from "react";
 
-import { Box } from "../box";
 import { Collapse } from "../Collapse";
-import { Icon } from "../icon";
-import { IconProps } from "../icon/icon";
 import { List, ListItem, ListItemAvatar, ListProps } from ".";
 
 import {
@@ -30,10 +27,12 @@ import {
   Panel,
   Text,
   Avatar,
-  Stack
+  Stack,
+  clsx,
+  Box
 } from "../..";
 
-import { MaterialIcon } from "../../../icons/material-icon";
+import { MaterialIcon } from "../internal/MaterialIcon";
 
 const config = {
   component: List,
@@ -119,7 +118,7 @@ export const Disabled = () => {
 };
 
 function getListItemWrapperStyles(selected: boolean, disabled?: boolean) {
-  return classNames(
+  return clsx(
     "command-palette-list-item block grow text-justify gap-2.5 py-2.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-1 focus:ring-slate-300 focus:outline-none flex items-center justify-between",
     selected && !disabled
       ? "bg-slate-200/50 dark:bg-slate-800"
@@ -208,7 +207,7 @@ export const Flush = () => {
 export const FolderList = () => {
   return (
     <List>
-      {[BiArchive, BiCardImage, BiBank].map((icon, i) => (
+      {[BiArchive, BiCardImage, BiBank].map((Icon, i) => (
         <ListItem key={i}>
           <Box d="flex" items="center">
             <Box
@@ -221,7 +220,7 @@ export const FolderList = () => {
               items="center"
               justify="center"
             >
-              <Icon as={icon} />
+              <Icon icon={""}/>
             </Box>
             <Box>
               <Box as="p" mb={0}>
@@ -250,10 +249,10 @@ export const Numbered = () => {
   );
 };
 
-function ListItemIcon({ icon }: { icon: IconProps["as"] }) {
+function ListItemIcon() {
   return (
     <Box as="span" d="inline-block" me={2}>
-      <Icon as={icon} />
+      <MaterialIcon icon={""}/>
     </Box>
   );
 }
@@ -316,8 +315,7 @@ function NestedListItem({
 
   return (
     <ListItem
-      startIcon={icon && <ListItemIcon icon={icon} />}
-      endIcon={<Icon as={isOpen ? BiChevronUp : BiChevronDown} />}
+      startIcon={icon && <ListItemIcon  />}
       title={title}
     >
       <Collapse open={isOpen}>{children}</Collapse>
@@ -333,7 +331,7 @@ export const Nested = () => {
         Sent mail
       </ListItem>
       <ListItem>
-        <ListItemIcon icon={BiMailBox} />
+        <ListItemIcon  />
         Drafts
       </ListItem>
       <NestedListItem title="Inbox" icon={BiInboxFill}>
@@ -460,10 +458,11 @@ export function SelectedListItem() {
 export function AlignItemsList() {
   return (
     <Panel className="bg-hd-md w-full min-h-full h-full py-6 m-auto px-10">
-    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-      <ListItem className="items-start">
+    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }} gutters>
+      <ListItem>
         <ListItemAvatar>
-          <Avatar alt="Remy Sharp" src="https://mui.com/static/images/avatar/1.jpg" />
+          <Avatar alt="Remy Sharp" src="https://mui.com/static/images/avatar/1.jpg"
+            />
         </ListItemAvatar>
         <ListItemText
           primary="Brunch this weekend?"
@@ -481,8 +480,8 @@ export function AlignItemsList() {
           }
         />
       </ListItem>
-      <Divider variant="inset" component="li" />
-      <ListItem className="items-start">
+      <Divider variant="inset" component="li" light/>
+      <ListItem>
         <ListItemAvatar>
           <Avatar alt="Travis Howard" src="https://mui.com/static/images/avatar/2.jpg" />
         </ListItemAvatar>
@@ -503,7 +502,7 @@ export function AlignItemsList() {
         />
       </ListItem>
       <Divider variant="inset" component="li" />
-      <ListItem className="items-start">
+      <ListItem>
         <ListItemAvatar>
           <Avatar alt="Cindy Baker" src="https://mui.com/static/images/avatar/3.jpg" />
         </ListItemAvatar>
@@ -531,7 +530,7 @@ export function LetterAvatars() {
   return (
     <Panel className="bg-hd-md w-full min-h-full h-full py-10 m-auto px-10">
       <Stack gap={2}>
-        <Avatar>H</Avatar>
+        <Avatar >H</Avatar>
         <Avatar color="pink">N</Avatar>
         <Avatar color="purple">OP</Avatar>
       </Stack>

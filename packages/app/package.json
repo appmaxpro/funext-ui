@@ -52,7 +52,7 @@
     "@babel/runtime": "^7.26.0",
     "@vitejs/plugin-react": "4.3.4",
     "@funext/icons": "workspace:*",
-    "@funext/ui": "workspace:^",
+    "@funext/ui": "workspace:*",
     "@types/invariant": "2.2.37",
     "@types/prop-types": "15.7.14",
     "@types/react": "^19.0.8",

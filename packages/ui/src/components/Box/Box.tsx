@@ -8,7 +8,7 @@ import {
 import { 
   OverrideProps,
   OverridableComponent
-} from '../../props';
+} from '../../theme/tw/props';
 
 import createBox2 from './createBox';
 

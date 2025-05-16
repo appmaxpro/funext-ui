@@ -13,6 +13,7 @@ import type { StyledComponent } from '@emotion/styled';
 
 import type { Theme } from '../theme';
 import {internal_useTheme as useTheme} from '../theme/useTheme';
+import twx  from '../theme/tw/twx';
 
 export * from '../theme';
 
@@ -91,5 +92,6 @@ export type {
 export { 
   useTheme, 
   extendSxProp, 
+  twx
 };
 

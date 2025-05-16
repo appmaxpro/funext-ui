@@ -4,11 +4,11 @@ import { Box } from "../Box";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { Drawer, DrawerProps } from "./Drawer";
-import { ClickAwayListener } from "../../../core";
 import Panel from "../Panel";
 import Checkbox from "../Checkbox";
 import {DashboardLayout} from "./demo/DashboardLayout";
 import { ScreenSizeProvider } from "../Screen";
+import { ClickAwayListener } from "../../lib/click-away-listener";
 
 const config = {
   component: Drawer,
@@ -53,7 +53,7 @@ export const Backdrop = () => {
       >
         <Box
           d="flex"
-          border
+          border="cyan"
           flexGrow={1}
           alignItems="center"
           justifyContent="center"
@@ -91,7 +91,7 @@ export const Basic = () => {
         <ClickAwayListener onClickAway={hideDrawer}>
           <Box
             d="flex"
-            border
+            border="cyan"
             flexGrow={1}
             alignItems="center"
             justifyContent="center"
@@ -137,12 +137,14 @@ function DrawerDemo({
       <Box
         d="flex"
         flexDirection={["start", "end"].includes(placement) ? "row" : "column"}
+
       >
         {(variant !== 'temporary') && <Box> Drawer before</Box>}
         <Drawer
           variant={variant}
           direction={placement}
           open={show}
+          style={!show && variant === 'permanent' ? {zIndex: -1} : undefined}
           onClose={hideDrawer}
           panelProps={{
             style: {
@@ -156,14 +158,14 @@ function DrawerDemo({
           }}
           popperProps={{
             dismiss:{},
-            backdrop:{
-              className: "inset-0 bg-slate-800/[.3] dark:bg-slate-300/[.3]",
+            overlayProps:{
+              className: "bg-slate-800/[.3] dark:bg-slate-300/[.3]",
             }
           }}
         >
           <Box
             d="flex"
-            border
+            border="cyan"
             flexGrow={1}
             alignItems="center"
             justifyContent="center"
@@ -272,7 +274,7 @@ export const Shadow = () => {
         <Panel>
           <Box
             d="flex"
-            border
+            border="cyan"
             flexGrow={1}
             alignItems="center"
             justifyContent="center"

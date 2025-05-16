@@ -7,18 +7,19 @@ import {
   shift,
   hide,
   size,
+  inline,
+  arrow as fuiArrow,
+  Middleware,
   autoUpdate,
   useFloating,
   useInteractions,
   useRole,
-  useDismiss,
-  useId,
   useClick,
-  arrow as fuiArrow,
+  useDismiss,
   useHover,
-  safePolygon,
   UseHoverProps,
-  Middleware,
+  UseClickProps,
+  safePolygon,
   limitShift,
   UseInteractionsReturn,
   FloatingFocusManager,
@@ -26,7 +27,8 @@ import {
   FloatingArrow,
   FloatingOverlay,
   Boundary,
-  UseClickProps,
+  useMergeRefs,
+  Rect,
 } from "@floating-ui/react";
 
 // utils
@@ -59,7 +61,7 @@ import {
   DEFAULT_POPPER_DISTANCE,
   DEFAULT_FALLBACK_PLACEMENTS,
   DEFAULT_POPPER_PADDING,
-  DEFAULT_ARROW,
+  DEFAULT_POPPER_ARROW,
 } from "./constants";
 import {
   styled,
@@ -71,7 +73,6 @@ import {
 import { Layer, LayerProps, LayerProvider, useLayer } from "../../lib/layer";
 import { isRecord } from "../../lib/isRecord";
 import { useSize } from "../../hooks/use-size";
-import { useControllableState } from "../../hooks/use-controllable-state";
 import { useRefs } from "../../hooks";
 import { Portal } from "../../lib/portal";
 import { Presence } from "../../lib/presence";
@@ -80,12 +81,38 @@ import Panel, { PanelProps } from "../Panel";
 import { PopperContextProvider } from "./PopperContext";
 import { EMPTY_ARRAY, EMPTY_RECORD } from "../../lib/constants";
 import { zIndex } from "../../theme/types";
+import { getElementRef } from "../../lib/getElementRef";
+import {
+  AnimatedProps,
+  getAnimationSafe,
+  shouldForwardProp,
+} from "../internal/animation";
 
 const Arrow = styled(FloatingArrow)("");
 
 function isNotNull<T>(value: T | null): value is T {
   return value !== null;
 }
+
+const PopperRoot = styled("div", {
+  name: "Popper",
+  shouldForwardProp,
+})(({ ownerState }: any) => ({
+  minWidth: "max-content",
+  zIndex: ownerState?.zIndex,
+}));
+
+const ContentRoot = styled(Panel, {
+  name: "PopperContent",
+  //slot: "Root",
+  shouldForwardProp,
+})(getAnimationSafe, ({ ownerState }: any) =>
+  !ownerState.isPositioned
+    ? {
+        animation: "none",
+      }
+    : undefined,
+) as StyledComponent<PanelProps & AnimatedProps>;
 
 export type PopperSlots = {
   slots?: {
@@ -97,7 +124,7 @@ export type PopperSlots = {
     panel?: Partial<PanelProps<React.ElementType, { animate?: boolean }>>;
   };
 };
-export interface PopperProps extends Omit<LayerProps, "as"> {
+export interface PopperProps extends Omit<LayerProps, "as">, AnimatedProps {
   /**
    * When `true`, prevent overflow within the current boundary:
    * - by flipping on its side axis
@@ -121,10 +148,13 @@ export interface PopperProps extends Omit<LayerProps, "as"> {
   matchReferenceWidth?: boolean;
   open?: boolean;
   onOpenChange?: handler;
+  onPresent?: (present: boolean) => void;
+  strategy?: FloatingContext["strategy"];
   placement?: Placement;
   sideOffset?: number;
   alignOffset?: number;
   arrowPadding?: number;
+  inline?: boolean;
   dismiss?: DismissProps;
   animate?: boolean;
   children: React.ReactNode;
@@ -133,7 +163,7 @@ export interface PopperProps extends Omit<LayerProps, "as"> {
   hoverProps?: UseHoverProps;
   clickProps?: UseClickProps;
   trigger?: React.ReactNode;
-
+  triggerRef?: React.ForwardedRef<HTMLElement | null>;
   preventOverflow?: boolean;
   fallbackPlacements?: Placement[];
   sticky?: "partial" | "always";
@@ -143,7 +173,7 @@ export interface PopperProps extends Omit<LayerProps, "as"> {
   boundaryPadding?: number | Partial<Record<Side, number>>;
   elementProps?: (context: FloatingContext) => Array<ElementProps | void>;
   portal?: boolean;
-  focusProps?: Omit<FloatingFocusManagerProps, "context">;
+  focusProps?: FloatingFocusManagerProps;
   navigate?: boolean;
   middleware?: Middleware[];
   lazy?: boolean;
@@ -151,7 +181,8 @@ export interface PopperProps extends Omit<LayerProps, "as"> {
   contentProps?: Partial<PanelProps<React.ElementType, { animate?: boolean }>>;
   Overlay?: React.ComponentType<Partial<OverlayProps>>;
   overlayProps?: Partial<OverlayProps>;
-  root?: string | HTMLElement 
+  root?: string | HTMLElement;
+  PopperContentRoot?: React.ComponentType<Partial<PopperContentProps>>;
 }
 
 const PopperFc = ({
@@ -159,10 +190,12 @@ const PopperFc = ({
   matchReferenceWidth,
   open,
   onOpenChange,
+  strategy,
   placement,
   sideOffset = 0,
   alignOffset = 0,
   arrowPadding,
+  inline: inlineProps,
   dismiss,
   animate: animateProps,
   arrow: arrowProps,
@@ -170,29 +203,29 @@ const PopperFc = ({
   clickProps,
   children,
   reference,
-  trigger,
+  trigger: triggerProps,
+  triggerRef: triggerRefProps,
   preventOverflow = true,
   fallbackPlacements,
   sticky,
   updatePositionStrategy,
   zOffset,
-  boundary: boundaryProps,
-  boundaryPadding: paddingProps,
+  boundary: boundaryProps = EMPTY_ARRAY,
+  boundaryPadding: paddingProps = 0,
   elementProps,
   portal = true,
   overlayProps,
+  Overlay: OverlayComp = overlayProps ? Overlay : undefined,
   focusProps,
   navigate,
   middleware: middlewareProps,
   lazy,
   hideWhenDetached,
   root,
+  onPresent,
+  PopperContentRoot,
   ...rest
 }: PopperProps) => {
-  // 1. init
-  const {
-    popover: { defaultProps },
-  } = useTailwindTheme();
   const [initialized, setInitialized] = React.useState(false);
 
   zOffset ??= 10;
@@ -201,12 +234,12 @@ const PopperFc = ({
     fallbackPlacements ?? DEFAULT_FALLBACK_PLACEMENTS[placement ?? "bottom"];
 
   const prefersReducedMotion = usePrefersReducedMotion();
-  const animate = prefersReducedMotion ? false : !!animateProps;
+  const animate = (prefersReducedMotion ? false : !!animateProps) || true;
 
   const arrow = isRecord(arrowProps)
     ? arrowProps
     : arrowProps === true
-      ? DEFAULT_ARROW
+      ? DEFAULT_POPPER_ARROW
       : undefined;
 
   const arrowRef = useRef(null);
@@ -222,11 +255,10 @@ const PopperFc = ({
       : { top: 0, right: 0, bottom: 0, left: 0, ...paddingProps };
 
   const middleware = useMemo(() => {
-    const ret: Middleware[] = [];
     if (middlewareProps) {
       return middlewareProps;
     }
-
+    const ret: Middleware[] = [];
     const boundary = Array.isArray(boundaryProps)
       ? boundaryProps
       : [boundaryProps];
@@ -247,6 +279,10 @@ const PopperFc = ({
         alignmentAxis: alignOffset,
       }),
     );
+
+    if (inlineProps) {
+      ret.push(inline());
+    }
 
     // Shift the popover so its sits within the boundary element
     if (preventOverflow) {
@@ -332,6 +368,7 @@ const PopperFc = ({
   }, [
     animate,
     !!arrow,
+    inlineProps,
     fallbackPlacements,
     preventOverflow,
     constrainSize,
@@ -339,12 +376,14 @@ const PopperFc = ({
     paddingProps,
     sideOffset,
     alignOffset,
+    arrowHeight,
   ]);
 
   // 5. set @floating-ui
   const { context } = useFloating({
     open,
     placement,
+    strategy,
     onOpenChange: onOpenChange,
     elements: reference
       ? {
@@ -362,8 +401,8 @@ const PopperFc = ({
 
   const { getReferenceProps, getFloatingProps } = useInteractions(
     [
-      clickProps && trigger ? useClick(context, clickProps) : undefined,
-      hoverProps && trigger ? useHover(context, hoverProps) : undefined,
+      clickProps && triggerProps ? useClick(context, clickProps) : undefined,
+      hoverProps && triggerProps ? useHover(context, hoverProps) : undefined,
       dismiss && useDismiss(context, dismiss),
       ...(elementProps ? elementProps?.(context) : []),
     ].filter(Boolean),
@@ -374,6 +413,7 @@ const PopperFc = ({
       context,
       getReferenceProps,
       getFloatingProps,
+      arrowRef,
     }),
     [context, getFloatingProps, getReferenceProps],
   );
@@ -384,35 +424,43 @@ const PopperFc = ({
     }
   }, [open]);
 
+  const trigger = triggerProps as React.ReactElement;
+
   const hasReference = !!reference && !trigger;
   if (lazy && !initialized && !hasReference) {
-    return trigger;
+    //return trigger;
   }
+  const Root = PopperContentRoot ?? PopperContent;
 
   return (
     <PopperContextProvider value={contextValue}>
-      {trigger &&
-        React.cloneElement(
-          trigger as any,
-          getReferenceProps({ ref: context.refs.setReference }),
-        )}
+      {trigger && (
+        <PopperTrigger
+          getReferenceProps={getReferenceProps}
+          setReference={context.refs.setReference as any}
+          data-state={context.open ? "open" : undefined}
+        >
+          {trigger}
+        </PopperTrigger>
+      )}
       <Presence animate={animate} present={!!open}>
         {({ present }) => (
           <PopperPortal
             portal={!!root || !!portal}
             floatingPortal={root ? root : !!focusProps || !!navigate}
             present={present}
+            onPresent={onPresent}
             render={(ref: React.ForwardedRef<HTMLDivElement>) => (
               <LayerProvider zOffset={zOffset}>
-                {Overlay && (
-                  <Overlay
-                    area-hidden
+                {OverlayComp && (
+                  <OverlayComp
                     data-ui="PopperOverlay"
                     {...overlayProps}
                     animate={animate}
                   />
                 )}
-                <PopperContent
+
+                <Root
                   {...rest}
                   context={context}
                   getFloatingProps={getFloatingProps}
@@ -421,11 +469,10 @@ const PopperFc = ({
                   arrow={arrow}
                   arrowRef={arrowRef}
                   animate={animate}
-                  zOffset={zOffset}
                   ref={ref}
                 >
                   {children}
-                </PopperContent>
+                </Root>
               </LayerProvider>
             )}
           />
@@ -435,18 +482,37 @@ const PopperFc = ({
   );
 };
 
-// @ts-ignore
-Popper.displayName = "Mux.Popper";
-
 interface PopperPortalProps {
   portal?: boolean;
   floatingPortal?: boolean | string | HTMLElement;
   present: boolean;
+  onPresent?: PopperProps["onPresent"];
+  Overlay?: React.ComponentType<Partial<OverlayProps>>;
+  overlayProps?: Partial<OverlayProps>;
+  open?: boolean;
   render: (ref: React.ForwardedRef<HTMLDivElement>) => React.ReactNode | null;
 }
 const PopperPortal = React.forwardRef<HTMLDivElement, PopperPortalProps>(
   (props, ref) => {
-    const { present, render, portal, floatingPortal } = props;
+    const {
+      present,
+      render,
+      portal,
+      floatingPortal,
+      onPresent,
+      open,
+      Overlay,
+      overlayProps,
+    } = props;
+
+    const onPresentRef = React.useRef(false);
+    React.useEffect(() => {
+      if (onPresent && present !== onPresentRef.current) {
+        onPresentRef.current = present;
+        onPresent(present);
+      }
+    }, [present]);
+
     if (present) {
       let child = render(ref);
       if (portal) {
@@ -459,40 +525,20 @@ const PopperPortal = React.forwardRef<HTMLDivElement, PopperPortalProps>(
   },
 );
 
-const ContentRoot = styled(Panel, {
-  name: "PopperContent",
-  slot: "Root",
-  shouldForwardProp: (propName) => propName !== "animate",
-})(({ ownerState }: any) => ({
-  // if the PopperContent hasn't been placed yet (not all measurements done)
-  // we prevent animations so that users's animation don't kick in too early referring wrong sides
-  animation: !ownerState.isPositioned ? "none" : undefined,
-})) as StyledComponent<PanelProps & { animate?: boolean }>;
-
-const PopperRoot = styled("div", {
-  name: "Popper",
-  slot: "Root",
-  shouldForwardProp: (propName) => propName !== "animate",
-})(({ownerSate}:any) => ({
-  minWidth: "max-content",
-  zIndex: ownerSate.zIndex
-}));
-
-interface PopperPanelProps extends SxComponentProps {
+export interface PopperContentProps extends SxComponentProps, AnimatedProps {
   context: FloatingContext;
   getFloatingProps: UseInteractionsReturn["getFloatingProps"];
   arrow?: ArrowProps;
   arrowRef: React.MutableRefObject<HTMLElement | null>;
   animate?: boolean;
-  focusProps?: Omit<FloatingFocusManagerProps, "context">;
+  focusProps?: FloatingFocusManagerProps;
   navigate?: boolean;
   onActivate?: (props: { activeElement: HTMLElement | null }) => void;
   Content?: React.JSXElementConstructor<typeof Panel>;
   contentProps?: Partial<PanelProps<React.ElementType>>;
-
 }
 
-const PopperContent = React.forwardRef<HTMLDivElement, PopperPanelProps>(
+const PopperContent = React.forwardRef<HTMLDivElement, PopperContentProps>(
   (props, ref) => {
     const {
       context,
@@ -504,10 +550,10 @@ const PopperContent = React.forwardRef<HTMLDivElement, PopperPanelProps>(
       animate,
       focusProps,
       onActivate,
-      zOffset,
       Content = ContentRoot,
       contentProps = EMPTY_RECORD,
       style,
+      animation,
       ...rest
     } = props;
 
@@ -522,96 +568,115 @@ const PopperContent = React.forwardRef<HTMLDivElement, PopperPanelProps>(
       arrow,
       animate,
       isPositioned,
-      zIndex
+      zIndex,
     };
 
-    //const mergedRef = useRefs(ref, refs.setFloating);
-    const floatingElement = refs.floating.current;
+    const child =
+      !navigate && !focusProps ? (
+        children
+      ) : (
+        <FloatingFocusManager context={context} {...focusProps}>
+          <>{children}</>
+        </FloatingFocusManager>
+      );
 
-    useEffect(() => {
-      if (arrowRef.current && floatingElement) {
-        //arrowRef.current.style.fill = getComputedStyle(floatingElement).backgroundColor;
-      }
-    }, [floatingElement, arrowRef.current]);
-
-    const child = !navigate ? (
-      children
-    ) : (
-      <FloatingFocusManager context={context} {...focusProps}>
-        <>{children}</>
-      </FloatingFocusManager>
-    );
-    /*
-    const [ContentSlot, contentProps] = useSlot("content", {
-      elementType: ContentRoot,
-      externalForwardedProps: components,
-      ownerState: ownerState,
-    });*/
     const ContentSlot = Content as React.ComponentType<
       PanelProps<React.ElementType, { animate?: boolean }>
     >;
     const [side, align] = getPlacementSides(context.placement);
 
     return (
-      <>
-        <PopperRoot
-          data-state={open ? "open" : "close"}
-          data-ui="Popper"
-          ownerState={ownerState}
-          ref={refs.setFloating}
-          {...getFloatingProps({
-            ...rest,
-            style: typeof style === 'function' ? style(context) : {
-              ...floatingStyles,
-              transform: isPositioned
-                ? floatingStyles.transform
-                : "translate(0, -200%)", // keep off the page when measuring
-              ["--popper-transform-origin" as any]: [
-                middlewareData.transformOrigin?.x,
-                middlewareData.transformOrigin?.y,
-              ].join(" "),
+      <PopperRoot
+        data-state={open ? "open" : "close"}
+        data-ui="Popper"
+        ownerState={ownerState}
+        ref={refs.setFloating}
+        {...getFloatingProps({
+          ...rest,
+          style:
+            typeof style === "function"
+              ? style(context)
+              : {
+                  ...floatingStyles,
+                  transform: floatingStyles.transform, // keep off the page when measuring
+                  ["--popper-transform-origin" as any]: [
+                    middlewareData.transformOrigin?.x,
+                    middlewareData.transformOrigin?.y,
+                  ].join(" "),
 
-              // hide the content if using the hide middleware and should be hidden
-              // set visibility to hidden and disable pointer events so the UI behaves
-              // as if the PopperContent isn't there at all
-              ...(middlewareData.hide?.referenceHidden && {
-                visibility: "hidden",
-                pointerEvents: "none",
-              }),
-              ...rest.style,
-            },
-          })}
+                  // hide the content if using the hide middleware and should be hidden
+                  // set visibility to hidden and disable pointer events so the UI behaves
+                  // as if the PopperContent isn't there at all
+                  ...(middlewareData.hide?.referenceHidden && {
+                    visibility: "hidden",
+                    pointerEvents: "none",
+                  }),
+                  ...style,
+                },
+        })}
+      >
+        <ContentSlot
+          data-ui="PopperContent"
+          {...contentProps}
+          data-side={side}
+          data-align={align}
+          data-state={open ? "open" : "close"}
+          animate={animate}
+          animation={animation}
+          data-animation={animation}
+          ownerState={ownerState}
+          ref={ref}
         >
-          <ContentSlot
-            data-ui="PopperContent"
-            {...contentProps}
-            data-side={side}
-            data-align={align}
-            data-state={open ? "open" : "close"}
-            animate={animate}
-            ownerState={ownerState}
-            ref={ref}
-          >
-            {child}
-            {arrow && (
-              <Arrow
-                data-ui="PopperArrow"
-                {...arrow}
-                ref={arrowRef as any}
-                context={context}
-                data-state={open ? "open" : "close"}
-              />
-            )}
-          </ContentSlot>
-        </PopperRoot>
-      </>
+          {child}
+          {arrow && (
+            <Arrow
+              data-ui="PopperArrow"
+              {...arrow}
+              ref={arrowRef as any}
+              context={context}
+              data-state={open ? "open" : "close"}
+            />
+          )}
+        </ContentSlot>
+      </PopperRoot>
     );
   },
 );
 
-const Popper = Object.assign(PopperFc, {
+type PopperTriggerProps = React.HTMLAttributes<"button"> & {
+  getReferenceProps: UseInteractionsReturn["getReferenceProps"];
+  children: React.ReactElement;
+  setReference: (node: HTMLElement | null) => void;
+};
+
+const PopperTrigger = React.forwardRef<HTMLButtonElement, PopperTriggerProps>(
+  ({ children, getReferenceProps, setReference, ...rest }, ref) => {
+    const mergedRef = useMergeRefs([
+      setReference,
+      ref,
+      getElementRef(children),
+    ]);
+
+    const refProps = getReferenceProps({
+      ...rest,
+      ref: mergedRef,
+      onClick(event: any) {
+        event.stopPropagation();
+        children.props.onClick?.(event);
+      },
+    } as any);
+    //console.log("MenuHandler: ReferenceProps:", refProps)
+    return React.cloneElement(children, {
+      ...refProps,
+    });
+  },
+);
+
+export const Popper = Object.assign(PopperFc, {
   Arrow,
 });
 
-export { Popper };
+// @ts-ignore
+Popper.displayName = "Mux.Popper";
+
 export default Popper;

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { Box } from "../box";
-import { Button } from "../../mui";
 import { Fade } from "./fade";
+import { Box, Button } from "../../..";
+import React from "react";
 
 const config = {
   component: Fade,

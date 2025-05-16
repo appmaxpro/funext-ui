@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 
-import { Box } from "../../../core/box";
+import { Box } from "../Box";
 
 
 import { 
@@ -18,9 +18,8 @@ from "../..";
 
 import {Link} from "../Link";
 
-import { MaterialIcon } from "../../../icons/material-icon";
-import { useOnHoverRef } from "rooks";
 import Button from ".";
+import { MaterialIcon } from "../internal";
 const config = {
   component: Button,
   title: "Components/Button",
@@ -40,7 +39,7 @@ export const Basic = () => {
           {text}
         </Button>
       </MuiTooltip> 
-      <MuiTooltip content={Variants}>
+      <MuiTooltip content={Variants} allowOverContent>
         <Button variant="filled">
           Disabled
         </Button>
@@ -64,14 +63,10 @@ export const Sizes = () => {
   return (
     <Box display="flex" alignItems="center" g={2}>
       <Popover arrow>
-        <Popover.Handler>
-          <Button color="primary" size="sm">
+        <Button color="primary" size="sm">
             Small
-          </Button>
-        </Popover.Handler>
-        <Popover.Content header={<MuiText variant="h6">MuiText Header</MuiText>}>
-          <Content/>
-        </Popover.Content>
+        </Button>
+        <Content/>
       </Popover>
       <Button color="primary" size="md">Normal</Button>
       
@@ -83,11 +78,6 @@ export const Sizes = () => {
         <MaterialIcon icon="add_location" fontSize={24}/>
       </IconButton>
 
-      <Popover target={popRef} open={open} handler={setOpen} arrow>
-        <Popover.Content header={<MuiText variant="subtitle1" fw={500} gutterBottom>MuiText Header2</MuiText>}>
-          <Content/>
-        </Popover.Content>
-      </Popover>
     </Box>
   );
 };
@@ -97,7 +87,7 @@ export const Variants = () => {
   return (
     <Box display="flex" alignItems="center" g={2} flexDirection="column">
       <Divider>Filled</Divider>
-      <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+      <Box display="flex" alignItems="center" g={2} my={5} flexWrap={"wrap"}>
         <Button variant="filled" color="primary">Primary</Button>
         <Button variant="filled" color="secondary">Secondary</Button>
         <Button variant="filled" color="success">Success</Button>
@@ -247,12 +237,9 @@ function VariableButton(props:
     const {variant, hoverVariant, button = true, ...rest} = props;
     const Comp = button ? Button : IconButton;
     const [hover, setHover] = useState(false);
-    const ref = useOnHoverRef(
-      () => setHover(true),
-      () => setHover(false),
-    );
+    
 
-    return (<Comp variant={hover ? hoverVariant : variant} {...rest} ref={ref}/>)
+    return (<Comp variant={hover ? hoverVariant : variant} {...rest} />)
 
   }
 
@@ -263,7 +250,7 @@ export const VariableState = () => {
 
   return (
   <Box display="flex" alignItems="center" g={2} flexDirection="column">
-    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap="wrap">
       <span>Variants:</span>
       <Menu.Button
         trigger={<Button variant={variant} color="primary">{`${variant![0].toUpperCase()}${variant?.substring(1)}`}</Button>}>
@@ -282,7 +269,7 @@ export const VariableState = () => {
          <Menu.Item selected={hoverVariant==='ghost'} onClick={()=> setHoverVariant('ghost')}>Ghost</Menu.Item>
       </Menu.Button>
     </Box>
-    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap="wrap">
       <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="primary" className="px-3 py-1.5">Primary</VariableButton>
       <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="secondary" className="px-3 py-1.5">Secondary</VariableButton>
       <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="success" className="px-3 py-1.5">Success</VariableButton>
@@ -293,7 +280,7 @@ export const VariableState = () => {
       <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="dark" className="px-3 py-1.5">Dark</VariableButton>
       <VariableButton button={isButton} variant={variant} hoverVariant={hoverVariant} color="inherit" className="px-3 py-1.5">inherit</VariableButton>
     </Box>
-    <Box display="flex" alignItems="center" g={2} my={5} flexWrap>
+    <Box display="flex" alignItems="center" g={2} my={5} flexWrap="wrap">
       <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="primary"><MaterialIcon icon="home"/></VariableButton>
       <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="secondary"><MaterialIcon icon="home"/></VariableButton>
       <VariableButton button={false} variant={variant} hoverVariant={hoverVariant} color="success" ><MaterialIcon icon="home"/></VariableButton>
@@ -333,11 +320,7 @@ export function CustomizedMenus() {
         Options
       </Button>
       <Menu
-        id="demo-customized-menu"
-        MenuListProps={{
-          'aria-labelledby': 'demo-customized-button',
-        }}
-        anchorEl={anchorEl}
+        target={anchorEl}
         open={open}
         onClose={handleClose}
       >

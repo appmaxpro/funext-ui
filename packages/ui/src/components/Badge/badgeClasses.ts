@@ -9,14 +9,14 @@ export interface BadgeClasses {
   dot: string;
   /** Styles applied to the badge `span` element if `variant="standard"`. */
   standard: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'right' }}`. */
-  anchorOriginTopRight: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'right' }}`. */
-  anchorOriginBottomRight: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'left' }}`. */
-  anchorOriginTopLeft: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'left' }}`. */
-  anchorOriginBottomLeft: string;
+  /** Styles applied to the badge `span` element if `placement={{ 'top', 'right' }}`. */
+  placementTopRight: string;
+  /** Styles applied to the badge `span` element if `placement={{ 'bottom', 'right' }}`. */
+  placementBottomRight: string;
+  /** Styles applied to the badge `span` element if `placement={{ 'top', 'left' }}`. */
+  placementTopLeft: string;
+  /** Styles applied to the badge `span` element if `placement={{ 'bottom', 'left' }}`. */
+  placementBottomLeft: string;
   /** State class applied to the badge `span` element if `invisible={true}`. */
   invisible: string;
   /** Styles applied to the badge `span` element if `color="primary"`. */
@@ -31,26 +31,10 @@ export interface BadgeClasses {
   colorSuccess: string;
   /** Styles applied to the badge `span` element if `color="warning"`. */
   colorWarning: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'right' }} overlap="rectangular"`. */
-  anchorOriginTopRightRectangular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'right' }} overlap="rectangular"`. */
-  anchorOriginBottomRightRectangular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'left' }} overlap="rectangular"`. */
-  anchorOriginTopLeftRectangular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'left' }} overlap="rectangular"`. */
-  anchorOriginBottomLeftRectangular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'right' }} overlap="circular"`. */
-  anchorOriginTopRightCircular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'right' }} overlap="circular"`. */
-  anchorOriginBottomRightCircular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'top', 'left' }} overlap="circular"`. */
-  anchorOriginTopLeftCircular: string;
-  /** Styles applied to the badge `span` element if `anchorOrigin={{ 'bottom', 'left' }} overlap="circular"`. */
-  anchorOriginBottomLeftCircular: string;
-  /** Styles applied to the badge `span` element if `overlap="rectangular"`. */
-  overlapRectangular: string;
-  /** Styles applied to the badge `span` element if `overlap="circular"`. */
-  overlapCircular: string;
+  /** Styles applied to the badge `span` element if `shape="rectangular"`. */
+  shapeSquare: string;
+  /** Styles applied to the badge `span` element if `shape="circular"`. */
+  shapeCircle: string;
 }
 
 export type BadgeClassKey = keyof BadgeClasses;
@@ -64,10 +48,10 @@ const badgeClasses: BadgeClasses = generateUtilityClasses('MuxBadge', [
   'badge',
   'dot',
   'standard',
-  'anchorOriginTopRight',
-  'anchorOriginBottomRight',
-  'anchorOriginTopLeft',
-  'anchorOriginBottomLeft',
+  'placementTopRight',
+  'placementBottomRight',
+  'placementTopLeft',
+  'placementBottomLeft',
   'invisible',
   'colorError',
   'colorInfo',
@@ -75,17 +59,8 @@ const badgeClasses: BadgeClasses = generateUtilityClasses('MuxBadge', [
   'colorSecondary',
   'colorSuccess',
   'colorWarning',
-  'overlapRectangular',
-  'overlapCircular',
-  // TODO: v6 remove the overlap value from these class keys
-  'anchorOriginTopLeftCircular',
-  'anchorOriginTopLeftRectangular',
-  'anchorOriginTopRightCircular',
-  'anchorOriginTopRightRectangular',
-  'anchorOriginBottomLeftCircular',
-  'anchorOriginBottomLeftRectangular',
-  'anchorOriginBottomRightCircular',
-  'anchorOriginBottomRightRectangular',
+  'shapeSquare',
+  'shapeCircle',
 ]);
 
 export default badgeClasses;

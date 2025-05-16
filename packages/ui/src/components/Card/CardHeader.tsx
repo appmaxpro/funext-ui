@@ -1,6 +1,6 @@
 import React from "react";
 import { SxComponentProps, SxThemeProps, clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, useMuxDefaultProps } from "../../styles";
-import { OverrideProps, OverridableComponent } from "../../props";
+import { OverrideProps, OverridableComponent } from "../../theme/tw/props";
 import { TextProps, Text } from "../Text";
 import textClasses from "../Text/textClasses";
 

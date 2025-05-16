@@ -6,7 +6,7 @@ import {
   OverridableComponent,
   OverridableStringUnion
   //OverridableStringUnion
-} from '../../props';
+} from '../../theme/tw/props';
 
 import type{
   Theme,

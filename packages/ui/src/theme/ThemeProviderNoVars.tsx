@@ -8,16 +8,17 @@ export interface ThemeProviderNoVarsProps<Theme = DefaultTheme> {
   theme: Partial<Theme> | ((outerTheme: Theme) => Theme);
 }
 
-export default function ThemeProviderNoVars<Theme = DefaultTheme>({
-  theme: themeInput,
-  ...props
-}: ThemeProviderNoVarsProps<Theme>): React.ReactElement<ThemeProviderNoVarsProps<Theme>> {
-  const scopedTheme = THEME_ID in themeInput ? themeInput[THEME_ID] : undefined;
+export default function ThemeProviderNoVars<Theme = DefaultTheme>(props: ThemeProviderNoVarsProps<Theme>): React.ReactElement<ThemeProviderNoVarsProps<Theme>> {
+
+  //console.log("ThemeProviderNoVars: props:", props);
+  const {theme, children} = props;
+  const scopedTheme = THEME_ID in theme ? theme[THEME_ID] : undefined;
   return (
     <SystemThemeProvider
-      {...props}
       themeId={scopedTheme ? THEME_ID : undefined}
-      theme={scopedTheme || themeInput}
-    />
+      theme={scopedTheme || theme}
+    >
+      {children}
+    </SystemThemeProvider>
   );
 }

@@ -22,7 +22,13 @@ const DialogHeaderRoot = styled('div', {
   alignItems: 'center',
   flex: '0 0 auto',
   padding: '12px 16px',
-  flexWrap: 'nowrap'
+  flexWrap: 'nowrap',
+  [`& .${dialogClasses.title}`]:{
+     flex: '1'
+  },
+  ['& .MuxButtonBase-root']: {
+    alignSelf: 'start'
+  }
 });
 
 export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(

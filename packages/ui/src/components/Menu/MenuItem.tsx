@@ -1,22 +1,11 @@
 import React, { ReactNode } from "react";
-
-// utils
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
 import { styled } from "../../styles";
 
 // types
 import { ListItemButton, ListItemButtonProps, ListItem } from "../List";
 
 import { Menu, type MenuProps } from "./Menu";
-import { MenuHandler } from "./MenuHandler";
-import { useMenu } from "./MenuContext";
-import { useListItem } from "@floating-ui/react";
-import { useRefs } from "../../hooks";
+import { setValidItemTypes } from "./utils";
 
 
 interface ItemProps<E extends HTMLElement>  {
@@ -24,13 +13,6 @@ interface ItemProps<E extends HTMLElement>  {
   render: (index:number, activeIndex:number|null, ref: (node: E | null) => void) => React.ReactNode
 }
 
-function Item<E extends HTMLElement>({ render, forwardedRef }:ItemProps<E>) {
-    const { activeIndex } = useMenu();
-    const { ref: aRef, index } = useListItem();
-    const ref = useRefs<E | null>(forwardedRef, aRef as (node: E | null) => void);
-    const isActive = activeIndex === index;
-    return render(index, activeIndex, ref as ((node: E | null) => void))
-}
 
 export interface MenuItemProps extends Omit<ListItemButtonProps, "li"> {
   children: React.ReactNode;
@@ -84,47 +66,22 @@ export const MenuItem = React.forwardRef<
     ref,
   ) => {
 
+    const clickable = button || rest.onClick;
     const Comp: React.FC<ListItemButtonProps> = (
-      button && rest.onClick ? ListItemButtonRoot : ListItemRoot
+      clickable ? ListItemButtonRoot : ListItemRoot
     ) as any;
     
-    if (!menu) {
-      
-
-      return (
-        <Comp {...(rest as any)} ref={ref} role="menuitem" disabled={disabled}>
-          <div className="grow min-w-0 ">{children || text}</div>
-          {label && <div className="inline-flex">{label}</div>}
-        </Comp>
-      );
-    }
-
-    //const itemChildren = rChildren.filter(m => menu[0] !== m);
-    //const {children:menuChildren, ...mProps} = (menu[0] as any).props;
-
-    // 4. return
     return (
-      <Menu {...menuProps}>
-        <MenuHandler
-          {...rest}
-          ref={ref}
-          role="menuitem"
-          disabled={disabled}
-          li={!button}
-        >
-          <ListItemRoot>
-            <div className="grow min-w-0 ">{text}</div>
-            {label && <div className="inline-flex">{label}</div>}
-          </ListItemRoot>
-        </MenuHandler>
-        <ListComp {...listProps}>{children}</ListComp>
-      </Menu>
+      <Comp {...(rest as any)} ref={ref} role="menuitem" disabled={disabled}>
+        <div className="grow min-w-0 ">{children || text}</div>
+        {label && <div className="inline-flex">{label}</div>}
+      </Comp>
     );
-  },
+  }
 );
 
 MenuItem.displayName = "Mux.MenuItem";
 
-
+setValidItemTypes(MenuItem);
 
 export default MenuItem;

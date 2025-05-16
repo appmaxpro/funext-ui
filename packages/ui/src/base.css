@@ -1,0 +1,89 @@
+@import "./theme/tw/css/theme.css";
+
+:root {
+  --accent: oklch(0.58 0.23 278.46);
+  --primary: var(--accent);
+  --slate: oklch(0.55 0.04 257.45);
+  --gray: oklch(0.55 0.02 264.42);
+  --orange: oklch(0.77 0.17 64.05);
+  --green: oklch(0.67 0.16 144.2);
+  --sky: oklch(0.68 0.15 237.33);
+  --blue: oklch(0.62 0.19 259.82);
+  --red: oklch(0.53 0.21 28.58);
+  --accent-fg: oklch(1 0 0);
+
+  --body: oklch(1 0 0);
+  --fg: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-fg: oklch(0.145 0 0);
+  --secondary: oklch(0.95 0 0);
+  --secondary-fg: oklch(0.2 0.02 209.65);
+  --muted: oklch(0.97 0 0);
+  --muted-fg: oklch(0.556 0 0);
+  
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-fg: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-fg: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-fg: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+
+  --action-disabled: oklab(0 0 0 / 0.26);
+  --hover-opacity: .4;
+  --radius: 0.625rem;
+
+  --act-active: oklch(0 0 0 / 0.54);
+  --act-hover: oklch(0 0 0 / 0.04);
+  --act-hover-opacity: 0.04;
+  --act-selected: oklch(0 0 0 / 0.08);
+  --act-selected-opacity: 0.08;
+  --act-disabled-fg: oklch(0 0 0 / 0.26);
+  --act-disabled: oklch(0 0 0 / 0.12);
+  --act-disabled-opacity: 0.38;
+  --act-focus: oklch(0 0 0 / 0.12);
+  --act-focus-opacity: 0.12;
+  --act-activated-opacity: 0.12;
+  --switch-track-disabled: 1;
+}
+
+.dark {
+  --body: oklch(0.37 0.04 257.31);
+  --fg: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-fg: oklch(0.985 0 0);
+  --secondary: hsl(200, 13%, 19%);
+  --secondary-fg: hsl(201, 24%, 89%);
+  --muted: oklch(0.269 0 0);
+  --muted-fg: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 30%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-fg: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-fg: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-fg: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+
+  --act-active: #fff;
+  --act-hover: rgba(255, 255, 255, 0.08);
+  --act-hover-opacity: 0.04;
+  --act-selected: rgba(255, 255, 255, 0.16);
+  --act-selected-opacity: 0.08;
+  --act-disabled-fg: rgba(255, 255, 255, 0.3);
+  --act-disabled: gba(255, 255, 255, 0.12);
+  --act-disabled-opacity: 0.38;
+  --act-focus: rgba(255, 255, 255, 0.12);
+  --act-focus-opacity: 0.12;
+  --act-activated-opacity: 0.24;
+  --switch-track-disabled: .7;
+}
+

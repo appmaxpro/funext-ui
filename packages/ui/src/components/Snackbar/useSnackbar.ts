@@ -9,8 +9,8 @@ import {
   UseSnackbarParameters,
   SnackbarCloseReason,
   UseSnackbarReturnValue,
-} from './useSnackbar.types';
-import { EventHandlers } from '../../props';
+} from './types';
+import { EventHandlers } from '../../theme/tw/props';
 
 /**
  * The basic building block for creating custom snackbar.

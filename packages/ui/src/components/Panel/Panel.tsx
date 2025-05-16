@@ -24,10 +24,10 @@ import {
 
 } from './panelClasses';
 
-import { PanelProps, PanelOwnProps } from '../../types/components/panel';
+import { PanelProps, PanelOwnProps } from './types';
 import { twMerge } from 'tailwind-merge';
-import { TailwindTheme } from '../../components';
 import { getThemeColorClass, mapThemeColor } from '../../hooks';
+import { TailwindTheme } from '../../mui';
 
 
 const useUtilityClasses = (ownerState:PanelOwnProps) => {
@@ -66,7 +66,7 @@ export const PanelRoot = styled('div', {
         fill: true
       },
       style: {
-        backgroundColor: 'var(--tw-body-bg)',
+        backgroundColor: 'var(--card)',
       },
     },
     {
@@ -74,7 +74,7 @@ export const PanelRoot = styled('div', {
         hasColor: true
       },
       style: {
-        color: 'var(--tw-body-color)',
+        color: 'var(--card-fg)',
       },
     },
     {
@@ -89,7 +89,7 @@ export const PanelRoot = styled('div', {
         hasBorder: false,
       },
       style: {
-        border: `1px solid var(--tw-border-color)`,
+        borderWidth: 1,
       },
     },
     {
@@ -113,7 +113,7 @@ const resolvePanelProps = (props:PanelProps, theme: TailwindTheme) =>  {
   let color = mapThemeColor( props.color, defaultProps.color);
 
   // 3. set styles
-  const panelRoot = objectsToString(base.initial);
+  const panelRoot = '';//objectsToString(base.initial);
   const matchesVariant = variants[findMatch(valid.variants, variant, "")];
   const cardVariant = matchesVariant && objectsToString(
     matchesVariant[findMatch(valid.colors, color, "default")],
@@ -139,11 +139,11 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel
   const theme = useTheme();
   
   let className = props.className || '';
-
+  //console.log("PanelProps:", props)
   const {
     as = 'div',
     component = as,
-    variant = 'elevation',
+    variant,
     elevation = variant === 'elevation' ? 1 : undefined,
     square = className.includes('rounded'),
     color,
@@ -161,7 +161,7 @@ export const Panel = React.forwardRef<HTMLDivElement, PanelProps>(function Panel
     square,
     variant,
     hasShadow: !!elevation,
-    fill: fill || (!className.includes('bg-') && (variant === 'filled')),
+    fill: fill || ((!className.includes('bg-') && (variant === 'filled'))),
     hasBorder: !className.includes('border-') && (variant === 'outlined' || border),
     hasText: !className.includes('text-') && (variant === 'filled' || fill),
   };

@@ -41,6 +41,8 @@ import SpeedDialHandler from "./SpeedDialHandler";
 import SpeedDialContent from "./SpeedDialContent";
 import SpeedDialAction from "./SpeedDialAction";
 import { time } from "console";
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { Presence } from "../../lib/presence";
 
 export interface SpeedDialProps extends React.ComponentProps<"div"> {
   open?: open;
@@ -85,7 +87,7 @@ function SpeedDial({
   placement,
   offset,
   dismiss,
-  animate,
+  animate: animateProps,
   children,
 }: SpeedDialProps) {
   // 1. init
@@ -103,7 +105,10 @@ function SpeedDial({
   placement = placement ?? defaultProps.placement;
   offset = offset ?? defaultProps.offset;
   dismiss = dismiss ?? defaultProps.dismiss;
-  animate = !!(animate ?? defaultProps.animate);
+
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const animate = animateProps ?? prefersReducedMotion;
 
   // 4. set floating ui
   const nodeId = useFloatingNodeId();
@@ -161,7 +166,18 @@ function SpeedDial({
       <div className="group">
         {array.filter((a: any) => a.type !== SpeedDialContent)}
         <FloatingNode id={nodeId}>
-           {content}
+          {React.Children.map(
+            content as any,
+            (child: React.ReactElement, index: number) => (
+              <Presence
+                animate={animate}
+                present={context.open}
+                key={"Presence-" + index}
+              >
+                {child}
+              </Presence>
+            ),
+          )}
         </FloatingNode>
       </div>
     </SpeedDialContext.Provider>

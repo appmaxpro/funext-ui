@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
 import { styled, useTheme, SxProps } from "../../../styles";
-import MuiAppBar from "../../Navbar";
-import { Box as Box, Box } from "../../Box";
 import Drawer, {drawerClasses} from "../Drawer";
 import IconButton from "../../IconButton";
 import Tooltip from "../../Tooltip";
@@ -13,9 +11,11 @@ import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from "./utils";
-import { MaterialIcon } from "../../../../icons/material-icon";
 import { Logo } from "./logo";
 import { useScreenSize } from "../../Screen";
+import { MaterialIcon } from "../../internal";
+import Box from "../../Box";
+import Panel from "../../Panel";
 
 const AppBar = styled(Box)(({ theme }) => ({
   borderWidth: 0,
@@ -328,7 +328,7 @@ function DashboardLayout(props: DashboardLayoutProps) {
         ...sx,
       }}
     >
-      <AppBar color="inherit" position="absolute">
+      <Panel>
         <Box
           display="flex"
           width="100%"
@@ -336,8 +336,8 @@ function DashboardLayout(props: DashboardLayoutProps) {
         >
           <Box
             display="flex"
-            justifyContent="space-between"
-            alignItems="center"
+            justify="space-between"
+            items="center"
             sx={{
               flexWrap: "wrap",
               width: "100%",
@@ -399,7 +399,7 @@ function DashboardLayout(props: DashboardLayoutProps) {
             </Box>
           </Box>
         </Box>
-      </AppBar>
+      </Panel>
 
       {(!hideNavigation) ? (
         <React.Fragment>

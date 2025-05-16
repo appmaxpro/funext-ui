@@ -1,5 +1,11 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {},
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+      "@funext/ui/*": ["./node_modules/@funext/ui/src/*"],
+    },
+  },
   "include": ["src/**/*"]
 }

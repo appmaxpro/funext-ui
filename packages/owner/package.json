@@ -1,46 +1,75 @@
 {
-  "name": "owl-react",
+  "name": "@fms/owner",
   "private": true,
   "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "dev": "vite --config vite-dev.config.ts",
+    "clean": "rimraf build && rimraf node_modules/.vite && rimraf node_modules/.vite-temp",
+    "clean_all": "rimraf node_modules",
+    "build": "rimraf build && vite build --config vite.config.build.ts",
+    "build:dev": "rimraf build && vite build --mode development --config vite.config.build.ts",
+    "tsc": "rimraf build && tsc",
+    "build:staging": "rimraf build && vite build --config vite-staging.config.ts",
+    "preview": "vite preview --outDir build",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,css,scss,html}\"",
+    "test": "vitest",
+    "lint": "eslint src",
+    "flags": "scripts/flags/generate_combined_flags_and_css.sh",
+    "svgo": "svgo --multipass src/assets/*.svg",
+    "generate-pwa": "pwa-assets-generator --preset minimal public/logo.svg"
   },
   "dependencies": {
-    "@funext/ui": "../ui"
+    "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
+    "@maplibre/maplibre-gl-geocoder": "^1.7.1",
+    "apexcharts": "^4.7.0",
+    "react-apexcharts": "^1.7.0",
+    "dayjs": "^1.11.13",
+    "maplibre-gl": "^4.7.1",
+    "maplibre-google-maps": "^1.1.0",
+    "path-to-regexp": "6.3.0",
+    "react-router": "^7.6.0",
+    "zustand": "^5.0.4"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-reconciler": "next",
-    "@react-router/node": "^7.3.0",
-    "@react-router/serve": "^7.3.0",
-    "react-dom": "^19.0.0",
-    "react-router": "^7.3.0",
-    "@types/react-reconciler": "^0.18.0"
+    "@af-utils/virtual-core": "^1.0.2",
+    "@funext/icons": "workspace:*",
+    "@funext/ui": "workspace:*",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.6"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.3.0",
-    "@tailwindcss/vite": "^4.0.0",
+    "@babel/plugin-transform-react-jsx": "^7.24.7",
+    "@babel/preset-react": "^7.26.3",
+    "@emotion/babel-plugin-jsx-pragmatic": "^0.2.1",
+    "@emotion/babel-preset-css-prop": "^11.12.0",
+    "@funext/ui": "../ui",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@tailwindcss/vite": "^4.1.5",
     "@types/node": "^20",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
-    "react-router-devtools": "^1.1.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.2",
-    "vite": "^5.4.11",
-    "vite-tsconfig-paths": "^5.1.4",
+    "@types/react-router": "^5.1.20",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vitejs/plugin-react": "^4.4.1",
     "react": "^19.0.0",
-    "@react-router/node": "^7.3.0",
-    "@react-router/serve": "^7.3.0",
     "react-dom": "^19.0.0",
-    "react-router": "^7.3.0",
-    "react-reconciler": "next"
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.3.5",
+    "vite-plugin-handlebars": "^2.0.0",
+    "vite-plugin-pwa": "^1.0.0",
+    "vite-plugin-svgr": "^4.2.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "workbox-core": "^7.3.0",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0",
+    "workbox-window": "^7.3.0",
+    "data-generator-retail": "5.8.1"
   },
-  "imports": {
-    "#reconciler-dome": {
-      "default": "react-reconciler/src/forks/ReactFiberConfig.dom.js"
-    }
-  }
+  "sideEffects": false
 }

@@ -1,183 +1,513 @@
-import { keyframes, css } from "../../styles";
+import { SerializedStyles } from "@emotion/react";
+import { keyframes, css, clsx } from "../../styles";
+import { EMPTY_RECORD } from "../../lib/constants";
+import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 
-const scaleIn = keyframes`
-    from {
-      transform: scale(0);
-    }
-    to {
-      transform: scale(1);
-    }
+export const fadeInKf = keyframes`
+  from {
+    opacity: 0;
+  }
 `;
 
-const scaleOut = keyframes`
-  from {
-      transform: scale(1);
-    }
+export const fadeOutKf = keyframes`
     to {
-      transform: scale(0);
-    }
-`;
-
-const fadeIn = keyframes`
-  from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-`;
-
-const fadeOut = keyframes`
-  from {
-      opacity: 1;
-    }
-    to {
-    opacity: 1;
       opacity: 0;
     }
 `;
 
-const slideUp = keyframes`
+export const fadeInLeftKf = keyframes`
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
+export const fadeOutLeftKf = keyframes`
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(-100%, 0, 0);
+  }
+`;
+
+export const fadeInRightKf = keyframes`
+  from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(100%, 0, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+`;
+
+export const fadeOutRightKf = keyframes`
+  from {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(100%, 0, 0);
+    }
+`;
+
+export const fadeInDownKf = keyframes`
+  from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(0, -100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
+
+export const fadeOutDownKf = keyframes`
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(0, -100%, 0);
+  }
+`;
+
+export const fadeInUpKf = keyframes`
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
+export const fadeOutUpKf = keyframes`
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(0, 100%, 0);
+  }
+`;
+
+const scaleFadeInKf = keyframes`
   from {
     opacity: 0;
-		transform: translateY(2px);
-	}
-	to {
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  to {
     opacity: 1;
-		transform: translateY(0);
-	}
+  }
 `;
 
-const slideDown = keyframes`
+const scaleFadeOutKf = keyframes`
+  from {
+    opacity: 1;
+  }
+  50% {
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  to {
+    opacity: 0;
+  } 
+`;
+
+const fadeScaleInKf = keyframes`
   from {
     opacity: 0;
-		transform: translateY(-2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-`;
-
-const slideLeft = keyframes`
-  from {
-    : 0;
-		transform: translateX(2px);
-	}
-	to {
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  to {
     opacity: 1;
-		transform: translateX(0);
-	}
+  }
 `;
 
-const slideRight = keyframes`
+const fadeScaleOutKf = keyframes`
   from {
+    opacity: 1;
+  }
+  to {
+    transform: scale3d(0.9, 0.9, 0.9);
     opacity: 0;
-		transform: translateX(-2px);
-	}
-	to {
-    opacity: 1;
-		transform: translateX(0);
-	}
+  } 
 `;
 
-const scaleFadeCss = css`
-  transformOrigin: var(--popper-transform-origin),
-  &[data-sate="open"]: {
-    animation: ${fadeIn} 400ms ease-out, ${scaleIn} 240ms cubic-bezier(0.4, 0, 0.2, 1);
+const enterKf = keyframes`
+  0% {
+      opacity: var(--tw-enter-opacity,1);
+      transform: translate3d(var(--tw-enter-translate-x,0),var(--tw-enter-translate-y,0),0) scale3d(var(--tw-enter-scale,1),var(--tw-enter-scale,1),var(--tw-enter-scale,1)) rotate(var(--tw-enter-rotate,0))
+  }
+`;
+
+const exitKf = keyframes`
+  to {
+      opacity: var(--tw-exit-opacity,1);
+      transform: translate3d(var(--tw-exit-translate-x,0),var(--tw-exit-translate-y,0),0) scale3d(var(--tw-exit-scale,1),var(--tw-exit-scale,1),var(--tw-exit-scale,1)) rotate(var(--tw-exit-rotate,0))
+  }
+`;
+const enterCss = css`
+  animation-duration: var(--tw-enter-duration, .3s);
+  animation-timing-function: var(--tw-enter-timing, cubic-bezier(0.32,0.72,0,1));
+  animation-name: ${enterKf} ;
+`;
+
+const exitCss = css`
+  animation-duration: var(--tw-exit-duration, .3s);
+  animation-timing-function: var(--tw-exit-timing, cubic-bezier(0.32,0.72,0,1));
+  animation-name: ${exitKf} ;
+`;
+
+const enterExitCss = css`
+  transform-origin: var(--popper-transform-origin, center);
+  &[data-state="open"] {
+    ${enterCss};
   }
 
-  &[data-sate="close"]: {
-    animation: ${fadeOut} 400ms ease-out, ${scaleOut} 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  &[data-state="close"] {
+    ${exitCss};
   }
 `;
 
 const fadeCss = css`
-  &[data-sate="open"]: {
-    animation: ${fadeIn} 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+  &[data-state="open"] {
+    animation: ${fadeInKf} 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  &[data-sate="close"]: {
-    animation: ${fadeOut} 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-`;
-
-const slideFadeCss = css`
-  &[data-sate="open"][data-side="left"]: {
-    animation: ${slideLeft} 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  &[data-sate="open"][data-side="right"]: {
-    animation: ${slideRight} 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  &[data-sate="open"][data-side="up"]: {
-    animation: ${slideUp} 400ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  &[data-sate="open"][data-side="down"]: {
-    animation: ${slideDown} 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  &[data-state="close"] {
+    animation: ${fadeOutKf} 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 `;
 
-const scaleInHafFadeCss = keyframes`
-  from {
-      opacity: 0;
-      transform: scale(.5);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-`;
+const slideFadeInCss = css`
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 400ms;
+  will-change: transform, opacity;
 
-const scaleOutHafFadeCss = keyframes`
-  from {
-      opacity: 0;
-      transform: scale(.5);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-`;
-
-
-const scaleFadeStyle = (props: any) => {
-  if (props.animate) {
-    return scaleFadeCss;
+  &[data-side="left"] {
+    animation-name: ${fadeInLeftKf};
   }
-  return "";
+
+  &[data-side="right"] {
+    animation-name: ${fadeInRightKf};
+  }
+
+  &[data-side="top"] {
+    animation-name: ${fadeInUpKf};
+  }
+
+  &[data-side="bottom"] {
+    animation-name: ${fadeInDownKf};
+  }
+
+  &[data-state="open"] {
+    animation-direction: normal;
+  }
+
+  &[data-state="close"] {
+    animation-direction: reverse;
+  }
+`;
+
+const advanceSlideFadeInCss = css`
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 400ms;
+  will-change: transform, opacity;
+
+  &[data-side="left"] {
+    animation-name: ${fadeInLeftKf};
+  }
+
+  &[data-side="right"] {
+    animation-name: ${fadeInRightKf};
+  }
+
+  &[data-side="top"] {
+    animation-name: ${fadeInUpKf};
+  }
+
+  &[data-side="bottom"] {
+    animation-name: ${fadeInDownKf};
+  }
+
+  &[data-state="open"] {
+    animation-direction: normal;
+  }
+
+  &[data-state="close"] {
+    animation-direction: reverse;
+  }
+`;
+
+const liteScaleFadeInKf = keyframes`
+  0% {
+    transform: scale(.95);
+  }
+`;
+
+const liteScaleFadeOutKf = keyframes`
+  to {
+    transform: scale(.95);
+  }
+`;
+
+const scaleFadeCss = css`
+  transform-origin: var(--popper-transform-origin, center);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  &[data-state="open"] {
+    animation: ${scaleFadeInKf} 300ms;
+  }
+  &[data-state="close"] {
+    animation: ${scaleFadeOutKf} 200ms;
+  }
+`;
+
+const fadeScaleCss = css`
+  transform-origin: var(--popper-transform-origin, center);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 400ms; 
+  &[data-state="open"] {
+    animation-name: ${fadeScaleInKf};
+  }
+  &[data-state="close"] {
+    animation-name: ${fadeScaleOutKf};
+  }
+`;
+
+const liteScaleFadeCss = css`
+  transform-origin: var(--popper-transform-origin, center);
+  animation-timing-function: var(--animation-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  
+  &[data-state="open"] {
+    animation: ${liteScaleFadeInKf} 1s;
+  }
+  &[data-state="close"] {
+    animation: ${liteScaleFadeOutKf} 1s;
+  }
+`;
+
+
+
+const EMPTY_STYLES = css``;
+
+const animations: Record<string, SerializedStyles> = {
+  fade400: fadeCss,
+  scaleFade: scaleFadeCss,
+  fadeScale: fadeScaleCss,
+  slideFadeIn: slideFadeInCss,
+  liteScaleFade: liteScaleFadeCss,
+  enter: enterCss,
+  exit: exitCss,
+  general: enterExitCss,
+  "": EMPTY_STYLES,
 };
 
-const fadeStyle = (props: any) => {
-  if (props.animate) {
-    return fadeCss;
-  }
-  return "";
+
+
+
+type Animation =
+  | string
+  | {
+      name?: string;
+      base?: SerializedStyles;
+      multi?: boolean;
+    };
+
+type AnimatedProps = {
+  animate?: boolean;
+  animation?: Animation;
+  enter?: Animation;
+  exit?: Animation;
 };
 
-const slideFadeStyle = (props: any) => {
-  if (props.animate) {
-    return slideFadeCss;
-  }
-  return "";
+type AnimatableProps = {
+  animation?: AnimatedProps;
 };
 
+const cache = new WeakMap<
+  object,
+  SerializedStyles | Map<string, SerializedStyles>
+>();
 
-const slideFadeStyleStyle = css`
-  &[data-sate="open"]: {
-    animation: ${scaleInHafFadeCss} 400ms cubic-bezier(0.4, 0, 0.2, 1);
+function getAnimation(
+  props: AnimatedProps,
+): ReturnType<typeof css> | undefined {
+  if (!props.animate) return EMPTY_STYLES;
+  const { animation } = props;
+  if (typeof animation === "string") return animations[animation];
+
+  if (animation?.name) {
+    const style = animations[animation.name];
+    if (!style) return animation.base;
+
+    if (typeof animation.base === "object") {
+      let result = cache.get(animation.base);
+      let map: Map<string, SerializedStyles>;
+      if (result) {
+        if (animation.multi) {
+          map = result as Map<string, SerializedStyles>;
+          if (!map) {
+            map = new Map();
+            cache.set(result, map);
+          }
+          result = map.get(animation.name);
+          if (!result) {
+            result = css`
+              ${style};
+              ${animation.base};
+            `;
+            map.set(animation.name, result);
+          }
+        }
+        return result as SerializedStyles;
+      }
+
+      result = css`
+        ${style};
+        ${animation.base};
+      `;
+
+      if (animation.multi) {
+        map = new Map();
+        cache.set(animation.base, map);
+        map.set(animation.name, result);
+      } else {
+        cache.set(animation.base, result);
+      }
+      return result;
+    }
   }
+  return animation?.base;
+}
 
-  &[data-sate="close"]: {
-    animation: ${scaleOutHafFadeCss} 400ms cubic-bezier(0.4, 0, 0.2, 1);
+function getAnimationOr(styles: SerializedStyles) {
+  return (props: AnimatedProps) =>
+    (getAnimation(props) ?? props.animate) ? styles : EMPTY_STYLES;
+}
+
+function getAnimationOrName(otherName: string) {
+  return (props: AnimatedProps) =>
+    (getAnimation(props) ?? props.animate)
+      ? (animations[otherName] ?? EMPTY_STYLES)
+      : EMPTY_STYLES;
+}
+
+function getAnimationSafe(props: AnimatedProps) {
+  return getAnimation(props) ?? EMPTY_STYLES;
+}
+
+function registerAnimation(name: string, styles: SerializedStyles) {
+  animations[name] = styles;
+}
+
+function getAnimationStyles(name: string) {
+  return animations[name];
+}
+
+const shouldForwardAnimateProp = (propName: PropertyKey) =>
+  propName !== "animate" && propName !== "animation";
+
+const shouldForwardProp = (propName: PropertyKey) =>
+  propName === 'as' || (shouldForwardAnimateProp(propName) && rootShouldForwardProp(propName))
+
+function getAnimationData(
+  props: AnimatableProps & {
+    animate?:boolean; 
+    className?: string, 
+    style?: any, 
+    openStyle?: any, 
+    closeStyle?: any  
+  },
+  open?: boolean,
+) {
+  const { animation: animationProps, ...others } = props;
+  if (open == null || !animationProps) return others;
+
+  const { animate = props.animate, animation, enter, exit } = animationProps;
+  if (!animate) {
+    return others;
   }
-`;
+  let { className, style: asStyle } = others;
+  let stateStyle = others[open ? 'openStyle' : 'closeStyle'];
+  let style = asStyle && stateStyle ? {...asStyle, ...stateStyle} : asStyle ?? stateStyle;
 
-export { 
-  scaleFadeStyle, 
-  fadeStyle, 
-  slideFadeStyle ,
-  slideFadeStyleStyle
+  if (open) {
+
+    if (typeof enter === "string") {
+      return {
+        ...others,
+        className: clsx(className, enter),
+        style,
+        animation,
+
+      };
+    }
+
+    if (enter) {
+      return {
+        ...others,
+        className,
+        style,
+        animation: enter,
+      };
+    }
+    return {
+      ...others,
+      animation,
+      className,
+      style
+    };
+  } else {
+    if (typeof exit === "string") {
+      return {
+        ...others,
+        className: clsx(className, exit),
+        style,
+        animation,
+      };
+    }
+    if (exit) {
+      return {
+        ...others,
+        className,
+        style,
+        animation: exit,
+      };
+    }
+    return {
+      ...others,
+      animation,
+      className,
+      style
+    };
+  }
+}
+
+export {
+  getAnimation,
+  registerAnimation,
+  getAnimationOr,
+  shouldForwardAnimateProp,
+  shouldForwardProp,
+  getAnimationOrName,
+  getAnimationSafe,
+  getAnimationStyles,
+  getAnimationData,
+  EMPTY_STYLES,
 };
+
+export type { AnimatedProps, Animation, AnimatableProps };

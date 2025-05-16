@@ -1,11 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-import { Box } from "../Box";
 import { Button } from "../Button";
 import { Grid, Grow, Slide, Box } from "../../..";
 import { Snackbar, SnackbarCloseReason, SnackbarOrigin } from "./Snackbar";
 import { Checkbox } from "../Checkbox";
-import React from "react";
 
 const config = {
   component: Snackbar,

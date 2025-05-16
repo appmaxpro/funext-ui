@@ -16,7 +16,7 @@ import {
   OverridableStringUnion,
   OverrideProps,
   SlotProps,
-} from "../../props";
+} from "../../theme/tw/props";
 import type { AlertProps } from "../Alert";
 import { cn } from "../../utils/cn";
 import findMatch from "../../utils/findMatch";
@@ -129,8 +129,8 @@ export interface AvatarOwnProps {
    */
 
   // typescript types
-  variant: AlertProps["variant"];
-  color: AlertProps["color"];
+  variant?: AlertProps["variant"];
+  color?: AlertProps["color"];
 }
 
 export interface AvatarTypeMap<

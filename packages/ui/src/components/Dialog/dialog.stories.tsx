@@ -22,7 +22,7 @@ import {
   TimelineBody,
   //DialogTitle,
 } from "../..";
-import { MaterialIcon } from "../../../icons/material-icon";
+import MaterialIcon from "../internal";
 
 const config = {
   component: Dialog,
@@ -35,11 +35,11 @@ export function DialogDefault() {
   const handleOpen = () => setOpen(!open);
  
   return (
-    <>
+    <div>
       <Button onClick={handleOpen} >
         Open Dialog
       </Button>
-      <Dialog open={open} handler={handleOpen}>
+      <Dialog open={open} onOpenChange={handleOpen} animation={true}>
         <DialogHeader>Its a simple dialog.</DialogHeader>
         <DialogBody>
           The key to more success is to have a lot of pillows. Put it this way,
@@ -50,18 +50,18 @@ export function DialogDefault() {
         <DialogFooter>
           <Button
             variant="text"
-            color="red"
+            color="error"
             onClick={handleOpen}
             className="mr-1"
           >
             <span>Cancel</span>
           </Button>
-          <Button  color="green" onClick={handleOpen}>
+          <Button  color="success" onClick={handleOpen}>
             <span>Confirm</span>
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 
@@ -71,16 +71,26 @@ export function DialogCustomAnimation() {
   const handleOpen = () => setOpen(!open);
  
   return (
-    <>
+    <div>
       <Button onClick={handleOpen} >
         Open Dialog
       </Button>
       <Dialog
         open={open}
-        handler={handleOpen}
-        animate={{
-          mount: { scale: 1, y: 0 },
-          unmount: { scale: 0.9, y: -100 },
+        onOpenChange={handleOpen}
+        animation={{
+          animate: true,
+          animation: 'general'
+        }}
+        style={{
+          '--tw-enter-translate-y': '-0.5rem',
+          '--tw-exit-translate-y': '100%',
+          '--tw-enter-opacity': 0,
+          '--tw-exit-opacity': 0,
+          '--tw-enter-scale': .95,
+          '--tw-exit-scale': 1,
+          '--tw-enter-duration': '.15s',
+          '--tw-exit-duration': '.5s'
         }}
       >
         <DialogHeader>Its a simple dialog.</DialogHeader>
@@ -93,28 +103,34 @@ export function DialogCustomAnimation() {
         <DialogFooter>
           <Button
             variant="text"
-            color="red"
+            color="error"
             onClick={handleOpen}
             className="mr-1"
           >
             <span>Cancel</span>
           </Button>
-          <Button  color="green" onClick={handleOpen}>
+          <Button  color="success" onClick={handleOpen}>
             <span>Confirm</span>
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 
 export function DialogSizes() {
   const [size, setSize] = React.useState(null);
   const [fullWidth, setFullWidth] = React.useState(false);
-  const handleOpen = (value) => setSize(value);
- 
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = (value) => {
+    setSize(value)
+    setOpen(!!value);
+
+  };
+  
+
   return (
-    <>
+    <div>
       <div className="mb-3 flex gap-3">
         <Button onClick={() => handleOpen("xs")} >
           Open Dialog XS
@@ -141,30 +157,26 @@ export function DialogSizes() {
         <Checkbox checked={fullWidth} onChange={()=> setFullWidth(!fullWidth)} label="Full width"/>
       </div>
       <Dialog
-        open={
-          size === "xs" ||
-          size === "sm" ||
-          size === "md" ||
-          size === "lg" ||
-          size === "xl" ||
-          size === "xxl"
-        }
+        open={open}
         size={size || "md"}
-        handler={handleOpen}
+        onOpenChange={setOpen}
         fullWidth={fullWidth}
+        data-size={size}
       >
-        <DialogHeader>Its a simple dialog.</DialogHeader>
+        <DialogHeader onClose={() => setOpen(false)}>Its a simple dialog.</DialogHeader>
         <DialogBody>
+          <Text>
           The key to more success is to have a lot of pillows. Put it this way,
           it took me twenty five years to get these plants, twenty five years of
           blood sweat and tears, and I&apos;m never giving up, I&apos;m just
           getting started. I&apos;m up to something. Fan luv.
+          </Text>
         </DialogBody>
         <DialogFooter>
           <Button
             variant="text"
             color="error"
-            onClick={() => handleOpen(null)}
+            onClick={() => setOpen(false)}
             className="mr-1"
           >
             <span>Cancel</span>
@@ -172,13 +184,13 @@ export function DialogSizes() {
           <Button
             
             color="success"
-            onClick={() => handleOpen(null)}
+            onClick={() => setOpen(false)}
           >
             <span>Confirm</span>
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 
@@ -188,12 +200,12 @@ export function DialogWithForm() {
   const handleOpen = () => setOpen((cur) => !cur);
  
   return (
-    <>
+    <div>
       <Button onClick={handleOpen}>Sign In</Button>
       <Dialog
         size="xs"
         open={open}
-        handler={handleOpen}
+        onOpenChange={handleOpen}
         className="bg-transparent shadow-none"
       >
         <Card className="mx-auto w-full max-w-[24rem]">
@@ -239,7 +251,7 @@ export function DialogWithForm() {
           </CardFooter>
         </Card>
       </Dialog>
-    </>
+    </div>
   );
 }
 
@@ -250,12 +262,12 @@ export function SelectCategoriesDialog() {
   const handleChecked = (name, value) => setChecked({...checked, [name]: value});
 
   return (
-    <>
+    <div>
       <Button onClick={handleOpen} >
         Select Categories Dialog
       </Button>
-      <Dialog size="sm" open={open} handler={handleOpen} className="p-4">
-        <DialogHeader className="relative m-0 block">
+      <Dialog size="sm" open={open} onOpenChange={handleOpen} >
+        <DialogHeader onClose={handleOpen}>
           <Text variant="h4" color="slate">
             Select Categories
           </Text>
@@ -263,14 +275,6 @@ export function SelectCategoriesDialog() {
             Categories help you organize your contacts based on their interests
             and interactions.
           </Text>
-          <IconButton
-            size="sm"
-            variant="text"
-            className="!absolute right-3.5 top-3.5"
-            onClick={handleOpen}
-          >
-            <MaterialIcon className="h-4 w-4 stroke-2" icon="close"/>
-          </IconButton>
         </DialogHeader>
         <DialogBody 
         className="space-y-4 px-2">
@@ -331,7 +335,7 @@ export function SelectCategoriesDialog() {
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 
@@ -341,11 +345,11 @@ export function DeliveryMethodDialog() {
   const handleOpen = () => setOpen(!open);
  
   return (
-    <>
+    <div>
       <Button onClick={handleOpen} >
         Delivery Method Dialog
       </Button>
-      <Dialog size="sm" open={open} handler={handleOpen} className="p-4">
+      <Dialog size="sm" open={open} onOpenChange={handleOpen} className="p-4">
         <DialogHeader className="relative m-0" onClose={handleOpen}>
           <Text variant="h4" color="slate">
             Delivery Method
@@ -437,7 +441,7 @@ export function DeliveryMethodDialog() {
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 export function OrderDetailsDialog() {
@@ -446,11 +450,11 @@ export function OrderDetailsDialog() {
   const handleOpen = () => setOpen(!open);
  
   return (
-    <>
+    <div>
       <Button onClick={handleOpen} >
         Order Details Dialog
       </Button>
-      <Dialog size="sm" open={open} handler={handleOpen} >
+      <Dialog size="sm" open={open} onOpenChange={handleOpen} >
         <DialogHeader className="relative m-0 p-6" onClose={handleOpen}>
           <Text variant="h4" color="slate">
             Delivery Method
@@ -519,7 +523,7 @@ export function OrderDetailsDialog() {
           </Button>
         </DialogFooter>
       </Dialog>
-    </>
+    </div>
   );
 }
 

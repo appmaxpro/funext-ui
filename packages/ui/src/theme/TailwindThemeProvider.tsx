@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from "react";
 import merge from "deepmerge";
-import tailwindTheme from "../components/index";
-import {type TailwindTheme} from "../components/index";
+import tailwindTheme from "../mui/tw";
+import {type TailwindTheme} from "../mui";
 
 import combineMerge from "../utils/combineMerge";
 

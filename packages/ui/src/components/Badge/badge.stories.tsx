@@ -1,8 +1,8 @@
-import { Box } from "../../../core/box";
-import { Badge as BadgeComponent } from ".";
+import { Box } from "../Box";
+import { Badge } from ".";
 import React from "react";
+import Button from "../Button";
 
-const Badge = (props: any) => <BadgeComponent bg="secondary" {...props} />;
 
 const config = {
   component: Badge,
@@ -13,19 +13,19 @@ export const Basic = () => {
   return (
     <Box>
       <h1>
-        Example heading <Badge>New</Badge>
+        Example heading <Badge content={22}>New</Badge>
       </h1>
       <h2>
-        Example heading <Badge>New</Badge>
+        Example heading <Badge content={22}>New</Badge>
       </h2>
       <h3>
-        Example heading <Badge>New</Badge>
+        Example heading <Badge content={22}>New</Badge>
       </h3>
       <h4>
-        Example heading <Badge>New</Badge>
+        Example heading <Badge content={22}>New</Badge>
       </h4>
       <h5>
-        Example heading <Badge>New</Badge>
+        Example heading <Badge content={22}>New</Badge>
       </h5>
       <h6>
         Example heading <Badge>New</Badge>
@@ -37,71 +37,53 @@ export const Basic = () => {
 export const Colors = () => {
   return (
     <Box>
-      <Badge m={1} bg="primary">
+      <Badge content={22} color="primary">
         Primary
       </Badge>
 
-      <Badge m={1} bg="secondary">
+      <Badge content={22} color="secondary">
         Secondary
       </Badge>
 
-      <Badge m={1} bg="success">
+      <Badge content={22} color="success">
         Success
       </Badge>
 
-      <Badge m={1} bg="danger">
+      <Badge content={22} color="error">
         Danger
       </Badge>
 
-      <Badge m={1} bg="warning" color="dark">
+      <Badge content={22} color="warning">
         Warning
-      </Badge>
-
-      <Badge m={1} bg="info" color="dark">
-        Info
-      </Badge>
-
-      <Badge m={1} bg="light" color="dark">
-        Light
-      </Badge>
-
-      <Badge m={1} bg="dark">
-        Dark
       </Badge>
 
       <Box />
 
-      <Badge m={1} bgColor="primary" rounded="pill">
+      <Badge content={22} color="primary" shape="circle">
         Primary
       </Badge>
 
-      <Badge m={1} bgColor="secondary" rounded="pill">
+      <Badge content={22} color="secondary" shape="circle">
         Secondary
       </Badge>
 
-      <Badge m={1} bgColor="success" rounded="pill">
+      <Badge content={22} color="success" shape="circle">
         Success
       </Badge>
 
-      <Badge m={1} bgColor="danger" rounded="pill">
+      <Badge content={22} color="error" shape="circle">
         Danger
       </Badge>
 
-      <Badge m={1} bgColor="warning" rounded="pill" color="dark">
+      <Badge content={22} color="warning" shape="circle">
         Warning
       </Badge>
 
-      <Badge m={1} bgColor="info" rounded="pill" color="dark">
+      <Badge content={22} color="info" shape="circle">
         Info
       </Badge>
 
-      <Badge m={1} bgColor="light" rounded="pill" color="dark">
-        Light
-      </Badge>
 
-      <Badge m={1} bgColor="dark" rounded="pill">
-        Dark
-      </Badge>
     </Box>
   );
 };
@@ -109,37 +91,31 @@ export const Colors = () => {
 export const Composition = () => {
   return (
     <Box d="inline-flex" gap={4}>
-      <Button m={1} color="primary">
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="primary">
+        <Button> Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="secondary" outline>
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="secondary">
+        <Button > Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="success">
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="success">
+        <Button> Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="danger">
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="error">
+        <Button> Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="warning">
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="warning">
+        <Button> Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="info">
-        Notifications <Badge>10</Badge>
-      </Button>
+      <Badge content={22} color="info">
+        <Button> Notifications 10</Button>
+      </Badge>
 
-      <Button m={1} color="light">
-        Notifications <Badge>10</Badge>
-      </Button>
 
-      <Button m={1} color="dark">
-        Notifications <Badge>10</Badge>
-      </Button>
     </Box>
   );
 };
@@ -147,7 +123,7 @@ export const Composition = () => {
 export const Variant = () => {
   return (
     <Box>
-      <Badge>Default</Badge> <Badge rounded="pill">Pill</Badge>
+      <Badge>Default</Badge> <Badge shape="square">Pill</Badge>
     </Box>
   );
 };

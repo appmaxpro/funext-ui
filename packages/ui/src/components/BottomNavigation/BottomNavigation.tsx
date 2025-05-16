@@ -1,5 +1,5 @@
 import React from "react";
-import { OverrideProps } from "../../props";
+import { OverrideProps } from "../../theme/tw/props";
 import {
   clsx,
   composeClasses,
@@ -101,7 +101,6 @@ const BottomNavigationRoot = styled('div', {
     display: 'flex',
     justifyContent: 'center',
     height: 56,
-    backgroundColor: (theme.vars || theme).palette.background.paper,
   })),
 );
 
@@ -149,12 +148,16 @@ const BottomNavigation = React.forwardRef<HTMLElement,BottomNavigationProps>(fun
           }
         }
 
-        const childValue = child.props.value === undefined ? childIndex : child.props.value;
+        const childValue = child.props.value === undefined 
+          ? childIndex 
+          : child.props.value;
 
         return React.cloneElement(child, {
           //@ts-ignore
           selected: childValue === value,
-          showLabel: child.props.showLabel !== undefined ? child.props.showLabel : showLabels,
+          showLabel: child.props.showLabel !== undefined 
+          ? child.props.showLabel 
+          : showLabels,
           value: childValue,
           onChange,
         });

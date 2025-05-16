@@ -96,3 +96,4 @@ export const Fade = forwardRef<HTMLElement, FadeProps>(
     );
   },
 );
+export default Fade;

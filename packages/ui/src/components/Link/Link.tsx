@@ -13,6 +13,7 @@ import {
   type StyledComponent,
   memoTheme,
   Theme,
+  twx,
 } from "../../styles";
 
 import { Text, useTypographyDefaultProps, TextRoot } from "../Text";
@@ -20,8 +21,7 @@ import linkClasses, {
   getLinkUtilityClass,
   type LinkClassKey,
 } from "./linkClasses";
-import type { LinkProps, LinkOwnProps } from "./LinkProps";
-import { fontWeight } from "@mui/system";
+import type { LinkProps, LinkOwnProps } from "./types";
 
 const v6Colors: any = {
   primary: true,
@@ -108,27 +108,19 @@ const LinkRoot = styled(TextRoot, {
           .map(([color]) => ({
             props: { underline: "always", color },
             style: {
-              "--link-underline-color": theme.vars
-                ? // @ts-ignore
-                  `rgba(${theme.vars.palette[color].mainChannel} / 0.4)`
-                : // @ts-ignore
-                  alpha(theme.palette[color]!.main, 0.4),
+              "--link-underline-color": twx.alpha('primary', .4),
             },
           })),
         {
           props: { underline: "always", color: "textPrimary" },
           style: {
-            "--link-underline-color": theme.vars
-              ? `rgba(${theme.vars.palette.text.primaryChannel} / 0.4)`
-              : alpha(theme.palette.text.primary, 0.4),
+            "--link-underline-color": twx.alpha('primary', .4),
           },
         },
         {
           props: { underline: "always", color: "textSecondary" },
           style: {
-            "--link-underline-color": theme.vars
-              ? `rgba(${theme.vars.palette.text.secondaryChannel} / 0.4)`
-              : alpha(theme.palette.text.secondary, 0.4),
+            "--link-underline-color": twx.alpha('secondary', 0.4),
           },
         },
         {
@@ -170,10 +162,10 @@ const LinkRoot = styled(TextRoot, {
   }),
 ) as StyledComponent<LinkOwnProps>;
 
-const Link = React.forwardRef<HTMLElement, LinkProps>(
+export const Link = React.forwardRef<HTMLElement, LinkProps>(
   function Link(inProps, ref) {
     const { color = "primary", variant = "inherit" } = inProps;
-
+    
     const props = useTypographyDefaultProps(
       { ...inProps, color, variant } as any,
       "MuxLink",
@@ -227,16 +219,11 @@ const Link = React.forwardRef<HTMLElement, LinkProps>(
       color,
       variant,
       disabled,
+
     };
 
     const classes = useUtilityClasses(ownerState);
-    const extra =
-      (color && v6Colors[color] === undefined) || fw
-        ? {
-            color,
-            fontWeight: fw,
-          }
-        : underline;
+    
     return (
       <LinkRoot
         color={asColor}
@@ -248,12 +235,14 @@ const Link = React.forwardRef<HTMLElement, LinkProps>(
         onFocus={handleFocus}
         ref={ref}
         ownerState={ownerState}
+        fw={fw}
+        sx={sx}
         {...other}
-        sx={
+        /*sx={
           extra
             ? [...(extra ? [extra] : []), ...(Array.isArray(sx) ? sx : [sx])]
             : sx
-        }
+        }*/
         style={{
           ...other.style,
           ...(underline === "always" &&
@@ -278,18 +267,9 @@ const getTextDecoration = <T extends Theme>({
   theme: T;
   ownerState: { color: string };
 }) => {
-  const transformedColor = ownerState.color;
-
-  const color = (getPath(theme, `palette.${transformedColor}`, false) ||
-    ownerState.color) as string;
-  const channelColor = getPath(theme, `palette.${transformedColor}Channel`) as
-    | string
-    | null;
-  if ("vars" in theme && channelColor) {
-    return `rgba(${channelColor} / 0.4)`;
-  }
+  
   try {
-    return alpha(color, 0.4);
+    return twx.alpha(ownerState.color ?? 'primary', 0.4) ;
   } catch (ex) {}
 };
 

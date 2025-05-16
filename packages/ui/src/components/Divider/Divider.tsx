@@ -66,7 +66,7 @@ const DividerRoot = styled('div', {
   flexShrink: 0,
   borderWidth: 0,
   borderStyle: 'solid',
-  borderColor: `var(--tw-border-color, ${(theme.vars || theme).palette.divider})`,
+  //borderColor: `var(--tw-border-color, ${(theme.vars || theme).palette.divider})`,
   borderBottomWidth: 'thin',
   variants: [
     {
@@ -85,9 +85,7 @@ const DividerRoot = styled('div', {
         light: true,
       },
       style: {
-        borderColor: `var(--tw-border-color, ${theme.vars
-          ? 'rgba('+theme.vars.palette.dividerChannel+'/ 0.08)'
-          : alpha(theme.palette.divider, 0.08)})`,
+        '--tw-border-opacity': .4,
       },
     },
     {
@@ -104,8 +102,8 @@ const DividerRoot = styled('div', {
         orientation: 'horizontal',
       },
       style: {
-        marginLeft: theme.spacing(2),
-        marginRight: theme.spacing(2),
+        marginLeft: 2,
+        marginRight: 2,
       },
     },
     {
@@ -114,8 +112,8 @@ const DividerRoot = styled('div', {
         orientation: 'vertical',
       },
       style: {
-        marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1),
+        marginTop: 1,
+        marginBottom: 1,
       },
     },
     {
@@ -159,7 +157,6 @@ const DividerRoot = styled('div', {
           width: '100%',
           borderTopWidth: 'thin',
           borderTopStyle: 'inherit',
-          borderTopColor: `var(--tw-border-color, ${(theme.vars || theme).palette.divider})`,
         },
       },
     },
@@ -171,7 +168,6 @@ const DividerRoot = styled('div', {
           height: '100%',
           borderLeftWidth: 'thin',
           borderLeftStyle: 'inherit',
-          borderLeftColor: `var(--tw-border-color, ${(theme.vars || theme).palette.divider})`,
         },
       },
     },
@@ -227,7 +223,7 @@ const DividerWrapper = styled('span', {
   ],
 }));
 
-const Divider = React.forwardRef<HTMLElement,DividerProps>((inProps, ref) => {
+export const Divider = React.forwardRef<HTMLElement,DividerProps>((inProps, ref) => {
   const props = useMuxDefaultProps({ props: inProps, name: 'MuxDivider' }) as DividerProps;
   const {
     absolute = false,

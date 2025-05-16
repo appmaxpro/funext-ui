@@ -9,24 +9,18 @@
     "ui",
     "funext"
   ],
+  "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./*": "./src/*/index.ts",
-    "./components/*": "./src/components/*",
-    "./svg-icon": "./src/svg-icon.ts",
-    "./package.json": "./package.json"
-  },
   "imports": {
     "#is-development": {
-      "development": "./src/mui/utils/conditions/true.ts",
-      "default": "./src/mui/utils/conditions/false.ts"
+      "development": "./src/utils/conditions/true.ts",
+      "default": "./src/utils/conditions/false.ts"
     },
     "#is-browser": {
-      "browser": "./src/mui/utils/conditions/true.ts",
-      "default": "./src/mui/utils/conditions/is-browser.ts"
+      "browser": "./src/utils/conditions/true.ts",
+      "default": "./src/utils/conditions/is-browser.ts"
     }
   },
   "scripts": {
@@ -35,7 +29,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build": "node  --experimental-modules scripts/build.js . -o dist",
-    "clean": "rimraf dist & rimraf node_modules/.cache/vite",
+    "clean": "rimraf dist & rimraf node_modules/.cache/vite & rimraf storybook-static",
     "lint": "eslint src",
     "build:react": "pnpm --filter ./packages/material-tailwind-react build",
     "tw": "npx tailwindcss -i ./src/global.css -o ./dist/global.css",
@@ -43,48 +37,37 @@
   },
   "peerDependencies": {
     "@emotion/cache": "^11.11.0",
-    "@emotion/is-prop-valid": "^1.2.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@emotion/is-prop-valid": "^1.2.2",
+    "@emotion/sheet": "^1.4.0",
+    "@floating-ui/react": "^0.27.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "@mui/system": "6.1.6",
     "@mui/utils": "6.1.6",
-    "stylis": "^4.3.2",
+    "stylis": "^4.2.0",
     "stylis-plugin-rtl": "^2.1.1",
     "@af-utils/virtual-core": "^1.0.2",
-    "bootstrap-icons": "^1.11.3",
-    "react-material-symbols": "^4.4.0"
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.5"
   },
-
   "dependencies": {
-    "@floating-ui/react": "^0.27.8",
     "classnames": "2.3.2",
     "color": "^4.2.3",
     "deepmerge": "4.2.2",
     "focus-trap": "^7.5.4",
-    "framer-motion": "^11.3.21",
-    "react-is": "^18.3.1",
-    "react-transition-group": "^4.4.5",
-    "tailwind-merge": "^2.5.2"
-  },
-  "peerDependenciesMeta": {
-    "bootstrap-icons": {
-      "optional": true
-    },
-    "react-material-symbols": {
-      "optional": true
-    }
+    "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
     "@emotion/babel-preset-css-prop": "^11.12.0",
-    "@storybook/addon-essentials": "^8.0.5",
-    "@storybook/addon-interactions": "^8.0.5",
-    "@storybook/addon-links": "^8.0.5",
-    "@storybook/addon-themes": "^8.0.5",
-    "@storybook/blocks": "^8.0.5",
-    "@storybook/react": "^8.0.5",
-    "@storybook/react-vite": "^8.0.5",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/addon-interactions": "^8.6.12",
+    "@storybook/addon-links": "^8.6.12",
+    "@storybook/addon-themes": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/react": "^8.6.12",
+    "@storybook/react-vite": "^8.6.12",
     "@storybook/testing-library": "^0.2.2",
     "@types/color": "^3.0.6",
     "@types/node": "^20.11.30",
@@ -94,9 +77,7 @@
     "@types/react-transition-group": "^4.4.10",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
     "@typescript-eslint/parser": "^7.4.0",
-    "@vitejs/plugin-react": "^4.2.1",
     "csstype": "^3.1.3",
-    "autoprefixer": "^10.4.20",
     "babel-plugin-macros": "^3.1.0",
     "commander": "^12.0.0",
     "eslint": "^8.57.0",
@@ -105,25 +86,130 @@
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
     "i18next": "^23.10.1",
-    "postcss": "^8.4.41",
     "prettier": "^3.2.5",
     "prop-types": "^15.8.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "react-i18next": "^14.1.0",
     "rimraf": "^5.0.5",
     "sass": "^1.72.0",
-    "storybook": "^8.0.5",
-    "tailwindcss": "^3.4.9",
+    "storybook": "^8.6.12",
     "typescript": "^5.4.3",
-    "vite": "^5.4.0",
+    "vite": "^6.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@tailwindcss/vite": "^4.1.5",
     "vite-plugin-handlebars": "^2.0.0",
-    "vite-plugin-svgr": "^4.2.0"
+    "vite-plugin-svgr": "^4.2.0",
+    "@emotion/cache": "^11.11.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@emotion/is-prop-valid": "^1.2.2",
+    "@emotion/sheet": "^1.4.0",
+    "@floating-ui/react": "^0.27.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "@mui/system": "6.1.6",
+    "@mui/utils": "6.1.6",
+    "stylis": "^4.2.0",
+    "stylis-plugin-rtl": "^2.1.1",
+    "@af-utils/virtual-core": "^1.0.2",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.5"
   },
-  
+  "peerDependenciesMeta": {
+    "@emotion/cache": {
+      "optional": true
+    },
+    "@emotion/styled": {
+      "optional": true
+    },
+    "@emotion/react": {
+      "optional": true
+    },
+    "@emotion/sheet": {
+      "optional": true
+    },
+    "@af-utils/virtual-core": {
+      "optional": true
+    },
+    "tailwindcss": {
+      "optional": true
+    },
+    "stylis": {
+      "optional": true
+    }
+  },
   "sideEffects": false,
   "publishConfig": {
     "access": "public",
     "directory": "build"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*/index.ts",
+    "./components/*": "./src/components/*",
+    "./components/**/": "./src/components/**/",
+    "./components/SvgIcon": "./src/components/SvgIcon/index.ts",
+    "./Accordion": "./src/components/Accordion/index.ts",
+    "./Alert": "./src/components/Alert/index.ts",
+    "./Avatar": "./src/components/Avatar/index.ts",
+    "./Button": "./src/components/Button/index.ts",
+    "./BottomNavigation": "./src/components/BottomNavigation/index.ts",
+    "./Card": "./src/components/Card/index.ts",
+    "./Checkbox": "./src/components/Checkbox/index.ts",
+    "./Chip": "./src/components/Chip/index.ts",
+    "./Popper": "./src/components/Popper/index.ts",
+    "./Dialog": "./src/components/Dialog/index.ts",
+    "./IconButton": "./src/components/IconButton/index.ts",
+    "./Input": "./src/components/Input/index.ts",
+    "./Menu": "./src/components/Menu/index.ts",
+    "./Popover": "./src/components/Popover/index.ts",
+    "./Progress": "./src/components/Progress/index.ts",
+    "./Radio": "./src/components/Radio/index.ts",
+    "./Select": "./src/components/Select/index.ts",
+    "./Switch": "./src/components/Switch/index.ts",
+    "./Tooltip": "./src/components/Tooltip/index.ts",
+    "./Text": "./src/components/Text/index.ts",
+    "./Collapse": "./src/components/Collapse/index.ts",
+    "./List": "./src/components/List/index.ts",
+    "./ButtonGroup": "./src/components/ButtonGroup/index.ts",
+    "./Drawer": "./src/components/Drawer/index.ts",
+    "./Badge": "./src/components/Badge/index.ts",
+    "./Slider": "./src/components/Slider/index.ts",
+    "./Spinner": "./src/components/Spinner/index.ts",
+    "./Timeline": "./src/components/Timeline/index.ts",
+    "./Stepper": "./src/components/Stepper/index.ts",
+    "./SpeedDial": "./src/components/SpeedDial/index.ts",
+    "./Panel": "./src/components/Panel/index.ts",
+    "./Divider": "./src/components/Divider/index.ts",
+    "./Link": "./src/components/Link/index.ts",
+    "./Box": "./src/components/Box/index.ts",
+    "./Stack": "./src/components/Stack/index.ts",
+    "./Grid": "./src/components/Grid/index.ts",
+    "./AutoSelect": "./src/components/Select/AutoSelect/index.ts",
+    "./Focus": "./src/components/Focus/index.ts",
+    "./Snackbar": "./src/components/Snackbar/index.ts",
+    "./GlobalStyles": "./src/components/GlobalStyles/index.ts",
+    "./Screen": "./src/components/Screen/index.ts",
+    "./Context": "./src/components/Context.tsx",
+    "./SvgIcon": "./src/components/SvgIcon/index.ts",
+    "./useAutocomplete": "./src/components/useAutocomplete/index.ts",
+    "./Chevron": "./src/components/internal/svg-icons/chevron.tsx",
+    "./CloseIcon": "./src/components/internal/svg-icons/Close.tsx",
+    "./SearchIcon": "./src/components/internal/svg-icons/Search.tsx",
+    "./Grow": "./src/lib/transitions/grow/index.ts",
+    "./Slide": "./src/lib/transitions/slide/index.ts",
+    "./Fade": "./src/lib/transitions/fade/index.ts",
+    "./CoreThemeProvider": "./src/mui/CoreThemeProvider",
+    "./svg-icon": "./src/svg-icon.ts",
+    "./global.css": "./src/global.css",
+    "./base.css": "./src/base.css",
+    "./package.json": "./package.json"
+  },
+  "pnpm": {
+    "updateConfig": {
+      "ignoreDependencies": [
+        "@mui\\material",
+        "@mui\\x-charts"
+      ]
+    }
   }
 }

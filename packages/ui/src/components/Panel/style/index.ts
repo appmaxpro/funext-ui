@@ -3,8 +3,8 @@ import panelGradient from "./panelGradient";
 import panelOutlined from './panelOutlined';
 
 // types
-import type { variant, color} from "../../../types/components/panel";
-import { propTypesVariant, propTypesColor } from "../../../types/components/panel";
+import type { variant, color} from "../types";
+import { propTypesVariant, propTypesColor } from "../types";
 
 export interface PanelStylesType {
   defaultProps?: {

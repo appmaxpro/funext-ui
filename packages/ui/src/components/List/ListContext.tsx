@@ -2,10 +2,10 @@ import React, { useCallback, useMemo } from "react";
 
 // types
 import type {
-  ListContextProps,
+  ListContextResult,
   ListContextValues,
   ItemInteractive,
-} from "../../types/components/list";
+} from "./types";
 import type { ListStylesType } from "../../components/List/style";
 
 import { useTailwindTheme } from "../../theme";
@@ -17,11 +17,11 @@ export interface ListContextProviderProps {
   children: React.ReactNode;
 }
 
-const ListContext = React.createContext<ListContextProps | null>(null);
+const ListContext = React.createContext<ListContextResult | null>(null);
 
 ListContext.displayName = "Mux.ListContext";
 
-const defaultListContext: ListContextProps = {
+const defaultListContext: ListContextResult = {
   getItemStyle: (
     disabled?: Boolean,
     selected?: Boolean,
@@ -98,7 +98,7 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
     const asObject = (val: any) =>
       !val ? undefined : typeof val === "object" ? val : { cp: val };
 
-    const listStyle = { ...styles?.base?.list, ...otherValues.list, divider: divider === true ? styles?.base?.divider : divider  };
+    const listStyle = { ...styles?.base?.list, divider: divider === true ? styles?.base?.divider : divider  };
     const styleItem = styles?.base?.item;
     const interactiveStyles = styleItem?.interactive;
 
@@ -197,14 +197,8 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
         ripple,
         rippleClassName: rippleClassName,
       },
-      prefix: twMerge(objectsToString(styles?.base?.itemPrefix), prefix),
-      suffix: twMerge(objectsToString(styles?.base?.itemSuffix), suffix),
-      global,
-      divider,
-      gutters,
-      dense,
-      ul,
-      
+      prefix: typeof prefix === 'string' ? prefix :  prefix && styles?.base?.itemPrefix,
+      suffix: typeof suffix === 'string' ? suffix :  suffix && styles?.base?.itemSuffix,
     };
   }, [listClassName, hasActive, hasFocus, hasHover, hasSelect, item?.className]);
 
@@ -235,6 +229,7 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
   const values = useMemo(() => ({
     ...defaults,
     getItemStyle: itemStyle,
+    base: value
   }), [itemStyle]);
 
   return <ListContext.Provider value={values}>{children}</ListContext.Provider>;

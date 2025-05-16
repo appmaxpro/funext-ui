@@ -92,7 +92,7 @@ function computeSize(
     up: (breakpoint: Breakpoint, inclusive: boolean = false) =>
       isWidthUp(breakpoints, breakpoint, width, inclusive),
 
-    down: (breakpoint: Breakpoint, inclusive: boolean = false) =>
+    down: (breakpoint: Breakpoint, inclusive: boolean = true) =>
       isWidthDown(breakpoints, breakpoint, width, inclusive),
     valid: true,
   };

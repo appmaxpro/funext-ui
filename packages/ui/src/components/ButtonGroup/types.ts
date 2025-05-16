@@ -3,7 +3,7 @@ import {
   OverridableStringUnion,
   OverridableComponent, 
   OverrideProps 
-} from '../../props';
+} from '../../theme/tw/props';
 import { 
   generateUtilityClass, 
   generateUtilityClasses,

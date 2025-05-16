@@ -1,15 +1,18 @@
-import styled from "@emotion/styled";
+import { styled } from "../../styles";
+import Box, { BoxProps } from "../Box";
 
-export interface StackProps {
-  gap?: 0 | 1 | 2 | 3 | 4 | 5;
+export interface StackProps extends BoxProps{
   horizontal?: boolean;
 }
 
-export const Stack = styled.div<StackProps>(
-  ({ gap = 0, horizontal }) => [
+export const Stack = styled(Box, {
+  name: 'MuxStack',
+  
+  shouldForwardProp: (prop:any) => prop !== 'horizontal'
+})<StackProps>(
+  ({ horizontal }) => [
     {
-      'flex-col': !horizontal,
-      'gap': gap
+      'flexDirection': !horizontal ? 'column' : 'row',
     },
   ],
   () => ({

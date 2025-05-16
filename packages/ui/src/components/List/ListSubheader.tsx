@@ -10,7 +10,7 @@ import {
   Theme
 } from "../../styles";
 
-import { OverridableComponent, OverrideProps } from "../../props";
+import { OverridableComponent, OverrideProps } from "../../theme/tw/props";
 
 export interface ListSubheaderClasses {
   /** Styles applied to the root element. */
@@ -199,7 +199,7 @@ export const ListSubheader = React.forwardRef<
   const {
     className,
     color = "default",
-    component = "li",
+    component,
     gutters = false,
     sticky = true,
     inset = false,

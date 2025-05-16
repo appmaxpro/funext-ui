@@ -2,6 +2,15 @@ import {createPortal} from 'react-dom'
 import {usePortal} from './usePortal'
 import {FloatingPortal} from '@floating-ui/react';
 
+function getElement(root?: HTMLElement | string) {
+  if (root) {
+    if (root instanceof HTMLElement)
+      return root;
+
+    return document.getElementById(root)
+  }
+}
+
 /**
  * @public
  */
@@ -13,16 +22,20 @@ export interface PortalProps {
   __unstable_name?: string;
 
   floatingPortal?: boolean | string | HTMLElement;
+
+  root?: HTMLElement | string;
 }
 
 /**
  * @public
  */
 export function Portal(props: PortalProps): React.ReactPortal | React.ReactNode | null {
-  const {children, floatingPortal, __unstable_name: name} = props
+  const {children, floatingPortal, __unstable_name: name, root,} = props
   const portal = usePortal()
   const portalElement =
-    (name ? portal.elements && portal.elements[name] : portal.element) || portal.elements?.default
+    ( root 
+      ? getElement(root)
+      : name ? portal.elements && portal.elements[name] : portal.element) || portal.elements?.default
 
   if (!portalElement) {
     return null

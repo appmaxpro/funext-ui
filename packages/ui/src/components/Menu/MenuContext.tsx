@@ -1,47 +1,35 @@
 import React from "react";
 
-import type {
-  FloatingContext,
-  ReferenceType,
-  FloatingTreeType,
-  ArrowOptions,
-  UseInteractionsReturn,
+import {
+  type FloatingContext,
+  type ReferenceType,
+  type FloatingTreeType,
+  type ArrowOptions,
+  type UseInteractionsReturn,
+  useListItem,
 } from "@floating-ui/react";
 
 // types
-import { Handler } from "../../types/components/menu";
+import { Handler, MenuDismissProps } from "./types";
 
 import type { ArrowProps, AnimationProps, Strategy } from "../../types/generic";
 import { MuxFloatingProvider, useFloatingContext } from "../Context";
+import { createGlobalScopedContext } from "../../lib/createGlobalScopedContext";
+import { EMPTY_RECORD } from "../../lib/constants";
 
 export type MenuContextProps<T extends HTMLElement = HTMLButtonElement> = {
-  open: boolean;
-  handler?: Handler;
-  setInternalOpen: Handler;
-  strategy: Strategy;
-  x: number;
-  y: number;
-  reference: (instance: T | null) => void;
-  positionReference?: (instance: T | null) => void;
-  floating: (node: HTMLElement | null) => void;
-  listItemsRef: React.MutableRefObject<any[]>;
+  context: FloatingContext<T>;
   getReferenceProps: UseInteractionsReturn["getReferenceProps"];
   getFloatingProps: UseInteractionsReturn["getFloatingProps"];
   getItemProps: UseInteractionsReturn["getItemProps"];
-  animate: boolean;
-  lockScroll?: boolean;
-  context: FloatingContext<ReferenceType>;
-  tree: FloatingTreeType<ReferenceType>;
+  
   allowHover: boolean;
-  internalAllowHover: boolean;
-  activeIndex: number;
-  setActiveIndex: Handler<number>;
-  nested: boolean;
-  arrow?: ArrowProps;
+  setAllowHover: React.Dispatch<React.SetStateAction<boolean>>;
   arrowRef?: ArrowOptions["element"];
-  disablePortal?: boolean;
   rtl?: boolean;
-  nav?: boolean;
+  navigation?: boolean;
+  nested: boolean;
+  closeOnItemClick?: boolean;
 };
 
 export interface MenuContextProviderProps {
@@ -49,7 +37,9 @@ export interface MenuContextProviderProps {
   children: React.ReactNode;
 }
 
-export const MenuContext = React.createContext<null | MenuContextProps>(null);
+export const MenuContext = createGlobalScopedContext<null | MenuContextProps>(
+  '@funext/ui/context/menu', null);
+
 MenuContext.displayName = "Mux.MenuContext";
 
 export function useMenu() {
@@ -80,3 +70,20 @@ export const MenuContextProvider = ({
 };
 
 MenuContextProvider.displayName = "Mux.MenuContextProvider";
+
+
+export const MenuListContext = createGlobalScopedContext<null | MenuContextProps>(
+  '@funext/ui/context/menu/list', null);
+
+  export interface UseMenuItemProps {
+    label?: string | null;
+  }
+
+export function useMenuItem(props: UseMenuItemProps|undefined = EMPTY_RECORD) : {
+  ref: (node: HTMLElement | null) => void;
+  index: number;
+} {
+  const {index, ref} = useListItem(props);
+  return {index, ref}
+
+}

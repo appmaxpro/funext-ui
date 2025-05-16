@@ -12,7 +12,7 @@ import {
   useMuxDefaultProps,
 } from "../../styles";
 import Panel, { PanelProps } from "../Panel";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 
 export interface SnackbarContentClasses {
   /** Styles applied to the root element. */

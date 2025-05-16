@@ -34,25 +34,30 @@ export const accordion: AccordionStylesType = {
   styles: {
     base: {
       container: {
+        cn: "Accordion",
         display: "block",
         position: "relative",
         width: "w-full",
+
       },
       header: {
         initial: {
+          cn: "AccordionHeader",
           width: "w-full",
           py: "py-4",
           borderWidth: "border-b",
           textAlign: "text-justify",
+          
         },
         active: { 
-          color: "text-item" 
+          color: "text-primary" 
         },
         icon: {
-          ml: "ms-4",
+          ml: "ms-auto",
         },
       },
       body: {
+        cn: "AccordionBody",
         display: "block",
         width: "w-full",
         py: "py-4",

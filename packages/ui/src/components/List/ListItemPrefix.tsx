@@ -20,12 +20,12 @@ export const ListItemPrefix = React.forwardRef<
 >(({ className, children, ...rest }, ref) => {
   // 1. init
   
-  const { prefix } = useListContext()!;
+  const { base } = useListContext()!;
 
   // 3. set styles
   const listItemPrefixClasses = useMemo(
-    () => twMerge(className, prefix),
-    [className, prefix],
+    () => base?.prefix ? twMerge(className, base?.prefix) : className,
+    [className, base?.prefix ],
   );
 
   return (

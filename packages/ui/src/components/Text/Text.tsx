@@ -121,7 +121,9 @@ export const TextRoot = styled("span", {
       },
     },
     {
-      props: ({ ownerState }: any) => ownerState.noWrap,
+      props: {
+        noWrap: true
+      },
       style: {
         overflow: "hidden",
         textOverflow: "ellipsis",
@@ -177,7 +179,9 @@ const resolveProps = (
     result["color"] = asColor;
   }
 
-  result["className"] = twMerge(asClassName, typographyColor);
+  console.log("Link::", asClassName, ", typographyColor:", typographyColor)
+  if (asClassName || typographyColor)
+    result["className"] = twMerge(asClassName ?? '', typographyColor ?? '');
 
   return result;
 };

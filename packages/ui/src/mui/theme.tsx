@@ -14,8 +14,6 @@ import {createPortal} from 'react-dom';
 //import {darkTheme, lightTheme} from './emotion';
 //import GlobalStyles from '../global';
 
-import stylesLtr from "../styles.module.scss";
-import stylesRtl from "../styles.rtl.module.scss";
 import { TailwindThemeProvider } from "../theme";
 import { useMediaQuery } from "../hooks";
 
@@ -26,35 +24,14 @@ const InputGlobalStyles = globalCss({
   '@keyframes mux-auto-fill': { from: { display: 'block' } },
   '@keyframes mux-auto-fill-cancel': { from: { display: 'block' } },
 });
-/*
-// XXX(epurkhiser): We create our own emotion cache object to disable the
-// stylis prefixer plugin. This plugin does NOT use browserlist to determine
-// what needs prefixed, just applies ALL prefixes.
-//
-// In 2022 prefixes are almost ubiquitously unnecessary
-const cache = createCache({key: 'app', stylisPlugins: []});
-// Compat disables :nth-child warning
-cache.compat = true;
-*/
 
-const STYLES: Record<string, CSSModuleClasses> = {
-  ltr: stylesLtr,
-  rtl: stylesRtl,
-};
 
-export interface CoreThemeContextValue {
+export interface CoreThemeProviderProps {
   dir?: string;
   theme?: "light" | "dark";
   options?: Partial<MuxThemeOption>;
+  children: React.ReactNode;
 }
-
-export interface CoreThemeProviderProps extends Partial<CoreThemeContextValue> {
-  children: React.ReactElement;
-}
-
-const ThemeContext = createContext<CoreThemeContextValue>({});
-
-
 
 export function CoreThemeProvider({
   dir,
@@ -62,13 +39,7 @@ export function CoreThemeProvider({
   options,
   children,
 }: CoreThemeProviderProps) {
-  const curr = useContext(ThemeContext);
-
-  const value = useMemo(() => {
-    return { ...curr, dir, theme };
-  }, [curr, dir, theme]);
-
-
+  
   useEffect(() => {
     const root = document.documentElement;
     if (root.getAttribute("dir") !== dir && dir) {
@@ -78,58 +49,29 @@ export function CoreThemeProvider({
           root.removeAttribute("dir");
         };
     }
+    document
+
   }, [dir]);
 
-  //const emotionTheme = theme === 'dark' ? darkTheme : lightTheme;
+  const mode = theme === 'dark' ? theme : 'light';
   return (
     <TailwindThemeProvider>
-      <MuiThemeProvider options={options} mode={theme} dir={dir === 'rtl' ? dir : undefined}>
-        <ThemeContext.Provider value={value}>
-          {createPortal(
+
+      <MuiThemeProvider options={options} mode={mode} dir={dir === 'rtl' ? dir : undefined}>
+        {/*createPortal(
             <Fragment>
-              <meta name="color-scheme" content={theme} />
+              <meta name="color-scheme" content={mode} />
             </Fragment>,
             document.head
-          )}
-          {typeof InputGlobalStyles === 'function' && <InputGlobalStyles/>}
-          {cloneElement(children, { dir: value.dir, "data-bs-theme": theme })}
+          )*/}
           
-        </ThemeContext.Provider>
+          {children}
+          {typeof InputGlobalStyles === 'function' && <InputGlobalStyles/>}
       </MuiThemeProvider>
     </TailwindThemeProvider> 
   );
 }
 
-export function useCoreTheme() {
-  return useContext(ThemeContext);
-}
-
-export function useStyles() {
-  const theme = useCoreTheme();
-  const dir = theme.dir;
-  if (dir && dir in STYLES) {
-    return STYLES[dir];
-  }
-  return STYLES.ltr;
-}
-
-export function useClassNames() {
-  const styles = useStyles();
-  return useCallback(
-    (...args: ClassValue[]) => cssx(styles, ...args),
-    [styles],
-  );
-}
-
-export function useClasses(...args: ClassValue[]) {
-  const styles = useStyles();
-  const className = useMemo(() => {
-    const res = cssx(styles, ...args);
-    return res.trim().length ? res : undefined;
-  }, [args, styles]);
-
-  return className;
-}
 
 export const DEFAULT_MODE_STORAGE_KEY = 'mode';
 export const DEFAULT_COLOR_SCHEME_STORAGE_KEY = 'color-scheme';

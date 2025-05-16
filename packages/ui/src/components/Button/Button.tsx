@@ -59,7 +59,7 @@ const commonIconStyles = [
   {
     props: { size: 'sm' },
     style: {
-      '& [data-ui=Icon]': {
+      '&>[data-ui=Icon]': {
         fontSize: "1.125rem",
       },
     },
@@ -67,7 +67,7 @@ const commonIconStyles = [
   {
     props: { size: 'md' },
     style: {
-      '& [data-ui=Icon]': {
+      '&>[data-ui=Icon]': {
         fontSize: "1.5rem",
       },
     },
@@ -75,7 +75,7 @@ const commonIconStyles = [
   {
     props: { size: 'lg' },
     style: {
-      '& [data-ui=Icon]': {
+      '&>[data-ui=Icon]': {
         fontSize: "1.875rem",
       },
     },
@@ -241,6 +241,7 @@ export const ButtonRoot = styled(ButtonBase, {
             '--button-ghost-bg': theme.vars
                 ? theme.vars.palette.Button.inheritFilledBg
                 : inheritFilledBackgroundColor,  
+            '--button-outlined-border': inheritFilledHoverBackgroundColor,
             '@media (hover: hover)': {
               [`&.${buttonClasses.canHover}:hover`]: {
                 '--button-filled-bg': inheritFilledHoverBackgroundColor,
@@ -248,7 +249,8 @@ export const ButtonRoot = styled(ButtonBase, {
                 '--button-text-bg': theme.vars
                   ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
                   : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
-                '--button-outlined-bg': theme.vars
+                '--button-outlined-bg': inheritFilledBackgroundColor,
+                '--button-outlined-border': theme.vars
                   ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
                   : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
               },

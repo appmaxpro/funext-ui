@@ -1,11 +1,8 @@
 import { useState } from "react";
 
-import { Box } from "../box";
-import { Button, Input } from "../../mui";
-import { InputLabel, TextLabel } from "../input-label";
+import { Box, Button, Checkbox } from "../../..";
 import {Fade} from '../fade';
 import { Slide } from "./slide";
-import { Checkbox } from "../../mui";
 import React from "react";
 
 const config = {

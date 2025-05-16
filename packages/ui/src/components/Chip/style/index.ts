@@ -92,7 +92,6 @@ export const chip: ChipStylesType = {
           borderRadius: "rounded-sm",
         },
         action: {
-          fontSize: "!text-xs",
         },
         icon: {
         },
@@ -104,7 +103,6 @@ export const chip: ChipStylesType = {
           borderRadius: "rounded",
         },
         action: {
-          fontSize: "!text-sm",
         },
         icon: {
         },
@@ -116,7 +114,6 @@ export const chip: ChipStylesType = {
           borderRadius: "rounded-md",
         },
         action: {
-          fontSize: "!text-[20px]",
         },
         icon: {
         },

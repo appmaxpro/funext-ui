@@ -10,8 +10,6 @@ import {
   useState,
 } from "react";
 import React from "react";
-import { MaterialIcon } from "../../../icons/material-icon";
-import { Badge } from "../Badge";
 import { clsx } from "../../styles";
 import {
   Input as MuiInput,
@@ -23,17 +21,14 @@ import {
   IconButton,
   ListItem,
   ListItemButton,
-  Select,
   Text,
-  AutoSelect,
-  autoSelectClasses,
-  AutoSelectProps,
   Spinner,
   Popper,
   Input,
   Card,
   useMediaQuery,
 } from "../..";
+
 import {
   FloatingContext,
   useClick,
@@ -43,20 +38,22 @@ import { twJoin } from "tailwind-merge";
 import { AutoSelectRenderInputParams, getScrollClasses } from "../../..";
 import { zIndex } from "../../theme/types";
 import { fontSize } from "@mui/system";
+import { MaterialIcon } from "../internal";
+import { AutoSelect, autoSelectClasses, AutoSelectProps } from ".";
 
 //import './scroll.scss'
 
 //import AutoSelect from './AutoSelect';
 //import autoSelectClasses from './autoSelectClasses';
 
-const meta: Meta<typeof Select> = {
+const meta: Meta<typeof AutoSelect> = {
   title: "Components/Select",
-  component: Select,
+  component: AutoSelect,
 };
 
 export default meta;
 
-type Story = StoryObj<typeof Select>;
+type Story = StoryObj<typeof AutoSelect>;
 
 type Fruit = {
   title: string;
@@ -349,7 +346,9 @@ const DefaultSelect = forwardRef((attrs: DefaultSelectProps, ref) => {
   //const [value, setValue] = useState(!!attrs.loading ? null : OPTIONS[0]);
   const [inputValue, setInputValue] = useState("");
   const [value, setValue] = useState<DefaultSelectProps["value"]>(
-    (attrs.value ?? attrs.multiple ? [] : null) as DefaultSelectProps["value"],
+    ((attrs.value ?? attrs.multiple)
+      ? []
+      : null) as DefaultSelectProps["value"],
   );
   const theme = useTheme();
   return (
@@ -359,7 +358,7 @@ const DefaultSelect = forwardRef((attrs: DefaultSelectProps, ref) => {
       ref={ref}
       {...(attrs as any)}
       //autoHighlight
-      options={!!attrs.loading ? [] : attrs.options ?? OPTIONS}
+      options={!!attrs.loading ? [] : (attrs.options ?? OPTIONS)}
       getOptionKey={(x) => x?.value}
       getOptionLabel={(x) => x?.title ?? ""}
       optionEquals={(o, v) => o?.value === v?.value}
@@ -683,7 +682,7 @@ function getSelectButtonStyles(selected: boolean, disabled?: boolean) {
 
 export const SelectButton = () => {
   const [inputValue, setInputValue] = useState("");
-  
+
   const ref = useRef<HTMLElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef();
@@ -706,7 +705,6 @@ export const SelectButton = () => {
   return (
     <Box className="w-full flex justify-center mt-10 px-5 relative">
       <Popper
-        animate={animation}
         trigger={
           <Button
             endIcon={<MaterialIcon icon="keyboard_arrow_down" size={24} />}
@@ -717,10 +715,12 @@ export const SelectButton = () => {
               minWidth: 260,
             }}
           >
-            {multiple ? ('Select '+value?.length +" items") : (value?.title ?? "Not selection ")}
+            {multiple
+              ? "Select " + value?.length + " items"
+              : (value?.title ?? "Not selection ")}
           </Button>
         }
-        interactions={(context) => [useClick(context)]}
+        elementProps={(context) => [useClick(context)]}
         disablePortal
         dismiss={{}}
         focusProps={{
@@ -779,8 +779,7 @@ export const SelectButton = () => {
               clearIcon={inputValue ? undefined : false}
               onInputChange={setInputValue}
               onChange={(value) => {
-                if(!multiple)
-                  document.getElementById(butId)?.click();
+                if (!multiple) document.getElementById(butId)?.click();
                 setValue(value);
                 setInputValue("");
               }}
@@ -791,14 +790,12 @@ export const SelectButton = () => {
               {...(multiple && {
                 multiple,
                 disableCloseOnSelect: true,
-                renderInputValue: () => null 
+                renderInputValue: () => null,
               })}
               renderOption={(props, option, state, ownerState) => (
                 <ListItemButton
                   ripple={false}
-                  startIcon={
-                    <Checkbox checked={state.selected} />
-                  }
+                  startIcon={<Checkbox checked={state.selected} />}
                   {...props}
                   as="li"
                   className={twJoin(
@@ -825,24 +822,33 @@ export const SelectButton = () => {
                 />
               )}
               menuHeader={
-                multiple &&
-                <div className="w-full grow border-y mt-1 p">
-                  <ListItemButton
-                    ripple={false}
-                    startIcon={<Checkbox checked={value.length === OPTIONS.length} 
-                    indeterminate={!!value?.length && value.length !== OPTIONS.length} />}
-                    as="div"
-                    className={twJoin(
-                      "flex w-full gap-2.5 px-2 focus:outline-none",
-                      "fs-12",
-                    )}
-                    onChange={
-                      () => setValue(value!.length === OPTIONS.length ? [] : OPTIONS)
-                    }
-                  >
-                    Select all
-                  </ListItemButton>
-                </div>
+                multiple && (
+                  <div className="w-full grow border-y mt-1 p">
+                    <ListItemButton
+                      ripple={false}
+                      startIcon={
+                        <Checkbox
+                          checked={value.length === OPTIONS.length}
+                          indeterminate={
+                            !!value?.length && value.length !== OPTIONS.length
+                          }
+                        />
+                      }
+                      as="div"
+                      className={twJoin(
+                        "flex w-full gap-2.5 px-2 focus:outline-none",
+                        "fs-12",
+                      )}
+                      onChange={() =>
+                        setValue(
+                          value!.length === OPTIONS.length ? [] : OPTIONS,
+                        )
+                      }
+                    >
+                      Select all
+                    </ListItemButton>
+                  </div>
+                )
               }
             />
           </Card.Body>
@@ -910,21 +916,18 @@ export const Cmdk = () => {
         placement="bottom"
         strategy="absolute"
         dismiss={{}}
-        animate={animation}
-        backdrop={{
-          animate: backdropAnimation,
-        }}
+        animate={true}
         style={{
           top: 0,
           bottom: 0,
           position: "relative",
-          height: md ? '100'  : undefined
+          height: md ? "100" : undefined,
         }}
         focusProps={{
           modal: true,
           initialFocus: ref,
         }}
-        overlay={{
+        overlayProps={{
           lockScroll: true,
           className: "z-modal flex justify-center items-center",
         }}
@@ -943,7 +946,7 @@ export const Cmdk = () => {
             {value ? value.title : "Not selection "}
           </Button>
         }
-        interactions={(context) => [useClick(context)]}
+        elementProps={(context) => [useClick(context)]}
         //disablePortal
         handler={(open) => {
           openRef.current = open;
@@ -1071,8 +1074,8 @@ export const AutoSelectCmdk = () => {
       if (popperType) {
         setTimeout(() => {
           heightRef.current = open
-            ? floatingContextRef.current?.refs?.floating?.current
-                ?.clientHeight ?? 0
+            ? (floatingContextRef.current?.refs?.floating?.current
+                ?.clientHeight ?? 0)
             : 0;
           console.log("SetHeight:height:", heightRef.current);
         }, 1000);
@@ -1170,6 +1173,7 @@ export const AutoSelectCmdk = () => {
         placeholder="Search text"
         ref={ref}
         onCompleteState={handleOpenState}
+        open={open}
         renderOption={(props, option, state, ownerState) => (
           <ListItemButton
             ripple={false}
@@ -1209,10 +1213,15 @@ export const AutoSelectCmdk = () => {
                   ),
                   placement: "bottom",
                   strategy: "absolute",
-                  animate: popperType == 2 ? animationDrawer : animation,
-
-                  backdrop: {
-                    animate: backdropAnimation,
+                  animation: popperType == 2 ? 'slideFadeIn' : 'slideFadeIn',
+                  animate: true,
+                  overlayProps: {
+                    animate: true,
+                    lockScroll: true,
+                    style: {
+                      overflow: "hidden",
+                      zIndex: theme.zIndex.modal,
+                    },
                     onClick:
                       popperType == 2
                         ? (event) => {
@@ -1233,7 +1242,7 @@ export const AutoSelectCmdk = () => {
                           }
                         : undefined,
                   },
-                  style: ({ context, floatingStyles }) => {
+                  style: (context) => {
                     floatingContextRef.current = context;
                     if (popperType == 1)
                       return {
@@ -1258,17 +1267,16 @@ export const AutoSelectCmdk = () => {
                       maxHeight: sm ? "100vh" : "90vh",
                       bottom: 0,
                     };
+
                   },
                   focusProps: {
                     modal: true,
                     initialFocus: -1,
                   },
-                  overlay: {
-                    lockScroll: true,
-                    style: {
-                      overflow: "hidden",
-                      zIndex: theme.zIndex.modal,
-                    },
+                  contentProps:{
+                     animate: true,
+                     animation: 'slideFadeIn',
+                     'data-xxx': 'up'
                   },
                   "aria-modal": "true",
                   roles: { role: "dialog" },

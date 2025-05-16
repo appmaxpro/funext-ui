@@ -7,7 +7,7 @@ import {
 import { 
   OverrideProps,
   OverridableComponent
-} from '../../props';
+} from '../../theme/tw/props';
 
 import { Theme } from './../../styles';
 

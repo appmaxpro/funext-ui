@@ -1,10 +1,10 @@
-import { MaterialIcon } from "../../../icons/material-icon";
-import { Box } from "../../../core/box";
-import { Link } from "../Link";
-import { Alert } from "./.";
+import { Box } from "../Box";
+import Link from "../Link";
 import { useState } from "react";
 import React from "react";
 import { Button } from "../..";
+import Alert from "./Alert";
+import {MaterialIcon} from "../internal";
 
 const config = {
   component: Alert,
@@ -32,22 +32,7 @@ export const Basic = () => {
         variant="filled"
         onClose={() => setOpen(false)}
         animate
-        motionProps={{
-          transition: { duration: 0.75 },
-          initial: "unmount",
-          exit: "unmount",
-          animate: open ? "mount" : "unmount",
-          variants: {
-            unmount: {
-              height: 0,
-              opacity: 0,
-            },
-            mount: {
-              height: "auto",
-              opacity: 1,
-            },
-          },
-        }}
+        
         open={open}
       >
         <Box alignItems="center" d="flex" g={2}>

@@ -11,12 +11,13 @@ import {
   clsx,
   useMuxDefaultProps,
   SxThemeProps,
+  twx,
 } from "../../styles";
 import SwitchBase, { SwitchBaseProps } from "../internal/SwitchBase";
 import { capitalize } from "../../utils";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 import RadioButtonIcon from "./RadioButtonIcon";
-import { OverridableStringUnion, StandardProps } from "../../props";
+import { OverridableStringUnion, StandardProps } from "../../theme/tw/props";
 import { mapThemeColor } from "../../hooks";
 
 export interface RadioClasses {
@@ -70,21 +71,16 @@ const RadioRoot = styled(SwitchBase, {
   },
 })(
   memoTheme(({ theme }) => ({
-    color: (theme.vars || theme).palette.text.secondary,
+    color: 'var(--muted-fg)',
     [`&.${radioClasses.disabled}`]: {
-      color: (theme.vars || theme).palette.action.disabled,
+      color: 'var(--act-disabled)',
     },
     variants: [
       {
         props: ({ownerState}:any) => !ownerState.disabled && ownerState.ripple,
         style: {
           "&:hover": {
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.action.activeChannel} / ${theme.vars.palette.action.hoverOpacity})`
-              : alpha(
-                  theme.palette.action.active,
-                  theme.palette.action.hoverOpacity,
-                ),
+            backgroundColor: twx.alpha('act-active', 'var(--act-hover-opacity)'),
             "@media (hover: none)": {
               backgroundColor: "transparent",
             },
@@ -93,26 +89,13 @@ const RadioRoot = styled(SwitchBase, {
       },
       {
         props: ({ ownerState }: any) =>
-          !ownerState.disabled &&
-          ownerState.ripple &&
           theme.palette.twColors?.includes(ownerState.color as any),
         style: ({ ownerState }: any) => ({
           [`&.${radioClasses.checked}`]: {
-            "--tw-bg-opacity": theme.palette.action.hoverOpacity,
-            backgroundColor: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-bg-opacity))`,
-          },
-        }),
-      },
-      {
-        props: ({ ownerState }: any) =>
-          theme.palette.twColors?.includes(ownerState.color as any),
-        style: ({ ownerState }: any) => ({
-          [`&.${radioClasses.checked}`]: {
-            "--tw-text-opacity": 1,
-            color: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-text-opacity))`,
+            color: twx.color(ownerState.color),
           },
           [`&.${radioClasses.disabled}`]: {
-            color: (theme.vars || theme).palette.action.disabled,
+            color: 'var(--act-disabled)',
           },
         }),
       }
@@ -171,7 +154,7 @@ export interface RadioProps
 const defaultCheckedIcon = <RadioButtonIcon checked />;
 const defaultIcon = <RadioButtonIcon />;
 
-const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
+export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
   function Radio(inProps, ref) {
     const props = useMuxDefaultProps({ props: inProps, name: "MuxRadio" });
     

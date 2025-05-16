@@ -15,11 +15,9 @@ import rtlPlugin from "stylis-plugin-rtl";
 // @ts-ignore
 import { prefixer } from "stylis";
 
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
 import { ThemeOptions } from "@mui/system";
+import MuiCacheProvider, { MuiCacheProviderProps } from "./MuiCacheProvider";
+import { EMPTY_RECORD } from "../lib/constants";
 //import ClassNameGenerator from "@mui/utils/ClassNameGenerator";
 //import { StyledContext } from "../components/Context";
 
@@ -72,7 +70,7 @@ const cache = createCache({
 const rtlCache = createCache({
   key: "mxr",
   prepend: true,
-  stylisPlugins: [prefixer, rtlPlugin],
+  stylisPlugins: [rtlPlugin],
 });
 
 export interface NextOptions {
@@ -83,7 +81,15 @@ export interface NextOptions {
     nonce?: string;
   };
 }
-export type MuxThemeOption = ThemeOptions;
+
+export type CacheProviderProps = Omit<
+  MuiCacheProviderProps,
+  "children" | "rtl"
+>;
+
+export type MuxThemeOption = ThemeOptions &
+  Omit<MuiCacheProviderProps, "children" | "dir">;
+
 export default function MuiThemeProvider(props: {
   children: React.ReactNode;
   theme?: Theme;
@@ -91,10 +97,11 @@ export default function MuiThemeProvider(props: {
   mode?: PaletteMode;
   dir?: "rtl" | undefined;
   nextOptions?: NextOptions;
+  cssCacheProps?: CacheProviderProps;
 }) {
-  const { dir, children, nextOptions, options, mode } = props;
+  const { dir, children, nextOptions, options, mode, cssCacheProps } = props;
 
-  const theme = React.useMemo(()=> {
+  const theme = React.useMemo(() => {
     const {
       theme = createTheme({
         direction: dir,
@@ -102,14 +109,10 @@ export default function MuiThemeProvider(props: {
         palette: { mode: mode || "light", ...options?.palette },
       }),
     } = props;
-    return theme
-  }, [props.theme, options, mode, dir ])
-
+    return theme;
+  }, [props.theme, options, mode, dir]);
 
   const [importedComponent, setImportedComponent] = React.useState(null);
-
-
-  const cssCache = (nextOptions?.cache ?? dir === "rtl") ? rtlCache : cache;
 
   //console.log("MuiThemeProvider: background:", theme.palette.action)
   function log(...val: any[]) {
@@ -117,14 +120,8 @@ export default function MuiThemeProvider(props: {
     return null;
   }
 
-  const emotionThemeProvider = (
-    <EmotionThemeProvider theme={theme}>
-      <MuxThemeProvider theme={theme}>
-        {React.cloneElement(children as any)}
-      </MuxThemeProvider>
-    </EmotionThemeProvider>
-  );
   if (nextOptions && !nextOptions.cache) {
+    const cssCache = (nextOptions?.cache ?? dir === "rtl") ? rtlCache : cache;
     return (
       <NextCacheProvider
         cache={cssCache}
@@ -133,12 +130,20 @@ export default function MuiThemeProvider(props: {
         }
         options={nextOptions.options}
       >
-        {emotionThemeProvider}
+        <MuxThemeProvider theme={theme}>
+          {children}
+        </MuxThemeProvider>
       </NextCacheProvider>
     );
   }
 
-  return <CacheProvider value={cssCache}>{emotionThemeProvider}</CacheProvider>;
+  return (
+    <MuiCacheProvider {...cssCacheProps} rtl={dir === "rtl"}>
+      <MuxThemeProvider theme={theme}>
+        {children}
+      </MuxThemeProvider>
+    </MuiCacheProvider>
+  );
 }
 
 const HiddenEl = () => {

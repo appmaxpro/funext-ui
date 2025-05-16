@@ -57,7 +57,7 @@ export interface AlertProps extends Omit<SxComponentProps<"div">, "title"> {
   title?: children;
 }
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   (
     {
       variant,

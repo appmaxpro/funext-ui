@@ -1,5 +1,5 @@
 import React from "react";
-import { OverrideProps } from "../../props";
+import { OverrideProps } from "../../theme/tw/props";
 import {
   clsx,
   composeClasses,
@@ -140,7 +140,7 @@ const BottomNavigationActionRoot = styled(ButtonBase, {
     flexDirection: "column",
     flex: "1",
     [`&.${bottomNavigationActionClasses.selected}`]: {
-      color: (theme.vars || theme).palette.primary.main,
+      color: 'var(--primary)',
     },
     variants: [
       {

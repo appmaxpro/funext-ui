@@ -8,7 +8,7 @@ import {
   generateUtilityClasses,
   generateUtilityClass,
 } from "../../styles";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 
 import { ButtonBase, type ButtonBaseProps } from "../Button/ButtonBase";
 import { capitalize } from "../../utils";

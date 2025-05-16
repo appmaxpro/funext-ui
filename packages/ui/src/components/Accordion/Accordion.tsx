@@ -13,18 +13,21 @@ import { AccordionContextProvider, useAccordion } from "./AccordionContext";
 import { AccordionHeader, AccordionHeaderProps } from "./AccordionHeader";
 import { AccordionBody, AccordionBodyProps } from "./AccordionBody";
 import { AnimationProps } from "../../types/generic";
+import { useControllableState } from "../../hooks/use-controllable-state";
+import { clsx } from "../../styles";
 
 export interface AccordionProps extends React.ComponentProps<"div"> {
-  open: boolean;
+  open?: boolean;
   icon?: string;
   animate?: AnimationProps;
   disabled?: boolean;
   className?: string;
   children: ReactNode;
+  defaultOpen?: boolean;
 }
 
 const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(
-  ({ open, icon, animate, className, disabled, children, ...rest }, ref) => {
+  ({ open:openProps, defaultOpen, icon, animate, className, disabled, children, ...rest }, ref) => {
     // 1. init
     const { accordion } = useTailwindTheme();
     const {
@@ -32,15 +35,24 @@ const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(
       styles: { base },
     } = accordion;
 
+
+
     // 2. set default props
     icon = icon ?? defaultProps.icon;
     animate = animate ?? defaultProps.animate;
     disabled = disabled ?? defaultProps.disabled;
     className = twMerge(defaultProps.className || "", className);
 
+    const [open, setOpen] = useControllableState({
+      prop: openProps,
+      defaultProp: defaultOpen,
+      
+      caller: 'Accordion'
+    })
+
     // 3. set styles
     const accordionClasses = twMerge(
-      classnames(
+      clsx(
         objectsToString(base.container),
         disabled && objectsToString(base.disabled),
       ),
@@ -49,8 +61,8 @@ const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(
 
     // 4. memoize context value
     const contextValue = React.useMemo(
-      () => ({ open, icon, animate, disabled }),
-      [open, icon, animate, disabled],
+      () => ({ open, setOpen, icon, animate, disabled }),
+      [open, setOpen, icon, animate, disabled],
     );
 
     // 5. return

@@ -1,4 +1,5 @@
-import { Box } from "../../../core/box";
+import React from 'react'
+import { Box } from "../Box";
 import { Link } from ".";
 
 const config = {
@@ -50,7 +51,7 @@ export const Colored = () => {
 export const Underlined = () => {
   return (
     <Box d="flex" flexDirection="column" g={3}>
-      <Link href="#" underline>
+      <Link href="#">
         Link with underline
       </Link>
       <Link href="#">
@@ -63,7 +64,7 @@ export const Underlined = () => {
 export const Offset = () => {
   return (
     <Box>
-      <Link href="#" offset={2}>
+      <Link href="#" >
         Link
       </Link>
     </Box>

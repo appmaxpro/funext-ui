@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
-import { clsx } from "../../../../../ux/src/core/clsx";
 
 import styles from "./scrollable.module.scss";
+import { clsx } from "../../styles";
 
 export type ScrollableProps = {
   overflowX?: boolean;

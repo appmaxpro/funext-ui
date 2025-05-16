@@ -17,7 +17,7 @@ import type {
   OverrideProps,
   OverridableComponent,
   OverridableTypeMap,
-} from "../../props";
+} from "../../theme/tw/props";
 
 
 import isFocusVisible from "@mui/utils/isFocusVisible";

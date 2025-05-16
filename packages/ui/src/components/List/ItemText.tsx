@@ -15,7 +15,7 @@ import {
   OverrideProps,
   SlotProps,
   StandardProps,
-} from "../../props";
+} from "../../theme/tw/props";
 import { Text, TextProps } from "../Text";
 import textClasses from "../Text/textClasses";
 import { useListContext } from "./ListContext";

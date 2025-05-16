@@ -21,7 +21,7 @@
     },
     "types": ["node"]
   },
-  "include": ["src", "../ux/src/core/cmdk"],
+  "include": ["src", "../ux/src/core/cmdk", "../owner/src/maplibre-google-maps.d.ts"],
   "exclude": [
     "**/*.stories.*",
     "**/dist",

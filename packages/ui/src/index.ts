@@ -2,54 +2,25 @@
 // components
 export * from "./theme";
 export * from "./styles";
-export * from "./props";
-export * from "./components/Accordion";
-export * from "./components/Alert";
-export * from "./components/Button";
-export * from "./components/Card";
-export * from "./components/Checkbox";
-export * from "./components/Chip";
-export * from "./components/Dialog";
-export * from "./components/IconButton";
-export * from "./components/Input";
-export * from "./components/Menu";
-export * from "./components/Popover";
-export * from "./components/Progress";
-export * from "./components/Radio";
-export * from "./components/Select";
-export * from "./components/Switch";
-export * from "./components/Tooltip";
-export * from "./components/Text";
-export * from "./components/Collapse";
-export * from "./components/List";
-export * from "./components/ButtonGroup";
-export * from "./components/Drawer";
-export * from "./components/Badge";
-export * from "./components/Slider";
-export * from "./components/Spinner";
-export * from "./components/Timeline";
-export * from "./components/Stepper";
-export * from "./components/SpeedDial";
-export * from "./components/Panel";
-export * from "./components/Divider";
-export * from "./components/Link";
-export * from "./components/Box";
-export * from "./components/Stack";
-export * from "./components/Grid";
-export * from "./components/Select/AutoSelect";
-export * from "./components/Focus";
-export * from "./components/Snackbar";
-export * from "./components/GlobalStyles";
-export * from "./components/Screen";
-export * from "./components/Context";
-export * from "./components/SvgIcon";
-
+export * from "./theme/tw/props";
+export * from "./components"
 
 export * from "./hooks";
 export * from "./utils";
 
-import Input from "./components/Input";
-export { Input as TextField };
+//lib
+export * from "./lib/isRecord"
+export * from "./lib/createGlobalScopedContext"
+export * from "./lib/portal"
+export * from "./lib/layer"
+export * from "./lib/presence"
+export * from "./lib/click-away-listener"
+export * from "./lib/scrollable"
+
+export * from "./lib/transitions"
+export * from './svg-icon'
+
+
 // context
 export {
   TailwindThemeContext as MaterialTailwindTheme,
@@ -78,10 +49,6 @@ for (let c of [
 }
 
 export const muiDefaultColors = Object.freeze(muiValidColors);
-
-// theme
-export * from "./components/index";
-
 
 export * from './App';
 //export * from './mui/utils';

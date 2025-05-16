@@ -1,18 +1,19 @@
 'use client'
 import { cloneElement, forwardRef, isValidElement } from "react";
 import { Transition } from "react-transition-group";
-import { useForwardedRef, useRefs } from "../hooks";
-import { useCoreTheme } from "../styles";
-import { TransitionProps } from "../transitions/types";
+import { useForwardedRef, useRefs } from "../../../hooks";
+import { TransitionProps } from "../types";
 import {
   getTransition,
   getTransitionProps,
   getTransitionStyle,
   reflow,
-} from "../transitions/utils";
-import { useRtl, useTheme, debounce } from "../../mui";
+} from "../utils";
 import React from "react";
-import getReactElementRef from "../../mui/utils/getReactElementRef";
+import { getElementRef } from "../../getElementRef";
+import { useRtl, useTheme } from "../../../styles";
+import { debounce } from "../../../utils";
+import { EMPTY_RECORD } from "../../constants";
 
 type Direction = "start" | "end" | "up" | "down";
 
@@ -63,11 +64,9 @@ const getTransitionProperty = (
 // Later, we're going to translate the node back to its original location with `none`.
 function getTranslateValue(
   node: HTMLElement,
-  directionGiven: Direction,
-  rtl: boolean,
+  direction: Direction,
   resolvedContainer?: HTMLElement,
 ) {
-  const direction = getDirection(directionGiven, rtl);
   const rect = node.getBoundingClientRect();
   const containerRect =
     resolvedContainer && resolvedContainer.getBoundingClientRect();
@@ -110,16 +109,16 @@ function getTranslateValue(
 
   if (direction === "up") {
     if (containerRect) {
-      return `translateY(0, ${containerRect.bottom + offsetY - rect.top}px, 0)`;
+      return `translate3d(0, ${containerRect.bottom + offsetY - rect.top}px, 0)`;
     }
-    return `translateY(0, ${containerWindow.innerHeight + offsetY - rect.top}px, 0)`;
+    return `translate3d(0, ${containerWindow.innerHeight + offsetY - rect.top}px, 0)`;
   }
 
   // direction === 'down'
   if (containerRect) {
-    return `translateY(0, -${rect.top - containerRect.top + rect.height - offsetY}px, 0)`;
+    return `translate3d(0, -${rect.top - containerRect.top + rect.height - offsetY}px, 0)`;
   }
-  return `translateY(0, -${rect.top + rect.height - offsetY}px, 0)`;
+  return `translate3d(0, -${rect.top + rect.height - offsetY}px, 0)`;
 }
 
 function resolveContainer(containerPropProp: any) {
@@ -131,11 +130,10 @@ function resolveContainer(containerPropProp: any) {
 export function setTranslateValue(
   node: HTMLElement,
   direction: Direction,
-  rtl: boolean,
   containerProp: any,
 ) {
   const resolvedContainer = resolveContainer(containerProp);
-  const transform = getTranslateValue(node, direction, rtl, resolvedContainer);
+  const transform = getTranslateValue(node, direction, resolvedContainer);
 
   if (transform) {
     node.style.webkitTransform = transform;
@@ -149,7 +147,7 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
     enter: theme.transitions.easing.easeOut, //cubic-bezier(.32, .72, 0, 1)
     exit: theme.transitions.easing.sharp,
   };
-
+  
   const defaultTimeout = {
     enter: theme.transitions.duration.enteringScreen,
     exit: theme.transitions.duration.leavingScreen,
@@ -158,10 +156,11 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
   const rtl = useRtl();
 
   const {
+    addEndListener,
     appear = true,
     children,
     container: containerProp,
-    direction = 'down',
+    direction:directionProps  = 'down',
     easing: easingProp = defaultEasing,
     in: inProp,
     onEnter,
@@ -175,9 +174,11 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
     ...rest
   } = props;
 
+  const direction = getDirection(directionProps, rtl);
+
   const childrenRef = React.useRef(null);
   const handleRef = useRefs(
-    getReactElementRef(children as any),
+    getElementRef(children as any),
     childrenRef,
     ref,
   );
@@ -196,7 +197,7 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
 
   const handleEnter = normalizedTransitionCallback(
     (node: HTMLDivElement, isAppearing: boolean) => {
-      setTranslateValue(node, direction, rtl, containerProp);
+      setTranslateValue(node, direction, containerProp);
       reflow(node);
 
       if (onEnter) {
@@ -224,11 +225,13 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
         ...transitionProps,
       });
 
-      node.style.webkitTransform = "none";
-      node.style.transform = "none";
+      
       if (onEntering) {
         onEntering(node, isAppearing);
       }
+      node.style.webkitTransform = "none";
+      node.style.transform = "none";
+      //console.log("Slid::handleEntering")
     },
   );
 
@@ -251,26 +254,38 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
       transitionProps,
     );
 
-    setTranslateValue(node, direction, rtl, containerProp);
+    setTranslateValue(node, direction, containerProp);
 
     if (onExit) {
       onExit(node);
     }
+    //console.log("Slid::handleExit")
   });
 
   const handleExited = normalizedTransitionCallback((node: HTMLElement) => {
     // No need for transitions when the component is hidden
-    node.style.webkitTransition = "";
-    node.style.transition = "";
-
+    
+    const tm = typeof timeout === 'number' ? timeout : timeout.exit;
+    setTimeout(()=> {
+      node.style.webkitTransform = "none";
+      node.style.transform = "none";
+    }, 2000);
     if (onExited) {
       onExited(node);
     }
+    //console.log("Slid::handleExited")
   });
+
+  const handleAddEndListener = (next:any) => {
+    if (addEndListener) {
+      // Old call signature before `react-transition-group` implemented `nodeRef`
+      addEndListener(childrenRef.current, next);
+    }
+  };
 
   const updatePosition = React.useCallback(() => {
     if (childrenRef.current) {
-      setTranslateValue(childrenRef.current, direction, rtl, containerProp);
+      setTranslateValue(childrenRef.current, direction, containerProp);
     }
   }, [direction, containerProp]);
 
@@ -287,7 +302,7 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
 
     const handleResize = debounce(() => {
       if (childrenRef.current) {
-        setTranslateValue(childrenRef.current, direction, rtl, containerProp);
+        setTranslateValue(childrenRef.current, direction, containerProp);
       }
     });
 
@@ -316,23 +331,26 @@ export const Slide = forwardRef<HTMLElement, SlideProps>((props, ref) => {
       onExit={handleExit}
       onExited={handleExited}
       onExiting={handleExiting}
+      addEndListener={handleAddEndListener}
       appear={appear}
       in={inProp}
       timeout={timeout}
       {...rest}
     >
-      {(state, childProps) => {
-        return isValidElement(children) && React.cloneElement(children, {
-          //@ts-ignore
-          ref: handleRef as any,
+      {/* Ensure "ownerState" is not forwarded to the child DOM element when a direct HTML element is used. This avoids unexpected behavior since "ownerState" is intended for internal styling, component props and not as a DOM attribute. */}
+      {(state:any, { ownerState, ...restChildProps }:any) => {
+        return React.cloneElement(children, {
+          ref: handleRef,
+          
           style: {
             visibility: state === 'exited' && !inProp ? 'hidden' : undefined,
             ...style,
             ...children.props.style,
           },
-          ...childProps,
+          ...restChildProps,
         });
       }}
     </Transition>
   );
 });
+export default Slide;

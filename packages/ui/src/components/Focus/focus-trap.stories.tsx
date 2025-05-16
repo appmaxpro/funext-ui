@@ -1,4 +1,5 @@
-import { Box } from "../box";
+import React from "react";
+import { Box } from "../Box";
 import { Button } from "../Button";
 import { Input } from "../Input";
 import { FocusTrap } from "./FocusTrap";
@@ -11,7 +12,7 @@ const config = {
 export const Basic = function () {
   return (
     <FocusTrap>
-      <Box p={3} border rounded bgColor="body-tertiary">
+      <Box p={3} border="gray" rounded bgColor="body-tertiary">
         <Box as="h3" color="secondary">
           Information
         </Box>
@@ -19,10 +20,10 @@ export const Basic = function () {
           <Input my={2} placeholder="First Name" />
           <Input my={2} placeholder="Last Name" />
           <Input my={2} placeholder="Mobile" />
-          <Button mt={2} variant="primary">
+          <Button mt={2} variant="filled">
             Save
           </Button>
-          <Button mt={2} ms={2} variant="secondary">
+          <Button mt={2} ms={2} variant="filled">
             Cancel
           </Button>
         </Box>

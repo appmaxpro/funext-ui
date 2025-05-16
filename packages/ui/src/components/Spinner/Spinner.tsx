@@ -19,7 +19,7 @@ export interface SpinnerProps extends React.ComponentProps<"svg"> {
   size?: number;
 }
 
-const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
+export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
   ({ color, className, width, height, size, ...rest }, ref) => {
     // 1. init
     const { spinner } = useTailwindTheme();

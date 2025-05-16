@@ -10,7 +10,7 @@ import {
   clsx,
   memoTheme,
 } from "../../styles";
-import { OverrideProps } from "../../props";
+import { OverrideProps } from "../../theme/tw/props";
 import {
   ButtonBase,
   ButtonBaseTypeMap,

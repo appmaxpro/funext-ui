@@ -1,6 +1,6 @@
 'use client';
-export {default} from './Popper';
 export * from './Popper';
-export {
+export {default} from './Popper';
+export type {
   PopperContextValue
 } from './types'

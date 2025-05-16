@@ -12,6 +12,7 @@ import { useListContext } from "./ListContext";
 import { SxComponentProps, styled } from "../../styles";
 import { ButtonBase, type ButtonBaseProps } from "../Button";
 import { itemStyle } from "./styles";
+import { EMPTY_RECORD } from "../../lib/constants";
 
 //const has
 const ListItemButtonRoot = styled(ButtonBase, {
@@ -52,21 +53,27 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     ...rest 
   }, ref) => {
     // 1. init
-    const { list } = useTailwindTheme();
-    const {defaultProps} = list;
+    //const { list } = useTailwindTheme();
+    //const {defaultProps} = list;
 
+    const {
+      item, 
+      getItemStyle,
+      base
+    } = useListContext()!;
+
+   
     const {
       startIcon = startIconProp,
       endIcon = endIconProp,
-      item, 
-      getItemStyle,
-      ul
-    } = useListContext()!;
+      ul,
+      ripple = rest.ripple ?? item?.ripple 
+    } = base ?? EMPTY_RECORD;
 
     const li = liProps ?? (ul && (!component || component !== 'li'))
     
     // 2. set default props
-    const ripple = rest.ripple ?? item?.ripple ?? defaultProps.ripple;
+    //const ripple = rest.ripple ?? item?.ripple ?? defaultProps.ripple;
 
 
     const itemStyles = useMemo(
@@ -112,7 +119,7 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     const button = <ListItemButtonRoot
       {...(rest as any)}
       component={component}
-      tabIndex={(component === 'li' || !li) ? tabIndex : undefined } 
+      tabIndex={tabIndex} 
       role={role}
       disabled={disabled}
       active={active ? `${active}` : undefined}
@@ -120,6 +127,9 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
       ripple={ripple}
       ref={ref}
       rippleClassName={item.rippleClassName}
+      data-gutters={gutters ? '' : undefined}
+      data-dense={dense ? '' : undefined}
+      data-divider={divider ? '' : undefined}
       className={itemStyles}>
         {prefixComp}  
         {children}
@@ -131,14 +141,15 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     }
 
     const inRest:any = rest;
+    /*
     const areas = Object.keys(rest)
         .filter(k=> (k.startsWith('aria-')))
         .map(k => ({[k]: inRest[k]}))
-        .reduce((prev, next)=> ({...prev, ...next }), {})
-    
+        .reduce((prev, next)=> ({...prev, ...next }), {})*/
+        const areas = {};
     return (
       <li 
-        tabIndex={tabIndex} 
+        tabIndex={tabIndex ?? -1} 
         area-disabled={disabled ? 'true' : undefined}
         role={role}
          {...areas}

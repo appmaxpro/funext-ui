@@ -10,4 +10,4 @@ Object.defineProperty(exports, "default", {
     return _utils.createSvgIcon;
   }
 });
-var _utils = require("@funext/ui/components/SvgIcon");
+var _utils = require("@funext/ui/SvgIcon");

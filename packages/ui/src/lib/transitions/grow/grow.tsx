@@ -1,14 +1,14 @@
 'use client'
 import { cloneElement, forwardRef, isValidElement } from "react";
 import { Transition } from "react-transition-group";
-import { useForwardedRef } from "../hooks";
-import { TransitionProps } from "../transitions/types";
+import { TransitionProps } from "../types";
 import {
   getTransition,
   getTransitionProps,
   getTransitionStyle,
   reflow,
-} from "../transitions/utils";
+} from "../utils";
+import { useForwardedRef } from "../../../hooks";
 
 export interface GrowProps extends TransitionProps {}
 
@@ -129,3 +129,6 @@ export const Grow = forwardRef<HTMLElement, GrowProps>(
     );
   },
 );
+
+
+export default Grow;

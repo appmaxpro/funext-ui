@@ -2,20 +2,18 @@ import * as React from "react";
 import { useCallback, useRef, useState } from "react";
 
 import { Box } from "../Box";
-import { 
-  ButtonGroup, 
+import {
+  ButtonGroup,
   Button,
-  Menu, 
+  Menu,
   MenuProps,
-  MenuList,
   MenuItem,
-  MenuHandler,
   Divider,
   MenuDivider,
-  MenuHeader
+  MenuHeader,
+  List,
 } from "../..";
 import { ChevronDown } from "../internal/svg-icons/chevron";
-
 
 const config = {
   component: Menu,
@@ -35,6 +33,8 @@ export const Basic = () => {
   }
 
   return (
+
+
     <Box>
       <Button
         ref={setTarget}
@@ -42,25 +42,22 @@ export const Basic = () => {
         variant="outlined"
         color="success"
         className="relative"
-        >
+      >
         Menu
       </Button>
-      <Menu 
-        //target={target} 
+      <Menu
+        //target={target}
         placement="bottom-start"
-        open={show} 
-        arrow 
-        target={target}
-        handler={(open) => open ? showMenu() : hideMenu()}>
-
-        <MenuList>
-          <MenuItem >Option 1</MenuItem>
-          <MenuItem >Option 2</MenuItem>
-          <MenuItem >Option 3</MenuItem>
-
-        </MenuList>
+        open={show}
+        arrow
+        reference={target}
+        onOpenChange={(open) => (open ? showMenu() : hideMenu())}
+      >
+        <MenuItem>Option 1</MenuItem>
+        <MenuItem>Option 2</MenuItem>
+        <MenuItem>Option 3</MenuItem>
       </Menu>
-    </Box> 
+    </Box>
   );
 };
 
@@ -80,19 +77,23 @@ export const SplitButton = () => {
     <Box>
       <ButtonGroup>
         <Button>Action</Button>
-        <Button
-          ref={setTarget}
-          onClick={showMenu}
-          className="min-w-0 px-2 py-2"
-        >
-          <ChevronDown/>
-        </Button>
+        <Menu.DropDown>
+          <Button
+            ref={setTarget}
+            onClick={showMenu}
+            className="min-w-0 px-2 py-2"
+          >
+            <ChevronDown />
+          </Button>
+          <Menu>
+            <MenuItem >Option 1</MenuItem>
+            <MenuItem >Option 2</MenuItem>
+            <MenuItem >Option 3</MenuItem>
+          </Menu>
+        </Menu.DropDown>
+
       </ButtonGroup>
-      <Menu target={target} open={show} onHide={hideMenu}>
-        <MenuItem onClick={hideMenu}>Option 1</MenuItem>
-        <MenuItem onClick={hideMenu}>Option 2</MenuItem>
-        <MenuItem onClick={hideMenu}>Option 3</MenuItem>
-      </Menu>
+      
     </Box>
   );
 };
@@ -111,30 +112,33 @@ export const Header = () => {
 
   return (
     <Box>
-      <Button
-        ref={setTarget}
-        onClick={showMenu}
-        bgColor="primary"
-      >
+      <Button ref={setTarget} onClick={showMenu} color="primary">
         Menu
       </Button>
-      <Menu navigation target={target} show={show} onHide={hideMenu}>
-        <MenuHeader>Options</MenuHeader>
-        <MenuItem onClick={hideMenu} text="Option 1 C" label="Ctr C"/>
-        <MenuItem onClick={hideMenu}>Option 2</MenuItem>
-        <MenuItem onClick={hideMenu}>Option 3</MenuItem>
+      <Menu navigation reference={target} open={show} onOpenChange={hideMenu}>
+        <span className="p-3">Options</span>
+        <MenuItem  text="Option 1 C" label="Ctr C" />
+        <MenuItem >Option 2</MenuItem>
+        <MenuItem >Option 3</MenuItem>
       </Menu>
     </Box>
   );
 };
 
-const MyButton = React.forwardRef(({ m = 2, color = "blue", ...rest }:any, ref) => 
-  (<Button color={color} {...rest} className="m-2" ref={ref}/>));
+const MyButton = React.forwardRef(
+  ({ m = 2, color = "blue", ...rest }: any, ref) => (
+    <Button color={color} {...rest} className="m-2" ref={ref} />
+  ),
+);
 
 export const Positions = () => {
   const [open, setOpen] = useState(false);
 
-  const [menuProps, setMenuProps] = useState<Partial<MenuProps>>({});
+  const [menuProps, setMenuProps] = useState<Partial<MenuProps>>({
+    dismiss: {
+      itemPress: true,
+    },
+  });
 
   const refs = useRef<{
     timer?: number;
@@ -145,12 +149,13 @@ export const Positions = () => {
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const placement = e.currentTarget?.textContent || "bottom-start";
-    setMenuProps({
-      target: e.currentTarget,
+    setMenuProps((m) => ({
+      ...m,
       placement: placement as MenuProps["placement"],
-    });
+      reference: e.target
+    }));
     console.log("placement:", placement);
-    
+
     clearTimeout(refs.current.timer);
     refs.current.clicked = true;
     refs.current.timer = window.setTimeout(() => {
@@ -160,31 +165,46 @@ export const Positions = () => {
   };
 
   const hide = useCallback(() => {
-    if (!refs.current.clicked) {
+    //if (!refs.current.clicked) {
       setOpen(false);
-      setMenuProps({
+      /*
+      setMenuProps((m)=>({
+        ...m,
         placement: menuProps?.placement,
-      });
-    }
+        reference: null
+      }));*/
+    //}
   }, []);
 
   return (
     <Box style={{ width: 500 }} m="auto">
-      <Menu
-        {...menuProps}
-        open={open}
-        handler={(open) => !open && hide()}
+      <List.Provider
+        value={{
+          hover: true,
+          active: true,
+          focus: true,
+          global: true,
+          item: {
+            disabled: "",
+            className:
+              "px-3 py-2 bg-secondary/25 rounded-0 hover:bg-header-min active:bg-slate-200 dark:active:bg-slate-700 focus:bg-slate-200 dark:focus:bg-slate-700",
+          },
+        }}
       >
-        <MenuList>
+        <Menu
+          {...menuProps}
+          open={open}
+          onOpenChange={(open) => !open && hide()}
+        >
           <MenuItem>Option 1</MenuItem>
           <MenuItem>Option 2</MenuItem>
           <MenuItem>Option 3</MenuItem>
-          <MenuDivider/>
+          <MenuDivider />
           <MenuHeader>Header One</MenuHeader>
           <MenuItem>Option 4</MenuItem>
           <MenuItem>Option 5</MenuItem>
-        </MenuList>
-      </Menu>
+        </Menu>
+      </List.Provider>
       <Box display="flex" justifyContent="center">
         <MyButton onClick={handleClick}>top-start</MyButton>
         <MyButton onClick={handleClick}>top</MyButton>
@@ -224,166 +244,133 @@ export const Positions = () => {
 export function AllPlacement() {
   return (
     <>
-    <div className="full-w flex items-center justify-center h-screen w-screen">
-      <div className="w-[500px]">
-      <div className="mb-3 flex gap-3">
-        <Menu placement="top">
-          <MenuHandler>
-            <Button>top</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="top-start">
-          <MenuHandler>
-            <Button>top-start</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="top-end">
-          <MenuHandler>
-            <Button>top-end</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
+      <div className="full-w flex items-center justify-center h-screen w-screen">
+        <div className="w-[500px]">
+          <div className="mb-3 flex gap-3">
+            <Menu placement="top">
+              <Button>top</Button>
+              <MenuItem>Menu Item 1</MenuItem>
+              <MenuItem>Menu Item 2</MenuItem>
+              <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="top-start">
+              <Button>top-start</Button>
+              <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="top-end">
+                <Button>top-end</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+          </div>
+          <div className="mb-3 flex gap-3">
+            <Menu placement="right">
+                <Button>right</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="right-start">
+                <Button>right-start</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="right-end">
+                <Button>right-end</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+          </div>
+          <div className="mb-3 flex gap-3">
+            <Menu placement="bottom">
+                <Button>bottom</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="bottom-start">
+                <Button>bottom-start</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+            <Menu placement="bottom-end">
+                <Button>bottom-end</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+          </div>
+          <div className="flex gap-3">
+            <Menu placement="left">
+                <Button>left</Button>
+             
+              
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+              
+            </Menu>
+            <Menu placement="left-start">
+              
+                <Button>left-start</Button>
+              
+              
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+              
+            </Menu>
+            <Menu placement="left-end">
+                <Button>left-end</Button>
+                <MenuItem>Menu Item 1</MenuItem>
+                <MenuItem>Menu Item 2</MenuItem>
+                <MenuItem>Menu Item 3</MenuItem>
+            </Menu>
+          </div>
+        </div>
       </div>
-      <div className="mb-3 flex gap-3">
-        <Menu placement="right">
-          <MenuHandler>
-            <Button>right</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="right-start">
-          <MenuHandler>
-            <Button>right-start</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="right-end">
-          <MenuHandler>
-            <Button>right-end</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-      </div>
-      <div className="mb-3 flex gap-3">
-        <Menu placement="bottom">
-          <MenuHandler>
-            <Button>bottom</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="bottom-start">
-          <MenuHandler>
-            <Button>bottom-start</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="bottom-end">
-          <MenuHandler>
-            <Button>bottom-end</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-      </div>
-      <div className="flex gap-3">
-        <Menu placement="left">
-          <MenuHandler>
-            <Button>left</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="left-start">
-          <MenuHandler>
-            <Button>left-start</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-        <Menu placement="left-end">
-          <MenuHandler>
-            <Button>left-end</Button>
-          </MenuHandler>
-          <MenuList>
-            <MenuItem>Menu Item 1</MenuItem>
-            <MenuItem>Menu Item 2</MenuItem>
-            <MenuItem>Menu Item 3</MenuItem>
-          </MenuList>
-        </Menu>
-      </div></div></div>
     </>
   );
 }
 
-
 export function NestedMenu() {
   const [openMenu, setOpenMenu] = React.useState(false);
-  const innerRef = React.useRef()
+  const innerRef = React.useRef();
   return (
     <Box display="flex" justifyContent="center">
-      <Menu.Button content={<Button color="slate"> Menu</Button>} listProps={{nav: false}}>
+      <Menu trigger={<Button color="inherit"> Menu</Button>}>
         <MenuItem>Menu Item 1</MenuItem>
         <MenuItem>Menu Item 2</MenuItem>
-        <MenuItem text="Nested Item1" menuProps={{offset: 15}} listProps={{nav: false}}>
+        <Menu>
+          <MenuItem>Nested Menu1</MenuItem>
           <MenuItem>Nested Item 1</MenuItem>
           <MenuItem>Nested Item 2</MenuItem>
           <MenuItem>Nested Item 3</MenuItem>
-        </MenuItem>
+        </Menu>
         <MenuItem>Menu Item 3</MenuItem>
-        <MenuItem text=" Nested Item 2" menuProps={{offset: 15}} listProps={{nav: false}}>
-          <MenuItem>Nested Item 2 1</MenuItem>
-          <MenuItem>Nested Item 2 2</MenuItem>
-          <MenuItem>Nested Item 2 3</MenuItem>
-          <MenuItem text=" Nested Item 2 4" menuProps={{offset: 15}} listProps={{nav: false}}>
-            <MenuItem>Nested Item 4 1</MenuItem>
-            <MenuItem>Nested Item 4 2</MenuItem>
-            <MenuItem>Nested Item 4 3</MenuItem>
-          </MenuItem>
-        </MenuItem>
-      </Menu.Button>
+        <Menu.Sub>
+          <MenuItem>Nested Menu2</MenuItem>
+          <Menu>
+            <MenuItem>Nested Item 2 1</MenuItem>
+            <MenuItem>Nested Item 2 2</MenuItem>
+            <MenuItem>Nested Item 2 3</MenuItem>
+            <Menu.Sub>
+              <MenuItem>Nested Menu2 Menu1</MenuItem>
+              <Menu>
+                <MenuItem>Nested Item 4 1</MenuItem>
+                <MenuItem>Nested Item 4 2</MenuItem>
+                <MenuItem>Nested Item 4 3</MenuItem>
+              </Menu>
+            </Menu.Sub>
+          </Menu>
+        </Menu.Sub>
+      </Menu>
     </Box>
   );
 }

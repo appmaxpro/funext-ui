@@ -5,7 +5,7 @@ import type {
   MenuDismissProps,
   AnimationProps,
   Arrow
-} from "../../../types/components/menu";
+} from "../types";
 
 export interface MenuStylesType {
   defaultProps?: {

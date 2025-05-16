@@ -1,0 +1,141 @@
+{
+  "palette": {
+    "blue": "#6C67FA",
+    "green": "#3ECF8E",
+    "purple": "#C354F2",
+    "red": "#DD514C",
+    "yellow": "#FFBE4E",
+    "cyan": "#26C6F9",
+
+    "white": "#FFF",
+    "black": "#333",
+
+    "body_color": "#5A5A7C",
+    "emphasis_color": "#33325B"
+  },
+  "components": {
+    "Shell": {
+      "sidebar": {
+        "bg": "#F8F8FF"
+      }
+    },
+    "Panel": {
+      "title": {
+        
+      }
+    },
+    "Dropdown": {
+      "border": {
+        "color": "#EAEAFE"
+      },
+      "item_hover": {
+        "bg": "#F8F8FF"
+      },
+      
+      "item": {
+         "padding": "0.375rem 1rem"
+      },
+      "divider": {
+        "bg": "#EAEAFE"
+      }
+    },
+    "NavMenu": {
+      "item": {
+        "border": {
+         
+        }
+      },
+      "item_hover": {
+        "bg": "rgb(var(--tw-primary-rgb) / 20%)"
+      },
+      "item_active": {
+        "bg": "var(--tw-primary)",
+        "color": "white"
+      },
+      "icon": {
+       
+      },
+      "icon_hover": {
+
+      },
+      "icon_active": {
+       
+      }
+    },
+    "NavTabs": {
+      "item": {
+      },
+      "text": {
+        "transform": "none"
+      },
+      "icon": {
+        
+      },
+      "icon_hover": {
+        
+      },
+      "icon_active": {
+        
+      }
+    },
+    "CommandBar": {
+      "button_hover": {
+        "bg": "#F8F8FF"
+      },
+      "button_active": {
+        "bg": "#EAEAFE"
+      }
+    },
+    "Table": {
+      "bg": "#FFF",
+      "border": {
+        "color": "rgba(224, 224, 224, 1)"
+      },
+      "header": {
+        "bg": "#FFF"
+      },
+      "row_odd": {
+        "bg": "#FBFBFF"
+      },
+      "row_hover": {
+        "bg": "#f6f8fa"
+      },
+      "row_active": {
+        "bg": "#f6f8fa"
+      },
+      "cell_active": {
+        "bg": "#E8E8FD"
+      },
+      "cell": {
+        
+      }
+    },
+    "Button": {
+      "paddingX": "15px",
+      "paddingY": "5px"
+    },
+    "Badge": {
+      "border": {
+      }
+    },
+    "Form": {
+
+    },
+    "Input": {
+      "padding": "0.5rem .75rem",
+      "border_width": "1px",
+      "focus": {
+        "shadow": "none",
+        "border_width": "2px",
+        "padding": "calc(0.5rem - 2px) calc(0.75rem - 1px)"
+      },
+      "invalid_focus": {
+        "shadow": "none"
+      },
+      "placeholder": {
+        "color": "var(--bs-tertiary-color)"
+      }
+      
+    }
+  }
+}

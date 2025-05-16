@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {SxProps, type Theme} from '../../styles';
-import { OverridableComponent, OverrideProps, OverridableStringUnion } from '../../props';
+import { OverridableComponent, OverrideProps, OverridableStringUnion } from '../../theme/tw/props';
 import { DividerClasses } from '../../components/Divider/dividerClasses';
 import {Colors} from '../generic';
 export interface DividerPropsVariantOverrides {}

@@ -2,7 +2,7 @@ import * as React from 'react';
 import getDisplayName from '@mui/utils/getDisplayName';
 import { getThemeProps } from '@mui/system/useThemeProps';
 import { useMediaQuery } from '@mui/system';
-import { PropInjector } from '../../props';
+import { PropInjector } from '../../theme/tw/props';
 import {useTheme, Breakpoint} from '../../styles';
 import { useEnhancedEffect } from '../../hooks';
 const breakpointKeys = ['xs', 'sm', 'md', 'lg', 'xl'];

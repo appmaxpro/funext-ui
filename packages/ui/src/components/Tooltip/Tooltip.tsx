@@ -5,14 +5,9 @@ import {
   useFocus,
   safePolygon,
   useDelayGroupContext,
+  Delay,
 } from "@floating-ui/react";
 
-// utils
-import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
-
-// context
-import { useTailwindTheme } from "../../theme";
 
 import Popper, { PopperProps } from "../Popper";
 import { EMPTY_RECORD } from "../../lib/constants";
@@ -30,11 +25,13 @@ const defaultContentProps = {
 };
 
 export interface TooltipProps
-  extends Omit<PopperProps, "elementProps" | "allowOverContent"> {
+  extends Omit<PopperProps, "elementProps"> {
   content?: string | React.FC | React.ReactNode;
   interactive?: boolean;
   defaultOpen?: boolean;
+  allowOverContent?: boolean;
   noRest?: number;
+  delay?: Delay;
 }
 
 const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
@@ -53,12 +50,12 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
       reference,
       noRest,
       contentProps = defaultContentProps,
-      arrow,
+      delay,
       ...rest
     },
     ref,
   ) => {
-    const { delay, isInstantPhase } = useDelayGroupContext();
+    //const { delay, isInstantPhase } = useDelayGroupContext();
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
 
     const open = controlledOpen ?? uncontrolledOpen;
@@ -75,11 +72,7 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
     const contentRef = useRef(null);
 
     useEffect(() => {
-      contentRef.current = null;
-    }, [content]);
-
-    useEffect(() => {
-      if (!hasReference && !contentRef.current) {
+      if (!hasReference) {
         contentRef.current =
           typeof content === "function" ? (content as Function)() : content;
       }
@@ -91,30 +84,35 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
     return (
       <Popper
         trigger={trigger}
-        onlyHover={!allowOverContent}
-        hover
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(open, event) => {
+          console.log("Tooltip::onOpenChange:open", open, ", event:", event)
+          setOpen(open)
+        }}
         reference={reference}
         dismiss={EMPTY_RECORD}
-        lazy
         contentProps={contentProps}
         hoverProps={{
           move: false,
           enabled: controlledOpen == null,
-          restMs: isInstantPhase || noRest ? 0 : 150,
+          //restMs: isInstantPhase || noRest ? 0 : 150,
           delay,
-          //handleClose: safePolygon(),
+          handleClose: allowOverContent ? safePolygon() : null,
         }}
+        lazy
+        inline
+        strategy="fixed"
+        portal={false}
+        arrow={defaultArrow}
         {...rest}
         elementProps={(context) => [
           useFocus(context, {
             enabled: controlledOpen == null,
           }),
           useRole(context, { role: "label" }),
-        ]}
-        ref={ref}
-        arrow={arrow === true ? defaultArrow : arrow}
+        ]}        
+        
+        triggerRef={ref as React.ForwardedRef<HTMLElement>}
       >
         {actualChildren}
       </Popper>
@@ -122,7 +120,7 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
   },
 );
 
-const Tooltip = Object.assign(TooltipFc, { safePolygon: safePolygon });
+export const Tooltip:React.FC<TooltipProps> = Object.assign(TooltipFc, { safePolygon: safePolygon });
 Tooltip.displayName = "Mux.Tooltip";
 
 export default Tooltip;

@@ -10,7 +10,7 @@ import {
   clsx,
   memoTheme,
 } from "../../styles";
-import { OverrideProps, StandardProps } from "../../props";
+import { OverrideProps, StandardProps } from "../../theme/tw/props";
 export interface CardActionsClasses {
   /** Styles applied to the root element. */
   root: string;

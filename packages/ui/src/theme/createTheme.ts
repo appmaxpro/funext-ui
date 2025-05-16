@@ -9,6 +9,7 @@ import type {
 export {default as createThemeNoVars,  createMuiTheme } from './createThemeNoVars';
 import createThemeNoVars from './createThemeNoVars';
 import type{ ColorSystem, CssVarsThemeOptions, DefaultColorScheme } from './themeVars';
+import twx from './tw/twx';
 export type { 
   ThemeOptions, 
   Theme, 
@@ -61,6 +62,7 @@ export default function createTheme(
     cssVariables = false,
     colorSchemes: initialColorSchemes = !palette ? { light: true } : undefined,
     defaultColorScheme: initialDefaultColorScheme = palette?.mode,
+    useTwx = true,
     ...rest
   } = options;
   const defaultColorSchemeInput = (initialDefaultColorScheme as DefaultColorScheme) || 'light';
@@ -78,8 +80,10 @@ export default function createTheme(
   };
 
   if (cssVariables === false) {
+    const useSpacing = useTwx ? {spacing: twx.spacing} : spacing;
     const themOptions = {
-      ...spacing,
+      ...useSpacing,
+      useTwx,
       shape: {
         borderRadius: 6,
         customBorderRadius: {

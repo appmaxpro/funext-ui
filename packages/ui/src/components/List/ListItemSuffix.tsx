@@ -16,12 +16,12 @@ export interface ListItemSuffixProps extends SxComponentProps<"div">{};
 
 export const ListItemSuffix = React.forwardRef<HTMLDivElement, ListItemSuffixProps>(({className, children, ...rest}, ref) => {
   
-  const { suffix } = useListContext()!;
-
-  // 3. set styles
+  const { base } = useListContext()!;
+  
+    // 3. set styles
   const listItemSuffixClasses = useMemo(
-    () => twMerge(className, suffix),
-    [className, suffix],
+    () => base?.suffix ? twMerge(className, base?.suffix) : className,
+    [className, base?.suffix ],
   );
 
   return (

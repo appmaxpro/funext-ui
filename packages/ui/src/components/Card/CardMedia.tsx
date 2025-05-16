@@ -1,5 +1,5 @@
 import { clsx, composeClasses, generateUtilityClass, generateUtilityClasses, styled, SxThemeProps, useMuxDefaultProps } from '../../styles';
-import { OverridableComponent, OverrideProps } from '../../props';
+import { OverridableComponent, OverrideProps } from '../../theme/tw/props';
 import React from 'react';
 import { isReactComponent } from '../../utils';
 

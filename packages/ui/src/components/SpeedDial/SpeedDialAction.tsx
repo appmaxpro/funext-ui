@@ -17,13 +17,15 @@ import type{
 from "../../styles";
 
 import {IconButton, type IconButtonProps} from "../IconButton";
+import { getAnimation } from "../internal/animation";
 
 const SpeedDialActionRoot = styled(IconButton, {
   name: 'SpeedDialAction',
   slot: 'Root',
+  shouldForwardProp: (propName) => propName !== "animate",
 })({
   overflow: 'hidden',
-}) as StyledComponent<IconButtonProps>;
+}, getAnimation) as StyledComponent<IconButtonProps>;
 
 
 export interface SpeedDialActionProps extends IconButtonProps {}

@@ -14,6 +14,7 @@ import {
   generateUtilityClasses,
   memoTheme,
   styled,
+  twx,
   useMuxDefaultProps,
 } from "../../styles";
 import { useControlled, useForwardedRef, mapThemeColor } from "../../hooks";
@@ -75,18 +76,16 @@ const CheckboxRoot = styled(SwitchBase, {
   },
 })(
   memoTheme(({ theme }) => ({
-    color: (theme.vars || theme).palette.text.secondary,
+    color: 'var(--muted-fg)',
+    [`&.${checkboxClasses.disabled}`]: {
+      color: 'var(--act-disabled)',
+    },
     variants: [
       {
         props: ({ownerState}:any) => !ownerState.disabled && ownerState.ripple,
         style: {
           "&:hover": {
-            backgroundColor: theme.vars
-              ? `rgba(${theme.vars.palette.action.activeChannel} / ${theme.vars.palette.action.hoverOpacity})`
-              : alpha(
-                  theme.palette.action.active,
-                  theme.palette.action.hoverOpacity,
-                ),
+            backgroundColor: twx.alpha('act-active', 'var(--act-hover-opacity)'),
             "@media (hover: none)": {
               backgroundColor: "transparent",
             },
@@ -97,11 +96,10 @@ const CheckboxRoot = styled(SwitchBase, {
         props: ({ownerState}:any) => theme.palette.twColors?.includes(ownerState.color as any),
         style: ({ownerState}:any) => ({
           [`&.${checkboxClasses.checked}, &.${checkboxClasses.indeterminate}`]: {
-            '--tw-text-opacity': 1,
-            color: `rgb(var(--tw-${ownerState.color}-rgb) / var(--tw-text-opacity))`,
+            color: twx.color(ownerState.color),
           },
           [`&.${checkboxClasses.disabled}`]: {
-            color: (theme.vars || theme).palette.action.disabled,
+            color: 'var(--act-disabled)',
           },
         }),
       },
@@ -139,7 +137,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       ...others
     } = inProps;
     // 2. set default props
-    let color = mapThemeColor(error ? "error" : inColor);
+    let color = mapThemeColor(error ? "error" : inColor, 'primary');
 
     const muiProps = useMuxDefaultProps({ props: inProps, name: 'MuxCheckbox' });
 

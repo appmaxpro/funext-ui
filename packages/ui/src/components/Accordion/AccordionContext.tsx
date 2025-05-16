@@ -5,6 +5,7 @@ export interface AccordionContextType {
   open: boolean;
   icon?: ReactNode;
   disabled?: boolean;
+  setOpen: (open: boolean) => void;
 }
 
 export const AccordionContext = React.createContext<AccordionContextType | null>(null);

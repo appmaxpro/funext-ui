@@ -16,7 +16,7 @@ import type{
   DistributiveOmit
 } from '../../uprops';
 
-import type{ PanelOwnProps } from './panel';
+import type{ PanelOwnProps } from '../../components/Panel/types';
 import type{ PanelClasses as CardClasses } from '../../components/Panel/panelClasses';
 
 /**

@@ -10,8 +10,9 @@
     "proptypes": "tsx ./scripts/generateProptypes.ts",
     "prettier:all": "prettier --write . --ignore-path .eslintignore",
     "ui:dev": "pnpm --filter ./packages/ui storybook",
-	  "ui:build": "pnpm --filter ./packages/ui build",
+    "ui:build": "pnpm --filter ./packages/ui build",
     "owl:rect": "pnpm --filter ./packages/owl-react dev",
+    "owner:dev": "pnpm --filter ./packages/owner dev",
     "next:demo": "pnpm --filter ./demos/next-app-demo npm:dev",
     "docs:build": "pnpm --filter ./packages/docs build",
     "eslint": "eslint . --report-unused-disable-directives --ext .js,.ts,.tsx",
@@ -30,11 +31,6 @@
     "@babel/preset-env": "7.26.0",
     "@babel/preset-react": "7.25.9",
     "@babel/preset-typescript": "7.26.0",
-    "@mui/internal-babel-plugin-resolve-imports": "1.0.20",
-    "@mui/internal-docs-utils": "1.0.16",
-    "@mui/internal-markdown": "1.0.24",
-    "@mui/internal-scripts": "1.0.32",
-    "@mui/x-charts": "7.25.0",
     "@next/eslint-plugin-next": "14.2.23",
     "@playwright/test": "1.47.2",
     "@testing-library/jest-dom": "^6.6.3",
@@ -84,12 +80,22 @@
     "regenerator-runtime": "0.14.1",
     "remark": "15.0.1",
     "rimraf": "6.0.1",
+    "stylis": "^4.2.0",
     "typescript": "5.5.4",
     "unist-util-visit": "5.0.0",
     "vitest-dom": "0.1.1",
     "vitest-fail-on-console": "0.7.1"
   },
   "dependencies": {
+    "@af-utils/virtual-core": "^1.0.2",
+    "@emotion/cache": "^11.11.0",
+    "@emotion/is-prop-valid": "^1.2.2",
+    "@emotion/react": "^11.11.4",
+    "@emotion/sheet": "^1.4.0",
+    "@emotion/styled": "^11.11.5",
+    "@floating-ui/react": "^0.27.8",
+    "@mui/system": "6.1.6",
+    "@mui/utils": "6.1.6",
     "@types/lodash": "4.17.15",
     "@vitest/browser": "2.1.9",
     "archiver": "7.0.1",
@@ -98,8 +104,13 @@
     "eslint-import-resolver-exports": "1.0.0-beta.5",
     "invariant": "2.2.4",
     "lodash": "4.17.21",
-    "react-swipeable-views": "^0.14.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-is": "^18.3.1",
     "semver": "7.6.3",
+    "stylis-plugin-rtl": "^2.1.1",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.5",
     "tsup": "8.3.6",
     "tsx": "4.19.2",
     "vitest": "2.1.9",
@@ -123,6 +134,10 @@
         "@babel/*",
         "@eslint/*"
       ]
-    }
+    },
+    "ignoredOptionalDependencies": [
+      "@mui\\material",
+      "@mui\\x-charts"
+    ]
   }
 }

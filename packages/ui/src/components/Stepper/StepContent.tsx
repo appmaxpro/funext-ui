@@ -13,7 +13,7 @@ import {
   SxThemeProps,
 } from "../../styles";
 import { useStepContext, useStepperContext } from "./Context";
-import { StandardProps } from "../../props";
+import { StandardProps } from "../../theme/tw/props";
 import {
   getTransitionProps,
   getTransition,

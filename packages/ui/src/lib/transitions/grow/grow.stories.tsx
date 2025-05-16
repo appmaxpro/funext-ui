@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { Box } from "../box";
-import { Button } from "../../mui";
+import { Box, Button } from "../../..";
 import { Grow } from "./grow";
 
 const config = {

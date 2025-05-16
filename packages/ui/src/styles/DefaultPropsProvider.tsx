@@ -4,7 +4,7 @@ import SystemDefaultPropsProvider, {
 } from '@mui/system/DefaultPropsProvider';
 import type { ComponentsPropsList } from './props';
 import { useTailwindTheme } from '../theme';
-import {type TailwindTheme} from "../components/index";
+import type{ TailwindTheme } from '../mui';
 
 function DefaultPropsProvider(
   props: React.PropsWithChildren<{

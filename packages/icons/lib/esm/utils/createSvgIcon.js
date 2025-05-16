@@ -1,3 +1,5 @@
 'use client';
 
-export { createSvgIcon as default } from '@funext/ui/components/SvgIcon';
+import { createSvgIcon } from '@funext/ui/SvgIcon';
+
+export default createSvgIcon;

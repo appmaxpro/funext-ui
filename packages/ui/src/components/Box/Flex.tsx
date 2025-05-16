@@ -19,7 +19,9 @@ export interface FlexProps extends Omit<BoxProps, 'display' | 'd'> {
 export interface InlineProps extends Omit<BoxProps, 'display' | 'd'> {
   d?: ResponsiveStyleValue<'none'>;
   display?: ResponsiveStyleValue<'none'>;
+  direction?: ResponsiveStyleValue<FlexDirection>;
 }
+
 
 export const Flex = styled(Box)({
   display: 'flex'
@@ -28,5 +30,6 @@ export const Flex = styled(Box)({
 export const InLine = styled(Box)({
   display: 'inline-flex'
 }) as StyledComponent<InlineProps>;
+
 
 export default Flex;  

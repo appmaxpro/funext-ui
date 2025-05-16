@@ -29,6 +29,7 @@ import { ButtonBase } from "../Button";
 import type { ButtonBaseProps } from "../Button/ButtonBase";
 import { capitalize } from "../../utils";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+import { fontSize } from "@mui/system";
 
 export interface IconButtonProps extends ButtonBaseProps {
   variant?: variant;
@@ -175,13 +176,16 @@ let IconButtonRoot = styled(ButtonBase, {
         style: {
           padding: "4px",
           fontSize: "20px",
+          ['& [data-ui="icon"]']:{
+            fontSize: ''
+          }
         },
       },
     ],
   })),
 );
 
-const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
+export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   (
     {
       variant,

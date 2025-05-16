@@ -1,7 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-import { Box } from "../../../../../ux/src/core/box";
-import { Collapse, Button, Text } from "../..";
+import { Collapse, Button, Text, Box } from "../..";
 
 const config = {
   component: Collapse,
@@ -24,6 +23,7 @@ export const Basic = function () {
           mt={2}
           rounded
           bg="primary"
+          className="border rounded-md p-4"
           style={{ width: 300 }}
         >
           <Text>
@@ -42,14 +42,14 @@ export const Horizontal = function () {
   };
 
   return (
-    <Box className="flex items-start">
+    <Box className="flex flex-col items-start">
       <Button  onClick={toggle}>
         Toggle
       </Button>
       <Collapse open={show} horizontal>
         <Box
           mt={2}
-          rounded
+          className="border rounded-md p-4"
           bg="gray-300"
           style={{ height: 100, width: 300 }}
         >

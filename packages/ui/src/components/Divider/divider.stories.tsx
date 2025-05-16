@@ -1,4 +1,5 @@
-import { Box } from "../../../core/box";
+import * as React from "react";
+import { Box } from "../Box";
 import Divider from ".";
 import { Chip } from "../..";
 
@@ -24,9 +25,9 @@ export const Vertical = () => {
   return (
     <div>
       <Box d={"flex"} p={5} style={{ height: 200 }}>
-        <Box border p={4} bgColor="body-tertiary" />
+        <Box border="cyan" p={4} bgColor="body-tertiary" />
         <Divider orientation="vertical"/>
-        <Box border p={4} bgColor="body-tertiary" />
+        <Box border="cyan" p={4} bgColor="body-tertiary" />
       </Box>
     </div>
   );

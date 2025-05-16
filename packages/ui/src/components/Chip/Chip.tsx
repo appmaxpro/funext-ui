@@ -10,7 +10,7 @@ import objectsToString from "../../utils/objectsToString";
 
 // context
 import { useTailwindTheme } from "../../theme";
-import { OverrideProps } from "../../props";
+import { OverrideProps } from "../../theme/tw/props";
 
 // types
 import type { NewAnimatePresenceProps } from "../../types/generic";
@@ -31,6 +31,7 @@ import Button, {
 
 import { capitalize } from "../../utils";
 import Close from "../internal/svg-icons/Close";
+import { borderRadius } from "@mui/system";
 
 
 export function getChipUtilityClass(slot: string): string {
@@ -146,6 +147,7 @@ const ChipRoot = styled(ButtonRoot, {
       style: {
         padding: '0 4px',
         fontSize: theme.typography.pxToRem(10),
+        borderRadius: 0
       },
     },
     {
@@ -171,7 +173,7 @@ const ChipRoot = styled(ButtonRoot, {
   ],
 })));
 
-const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
+export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
   (props, ref) => {
     // 1. init
 
@@ -270,16 +272,11 @@ const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
           <IconButton
             onClick={onClose}
             size={size}
-            variant="text"
             dense
-            //@ts-ignore
-            color={
-              variant === "outlined" || variant === "ghost" ? color : "inherit"
-            }
             className={actionClasses}
             disabled={rest.disabled}
           >
-            <Close/>
+            <Close size={size === 'lg' ? 'md' : size === 'md' ? 'sm' : 16}/>
           </IconButton>
         ) : null}
       </ButtonEndIcon>

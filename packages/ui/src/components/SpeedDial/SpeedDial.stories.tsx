@@ -26,7 +26,7 @@ import {
   SpeedDialAction
   //DialogTitle,
 } from "../..";
-import { MaterialIcon } from "../../../icons/material-icon";
+import { MaterialIcon } from "../internal";
 
 const config = {
   component: SpeedDial,

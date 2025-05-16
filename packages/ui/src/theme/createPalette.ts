@@ -7,6 +7,7 @@ import {
 
 import colors from './tw/theme-colors';
 import type {Color} from './tw/colors';
+import { isDevelopment } from '../utils';
 
 export type PaletteMode = 'light' | 'dark';
 
@@ -249,7 +250,7 @@ export default function createPalette(palette:any) {
         ? dark.text.primary
         : light.text.primary;
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (isDevelopment) {
       const contrast = getContrastRatio(background, contrastText);
       if (contrast < 3 && false) {
         console.error(
@@ -311,7 +312,7 @@ export default function createPalette(palette:any) {
 
   const modes:any = { dark, light };
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (isDevelopment) {
     if (!modes[mode]) {
       console.error(`MUI: The palette mode \`${mode}\` is not supported.`);
     }

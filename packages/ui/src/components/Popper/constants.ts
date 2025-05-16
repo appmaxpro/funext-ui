@@ -20,7 +20,7 @@ export const DEFAULT_FALLBACK_PLACEMENTS: Record<Placement, Placement[]> = {
   "right-end": ["left-end", "top-end", "bottom-end"],
 };
 
-export const DEFAULT_ARROW:ArrowProps = {
+export const DEFAULT_POPPER_ARROW:ArrowProps = {
   className: `fill-white 
   [&>path:first-of-type]:stroke-slate-300 
   [&>path:last-of-type]:fill-white

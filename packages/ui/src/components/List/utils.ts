@@ -110,3 +110,82 @@ export function navigate(
 
   return perform(key);
 }
+
+
+/*
+
+//https://stackoverflow.com/questions/49043684/how-to-calculate-the-amount-of-flexbox-items-in-a-row
+
+const items = document.querySelectorAll('.item');
+
+let activeItem = document.querySelector('.item.active');
+
+function updateActiveItem(event) {
+  let index;
+  let rect1;
+  let rect2;
+
+  switch (event.key) {
+    case 'ArrowDown':
+      index = Array.prototype.indexOf.call(items, activeItem);
+      rect1 = activeItem.getBoundingClientRect();
+
+      for (let i = index; i < items.length; i++) {
+        rect2 = items[i].getBoundingClientRect();
+
+        if (rect1.x === rect2.x && rect1.y < rect2.y) {
+          items[i].classList.add('active');
+          activeItem.classList.remove('active');
+          activeItem = items[i];
+          return;
+        }
+      }
+      break;
+
+    case 'ArrowUp':
+      index = Array.prototype.indexOf.call(items, activeItem);
+      rect1 = activeItem.getBoundingClientRect();
+
+      for (let i = index; i >= 0; i--) {
+        rect2 = items[i].getBoundingClientRect();
+
+        if (rect1.x === rect2.x && rect1.y > rect2.y) {
+          items[i].classList.add('active');
+          activeItem.classList.remove('active');
+          activeItem = items[i];
+          return;
+        }
+      }
+      break;
+
+    case 'ArrowLeft':
+      let prev = activeItem.previousElementSibling;
+
+      if (prev) {
+        prev.classList.add('active');
+        activeItem.classList.remove('active');
+        activeItem = prev;
+      }
+      break;
+
+    case 'ArrowRight':
+      let next = activeItem.nextElementSibling;
+
+      if (next) {
+        next.classList.add('active');
+        activeItem.classList.remove('active');
+        activeItem = next;
+      }
+      break;
+
+    default:
+      return;
+  }
+}
+
+window.addEventListener('keydown', updateActiveItem);
+
+
+
+
+*/

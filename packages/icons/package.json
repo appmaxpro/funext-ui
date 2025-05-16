@@ -51,7 +51,7 @@
   "devDependencies": {
     "@funext/icons": "workspace:*",
     "@funext/internal-waterfall": "workspace:^",
-    "@funext/ui": "workspace:*",
+    "@funext/ui": "../ui",
     "@types/chai": "^4.3.20",
     "@types/react": "^19.0.8",
     "chai": "^4.5.0",

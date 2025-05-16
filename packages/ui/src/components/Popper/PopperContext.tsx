@@ -2,7 +2,7 @@ import React from "react";
 
 // types
 import { MuxFloatingProvider } from "../Context";
-import { PopperContextValue } from "./types";
+import type { PopperContextValue } from "./types";
 
 export interface PopperContextProviderProps {
   value: PopperContextValue;
@@ -36,5 +36,6 @@ export const PopperContextProvider = ({
     </PopperContext.Provider>
   );
 };
+
 
 PopperContextProvider.displayName = "Mux.PopperContextProvider";
