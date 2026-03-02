@@ -164,7 +164,7 @@ const LinkRoot = styled(TextRoot, {
 
 export const Link = React.forwardRef<HTMLElement, LinkProps>(
   function Link(inProps, ref) {
-    const { color = "primary", variant = "inherit" } = inProps;
+    const { variant = "inherit", color = variant === "inherit" ? "inherit" : "primary" } = inProps;
     
     const props = useTypographyDefaultProps(
       { ...inProps, color, variant } as any,
@@ -172,7 +172,7 @@ export const Link = React.forwardRef<HTMLElement, LinkProps>(
     );
 
     const theme = useTheme();
-
+    
     const {
       className,
       component = "a",
@@ -227,7 +227,7 @@ export const Link = React.forwardRef<HTMLElement, LinkProps>(
     return (
       <LinkRoot
         color={asColor}
-        variant={asVariant}
+        //variant={asVariant}
         className={clsx(classes.root, className)}
         classes={TypographyClasses}
         as={component}

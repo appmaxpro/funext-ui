@@ -24,16 +24,14 @@ function ThemeSwitcher() {
 
   const { themeMode, setThemeMode, isDualTheme } = React.useContext(PaletteModeContext);
   
-  const isDark = theme.colorSchemes.dark
-
   const toggleMode = React.useCallback(() => {
     setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
   }, [themeMode, setThemeMode]);
 
   return isDualTheme ? (
     <Tooltip
-      title={isSsr ? 'Switch mode' : `${themeMode === 'dark' ? 'Light' : 'Dark'} mode`}
-      enterDelay={1000}
+      content={isSsr ? 'Switch mode' : `${themeMode === 'dark' ? 'Light' : 'Dark'} mode`}
+      delay={{open: 1000}}
     >
       <div>
         <IconButton
@@ -43,9 +41,7 @@ function ThemeSwitcher() {
               : `Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`
           }
           onClick={toggleMode}
-          sx={{
-            color: (theme.vars ?? theme).palette.primary.dark,
-          }}
+         
         >
           {theme.getColorSchemeSelector ? (
             <React.Fragment>

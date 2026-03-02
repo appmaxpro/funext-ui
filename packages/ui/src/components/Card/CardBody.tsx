@@ -3,7 +3,7 @@ import React from "react";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -32,7 +32,7 @@ export const CardBody = React.forwardRef<HTMLDivElement, CardBodyProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const cardBodyClasses = twMerge(classnames(objectsToString(base)), className);
+    const cardBodyClasses = twMerge(classnames(values(base)), className);
 
     // 4. return
     return (

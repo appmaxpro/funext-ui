@@ -5,14 +5,40 @@ import {
 } from "@floating-ui/react";
 
 import Popper, { PopperProps } from "../Popper";
-import { clsx, useTheme } from "../../styles";
+import { clsx, styled, StyledComponent, useTheme } from "../../styles";
 import { EMPTY_RECORD } from "../../lib/constants";
+import { getAnimationOrName, shouldForwardProp } from "../internal/animation";
+import Panel from "../Panel";
 
 const defaultContentProps =  {
   className:
-    "rounded-lg bg-body text-body py-1.5 px-3 bg-slate-900 text-white break-words whitespace-normal text-sm",
+    "rounded-lg bg-card text-card-fg py-1.5 px-3 break-words whitespace-normal text-sm",
 };
 
+
+const PanelRoot = styled(Panel, {
+  name: "MuxMenu",
+  slot: "panel",
+  overridesResolver: (props, styles) => styles.root,
+  shouldForwardProp,
+})(
+  ({ theme }) => ({
+    ...theme.typography.body1,
+    boxShadow:
+      "0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)",
+    willChange: "transform, opacity",
+    borderRadius: 12,
+    maxWidth: "var(--popper-available-width)",
+    maxHeight: "var(--popper-available-height)",
+    borderWidth: 1,
+  }),
+  getAnimationOrName("fadeScale"),
+) as StyledComponent<any>;
+
+const defaultAnimation = {
+  animate: true,
+  animation: "fadeScale"
+}
 
 export interface PopoverProps extends Omit<PopperProps, "trigger"> {}
 
@@ -51,7 +77,7 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
       children
     );
 
-    if (!hasReference) {
+    if (!hasReference && controlledOpen == null) {
       if (typeof children === "string") {
         trigger = <span>{children}</span>;
       } else {
@@ -65,6 +91,7 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
     return (
       <Popper
         trigger={trigger}
+        reference={reference}
         dismiss={dismiss}
         zOffset={zOffset}
         open={open}
@@ -72,11 +99,11 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
         clickProps={{
           enabled: controlledOpen == null
         }}
-        navigate
+        Content={PanelRoot}
         contentProps={contentProps}
+        //animation={rest.animate ?  "fadeScale" : undefined}
         {...rest}
         ref={ref}
-
       >
         {children}
       </Popper>

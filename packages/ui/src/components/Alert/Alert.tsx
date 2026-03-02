@@ -4,7 +4,7 @@ import React, { Fragment } from "react";
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -98,15 +98,15 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const alertBase = objectsToString(base.alert);
-    const alertAction = objectsToString(base.action);
+    const alertBase = values(base.alert);
+    const alertAction = values(base.action);
 
     const alertVariantMap =
       variants[findMatch(valid.variants, variant, "ghost")][
         findMatch(valid.colors, color, "sky")
       ];
 
-    const alertVariant = objectsToString(alertVariantMap);
+    const alertVariant = values(alertVariantMap);
     const classes = twMerge(classnames(alertBase, alertVariant), className);
     const actionClasses = classnames(alertAction);
 

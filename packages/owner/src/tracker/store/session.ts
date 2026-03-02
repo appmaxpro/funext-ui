@@ -7,10 +7,13 @@ interface TrackerSession {
   socket: any;
   positions: Record<number,any>;
   history: Record<number,any[]>;
+  includeLogs: boolean;
+  logs: any[];
   updateServer(server:any): void;
   updateUser(user:any): void;
   updateSocket(socket:any): void;
   updatePositions(positions: any[]) : void;
+  updateLogs(logs: any[]): void; 
 }
 
 export const useTrackerSession = create<TrackerSession>((set) => ({
@@ -29,6 +32,9 @@ export const useTrackerSession = create<TrackerSession>((set) => ({
   logs: [],
   positions: {},
   history: {},
+  updateLogs(logs) {
+    set((state) => ({...state, logs}))
+  },
   updateServer(server) {
     set((state) => ({...state, server}))
   },

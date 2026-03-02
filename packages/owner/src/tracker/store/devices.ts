@@ -1,3 +1,4 @@
+import React from 'react';
 import { create } from 'zustand'
 import type { TrackerDevice, TrackerDevices } from '~/tracker/utils/types';
 
@@ -23,7 +24,7 @@ export const useDeviceStore = create<DeviceReducer>((set) => ({
   update(action:TrackerDevice[]) {
     set((state) => {
       const items = {...state.items};
-      action.forEach((item) => state.items[item.id] = item);
+      action.forEach((item) => items[item.id] = item);
       return {items};
     })
   },
@@ -59,6 +60,24 @@ export const useDeviceStore = create<DeviceReducer>((set) => ({
     }))
   },
 }))
+
+export const useDeviceStoreState = ()=> {
+  const refresh = useDeviceStore((state) => state.refresh);
+  const remove = useDeviceStore((state) => state.remove);
+  const update = useDeviceStore((state) => state.update);
+  const selectId = useDeviceStore((state) => state.selectId);
+  const selectIds = useDeviceStore((state) => state.selectIds);
+  //const refresh = useDeviceStore((state) => state.refresh);
+
+  return React.useMemo(()=> ({
+        refresh,
+        remove,
+        update,
+        selectId,
+        selectIds
+  }), [refresh, remove, update, selectId, selectIds])
+
+}
 
 export const getDeviceLabel = (device: TrackerDevice) => device.name;
 export const getDeviceKey = (device: TrackerDevice) => device.id;

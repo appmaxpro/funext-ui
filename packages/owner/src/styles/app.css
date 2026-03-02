@@ -1,0 +1,141 @@
+@layer theme, base, mui, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+/*@import "tailwindcss/preflight.css" layer(base);*/
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@import "./theme.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --header-height: 48px;
+  --header-height-large: 56px;
+  height: 100%;
+
+}
+
+
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: 0 solid var(--border);
+  }
+  
+}
+
+@layer utilities {
+  scrollbar-hide {
+    /* For Webkit-based browsers (Chrome, Safari and Opera) */
+    &::-webkit-scrollbar {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    /* For IE, Edge and Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+
+body, html {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-variant-ligatures: contextual;
+  font-variant-ligatures: contextual;
+  -webkit-font-kerning: normal;
+  font-kerning: normal;
+}
+
+@layer theme {
+  body {
+    @apply bg-body text-fg;
+    height: 100%;
+  }
+}
+
+#root {
+  height: 100%;
+}
+
+ul{
+    list-style: none;
+}
+
+
+
+
+.pt-page-rotateRoomBottomOut {
+	-webkit-transform-origin: 50% 0%;
+	transform-origin: 50% 0%;
+	-webkit-animation: rotateRoomBottomOut .8s both ease;
+	animation: rotateRoomBottomOut .8s both ease;
+}
+
+
+.pt-page-rotateRoomBottomIn {
+	-webkit-transform-origin: 50% 100%;
+	transform-origin: 50% 100%;
+	-webkit-animation: rotateRoomBottomIn .8s both ease;
+	animation: rotateRoomBottomIn .8s both ease;
+}
+
+@keyframes rotateRoomBottomOut {
+	from { }
+	to { opacity: .3; -webkit-transform: translateY(100%) rotateX(90deg); transform: translateY(100%) rotateX(90deg); }
+}
+
+@keyframes rotateRoomBottomIn {
+	from { opacity: .3; -webkit-transform: translateY(-100%) rotateX(-90deg); transform: translateY(-100%) rotateX(-90deg); }
+}
+
+.pt-page-moveToLeft {
+	animation: moveToLeft .6s ease both;
+}
+
+.pt-page-moveFromLeft {
+	animation: moveFromLeft .6s ease both;
+}
+
+.pt-page-moveToRight {
+	animation: moveToRight .6s ease both;
+}
+
+.pt-page-moveFromRight {
+	animation: moveFromRight .6s ease both;
+}
+
+
+/* move from / to  */
+
+
+@keyframes moveToLeft {
+	from { }
+	to { transform: translateX(-100%); }
+}
+
+@keyframes moveFromLeft {
+	from { transform: translateX(-100%); }
+}
+
+
+@keyframes moveToRight { 
+	from { }
+	to { transform: translateX(100%); }
+}
+
+
+@keyframes moveFromRight {
+	from { transform: translateX(100%); }
+}
+
+@source "../../../ui/src";

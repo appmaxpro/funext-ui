@@ -136,6 +136,8 @@ export interface ButtonBaseOwnProps {
    */
   centerRipple?: boolean;
 
+  to?: any
+
 }
 
 export interface ButtonBaseTypeMap<

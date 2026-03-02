@@ -1,13 +1,13 @@
-'use client';
-import * as React from 'react';
-import Button, { type ButtonProps } from '@funext/ui/Button';
-import Menu, { type MenuProps } from '@funext/ui/Menu';
-import Divider from '@funext/ui/Divider';
-import Box, { type FlexProps, Flex } from '@funext/ui/Box';
-import { AccountPreview, type AccountPreviewProps } from './account-preview';
-import { SignOutButton, type SignOutButtonProps } from './sign-out-button';
-import { session } from '~/utils/session';
-import { AccountPopupFooter } from './account-popup-footer';
+"use client";
+import * as React from "react";
+import Button, { type ButtonProps } from "@funext/ui/Button";
+import Menu, { type MenuProps } from "@funext/ui/Menu";
+import Divider from "@funext/ui/Divider";
+import Box, { type FlexProps, Flex } from "@funext/ui/Box";
+import { AccountPreview, type AccountPreviewProps } from "./account-preview";
+import { SignOutButton, type SignOutButtonProps } from "./sign-out-button";
+import { AccountPopupFooter } from "./account-popup-footer";
+import { useSession } from "~/hooks/use-session";
 
 interface AccountLocaleText {
   accountSignInLabel: string;
@@ -27,7 +27,7 @@ export interface AccountSlots {
    * The component used for the account popover menu
    * @default Popover
    */
-  menu?: React.JSXElementConstructor<Omit<MenuProps, 'children'>>;
+  menu?: React.JSXElementConstructor<Omit<MenuProps, "children">>;
   /**
    * The component used for the content of account popover
    * @default Stack
@@ -55,7 +55,7 @@ export interface AccountProps {
    */
   slotProps?: {
     preview?: AccountPreviewProps;
-    menu?: Omit<React.ComponentProps<typeof Menu>, 'open' | 'children'>;
+    menu?: Omit<React.ComponentProps<typeof Menu>, "open" | "children">;
     menuContent?: React.ComponentProps<typeof Flex>;
     signOutButton?: React.ComponentProps<typeof SignOutButton>;
   };
@@ -64,8 +64,6 @@ export interface AccountProps {
    */
   localeText?: Partial<AccountLocaleText>;
 }
-
-
 
 /**
  *
@@ -81,59 +79,45 @@ export interface AccountProps {
  */
 function Account(props: AccountProps) {
   const { slots, slotProps } = props;
-
-  if (!session.info?.user) {
+  const { data } = useSession();
+  if (!data?.user) {
     return null;
   }
 
   let accountContent = null;
-const trigger = (slots?.preview ? (
-          <slots.preview  />
-        ) : (
-          <AccountPreview
-            variant="condensed"
-            {...slotProps?.preview}
-          />
-        ));
-    accountContent = (
-      <React.Fragment>
-        {slots?.preview ? (
-          <slots.preview/>
-        ) : (
-          <AccountPreview
-            variant="condensed"
-            {...slotProps?.preview}
-          />
-        )}
-        {slots?.menu ? (
-          <slots.menu
-            open={open}
-            trigger={trigger}
-            {...slotProps?.menu}
-          />
-        ) : (
-          <Menu
-            trigger={trigger}
-            id="account-menu"
-            {...slotProps?.menu}
-          >
-            {slots?.menuContent ? (
-              <slots.menuContent {...slotProps?.menuContent} />
-            ) : (
-              <Flex direction="column" {...slotProps?.menuContent}>
-                <Flex direction={'column'}>
-                  <AccountPreview variant="expanded" />
-                </Flex>
-                <Divider />
-                <AccountPopupFooter>
-                  <SignOutButton {...slotProps?.signOutButton} />
-                </AccountPopupFooter>
+  const trigger = slots?.preview ? (
+    <slots.preview />
+  ) : (
+    <AccountPreview variant="condensed" {...slotProps?.preview} />
+  );
+  accountContent = (
+    <React.Fragment>
+      {slots?.preview ? (
+        <slots.preview />
+      ) : (
+        <AccountPreview variant="condensed" {...slotProps?.preview} />
+      )}
+      {slots?.menu ? (
+        <slots.menu open={open} trigger={trigger} {...slotProps?.menu} />
+      ) : (
+        <Menu trigger={trigger} id="account-menu" {...slotProps?.menu}>
+          {slots?.menuContent ? (
+            <slots.menuContent {...slotProps?.menuContent} />
+          ) : (
+            <Flex direction="column" {...slotProps?.menuContent}>
+              <Flex direction={"column"}>
+                <AccountPreview variant="expanded" />
               </Flex>
-            )}
-          </Menu>
-        )}
-      </React.Fragment>
-    );
+              <Divider />
+              <AccountPopupFooter>
+                <SignOutButton {...slotProps?.signOutButton} />
+              </AccountPopupFooter>
+            </Flex>
+          )}
+        </Menu>
+      )}
+    </React.Fragment>
+  );
 
   return accountContent;
 }

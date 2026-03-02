@@ -7,7 +7,7 @@ import { getElementRef } from "../getElementRef";
 interface AnimatedPresenceProps {
   children:
     | React.ReactElement
-    | ((props: { present: boolean }) => React.ReactElement);
+    | ((props: { present: boolean, animating?: boolean }) => React.ReactElement);
   present: boolean;
 }
 
@@ -34,7 +34,7 @@ const AnimatedPresence: React.FC<AnimatedPresenceProps> = (props) => {
 
   const child = (
     typeof children === "function"
-      ? children({ present: presence.isPresent })
+      ? children({ present: presence.isPresent, animating: presence.animating })
       : React.Children.only(children)
   ) as React.ReactElement<{ ref?: React.Ref<HTMLElement> }>;
 
@@ -61,9 +61,9 @@ function reset(node: HTMLElement) {
   // sooner than `setTimeout` (e.g. with `requestAnimationFrame`)
   // still causes a flash.
   timeoutId = ownerWindow.setTimeout(() => {
-    if (node.style.animationName === "none" && currentAnimationName != 'none') {
+    if (node.style.animationName === "none" && currentAnimationName != "none") {
       node.style.removeProperty("animation-name");
-    } 
+    }
     if (currentAnimationName) {
       node.style.animationName = currentAnimationName;
     }
@@ -74,15 +74,9 @@ function reset(node: HTMLElement) {
   };
 }
 
-function usePresence(present: boolean) {
-  const [node, setNode] = React.useState<HTMLElement>();
-  const stylesRef = React.useRef<CSSStyleDeclaration | null>(null);
-  const prevPresentRef = React.useRef(present);
-  const prevAnimationNameRef = React.useRef<string>("none");
-  const prevAnimationDirRef = React.useRef<string>("normal");
+const _animation: [name: string, direction: string] = ["none", "none"];
 
-  const initialState = present ? "mounted" : "unmounted";
-  const [state, send] = useStateMachine(initialState, {
+const _machineState = {
     mounted: {
       UNMOUNT: "unmounted",
       ANIMATION_OUT: "unmountSuspended",
@@ -94,15 +88,26 @@ function usePresence(present: boolean) {
     unmounted: {
       MOUNT: "mounted",
     },
-  });
+  } as const;
 
+function usePresence(present: boolean) {
+  const [node, setNode] = React.useState<HTMLElement>();
+  const stylesRef = React.useRef<CSSStyleDeclaration | null>(null);
+  const prevPresentRef = React.useRef(present);
+  const prevAnimationRef = React.useRef(_animation);
+
+  const initialState = present ? "mounted" : "unmounted";
+  const [state, send] = useStateMachine(initialState, _machineState);
+  /*
   React.useEffect(() => {
-    const [currentAnimationName, direction] = getAnimation(stylesRef.current);
-
-    prevAnimationNameRef.current =
-      state === "mounted" ? currentAnimationName : "none";
-    prevAnimationDirRef.current = state === "mounted" ? direction : "none";
+    const animation = getAnimation(stylesRef.current);
+    if (state === "mounted") {
+      prevAnimationRef.current = animation;
+    } else {
+      prevAnimationRef.current = _animation;
+    }
   }, [state]);
+  */
 
   useLayoutEffect(() => {
     const styles = stylesRef.current;
@@ -110,8 +115,7 @@ function usePresence(present: boolean) {
     const hasPresentChanged = wasPresent !== present;
 
     if (hasPresentChanged) {
-      const prevAnimationName = prevAnimationNameRef.current;
-      const prevDirection = prevAnimationNameRef.current;
+      const [prevAnimationName, prevDirection] = prevAnimationRef.current;
       const [currentAnimationName, currentDirection] = getAnimation(styles);
       let resetNode;
       if (present) {
@@ -132,18 +136,20 @@ function usePresence(present: boolean) {
          */
         const isAnimating =
           prevAnimationName !== currentAnimationName ||
-          currentDirection !== prevDirection;
+          prevDirection !== currentDirection;
 
         const iNode = node;
-        
+
         if (wasPresent && isAnimating) {
           if (iNode && (currentDirection || "").includes("reverse")) {
             resetNode = reset(iNode);
           }
           send("ANIMATION_OUT");
+          console.log("ANIMATION_OUT");
         } else {
           send("UNMOUNT");
-        }        
+          console.log("UNMOUNT");
+        }
       }
 
       prevPresentRef.current = present;
@@ -163,23 +169,16 @@ function usePresence(present: boolean) {
        * make sure we only trigger ANIMATION_END for the currently active animation.
        */
       const handleAnimationEnd = (event: AnimationEvent) => {
-        const [currentAnimationName, currentDirection] = getAnimation(
-          stylesRef.current,
+        //const currentAnimationName = event.animationName
+
+        const currentAnimationName = getAnimationName(stylesRef.current);
+
+        // The event.animationName is unescaped for CSS syntax,
+        // so we need to escape it to compare with the animationName computed from the style.
+        const isCurrentAnimation = currentAnimationName.includes(
+          CSS.escape(event.animationName),
         );
 
-        const isCurrentAnimation = currentAnimationName.includes(
-          event.animationName,
-        );
-        /*
-        console.log(
-          "handleAnimationEnd: currentAnimationName:",
-          currentAnimationName,
-          ", isCurrentAnimation:",
-          isCurrentAnimation,
-          ", target:",
-          event.target,
-        );
-        */
         if (event.target === node && isCurrentAnimation) {
           // With React 18 concurrency this update is applied a frame after the
           // animation ends, creating a flash of visible content. By setting the
@@ -193,7 +192,7 @@ function usePresence(present: boolean) {
           // https://github.com/radix-ui/primitives/pull/1849
           send("ANIMATION_END");
           if (!prevPresentRef.current) {
-            const reverse = (currentDirection || "").includes("reverse");
+            //const reverse = (currentDirection || "").includes("reverse");
             const currentFillMode = node.style.animationFillMode;
             node.style.animationFillMode = "forwards";
             //console.log("Animation FillMode: forwards, currentFillMode:", currentFillMode)
@@ -214,18 +213,7 @@ function usePresence(present: boolean) {
         //console.log("handleAnimationStart target:", event.target)
         if (event.target === node) {
           // if animation occurred, store its name as the previous animation.
-          const [currentAnimationName, currentDirection] = getAnimation(
-            stylesRef.current,
-          );
-          prevAnimationNameRef.current = currentAnimationName;
-          prevAnimationDirRef.current = currentDirection;
-          /*
-          console.log(
-            "handleAnimationStart: animationName:",
-            prevAnimationNameRef.current,
-            ", target:",
-            event.target,
-          );*/
+          prevAnimationRef.current = getAnimation(stylesRef.current);
         }
       };
       node.addEventListener("animationstart", handleAnimationStart);
@@ -246,6 +234,62 @@ function usePresence(present: boolean) {
 
   return {
     isPresent: ["mounted", "unmountSuspended"].includes(state),
+    animating: state === "unmountSuspended",
+    ref: React.useCallback((node: HTMLElement) => {
+      stylesRef.current = node ? getComputedStyle(node) : null;
+      setNode(node);
+    }, []),
+  };
+}
+
+function useIsAnimating() {
+  const [node, setNode] = React.useState<HTMLElement>();
+  const stylesRef = React.useRef<CSSStyleDeclaration | null>(null);
+  const prevAnimationRef = React.useRef(_animation);
+  const [state, setState] = React.useState(false);
+
+  useLayoutEffect(() => {
+    if (node) {
+      /**
+       * Triggering an ANIMATION_OUT during an ANIMATION_IN will fire an `animationcancel`
+       * event for ANIMATION_IN after we have entered `unmountSuspended` state. So, we
+       * make sure we only trigger ANIMATION_END for the currently active animation.
+       */
+      const handleAnimationEnd = (event: AnimationEvent) => {
+        //const currentAnimationName = event.animationName
+        const currentAnimationName = getAnimationName(stylesRef.current);
+
+        // The event.animationName is unescaped for CSS syntax,
+        // so we need to escape it to compare with the animationName computed from the style.
+        const isCurrentAnimation = currentAnimationName.includes(
+          CSS.escape(event.animationName),
+        );
+
+        if (event.target === node && isCurrentAnimation) {
+          setState(false);
+        }
+      };
+      const handleAnimationStart = (event: AnimationEvent) => {
+        if (event.target === node) {
+          prevAnimationRef.current = getAnimation(stylesRef.current);
+          setState(true);
+        }
+      };
+      node.addEventListener("animationstart", handleAnimationStart);
+      node.addEventListener("animationcancel", handleAnimationEnd);
+      node.addEventListener("animationend", handleAnimationEnd);
+      return () => {
+        node.removeEventListener("animationstart", handleAnimationStart);
+        node.removeEventListener("animationcancel", handleAnimationEnd);
+        node.removeEventListener("animationend", handleAnimationEnd);
+      };
+    } else {
+      setState(false);
+    }
+  }, [node, setState]);
+
+  return {
+    animating: state,
     ref: React.useCallback((node: HTMLElement) => {
       stylesRef.current = node ? getComputedStyle(node) : null;
       setNode(node);
@@ -263,7 +307,7 @@ function getAnimation(styles: CSSStyleDeclaration | null) {
   return [
     styles?.animationName || "none",
     styles?.animationDirection || "none",
-  ];
+  ] as typeof _animation;
 }
 
 const Root = Presence;
@@ -271,6 +315,7 @@ const Root = Presence;
 export {
   AnimatedPresence,
   Presence,
+  useIsAnimating,
   //
   Root,
 };

@@ -1,9 +1,20 @@
 import { isDevelopment } from '@funext/ui';
 import * as React from 'react';
 
+
+type OnReset = () => void;
+
+export type FallbackProps = {
+  error?: any;
+  onReset?: OnReset;
+};
+
+type Fallback = React.ElementType<FallbackProps>
 interface ErrorBoundaryProps{
   children: React.ReactNode;
-  fallback?: React.ReactNode;
+  fallback?: React.ReactNode | Fallback;
+  onError?(error:any, info:any): void;
+  onReset?: OnReset;
 }
 
 interface ErrorBoundaryState{
@@ -14,6 +25,7 @@ interface ErrorBoundaryState{
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   constructor(props:ErrorBoundaryProps) {
+    //console.log("ErrorBoundary:", props)
     super(props);
     this.state = { hasError: false };
   }
@@ -24,6 +36,9 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error:any, info:any) {
+    if(this.props.onError) {
+      this.props.onError(error, info);
+    }
     /*
     logErrorToMyService(
       error,
@@ -44,14 +59,19 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     if (isDevelopment && 'captureOwnerStack' in React){
       console.log("\n\nCaptureOwnerStack:")
       //@ts-ignore
-      console.error(React.captureOwnerStack())
+      //console.error(React.captureOwnerStack())
     }
   }
 
   render() {
     if (this.state.hasError) {
+      console.log("ErrorBoundary error:", this.state.error)
       // You can render any custom fallback UI
-      return this.props.fallback ?? this.state.error;
+      if (typeof this.props.fallback  === 'function') {
+        const C =  this.props.fallback as Fallback;
+        return <C error={this.state.error} onReset={this.props.onReset}/>
+      }
+      return this.props.fallback ?? this.state.error.message;
     }
 
     return this.props.children;

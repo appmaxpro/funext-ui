@@ -1,7 +1,9 @@
 import React from 'react'
-import {styled, StyledComponent, Breakpoint} from '../../styles';
+import {styled, StyledComponent, Breakpoint, Theme} from '../../styles';
 import Box from './Box';
-import type{ BoxProps } from './type';
+import type{ BoxAdditionalProps, BoxProps } from './type';
+import { BoxTypeMap } from '@mui/system';
+import { OverrideProps } from '../../uprops';
 
 type ResponsiveStyleValue<T> =
   | T
@@ -9,6 +11,13 @@ type ResponsiveStyleValue<T> =
   | { [key in Breakpoint]?: T | null };
 
 type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
+
+/*
+export type FlexProps<
+  RootComponent extends React.ElementType = 'div',
+  AdditionalProps = BoxAdditionalProps,
+> = Omit<OverrideProps<BoxTypeMap<AdditionalProps, RootComponent, Theme>, RootComponent>, 'display' | 'd'>;
+*/
 
 export interface FlexProps extends Omit<BoxProps, 'display' | 'd'> {
   d?: ResponsiveStyleValue<'none'>;
@@ -23,9 +32,17 @@ export interface InlineProps extends Omit<BoxProps, 'display' | 'd'> {
 }
 
 
-export const Flex = styled(Box)({
+export const Flex = styled(Box, {
+  name: "Flex",
+  slot: "root",
+})({
   display: 'flex'
-}) as StyledComponent<FlexProps>;
+}) ;
+
+/*
+export const Flex:React.ForwardRefExoticComponent<StyledComponent<FlexProps>> = React.forwardRef((props, ref) => 
+  <Box data-ui="Flex" display='flex' {...props}  ref={ref}/>)
+*/
 
 export const InLine = styled(Box)({
   display: 'inline-flex'

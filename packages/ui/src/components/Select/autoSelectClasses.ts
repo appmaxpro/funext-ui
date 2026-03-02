@@ -27,8 +27,8 @@ export interface AutoSelectClasses {
   input: string;
   /** Styles applied to the input element if the input is focused. */
   inputFocused: string;
-  /** Styles applied to the endAdornment element. */
-  endAdornment: string;
+  /** Styles applied to the suffix element. */
+  suffix: string;
   /** Styles applied to the clear indicator. */
   clearIndicator: string;
   /** Styles applied to the popup indicator. */
@@ -81,7 +81,7 @@ const autoSelectClasses: AutoSelectClasses = generateUtilityClasses('MuxAutoSele
   'inputRoot',
   'input',
   'inputFocused',
-  'endAdornment',
+  'suffix',
   'extraAdornment',
   'clearIndicator',
   'popupIndicator',

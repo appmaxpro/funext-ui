@@ -13,3 +13,12 @@ ReactDOM.render(
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <App />
 );
+/*
+if (navigator.serviceWorker) {
+    navigator.serviceWorker
+        .register("/web/service-worker.js", { scope: "/odoo" })
+        .catch((error) => {
+            console.error("Service worker registration failed, error:", error);
+        });
+}
+        */

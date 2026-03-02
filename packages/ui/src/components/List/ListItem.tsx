@@ -118,7 +118,7 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
         <ListItemSuffix>{endIcon}</ListItemSuffix>
       );
 
-    const li = (ul &&  (liProps || !component || component !== 'li'))
+    const li = (ul &&  (liProps !== false  && (!component || component !== 'li')))
 
     const title = titleProps ?? childrenProps;
     const children = titleProps ? childrenProps : null;
@@ -154,7 +154,7 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
       </ListItemRoot>
     );
 
-    if (component === 'li' || !li) {
+    if (component || !li) {
       return item;
     }
 

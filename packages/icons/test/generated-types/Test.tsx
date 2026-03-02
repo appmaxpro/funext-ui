@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { AccessAlarm } from '@mui/icons-material';
-import AccessAlarmOutlined from '@mui/icons-material/AccessAlarmOutlined';
+import { AccessAlarm } from '@funext/icons';
+import AccessAlarmOutlined from '@funext/icons/AccessAlarmOutlined';
 
 export default function Test() {
   return (

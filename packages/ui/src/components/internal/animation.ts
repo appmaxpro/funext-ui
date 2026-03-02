@@ -338,14 +338,19 @@ type AnimatableProps = {
   animation?: AnimatedProps;
 };
 
+type AnimatedOrNameProps = AnimatedProps | string ;
+
 const cache = new WeakMap<
   object,
   SerializedStyles | Map<string, SerializedStyles>
 >();
 
 function getAnimation(
-  props: AnimatedProps,
+  props: AnimatedOrNameProps,
 ): ReturnType<typeof css> | undefined {
+  
+  if (typeof props === "string") return animations[props];
+
   if (!props.animate) return EMPTY_STYLES;
   const { animation } = props;
   if (typeof animation === "string") return animations[animation];
@@ -406,7 +411,7 @@ function getAnimationOrName(otherName: string) {
       : EMPTY_STYLES;
 }
 
-function getAnimationSafe(props: AnimatedProps) {
+function getAnimationSafe(props: AnimatedOrNameProps) {
   return getAnimation(props) ?? EMPTY_STYLES;
 }
 
@@ -510,4 +515,4 @@ export {
   EMPTY_STYLES,
 };
 
-export type { AnimatedProps, Animation, AnimatableProps };
+export type { AnimatedProps, Animation, AnimatableProps, AnimatedOrNameProps };

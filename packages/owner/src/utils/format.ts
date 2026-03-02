@@ -61,7 +61,7 @@ const formatDuration: Formatter = (value, opts = {}) => {
 const formatString: Formatter = (value, opts = {}) => {
   const { props, context } = opts;
   if (props?.translatable && context) {
-    const key = `$t:${props.name}`;
+    const key = `t:${props.name}`;
     return context[key] ?? value;
   }
   return value;
@@ -101,7 +101,7 @@ export function limitScale(value?: number) {
 
 const formatNumber: Formatter = (value, opts = {}) => {
   const { props, context = {} } = opts;
-  let { scale, currency, serverType, type, widgetAttrs } = props ?? {};
+  let { scale, currency, pType, type, widgetAttrs } = props ?? {};
   // special case for filter, ie using hard coded currency, see __currency
   const { currencyText } = widgetAttrs ?? {};
 
@@ -112,7 +112,7 @@ const formatNumber: Formatter = (value, opts = {}) => {
     return value;
   }
 
-  if ((serverType ?? type)?.toUpperCase() === "DECIMAL") {
+  if ((pType ?? type)?.toUpperCase() === "DECIMAL") {
     // referencing another field in the context?
     if (typeof scale === "string") {
       scale = +((_.get(context, scale) as number) ?? scale);
@@ -201,7 +201,7 @@ const formatOne: Formatter = (value, opts = {}) => {
   if (!props?.targetName) return value.name ?? value.code ?? value.id ?? "";
 
   function getValue(val: any, name: string) {
-    const key = `$t:${name}`;
+    const key = `t:${name}`;
     return val[key] ?? _.get(val, name);
   }
 
@@ -232,7 +232,7 @@ export const Formatters = {
 
 const format: Formatter = (value, opts = {}) => {
   const { props, context } = opts;
-  let type = props?.serverType ?? props?.type;
+  let type = props?.pType ?? props?.type;
   //if (type) type = toKebabCase(type);
 
   if (type === "enum") type = "enumeration";

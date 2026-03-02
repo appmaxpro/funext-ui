@@ -9,10 +9,8 @@ import React, {
 } from "react";
 
 // utils
-import classnames from "classnames";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
-
+import values from "../../utils/values";
 // context
 import { useTailwindTheme } from "../../theme";
 
@@ -25,7 +23,7 @@ import type {
 
 import { twMerge } from "tailwind-merge";
 import deepmerge from "deepmerge";
-import { useControlled, useRefs, mapThemeColor } from "../../hooks";
+import { useControlled, useRefs, mapThemeColor, useEvent } from "../../hooks";
 import {
   SxComponentProps,
   SxThemeProps,
@@ -205,9 +203,9 @@ const commonIconStyles = [
   },
 ];
 //forceInline && ('grow flex-wrap' || 'flex-nowrap shrink')
-const AdornmentStartRoot = styled("div", {
+const PrefixRoot = styled("div", {
   name: "MuxInput",
-  slot: "AdornmentStart",
+  slot: "Prefix",
 })({
   display: "inline-flex",
   alignItems: "center",
@@ -279,9 +277,9 @@ const AdornmentStartRoot = styled("div", {
   ],
 });
 
-const AdornmentEndRoot = styled("div", {
+const SuffixRoot = styled("div", {
   name: "MuxInput",
-  slot: "AdornmentEnd",
+  slot: "Suffix",
 })({
   display: "inline-flex",
   alignItems: "center",
@@ -318,7 +316,7 @@ const InputGlobalStyles = globalCss({
   "@keyframes mux-auto-fill-cancel": { from: { display: "block" } },
 });
 
-export interface BasicInputProps extends SxComponentProps {
+export interface BasicInputProps extends Omit<SxComponentProps, 'prefix' | 'suffix'> {
   variant?: variantType;
   size?: sizeType;
   color?: InputColorType;
@@ -333,8 +331,8 @@ export interface BasicInputProps extends SxComponentProps {
   inputRef?: React.Ref<HTMLInputElement>;
   multiLines?: boolean;
   resize?: boolean;
-  startAdornment?: React.ReactNode;
-  endAdornment?: React.ReactNode;
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
   focused?: boolean;
   fullWidth?: boolean;
   disableBorder?: boolean;
@@ -357,11 +355,11 @@ export interface BasicInputProps extends SxComponentProps {
 
 export interface SingleInputProps
   extends BasicInputProps,
-    Omit<React.ComponentProps<"input">, "size" | "color" | "value"> {}
+    Omit<React.ComponentProps<"input">, "size" | "color" | "value" | 'prefix' | 'suffix'> {}
 
 export interface TextareaProps
   extends BasicInputProps,
-    Omit<React.ComponentProps<"textarea">, "size" | "color" | "value"> {
+    Omit<React.ComponentProps<"textarea">, "size" | "color" | "value" | 'prefix' | 'suffix'> {
   resize?: boolean;
   maxRows?: number;
   minRows?: number;
@@ -389,8 +387,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       resize,
       multiLines: multi = false,
       adornmentsProps,
-      startAdornment,
-      endAdornment,
+      prefix,
+      suffix,
       defaultValue,
       value: val,
       forceInline = false,
@@ -414,7 +412,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const { defaultProps, valid, styles } = inputTheme;
     const { base, variants } = styles;
 
-    const notInput = as && as !== "textarea" && as !== "input";
+    const notInput = (as && as !== "textarea" && as !== "input") || (val && typeof val !== 'string');
     const multiLines = as === "textarea" || rows || multi;
 
     disableBorder ??= defaultProps.disableBorder;
@@ -428,31 +426,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const [value, setValue, isControlled] = useControlled({
       name: "input",
       prop: "value",
-      state: val,
-      defaultState: defaultValue,
+      state: !notInput ? '' : val,
+      defaultState: defaultValue ,
     });
 
-    const hasValue = React.useRef(
-      (isControlled ? `${val}` :  '').length > 0
-    );
-
-    const state = React.useRef({
-      onChange,
-      setFocus,
-      restOnFocus: rest.onFocus,
-      restOnBlur: rest.onBlur,
-      setValue,
-    });
-
-    React.useEffect(() => {
-      state.current = {
-        onChange,
-        setFocus,
-        restOnFocus: rest.onFocus,
-        restOnBlur: rest.onBlur,
-        setValue,
-      };
-    });
+    const restOnFocus = useEvent(rest.onFocus)
+    const restOnBlur = useEvent(rest.onBlur)
+    const resOnChange = useEvent(onChange)
 
     //const inputValue = useDeferredValue(value);
 
@@ -470,26 +450,26 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 "See https://mui.com/r/input-component-ref-interface for more info.",
             );
           }
-          state.current.setValue(element?.value);
+          setValue(element?.value);
         }
 
         // Perform in the willUpdate
-        if (state.current.onChange) {
-          state.current.onChange(event as any);
-        }
+         resOnChange(event as any);
       },
       [],
     );
 
     const handleFocus = React.useCallback((event: any) => {
-      state.current.setFocus(true);
-      state.current.restOnFocus?.(event);
+      setFocus(true);
+      restOnFocus(event);
     }, []);
 
     const handleBlur = React.useCallback((event: any) => {
-      state.current.setFocus(false);
-      state.current.restOnBlur?.(event);
+      setFocus(false);
+      restOnBlur(event);
     }, []);
+
+    
 
     const otherColor = (hasError && "error") || (hasSuccess && "success");
     // 2. set default props
@@ -501,10 +481,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     rootProps = rootProps ?? defaultProps.containerProps;
     shrink = shrink ?? defaultProps.shrink;
     className = twMerge(defaultProps.className || "", className);
-    const hasStartAdro = startAdornment && React.isValidElement(startAdornment);
-    const hasStart = forceInline || hasStartAdro;
-    const hasEnd = endAdornment && React.isValidElement(endAdornment);
-    const hasAdornments = hasStart || hasEnd;
+    const hasPrefix = prefix && React.isValidElement(prefix);
+    const hasStart = forceInline || hasPrefix;
+    const hasEnd = suffix && React.isValidElement(suffix);
+    const hasExtension = hasStart || hasEnd;
     const hasLabel = label
       ? typeof label === "string"
         ? label.length > 0
@@ -517,8 +497,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       shrink ||
       focus ||
       focused ||
-      hasValue.current ||
-      hasStartAdro;
+      !!value ||
+      hasPrefix;
     
     const {
       rootCls,
@@ -541,14 +521,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
       const inputColor =
         inputVariant.colors.input &&
-        objectsToString(inputVariant.colors.input[tColor]);
+        values(inputVariant.colors.input[tColor]);
 
       const rootColor =
         inputVariant.colors.root &&
-        objectsToString(inputVariant.colors.root[tColor]);
+        values(inputVariant.colors.root[tColor]);
 
       const adornments =
-        (hasAdornments &&
+        (hasExtension &&
           Object.assign(
             {},
             base.adornments,
@@ -559,20 +539,20 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ({} as any);
 
       const startCls =
-        (hasStart && classnames(objectsToString(adornments.start))) ||
+        (hasStart && clsx(values(adornments.start))) ||
         undefined;
 
       const endCls =
-        (hasEnd && classnames(objectsToString(adornments.end))) || undefined;
+        (hasEnd && clsx(values(adornments.end))) || undefined;
 
       const rootCls = twMerge(
-        classnames(
-          objectsToString(base.root),
-          objectsToString(inputVariant.base.root),
-          objectsToString(inputSize.root),
-          isShrink && objectsToString(inputVariant.shrink.root),
-          hasError && objectsToString(inputVariant.error.root),
-          hasSuccess && objectsToString(inputVariant.success.root),
+        clsx(
+          values(base.root),
+          values(inputVariant.base.root),
+          values(inputSize.root),
+          isShrink && values(inputVariant.shrink.root),
+          hasError && values(inputVariant.error.root),
+          hasSuccess && values(inputVariant.success.root),
         ),
         !(hasError || hasSuccess) && rootColor,
         rootProps?.className,
@@ -588,21 +568,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
 
       const inputCls = twMerge(
-        classnames(
-          objectsToString(base.input),
-          objectsToString(inputVariant.base.input),
-          objectsToString(inputSize.input),
+        clsx(
+          values(base.input),
+          values(inputVariant.base.input),
+          values(inputSize.input),
           {
-            [objectsToString(adornments.props)]: hasAdornments,
-            [objectsToString(inputSize.adornments)]: hasAdornments,
+            [values(adornments.props)]: hasExtension,
+            [values(inputSize.adornments)]: hasExtension,
           },
-          isShrink && objectsToString(inputVariant.shrink.input),
-          hasLabel && objectsToString(inputVariant.label?.input),
-          hasAdornments && adornments.vertical && "flex-col",
+          isShrink && values(inputVariant.shrink.input),
+          hasLabel && values(inputVariant.label?.input),
+          hasExtension && adornments.vertical && "flex-col",
         ),
         inputColor,
-        hasError && objectsToString(inputVariant.error.input),
-        hasSuccess && objectsToString(inputVariant.success.input),
+        hasError && values(inputVariant.error.input),
+        hasSuccess && values(inputVariant.success.input),
         inputProps?.className,
         forceInline && "flex-nowrap",
         "mui_input",
@@ -612,21 +592,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
       const notchedCls =
         isOutline || isFilled
-          ? classnames(
-              objectsToString({
+          ? clsx(
+              values({
                 ...inputVariant.base.notched,
                 ...inputSize.notched,
               }),
-              isShrink && objectsToString(inputVariant.shrink.notched),
+              isShrink && values(inputVariant.shrink.notched),
             )
           : undefined;
 
       let labelCls;
       if (hasLabel) {
         const labelShrink =
-          isShrink && objectsToString(inputVariant.shrink.label);
+          isShrink && values(inputVariant.shrink.label);
 
-        const labelColor = objectsToString(inputVariant.colors.label[tColor]);
+        const labelColor = values(inputVariant.colors.label[tColor]);
 
         let labelFocus =
           isShrink && labelColor
@@ -634,25 +614,25 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             : "";
 
         labelCls = twMerge(
-          classnames(
-            objectsToString(base.label),
-            objectsToString(inputVariant.base.label),
-            objectsToString(inputSize.label),
+          clsx(
+            values(base.label),
+            values(inputVariant.base.label),
+            values(inputSize.label),
             {
               [labelFocus]: focus || focused,
             },
             labelShrink,
           ),
           labelColor,
-          hasError && objectsToString(inputVariant.error.label),
-          hasSuccess && objectsToString(inputVariant.success.label),
+          hasError && values(inputVariant.error.label),
+          hasSuccess && values(inputVariant.success.label),
           labelProps?.className,
         );
       } else {
         labelCls = "";
       }
       let nativePx;
-      if (disableBorder || ((isOutline || isFilled) && hasAdornments)) {
+      if (disableBorder || ((isOutline || isFilled) && hasExtension)) {
         if (adornments.vertical) {
           nativePx = hasStart && hasEnd ? "py-0" : hasStart ? "pt-0" : "pb-0";
         } else {
@@ -661,15 +641,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
 
       const nativeCls = twMerge(
-        classnames(
-          objectsToString(base.native),
-          objectsToString(inputVariant.base.native),
-          objectsToString(adornments.native),
-          objectsToString(inputSize.native),
+        clsx(
+          values(base.native),
+          values(inputVariant.base.native),
+          values(adornments.native),
+          values(inputSize.native),
           multiLines && !resize && "!resize-none",
           hasLabel && !isShrink && "placeholder:opacity-0",
           {
-            [objectsToString(inputVariant.shrink.native)]: isShrink,
+            [values(inputVariant.shrink.native)]: isShrink,
           },
         ),
         nativePx,
@@ -682,7 +662,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         multiLines,
         size,
         focused,
-        hasAdornment: hasStartAdro || hasError,
+        hasAdornment: hasPrefix || hasError,
         disableBorder,
         disabled,
         readOnly,
@@ -695,7 +675,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         asteriskCls:
           (hasLabel &&
             rest.required &&
-            classnames(objectsToString(base.asterisk))) ||
+            clsx(values(base.asterisk))) ||
           undefined,
         inputCls,
         startCls,
@@ -722,7 +702,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       readOnly,
       notInput,
     ]);
-
+    /*
     useEffect(() => {
       if (
         ["input", "textarea"].includes(
@@ -733,7 +713,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           setValue(inputRef.current?.value);
         }
       }
-    }, [inputRef, value]);
+    }, [value]);
+    */
 
     let NativeComponent = notInput || !multiLines ? as : AutoResizeTextarea;
     let nativeProps: any = rest;
@@ -774,7 +755,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         aria-invalid={hasError ? "true" : undefined}
         ownerState={ownerState}
       >
-        {value ? value : !hasLabel ? placeholder : null}
+        {val ? val : !hasLabel ? placeholder : null}
       </BasicInputRoot>
     ) : (
       <BasicInputRoot
@@ -783,7 +764,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         aria-invalid={hasError ? "true" : undefined}
         className={nativeCls}
         placeholder={placeholder || ""}
-        value={(isControlled ? val : (value ?? '')) as string}
+        value={value as string}
         //defaultValue={defaultValue}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -796,10 +777,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       />
     );
     const start = hasStart ? (
-      <AdornmentStartRoot ownerState={ownerState} className={startCls}>
-        {startAdornment}
+      <PrefixRoot ownerState={ownerState} className={startCls}>
+        {prefix}
         {forceInline ? input : null}
-      </AdornmentStartRoot>
+      </PrefixRoot>
     ) : undefined;
 
     const inputLabel = hasLabel && (
@@ -808,8 +789,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         className={labelCls}
         ownerState={ownerState}
       >
-        {label} {rest.required && " "}
-        {rest.required ? <span className={asteriskCls}>*</span> : null}
+        {label}
+        {typeof label === 'string' && rest.required ? <span className={asteriskCls}>*</span> : null}
       </InputLabelRoot>
     );
 
@@ -821,9 +802,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {start}
           {!forceInline ? input : null}
           {hasEnd ? (
-            <AdornmentEndRoot ownerState={ownerState} className={endCls}>
-              {endAdornment}
-            </AdornmentEndRoot>
+            <SuffixRoot ownerState={ownerState} className={endCls}>
+              {suffix}
+            </SuffixRoot>
           ) : undefined}
 
           {isOutline && !disableBorder ? (
@@ -831,7 +812,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               <legend>
                 {hasLabel && (
                   <span>
-                    {label} {rest.required && " *"}
+                    {label} {typeof label === 'string' && rest.required && " *"}
                   </span>
                 )}
               </legend>

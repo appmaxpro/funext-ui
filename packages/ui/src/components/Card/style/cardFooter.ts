@@ -24,7 +24,7 @@ export const cardFooter: CardFooterStylesType = {
         p: "p-6",
       },
       divider: {
-        borderWidth: "border-inherit",
+        borderWidth: "border-t-1 border-inherit",
       },
     },
   },

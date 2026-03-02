@@ -2,6 +2,7 @@ import Dialog  from "@funext/ui/Dialog";
 import Button  from "@funext/ui/Button";
 import { session } from "~/utils/session";
 import { i18n } from "~/utils/i18n";
+import { useSession } from "~/hooks/use-session";
 
 export type ConfirmSignOutProps = {
   message?: React.ReactNode;
@@ -10,7 +11,8 @@ export type ConfirmSignOutProps = {
   open: boolean;
 };
 
-export function ConfirmSignOut({open, onLogout=session.logout, onCancel, message}: ConfirmSignOutProps) {
+export function ConfirmSignOut({open, onLogout, onCancel, message}: ConfirmSignOutProps) {
+    const { logout } = useSession();
     return <Dialog open={open}>
       <Dialog.Body>
         {message ?? i18n.get('confirmSignOutMessage')}
@@ -19,7 +21,7 @@ export function ConfirmSignOut({open, onLogout=session.logout, onCancel, message
         <Button onClick={onCancel}>
           {i18n.get('cancelLabel')}
         </Button>
-        <Button onClick={onLogout} color="error">
+        <Button onClick={onLogout ?? logout} color="error">
           {i18n.get('signOutLabel')}
         </Button>
       </Dialog.Footer>

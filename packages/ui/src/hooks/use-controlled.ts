@@ -45,7 +45,7 @@ export function useControlled<T>(options: {
   if (isDevelopment) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-      if (isControlled !== (options.state !== undefined)) {
+      if (isControlled !== (options.state != null)) {
         console.error(
           `A component is changing the ${isControlled ? "" : "un"}controlled ${
             options.prop

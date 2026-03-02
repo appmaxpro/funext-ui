@@ -1,11 +1,4 @@
 import ReactReconciler from "react-reconciler";
-import {
-  // NoEventPriority,
-  ContinuousEventPriority,
-  DiscreteEventPriority,
-  DefaultEventPriority,
-  ConcurrentRoot,
-} from "react-reconciler/constants.js";
 
 function traceWrap(hostConfig: any): any {
   let traceWrappedHostConfig: any = {};
@@ -21,7 +14,6 @@ function traceWrap(hostConfig: any): any {
 
 const rootHostContext = {};
 const childHostContext = {};
-
 const hostConfig = {
   now: Date.now,
   getRootHostContext: () => {
@@ -130,8 +122,12 @@ const reconciler = ReactReconciler(traceWrap(hostConfig));
 const Root = class {
   _rootContainer: any;
 
-  render(component: any, el: any, callback: any) {
+  render(component: any, container: any, callback: any) {
     if (!this._rootContainer) {
+     this._rootContainer  = reconciler.createContainer(
+       container, false, false)
+
+      /*
       this._rootContainer = (reconciler as any).createContainer(
         el, // containerInfo
         ConcurrentRoot, // tag
@@ -144,11 +140,13 @@ const Root = class {
         logRecoverableError, // onRecoverableError
         null, // transitionCallbacks
       );
+      */
     }
     reconciler.updateContainer(component, this._rootContainer, null, callback);
   }
 
   unmount() {
+   
     this._rootContainer = null;
   }
 };

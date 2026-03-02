@@ -6,7 +6,7 @@ import classnames from "classnames";
 import merge from "deepmerge";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -235,13 +235,13 @@ export const Chip = React.forwardRef<HTMLDivElement, ChipProps>(
 
     const { finalClassName, actionClasses, focusVisible } = useMemo(() => {
       // 3. set styles
-      const chipBase = objectsToString(base.chip);
-      const chipAction = objectsToString(base.action);
+      const chipBase = values(base.chip);
+      const chipAction = values(base.action);
 
       const sizeVariant = findMatch(valid.sizes, size, "md");
 
       //const chipSize = objectsToString(sizes[sizeVariant]["chip"]);
-      const actionSize = objectsToString(sizes[sizeVariant]["action"]);
+      const actionSize = values(sizes[sizeVariant]["action"]);
 
       const finalClassName = twMerge(
         defaultProps.className,

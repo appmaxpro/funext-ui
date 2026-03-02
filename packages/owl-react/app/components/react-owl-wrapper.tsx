@@ -13,7 +13,7 @@ import React, {
 import ReactDOM from "react-dom";
 //import { Subscribable, Unsubscribable } from "rxjs";
 //import { InjectableReactContextToken } from "../injectable-react-context/react-context-token";
-import { useInjectableReactContext } from "../hooks/use-injectable-react-context";
+//import { useInjectableReactContext } from "../hooks/use-injectable-react-context";
 import { useInTreeCreateRoot } from "../hooks/use-in-tree-create-root";
 import { createOwlComponent } from "~/utils/owl-component-factory";
 //import { InTreeCreateRootToken } from "../use-in-tree-create-root/in-tree-create-root-token";
@@ -67,9 +67,9 @@ function ReactOwlWrapper(
     return null;
   }, [hasChildren]);
 
-  const inTreeCreateRoot = useInTreeCreateRoot();
-  const injectedReactContext = useInjectableReactContext();
-  ReactDOM.flushSync
+  const {portals, createRoot} = useInTreeCreateRoot();
+  //const injectedReactContext = useInjectableReactContext();
+  //ReactDOM.flushSync
   useEffect(() => {
     if (!tmpl && !component) return;
     console.log("Create OwlComponent ...");
@@ -82,11 +82,14 @@ function ReactOwlWrapper(
         name: owlComponentName,
         template: tmpl as string,
       });
+    
+    //const treeCreateRoot = (container: any) => createRoot(container)
 
     const config = {
+      inTreeCreateRoot: createRoot,
       props: {
         ...tmplContext,
-        inTreeCreateRoot,
+        inTreeCreateRoot: createRoot,
         isTopLevelReact: false,
         ref: (ref: HTMLDivElement) => {
           console.log("On OwlRef changed:", ref);
@@ -107,7 +110,7 @@ function ReactOwlWrapper(
       owlApp.subRoots.delete(root.node);
       root.destroy();
     };
-  }, [component, owlApp, inTreeCreateRoot, injectedReactContext]);
+  }, [component, owlApp, createRoot/*, injectedReactContext*/]);
 
   const elRef = useCallback<(node: HTMLDivElement) => void>(
     (node) => {
@@ -141,7 +144,7 @@ function ReactOwlWrapper(
       )}
       {ngContentContainerEl &&
         ReactDOM.createPortal(<>{children}</>, ngContentContainerEl)}
-      {inTreeCreateRoot.portals}
+      {portals}
     </>
   );
 }

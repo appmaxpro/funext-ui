@@ -1,6 +1,6 @@
 import { isArrayLikeObject, isPlainObject } from "lodash";
 import { $request, $use } from "./http";
-import { FUNEXT_API_SERVER } from "./constant";
+import { FUNEXT_API_SERVER, CONTEXT_PATH } from "./constant";
 
 export const CSRF_HEADER_NAME = "X-CSRF-Token";
 export const CSRF_COOKIE_NAME = "CSRF-TOKEN";
@@ -70,16 +70,26 @@ export type RequestArgs = {
 const baseURL = "/";
 let URL =  FUNEXT_API_SERVER ?? '';
 if (URL.length && !URL.endsWith('/')) {
-  URL = URL.substring(0, URL.length -2)
+  URL = URL.substring(0, URL.length - 1)
 }
-//console.log("Request:process.env:",process.env);
+
+if (CONTEXT_PATH.length)
+  URL += CONTEXT_PATH.startsWith("/") ? CONTEXT_PATH.substring(1) : "/" + CONTEXT_PATH;
+
+if (URL.length && !URL.endsWith('/')) {
+  URL = URL + "/"
+}
+console.log("Request:process.URL:",URL);
 
 export function makeURL(path: string | string[]) {
   const parts = [path].flat();
   const url = parts.join("/");
   if(URL) {
-    if (!url.startsWith("/")) {
-      return `${URL}/${url}`;
+    if (url.startsWith("/")) {
+      return `${URL}${url.substring(1)}`;
+    }
+    if (url.endsWith("/")) {
+      return `${URL}${url.substring(0, -1)}`;
     }
     return `${URL}${url}`;
   }

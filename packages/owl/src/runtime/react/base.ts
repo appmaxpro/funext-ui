@@ -14,10 +14,10 @@ export abstract class RNode<T = any> implements INode, VNode<T>{
   beforeRemove(): void {
     throw new Error("Method not implemented.");
   }
-  el?: IElement | IText | undefined;
+  //el?: IElement | IText | undefined;
   isOnlyChild?: boolean | undefined;
   key?: any;
-  _parent?: IElement<RNode>;
+  _parent?: IElement<INode>;
   _dirty?: boolean;
 
   mount(parent: IElement, afterNode: INode | null) {
@@ -40,6 +40,15 @@ export abstract class RNode<T = any> implements INode, VNode<T>{
 
   firstNode():RNode|undefined {
     return this;
+  }
+
+  set textContent(text:string) {
+    this._parent?.insertBefore(new Text(text), this);
+    this.remove();
+  }
+
+  get textContent() {
+    return ''
   }
 
 }
@@ -104,13 +113,15 @@ export abstract class RElement<T = any, C extends ChildType=any>
     if (index >= 0) {
       this._dirty = true;
       this.children.splice(index, 1);
-      node.parent = undefined;
+      node.parent = null;
     }
   }
 
   firstNode():RNode|undefined {
     return this.children[0];
   }
+
+   
 
 }
 
@@ -129,5 +140,23 @@ export class Text extends RNode{
 
   moveBeforeVNode(other: Text | null, afterNode: RNode | null) {
     (other?.parent ?? this.parent)?.insertBefore(this, other ? other : afterNode);
+  }
+
+  get textContent() {
+    return this.text;
+  }
+
+}
+
+export function toText(value: any): string {
+  switch (typeof value) {
+    case "string":
+      return value;
+    case "number":
+      return String(value);
+    case "boolean":
+      return value ? "true" : "false";
+    default:
+      return value || "";
   }
 }

@@ -8,10 +8,10 @@ import {
   Delay,
 } from "@floating-ui/react";
 
-
 import Popper, { PopperProps } from "../Popper";
 import { EMPTY_RECORD } from "../../lib/constants";
 import { clsx } from "../../styles";
+import { composeEventHandlers } from "../../hooks/compose-event-handlers";
 
 const defaultArrow = {
   className: "fill-slate-900",
@@ -24,8 +24,7 @@ const defaultContentProps = {
     "rounded-lg bg-body text-white py-1.5 px-3 bg-slate-900 break-words whitespace-normal text-sm",
 };
 
-export interface TooltipProps
-  extends Omit<PopperProps, "elementProps"> {
+export interface TooltipProps extends Omit<PopperProps, "elementProps"> {
   content?: string | React.FC | React.ReactNode;
   interactive?: boolean;
   defaultOpen?: boolean;
@@ -51,6 +50,7 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
       noRest,
       contentProps = defaultContentProps,
       delay,
+      zOffset = 20,
       ...rest
     },
     ref,
@@ -59,7 +59,21 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
     const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
 
     const open = controlledOpen ?? uncontrolledOpen;
-    const setOpen = setControlledOpen ?? setUncontrolledOpen;
+
+    const onOpenChange = React.useCallback(
+      (open: boolean, ...args: Parameters<typeof setControlledOpen>) => {
+        setControlledOpen?.(open, ...args);
+        setUncontrolledOpen(open);
+      },
+      [setControlledOpen, setUncontrolledOpen],
+    );
+
+    const setOpen =
+      controlledOpen != null
+        ? setControlledOpen
+        : !setControlledOpen
+          ? setUncontrolledOpen
+          : onOpenChange;
 
     const hasReference = !!reference;
 
@@ -85,10 +99,7 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
       <Popper
         trigger={trigger}
         open={open}
-        onOpenChange={(open, event) => {
-          console.log("Tooltip::onOpenChange:open", open, ", event:", event)
-          setOpen(open)
-        }}
+        onOpenChange={setOpen}
         reference={reference}
         dismiss={EMPTY_RECORD}
         contentProps={contentProps}
@@ -104,15 +115,16 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
         strategy="fixed"
         portal={false}
         arrow={defaultArrow}
+        zOffset={zOffset}
         {...rest}
         elementProps={(context) => [
           useFocus(context, {
             enabled: controlledOpen == null,
           }),
           useRole(context, { role: "label" }),
-        ]}        
-        
+        ]}
         triggerRef={ref as React.ForwardedRef<HTMLElement>}
+        type="tooltip"
       >
         {actualChildren}
       </Popper>
@@ -120,7 +132,9 @@ const TooltipFc: React.FC<TooltipProps> = React.forwardRef<
   },
 );
 
-export const Tooltip:React.FC<TooltipProps> = Object.assign(TooltipFc, { safePolygon: safePolygon });
+export const Tooltip: React.FC<TooltipProps> = Object.assign(TooltipFc, {
+  safePolygon: safePolygon,
+});
 Tooltip.displayName = "Mux.Tooltip";
 
 export default Tooltip;

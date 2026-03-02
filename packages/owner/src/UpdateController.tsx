@@ -44,7 +44,7 @@ const UpdateController = () => {
       }
     },
   });
-
+console.log("UpdateController: done")
   return (
     <Snackbar
       open={needRefresh}

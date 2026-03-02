@@ -2,7 +2,7 @@ import { isRecord } from '../isRecord'
 import {LayerContextValue} from './types'
 
 export function getLayerContext(contextValue: LayerContextValue): LayerContextValue {
-  // NOTE: This check is for future-compatiblity
+  // NOTE: This check is for future-compatibility
   // - If the value is not an object, it’s not compatible with the current version
   // - If the value is an object, but doesn’t have `version: 0.0`, it’s not compatible with the current version
   if (!isRecord(contextValue) || contextValue.version !== 0.0) {

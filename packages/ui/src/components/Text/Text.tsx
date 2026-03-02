@@ -4,7 +4,7 @@ import React from "react";
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -179,7 +179,7 @@ const resolveProps = (
     result["color"] = asColor;
   }
 
-  console.log("Link::", asClassName, ", typographyColor:", typographyColor)
+  //console.log("Link::", asClassName, ", typographyColor:", typographyColor)
   if (asClassName || typographyColor)
     result["className"] = twMerge(asClassName ?? '', typographyColor ?? '');
 

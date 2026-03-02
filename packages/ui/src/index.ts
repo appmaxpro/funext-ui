@@ -19,7 +19,7 @@ export * from "./lib/scrollable"
 
 export * from "./lib/transitions"
 export * from './svg-icon'
-
+export * from './store'
 
 // context
 export {

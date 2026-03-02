@@ -42,11 +42,12 @@ export default function useScrollTrigger(
   const store = React.useRef<number>(0);
   const [trigger, setTrigger] = React.useState(() => getTrigger(store, other));
   React.useEffect(() => {
-    if (target === null || !enabled) {
+    if (target == null || !enabled) {
       return setTrigger(false);
     }
+    const targetOptions = { target, ...other }
     const handleScroll = () => {
-      setTrigger(getTrigger(store, { target, ...other }));
+      setTrigger(getTrigger(store, targetOptions));
     };
 
     handleScroll(); // Re-evaluate trigger when dependencies change

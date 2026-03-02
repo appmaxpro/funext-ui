@@ -254,7 +254,16 @@ class CodeTarget {
   }
 }
 
-const TRANSLATABLE_ATTRS = ["label", "title", "placeholder", "alt"];
+const TRANSLATABLE_ATTRS = [
+  "alt",
+  "aria-label",
+  "aria-placeholder",
+  "aria-roledescription",
+  "aria-valuetext",
+  "label",
+  "placeholder",
+  "title",
+];
 const translationRE = /^(\s*)([\s\S]+?)(\s*)$/;
 
 export class CodeGenerator {
@@ -270,6 +279,7 @@ export class CodeGenerator {
   translatableAttributes: string[] = TRANSLATABLE_ATTRS;
   ast: AST;
   staticDefs: { id: string; expr: string }[] = [];
+  staticDefsMap: Map<string, string> = new Map()
   slotNames: Set<String> = new Set();
   helpers: Set<string> = new Set();
 
@@ -986,7 +996,7 @@ export class CodeGenerator {
     const isNewBlock = !block || forceNewBlock;
     let codeIdx = this.target.code.length;
     if (isNewBlock) {
-      const n = ast.content.filter((c) => c.type !== ASTType.TSet).length;
+      const n = ast.content.filter((c) => !c.hasNoRepresentation).length;
       let result: string | null = null;
       if (n <= 1) {
         for (let child of ast.content) {
@@ -1000,15 +1010,15 @@ export class CodeGenerator {
     let index = 0;
     for (let i = 0, l = ast.content.length; i < l; i++) {
       const child = ast.content[i];
-      const isTSet = child.type === ASTType.TSet;
+      const forceNewBlock = !child.hasNoRepresentation;
       const subCtx = createContext(ctx, {
         block,
         index,
-        forceNewBlock: !isTSet,
+        forceNewBlock,
         isLast: ctx.isLast && i === l - 1,
       });
       this.compileAST(child, subCtx);
-      if (!isTSet) {
+      if (forceNewBlock) {
         index++;
       }
     }
@@ -1070,8 +1080,13 @@ export class CodeGenerator {
         forceNewBlock: !block,
       });
     } else {
-      const id = generateId(`callTemplate_`);
-      this.staticDefs.push({ id, expr: `app.getTemplate(${subTemplate})` });
+      let id = this.staticDefsMap.get(subTemplate)
+      if (!id){
+        id = generateId(`callTemplate_`);
+
+        this.staticDefs.push({ id, expr: `app.getTemplate(${subTemplate})` });
+        this.staticDefsMap.set(subTemplate, id)
+      }
       this.insertBlock(`${id}.call(this, ${ctxVar}, node, ${key})`, block!, {
         ...ctx,
         forceNewBlock: !block,
@@ -1420,11 +1435,10 @@ export class CodeGenerator {
       id,
       expr: `app.createComponent(null, false, true, false, false)`,
     });
-    let expr = generateId("target");
+
     const target = compileExpr(ast.target);
-    this.define(expr, target);
     const key = this.generateComponentKey();
-    const blockString = `${id}({target: ${expr},slots: {'default': {__render: ${name}.bind(this), __ctx: ${ctxStr}}}}, ${key}, node, ctx, Portal)`;
+    const blockString = `${id}({target: ${target},slots: {'default': {__render: ${name}.bind(this), __ctx: ${ctxStr}}}}, ${key}, node, ctx, Portal)`;
     if (block) {
       this.insertAnchor(block);
     }

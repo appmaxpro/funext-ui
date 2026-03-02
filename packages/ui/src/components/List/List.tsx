@@ -85,7 +85,7 @@ const List:React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>((props
   try {
     const {base} = useListContext(false)!;
     globalBase = !isolate && base?.global ? base : null;
-    console.log("List Base ListContext:", base);
+    //console.log("List Base ListContext:", base);
     if (
       !isolate &&
       base &&
@@ -108,7 +108,7 @@ const List:React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>((props
   } catch (e) {
     console.error(e);
   }
-  console.log("List Base itemStyle:", globalBase?.item);
+  //console.log("List Base itemStyle:", globalBase?.item);
   return (
     <ListContextProvider
       value={{

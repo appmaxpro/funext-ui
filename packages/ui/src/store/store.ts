@@ -1,24 +1,24 @@
 import { useSyncExternalStore } from 'react';
 
-export type MuiStoreSubscriber<Value> = (value: Value) => void;
+export type Subscriber<Value> = (value: Value) => void;
 type SetStateCallback<Value> = (value: Value) => Value;
 
-export interface MuiStore<Value> {
+export interface Store<Value> {
   getState: () => Value;
   setState: (value: Value | SetStateCallback<Value>) => void;
   updateState: (value: Value | SetStateCallback<Value>) => void;
   initialize: (value: Value) => void;
-  subscribe: (callback: MuiStoreSubscriber<Value>) => () => void;
+  subscribe: (callback: Subscriber<Value>) => () => void;
 }
 
-export type MuiStoreValue<Store extends MuiStore<any>> = ReturnType<Store['getState']>;
+export type StoreValue<S extends Store<any>> = ReturnType<S['getState']>;
 
 export function createStore<Value extends Record<string, any>>(
   initialState: Value
-): MuiStore<Value> {
+): Store<Value> {
   let state = initialState;
   let initialized = false;
-  const listeners = new Set<MuiStoreSubscriber<Value>>();
+  const listeners = new Set<Subscriber<Value>>();
 
   return {
     getState() {
@@ -30,8 +30,10 @@ export function createStore<Value extends Record<string, any>>(
     },
 
     setState(value) {
+      const old = state;
       this.updateState(value);
-      listeners.forEach((listener) => listener(state));
+      if (old !== state)
+        listeners.forEach((listener) => listener(state));
     },
 
     initialize(value) {
@@ -48,8 +50,8 @@ export function createStore<Value extends Record<string, any>>(
   };
 }
 
-export function useStore<Store extends MuiStore<any>>(store: Store) {
-  return useSyncExternalStore<MuiStoreValue<Store>>(
+export function useStore<S extends Store<any>>(store: S) {
+  return useSyncExternalStore<StoreValue<S>>(
     store.subscribe,
     () => store.getState(),
     () => store.getState()

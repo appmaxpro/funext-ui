@@ -11,7 +11,7 @@ const NbNewOrders = (props: Props) => {
     const { value } = props;
     return (
         <CardWithIcon
-            to="/orders"
+            to="states"
             icon={ShoppingCartIcon}
             title={'New Orders'}
             subtitle={value}

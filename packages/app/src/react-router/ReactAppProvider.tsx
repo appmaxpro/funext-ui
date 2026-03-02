@@ -9,6 +9,7 @@ function ReactAppProvider(props: AppProviderProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+
   const navigateImpl = React.useCallback<Router['navigate']>(
     (url, { history = 'auto', state } = {}) => {
       if (history === 'auto' || history === 'push') {

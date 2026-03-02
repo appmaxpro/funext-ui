@@ -1,4 +1,5 @@
 import { fetch } from "./client";
+import { DEFAULT_MAX_PER_PAGE, DEFAULT_PAGE_SIZE } from "./constant";
 import { i18n } from "./i18n";
 
 
@@ -18,13 +19,11 @@ export interface SessionInfo {
     logo?: string;
     icon?: string;
     lang?: string;
+    country?: string;
     version?: string;
     home?: string;
     help?: string;
     mode?: string;
-    aopVersion?: string;
-    aopBuildDate?: string;
-    aopGitHash?: string;
     pollingInterval?: number;
     swaggerUI?: {
       enabled?: boolean;
@@ -44,20 +43,18 @@ export interface SessionInfo {
   };
   user?: {
     id: number;
+    token: string;
     login: string;
     name: string;
     nameField?: string;
     lang?: string | null;
+    country?: string;
     image?: string | null;
     action?: string | null;
-    singleTab?: boolean;
-    noHelp?: boolean;
     theme?: string | null;
     group?: string | null;
     navigator?: string | null;
     technical?: boolean;
-    viewCustomizationPermission?: number;
-    canViewCollaboration?: boolean;
   };
   api?: {
     pagination?: {
@@ -71,25 +68,44 @@ export interface SessionInfo {
     };
   };
   features?: {
-    dmsSpreadsheet?: boolean;
-    studio?: boolean;
     //by Nabil
     socket?: boolean;
+    tracking?: boolean;
   };
   route?: {
     path: string;
     state: Record<string, unknown>;
-
   };
 }
 
 export type SessionListener = (info: SessionInfo | null) => void;
 
+type ApiToken = string | null
+type StoreApiToken = (headers: ApiToken) => void;
+
+let token: ApiToken = null;
+let storeApiToken: StoreApiToken;
+
+const setApiToken: StoreApiToken = (apiToken: ApiToken) => {
+    if (apiToken !== token ) {
+        token = apiToken;
+        storeApiToken?.(apiToken)
+    }
+};
+
+
+
 async function init() {
-  const url = "ws/public/app/info";
-  const resp = await fetch({ url });
+  
+  const url = "app/info";
+  const headers = token ? {Authorization: 'Basic '+ token} : undefined;
+  const resp = await fetch({ url, headers });
 
   if (!resp.ok) {
+    if (token && resp.status === 401) {
+      setApiToken(null);
+      return init()
+    }
     return Promise.reject(resp.status);
   }
 
@@ -104,6 +120,7 @@ export class Session {
   #info: SessionInfo | null = null;
   #infoPromise: Promise<SessionInfo> | null = null;
   #listeners = new Set<SessionListener>();
+
 
   #notify() {
     this.#listeners.forEach((fn) => fn(this.#info));
@@ -121,6 +138,7 @@ export class Session {
   }
 
   async init() {
+
     return this.#info ?? (await this.#load());
   }
 
@@ -144,7 +162,7 @@ export class Session {
   ): Promise<SessionInfo> {
     const params = options?.params;
     const tenant = options?.tenant;
-    const url = "callback" + (params ? `?${params}` : "");
+    const url = "auth/login" + (params ? `?${params}` : "");
     const headers = tenant ? { "X-Tenant-ID": String(tenant) } : undefined;
     const response = await fetch({
       url,
@@ -160,24 +178,27 @@ export class Session {
     }
 
     const data = await response.json();
-    const { route } = data;
+    const { user } = data;
+    
 
-    if (route?.path && this.#info) {
-      return {
-        ...this.#info,
-        route,
-      };
+    if (user) {
+      this.#info = data;
+      setApiToken(user.token)
+      return data;
     }
 
-    this.#infoPromise = init();
-    return this.#load();
+    return (this.#infoPromise = init());
   }
 
   async logout() {
-    const response = await fetch({ url: "logout" });
+    const headers = token ? {Authorization: 'Basic '+ token} : undefined;
+    const response = await fetch({ url: "auth/logout", headers });
     const { status } = response;
     const redirectUrl: string | null =
       status === 200 ? (await response.json()).redirectUrl : null;
+
+    setApiToken(null);
+
 
     this.#info = null;
     this.#infoPromise = null;
@@ -185,15 +206,43 @@ export class Session {
 
     return { status, redirectUrl };
   }
+
 }
 
 export const session = new Session();
 
-
-export async function loadSession(): Promise<SessionInfo> {
+ 
+export async function loadSession(apiToken:ApiToken, setApiToken:StoreApiToken): Promise<SessionInfo> {
+  token = apiToken;
+  storeApiToken = setApiToken;
   const info = session.info;
   if (info) {
     return info;
   }
   return await session.init();
+}
+
+const EMPTY_HEADERS = {}
+export function getHeaders() {
+  const headers = token ? {Authorization: 'Basic '+ token} : undefined
+;
+  return headers
+}
+
+export function getDefaultPageSize(): number {
+  const defaultSize =
+    session.info?.api?.pagination?.defaultPerPage ?? 0 > 0
+      ? session.info?.api?.pagination?.defaultPerPage
+      : DEFAULT_PAGE_SIZE;
+  if (getDefaultMaxPerPage() > 0) {
+    return Math.min(getDefaultMaxPerPage(), defaultSize!);
+  }
+  return defaultSize!;
+}
+
+/**
+ * Get the max number of records to display per page.
+ */
+export function getDefaultMaxPerPage(): number {
+  return session.info?.api?.pagination?.maxPerPage ?? DEFAULT_MAX_PER_PAGE;
 }

@@ -18,7 +18,7 @@ import * as Client from "react-dom";
  */
 export function useInTreeCreateRoot() {
   const [roots, setRoots] = useState<Map<Element | DocumentFragment, ReactNode>>(new Map());
-  Client.unstable_batchedUpdates
+  //Client.unstable_batchedUpdates
   const createRoot: typeof origCreateRoot = useCallback((container:Container, options) => {
     const root: Root = {
       render: (children) => {

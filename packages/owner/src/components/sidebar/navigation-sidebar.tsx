@@ -1,21 +1,23 @@
-'use client';
-import * as React from 'react';
-import Divider from '@funext/ui/Divider';
-import List from '@funext/ui/List';
-import type { Routes, OutletRoute, SidebarItemContextProps } from '../../utils/types';
+"use client";
+import * as React from "react";
+import Divider from "@funext/ui/Divider";
+import List from "@funext/ui/List";
+import type {
+  Navigation,
+  OutletRoute,
+  SidebarItemContextProps,
+} from "../../utils/types";
 import {
   getItemPath,
   getNavTitle,
   hasSelectedNavChildren,
   isOutletRoute,
-} from '../../utils/navigation';
-import { SidebarItemContext, RouteContext } from '../../context';
-import { getDrawerSxTransitionMixin } from '../../utils/ui';
-import {
-  SidebarItem,
-} from './sidebar-item';
-import { useActivePage } from '~/hooks/use-active-page';
-import { Dimensions } from '~/utils/constant';
+} from "../../utils/navigation";
+import { SidebarItemContext, useNavContext } from "../../context";
+import { getDrawerSxTransitionMixin } from "../../utils/ui";
+import { SidebarItem } from "./sidebar-item";
+import { useActivePage } from "~/hooks/use-active-page";
+import { Dimensions } from "~/utils/constant";
 
 interface NavigationSidebarItemProps {
   id: string;
@@ -28,7 +30,10 @@ interface NavigationSidebarItemProps {
   isFullyExpanded: boolean;
   isFullyCollapsed: boolean;
   sidebarExpandedWidth: number | string;
-  renderPageItem?: (item: OutletRoute, params: { mini: boolean }) => React.ReactNode;
+  renderPageItem?: (
+    item: OutletRoute,
+    params: { mini: boolean },
+  ) => React.ReactNode;
 }
 
 /**
@@ -47,11 +52,12 @@ function NavigationSidebarItem({
   sidebarExpandedWidth,
   renderPageItem,
 }: NavigationSidebarItemProps) {
-  const navigationContext = React.useContext(RouteContext);
+  const navigationContext = useNavContext();
 
   const activePage = useActivePage();
 
-  const isActive = !!activePage && activePage.path === getItemPath(navigationContext, item);
+  const isActive =
+    !!activePage && activePage.path === getItemPath(navigationContext, item);
 
   // Show as selected in mini sidebar if any of the children matches path, otherwise show as selected if item matches path
   const isSelected =
@@ -68,7 +74,7 @@ function NavigationSidebarItem({
       isMini,
       isSidebarFullyExpanded: isFullyExpanded,
       isSidebarFullyCollapsed: isFullyCollapsed,
-      renderNestedNavigation: () => (
+      renderNestedNavigation:  () => (
         <NavigationSidebar
           subNavigation={item.children ?? []}
           depth={depth + 1}
@@ -93,6 +99,10 @@ function NavigationSidebarItem({
     ],
   );
 
+  if ((item.showNav === false) || (item.type && item.type !== 'sidebar') ) {
+      return null;
+  }
+
   return (
     <SidebarItemContext.Provider value={pageItemContextProps}>
       {renderPageItem ? (
@@ -105,7 +115,7 @@ function NavigationSidebarItem({
 }
 
 interface NavigationSidebarProps {
-  subNavigation: Routes;
+  subNavigation: Navigation;
   depth?: number;
   onLinkClick: () => void;
   isMini?: boolean;
@@ -114,7 +124,10 @@ interface NavigationSidebarProps {
   isFullyCollapsed?: boolean;
   hasDrawerTransitions?: boolean;
   sidebarExpandedWidth: number | string;
-  renderPageItem?: (item: OutletRoute, params: { mini: boolean }) => React.ReactNode;
+  renderPageItem?: (
+    item: OutletRoute,
+    params: { mini: boolean },
+  ) => React.ReactNode;
 }
 
 /**
@@ -132,7 +145,7 @@ function NavigationSidebar({
   sidebarExpandedWidth,
   renderPageItem,
 }: NavigationSidebarProps) {
-  const navigationContext = React.useContext(RouteContext);
+  const navigationContext = useNavContext();
 
   const activePage = useActivePage();
 
@@ -146,29 +159,45 @@ function NavigationSidebar({
         .filter(
           ({ navigationItem }) =>
             isOutletRoute(navigationItem) &&
+            navigationItem.showNav !== false &&
             !!activePage &&
-            hasSelectedNavChildren(navigationContext, navigationItem, activePage.path),
+            hasSelectedNavChildren(
+              navigationContext,
+              navigationItem,
+              activePage.path,
+            ),
         )
         .map(({ originalIndex }) => `page-${depth}-${originalIndex}`),
     [activePage, depth, navigationContext, subNavigation],
   );
 
-  const [expandedItemIds, setExpandedItemIds] = React.useState(initialExpandedItemIds);
+  const [expandedItemIds, setExpandedItemIds] = React.useState(
+    initialExpandedItemIds,
+  );
 
   const handlePageItemClick = React.useCallback(
     (itemId: string, item: OutletRoute) => {
-      if (item.children && !isMini) {
+      if (item.children && !isMini && item.childNav !== false) {
         setExpandedItemIds((previousValue) =>
           previousValue.includes(itemId)
-            ? previousValue.filter((previousValueItemId) => previousValueItemId !== itemId)
+            ? previousValue.filter(
+                (previousValueItemId) => previousValueItemId !== itemId,
+              )
             : [...previousValue, itemId],
         );
-      } else if (!item.children) {
+      } else if (!item.children || item.childNav === false) {
         onLinkClick();
       }
     },
     [isMini, onLinkClick],
   );
+
+  if (
+    subNavigation.length == 1 &&
+    isOutletRoute(subNavigation[0]) &&
+    subNavigation[0].showNav === false
+  )
+    return null;
 
   return (
     <List
@@ -177,74 +206,82 @@ function NavigationSidebar({
         mt: isPopover && depth === 1 ? 0.5 : 0,
         mb: depth === 0 && !isPopover ? 4 : 0.5,
         pl: (isPopover ? 1 : 2) * (isPopover ? depth - 1 : depth),
-        minWidth: isPopover && depth === 1 ? 240 : 'auto',
-        width: isMini ? Dimensions.sidebarMiniWidth : 'auto',
+        minWidth: isPopover && depth === 1 ? 240 : "auto",
+        width: isMini ? Dimensions.sidebarMiniWidth : "auto",
       }}
+      component='div'
+      isolate
     >
-      {subNavigation.map((navigationItem, navigationItemIndex) => {
-        if (navigationItem.kind === 'header') {
-          return (
-            <List.Subheader
-              key={`subheader-${depth}-${navigationItemIndex}`}
-              sx={{
-                fontSize: 12,
-                fontWeight: '700',
-                height: isMini ? 0 : 40,
-                ...(hasDrawerTransitions
-                  ? getDrawerSxTransitionMixin(isFullyExpanded, 'height')
-                  : {}),
-                px: 2,
-                minWidth: sidebarExpandedWidth,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                zIndex: 2,
-              }}
-            >
-              {getNavTitle(navigationItem)}
-            </List.Subheader>
-          );
-        }
-
-        if (navigationItem.kind === 'divider') {
-          const nextItem = subNavigation[navigationItemIndex + 1];
-
-          return (
-            <li key={`divider-${depth}-${navigationItemIndex}`}>
-              <Divider
+      {subNavigation
+        .map((navigationItem, navigationItemIndex) => {
+          if (navigationItem.kind === "header") {
+            return (
+              <List.Subheader
+                key={`subheader-${depth}-${navigationItemIndex}`}
                 sx={{
-                  borderBottomWidth: 2,
-                  mx: 1,
-                  mt: 1,
-                  mb: nextItem?.kind === 'header' && !isMini ? 0 : 1,
+                  fontSize: 12,
+                  fontWeight: "700",
+                  height: isMini ? 0 : 40,
                   ...(hasDrawerTransitions
-                    ? getDrawerSxTransitionMixin(isFullyExpanded, 'margin')
+                    ? getDrawerSxTransitionMixin(isFullyExpanded, "height")
                     : {}),
+                  px: 2,
+                  minWidth: sidebarExpandedWidth,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  zIndex: 2,
                 }}
-              />
-            </li>
+              >
+                {getNavTitle(navigationItem)}
+              </List.Subheader>
+            );
+          }
+
+          if (navigationItem.kind === "divider") {
+            const nextItem = subNavigation[navigationItemIndex + 1];
+
+            return (
+              <li key={`divider-${depth}-${navigationItemIndex}`}>
+                <Divider
+                  sx={{
+                    borderBottomWidth: 2,
+                    mx: 1,
+                    mt: 1,
+                    mb: nextItem?.kind === "header" && !isMini ? 0 : 1,
+                    ...(hasDrawerTransitions
+                      ? getDrawerSxTransitionMixin(isFullyExpanded, "margin")
+                      : {}),
+                  }}
+                />
+              </li>
+            );
+          }
+
+          if (navigationItem.showNav === false) {
+            return null;
+          }
+
+          const pageItemId = `page-${depth}-${navigationItemIndex}`;
+
+          return (
+            <NavigationSidebarItem
+              key={pageItemId}
+              id={pageItemId}
+              item={navigationItem}
+              isExpanded={expandedItemIds.includes(pageItemId)}
+              onClick={handlePageItemClick}
+              depth={depth}
+              onLinkClick={onLinkClick}
+              isMini={isMini}
+              isFullyExpanded={isFullyExpanded}
+              isFullyCollapsed={isFullyCollapsed}
+              sidebarExpandedWidth={sidebarExpandedWidth}
+              renderPageItem={renderPageItem}
+            />
           );
-        }
-
-        const pageItemId = `page-${depth}-${navigationItemIndex}`;
-
-        return (
-          <NavigationSidebarItem
-            key={pageItemId}
-            id={pageItemId}
-            item={navigationItem}
-            isExpanded={expandedItemIds.includes(pageItemId)}
-            onClick={handlePageItemClick}
-            depth={depth}
-            onLinkClick={onLinkClick}
-            isMini={isMini}
-            isFullyExpanded={isFullyExpanded}
-            isFullyCollapsed={isFullyCollapsed}
-            sidebarExpandedWidth={sidebarExpandedWidth}
-            renderPageItem={renderPageItem}
-          />
-        );
-      })}
+        })
+        .filter((a) => !!a)}
     </List>
   );
 }

@@ -3,11 +3,11 @@ import { useNavigate, useNavigation } from 'react-router'
 
 //import {useRouter} from './useRouter'
 
-function isLeftClickEvent(event: React.MouseEvent) {
+export function isLeftClickEvent(event: React.MouseEvent) {
   return event.button === 0
 }
 
-function isModifiedEvent(event: React.MouseEvent) {
+export function isModifiedEvent(event: React.MouseEvent) {
   return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 }
 
@@ -85,7 +85,9 @@ export function useLink(options: UseLinkOptions): {onClick: React.MouseEventHand
       }
 
       event.preventDefault()
-      navigate(href, {replace, state})
+      //const fn = (replace ? history.replaceState : history.pushState).bind(history)
+      //fn(state, '', href)
+      navigate(href, {replace, state/*, viewTransition: true*/})
       //navigateUrl({path: href, replace, state})
     },
     [href, navigate, onClickProp, replace, target, state],

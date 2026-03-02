@@ -15,7 +15,7 @@ import { ThemeSwitcher } from './theme-switcher';
  */
 function ToolbarActions() {
   return (
-    <Flex direction="row" alignItems="center">
+    <Flex direction="row" items="center">
       <ThemeSwitcher />
     </Flex>
   );

@@ -38,6 +38,8 @@ type ClassArray = ClassValue[];
 
 /* Utils
   ---------------------------------- */
+/* Utils
+  ---------------------------------- */
 
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
@@ -139,6 +141,10 @@ export interface CVA {
 export interface DefineConfigOptions {
   hooks?: {
     /**
+     * @deprecated please use `onComplete`
+     */
+    "cx:done"?: (className: string) => string;
+    /**
      * Returns the completed string of concatenated classes/classNames.
      */
     onComplete?: (className: string) => string;
@@ -161,6 +167,8 @@ const falsyToString = <T extends unknown>(value: T) =>
 
 export const defineConfig: DefineConfig = (options) => {
   const cx: CX = (...inputs) => {
+    if (typeof options?.hooks?.["cx:done"] !== "undefined")
+      return options?.hooks["cx:done"](clsx(inputs));
 
     if (typeof options?.hooks?.onComplete !== "undefined")
       return options?.hooks.onComplete(clsx(inputs));

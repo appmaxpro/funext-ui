@@ -55,8 +55,8 @@ const createGapProp = (t:string, tt:string) => {
   return result;
 }
 
-const extendedSxConfig:SxConfig = {
-  ...dsc,
+
+export const muxExtendedSxConfig:SxConfig = {
   ms: dsc.marginInlineStart,
   me: dsc.marginInlineEnd,
   ps: dsc.paddingInlineStart,
@@ -147,6 +147,10 @@ const extendedSxConfig:SxConfig = {
       cssProperty: 'borderTopRightRadius',
     })
   },
+}
+const extendedSxConfig:SxConfig = {
+  ...dsc,
+  ...muxExtendedSxConfig
   
 };
 

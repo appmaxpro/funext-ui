@@ -6,7 +6,7 @@ import { useMergeRefs } from "@floating-ui/react";
 // utils
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -61,12 +61,12 @@ export const TimelineIcon = React.forwardRef<HTMLSpanElement, TimelineIconProps>
     }, [setWidth, className, children]);
 
     // 3. set styles
-    const variantClasses = objectsToString(
+    const variantClasses = values(
       variants[findMatch(valid.variants, variant, "ghost")][
         findMatch(valid.colors, color, "primary")
       ],
     );
-    const classes = twMerge(objectsToString(base), variantClasses, className);
+    const classes = twMerge(values(base), variantClasses, className);
 
     // 4. return
     return (

@@ -1,5 +1,10 @@
 import { RElement, RNode, Text } from "./base";
 import type { VNode } from "./index";
+const getDescriptor = (o: any, p: any) => Object.getOwnPropertyDescriptor(o, p)!;
+const nodeProto = RNode.prototype;
+
+
+const nodeSetTextContent = getDescriptor(nodeProto, "textContent").set!;
 
 // -----------------------------------------------------------------------------
 // List Node
@@ -199,7 +204,7 @@ class VList extends RElement<VList, RNode> {
     const { parent, anchor } = this;
     if (this.isOnlyChild) {
 
-      //nodeSetTextContent.call(parent, "");
+      nodeSetTextContent.call(parent, "");
     } else {
       const children = this.children;
       const l = children.length;

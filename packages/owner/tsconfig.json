@@ -1,14 +1,15 @@
 {
   
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "target": "ES2022",
-    "module": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "@funext/ui/*": ["./node_modules/@funext/ui/*"],
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
@@ -23,7 +24,7 @@
       "vite-plugin-pwa/client"
     ]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "src/components/swappable/swappable_views.jsx"],
   "exclude": ["node_modules", "build"],
   "references": [{ "path": "./tsconfig.node.json" }],
 }

@@ -4,11 +4,12 @@ import LogoutIcon from "@funext/icons/Logout";
 import { i18n } from "~/utils/i18n";
 import { ConfirmSignOut } from "./confirm-sign-out";
 import { session } from "~/utils/session";
+import { useSession } from "~/hooks/use-session";
 
 export type SignOutButtonProps = ButtonProps & {
   text?: React.ReactNode;
   confirm?: React.ReactNode;
-  onLogout?: () => void;
+  onLogout?: () => Promise<void>;
 };
 
 /**
@@ -23,18 +24,25 @@ export type SignOutButtonProps = ButtonProps & {
  */
 function SignOutButton({ confirm, onLogout, ...props }: SignOutButtonProps) {
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const { logout } = useSession();
+  const [loggedOut, setLoggedOut] = React.useState(false);
+
   return (
     <Button
       variant="outlined"
       size="sm"
       disableElevation
-      onClick={() => {
+      disabled={loggedOut}
+      onClick={async () => {
         if (confirm) {
-          setConfirmOpen(true)
-        } else if(onLogout){
-            onLogout() 
+          setConfirmOpen(true);
         } else {
-          session.logout()
+          setLoggedOut(true);
+          try {
+            await (onLogout ?? logout)();
+          } finally {
+            setLoggedOut(false);
+          }
         }
       }}
       sx={{

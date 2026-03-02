@@ -6,7 +6,7 @@ import { useMergeRefs } from "@floating-ui/react";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -108,20 +108,20 @@ const StepperFc = React.forwardRef<HTMLDivElement, StepperProps>(
       activeClasses,
       completedClasses,
     } = useMemo(() => {
-      const stepperClasses = twMerge(objectsToString(base.stepper), className);
+      const stepperClasses = twMerge(values(base.stepper), className);
       const lineClasses = twMerge(
-        objectsToString(base.line.initial),
+        values(base.line.initial),
         lineClassName,
       );
       const activeLineClasses = twMerge(
         lineClasses,
-        objectsToString(base.line.active),
+        values(base.line.active),
         activeLineClassName,
       );
 
-      const inactiveClasses = twMerge(objectsToString(stepBase.inactive), stepClasses?.inactive);
-      const activeClasses = twMerge(objectsToString(stepBase.active), stepClasses?.active);
-      const completedClasses = twMerge(objectsToString(stepBase.completed), stepClasses?.completed);
+      const inactiveClasses = twMerge(values(stepBase.inactive), stepClasses?.inactive);
+      const activeClasses = twMerge(values(stepBase.active), stepClasses?.active);
+      const completedClasses = twMerge(values(stepBase.completed), stepClasses?.completed);
       return {
         stepperClasses,
         lineClasses,

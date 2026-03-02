@@ -1,6 +1,6 @@
 import { IElement, INode, IText } from "./types";
 
-export interface VNode<T = any> extends  INode{
+export interface VNode<T = any> extends  INode<VNode>{
   mount(parent: IElement, afterNode: INode | null): void;
   moveBeforeDOMNode(node: INode | null, parent?: IElement): void;
   moveBeforeVNode(other: T | null, afterNode: INode | null): void;
@@ -16,7 +16,7 @@ export interface VNode<T = any> extends  INode{
 
 export type BDom = VNode<any>;
 
-export function mount(vnode: VNode, fixture: IElement, afterNode: Node | null = null) {
+export function mount(vnode: VNode, fixture: IElement, afterNode: VNode | null = null) {
   vnode.mount(fixture, afterNode);
 }
 

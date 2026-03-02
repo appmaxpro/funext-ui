@@ -1,0 +1,143 @@
+@theme {
+
+  --hover-opacity: .4;
+  --radius: 0.625rem;
+  
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* FONT SIZE */
+  --text-xs: calc(var(--spacing) * 3);
+  --text-xs--line-height: calc(var(--spacing) * 4.5);
+
+  --text-sm: calc(var(--spacing) * 3.5);
+  --text-sm--line-height: calc(var(--spacing) * 5);
+
+  --text-md: calc(var(--spacing) * 4);
+  --text-md--line-height: calc(var(--spacing) * 6);
+
+  --text-lg: calc(var(--spacing) * 4.5);
+  --text-lg--line-height: calc(var(--spacing) * 7);
+
+  --text-xl: calc(var(--spacing) * 5);
+  --text-xl--line-height: calc(var(--spacing) * 7.5);
+
+  --color-accent: oklch(0.58 0.23 278.46);
+  --color-primary: oklch(0.58 0.23 278.46);
+
+  --color-primary-50: oklch(96.2% 0.018 273.61);
+  --color-primary-100: oklch(92.912% 0.03334 274.09);
+  --color-primary-200: oklch(86.824% 0.06368 275.34);
+  --color-primary-300: oklch(78.236% 0.11302 276.01);
+  --color-primary-400: oklch(66.947% 0.17936 278.23);
+  --color-primary-500: oklch(58.059% 0.2297 278.42);
+  --color-primary-600: oklch(50.747% 0.25936 278.27);
+  --color-primary-700: oklch(45.436% 0.23802 278.32);
+  --color-primary-800: oklch(39.624% 0.19368 278.67);
+  --color-primary-900: oklch(35.812% 0.14334 280);
+  --color-primary-950: oklch(25.7% 0.09 282.59);
+
+  --color-accent-fg: oklch(1 0 0);
+  --color-primary-fg: oklch(1 0 0);
+  --color-slate-fg: oklch(1 0 0);
+  --color-gray-fg: oklch(1 0 0);
+  --color-orange-fg: oklch(1 0 0);
+  --color-green-fg: oklch(1 0 0);
+  --color-sky-fg: oklch(1 0 0);
+  --color-blue-fg: oklch(1 0 0);
+  --color-red-fg: oklch(1 0 0);
+
+  --color-body: oklch(1 0 0);
+  --color-fg: oklch(0.145 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-fg: oklch(0.145 0 0);
+  --color-secondary: oklch(0.95 0 0);
+  --color-secondary-fg: oklch(0.2 0.02 209.65);
+  --color-muted: oklch(0.97 0 0);
+  --color-muted-fg: oklch(0.556 0 0);
+
+  --color-border: oklch(0.922 0 0);
+  --color-input: oklch(0.922 0 0);
+  --color-ring: oklch(0.708 0 0);
+
+  --action-disabled: oklab(0 0 0 / 0.26);
+  
+  --act-active: oklch(0 0 0 / 0.54);
+  --act-hover: oklch(0 0 0 / 0.04);
+  --act-hover-opacity: 0.04;
+  --act-selected: oklch(0 0 0 / 0.08);
+  --act-selected-opacity: 0.08;
+  --act-disabled-fg: oklch(0 0 0 / 0.26);
+  --act-disabled: oklch(0 0 0 / 0.12);
+  --act-disabled-opacity: 0.38;
+  --act-focus: oklch(0 0 0 / 0.12);
+  --act-focus-opacity: 0.12;
+  --act-activated-opacity: 0.12;
+  --switch-track-disabled: 1;
+
+  --font-body: var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+
+
+:root {
+  --primary: var(--color-primary);
+  --accent: var(--color-accent);
+  --slate: var(--color-slate);
+  --gray: var(--color-gray);
+  --orange: var(--color-orange-500);
+  --green: var(--color-green-500);
+  --sky: var(--color-sky-500);
+  --blue: var(--color-blue-500);
+  --red: var(--color-red-500);
+
+  --body: var(--color-body);
+  --fg: var(--color-fg);
+  --card: var(--color-card);
+  --card-fg: var(--color-card-fg);
+  --secondary: var(--color-secondary);
+  --secondary-fg: var(--color-secondary-fg);
+  --muted: var(--color-muted);
+  --muted-fg: var(--color-muted-fg);
+
+  --border: var(--color-border);
+  --input: var(--color-input);
+  --ring: var(--color-ring);
+  
+}
+
+.dark{
+
+  --color-body: oklch(0.37 0.04 257.31);
+  --color-fg: oklch(0.985 0 0);
+  --color-card: oklch(0.205 0 0);
+  --color-card-fg: oklch(0.985 0 0);
+  --color-secondary: hsl(200, 13%, 19%);
+  --color-secondary-fg: hsl(201, 24%, 89%);
+  --color-muted: oklch(0.269 0 0);
+  --color-muted-fg: oklch(0.708 0 0);
+  --color-border: oklch(1 0 0 / 30%);
+  --color-input: oklch(1 0 0 / 10%);
+  --color-ring: oklch(0.556 0 0);
+  
+  --act-active: #fff;
+  --act-hover: rgba(255, 255, 255, 0.08);
+  --act-hover-opacity: 0.04;
+  --act-selected: rgba(255, 255, 255, 0.16);
+  --act-selected-opacity: 0.08;
+  --act-disabled-fg: rgba(255, 255, 255, 0.3);
+  --act-disabled: gba(255, 255, 255, 0.12);
+  --act-disabled-opacity: 0.38;
+  --act-focus: rgba(255, 255, 255, 0.12);
+  --act-focus-opacity: 0.12;
+  --act-activated-opacity: 0.24;
+  --switch-track-disabled: .7;
+
+
+}
+
+
+

@@ -29,7 +29,7 @@ export function useInViewportWithRef<T extends HTMLElement = HTMLDivElement>(
   
 
   useEffect(() => {
-    console.log("useInViewport: for:", debugId, ", element:", node);
+    //console.log("useInViewport: for:", debugId, ", element:", node);
     const element = node instanceof HTMLElement ? node : node?.current;
     if (element) {
       function setVisibility(visibility: boolean) {

@@ -6,9 +6,11 @@ import NbNewOrders from "./NbNewOrders";
 
 import type { Order } from "./types";
 import { useAsyncEffect } from "~/hooks/use-async-effect";
-import { getFakeData } from "~/utils/get-fake-data";
+import { getDashboardData } from "~/utils/dashboard-data";
 import { ProvinceSales } from "./charts/province-sales";
 import { SparkCharts } from "./charts/spark-charts";
+import { Container } from "~/components/app/container";
+import { DateFilterFilter } from "~/components/views/components/data-view-filter";
 
 interface OrderStats {
   revenue: number;
@@ -34,12 +36,11 @@ const styles = {
 const Spacer = () => <span style={{ width: "1em" }} />;
 const VerticalSpacer = () => <span style={{ height: "1em" }} />;
 
-const Dashboard = () => {
-
+const Dashboard = (props: any) => {
   const [orders, setOrders] = React.useState<Order[]>([]);
 
   useAsyncEffect(async () => {
-    setOrders((await getFakeData()).orders);
+    setOrders((await getDashboardData()).orders);
   });
 
   const aggregation = useMemo<State>(() => {
@@ -78,21 +79,25 @@ const Dashboard = () => {
 
   const { nbNewOrders, pendingOrders, revenue, recentOrders } = aggregation;
   return (
-    <Flex direction="column" gap={4}>
+    <Container {...props}>
+      <div className="flex justify-end py-2">
+        <DateFilterFilter/>
+      </div>
+      <VerticalSpacer />
       <SparkCharts />
       <VerticalSpacer />
-      <Grid container columns={{ md: 1, lg: 2 }} gap={4}>
-        <Grid>
+      <Grid container columns={{ xs: 1, lg: 2 }} gap={4} justify="center">
+        <Grid size={1} flex="1 0 auto">
           <MonthlyRevenue value={revenue} />
         </Grid>
-        <Grid>
+        <Grid size={1} flex="1 0 auto">
           <NbNewOrders value={nbNewOrders} />
         </Grid>
       </Grid>
       <VerticalSpacer />
       <ProvinceSales />
       <VerticalSpacer />
-    </Flex>
+    </Container>
   );
 };
 

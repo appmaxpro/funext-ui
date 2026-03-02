@@ -3,7 +3,7 @@ import React from "react";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -36,7 +36,7 @@ export const CardFooter = React.forwardRef<HTMLElement, CardFooterProps>(
 
     // 3. set styles
     const cardFooterClasses = twMerge(
-      classnames(objectsToString(base.initial), { [objectsToString(base.divider)]: divider }),
+      classnames(values(base.initial), { [values(base.divider)]: divider }),
       className,
     );
 

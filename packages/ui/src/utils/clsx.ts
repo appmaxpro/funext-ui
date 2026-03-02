@@ -5,6 +5,7 @@ export type ClassValue =
   | undefined
   | null
   | Record<string, any>
+  | unknown
   | ClassValue[];
 
 const clean = (names: string[]) =>
@@ -14,7 +15,7 @@ const names = (item: ClassValue): string[] => {
   if (!item) return [];
   if (Array.isArray(item)) return item.flatMap(names);
   if (typeof item === "object") {
-    return clean(Object.keys(item).filter((k) => Boolean(item[k])));
+    return clean(Object.keys(item).filter((k) => Boolean((item as any)[k])));
   }
   return clean([String(item)]);
 };

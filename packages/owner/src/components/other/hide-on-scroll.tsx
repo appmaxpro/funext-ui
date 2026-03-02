@@ -16,13 +16,13 @@ export function HideOnScroll(props: {
     target,
     enabled
   });
-  console.log("HideOnScroll: trigger:", trigger)
+  //console.log("HideOnScroll: trigger:", trigger)
 
   if (!enabled) {
     return children;
   }
 
-  return <Slide direction={direction} appear={false} in={!trigger} timeout={500}>
+  return <Slide direction={direction} appear={false} in={!trigger} timeout={300}>
     {children}
   </Slide>
 }

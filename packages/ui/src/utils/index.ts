@@ -4,7 +4,7 @@ export {default as isDevelopment}  from '#is-development';
 export {default as isBrowser}  from '#is-browser';
 export {default as withMT} from '../theme/tw/withMT';
 export * from './cn';
-export * from './objectsToString';
+export * from './cva';
 export {default as debounce} from "@mui/utils/debounce";
 
 export function intcomma(x: number): string {
@@ -13,6 +13,7 @@ export function intcomma(x: number): string {
 export * from './noop';
 export * from './clsx';
 export * from './shallowEqual';
+export * from './micro-task';
 /**
  * Replaces slug special chars with a space
  */
@@ -72,31 +73,6 @@ export function convertMultilineFieldValue<T extends string | string[]>(
 // build actorIds
 export const buildUserId = (id: string) => `user:${id}`;
 export const buildTeamId = (id: string) => `team:${id}`;
-
-/**
- * Removes the organization / project scope prefix on feature names.
- */
-export function descopeFeatureName<T>(feature: T): T | string {
-  if (typeof feature !== 'string') {
-    return feature;
-  }
-
-  const results = feature.match(/(?:^(?:projects|organizations):)?(.*)/);
-
-  if (results && results.length > 0) {
-    return results.pop()!;
-  }
-
-  return feature;
-}
-
-export function isWebpackChunkLoadingError(error: Error): boolean {
-  return (
-    error &&
-    typeof error.message === 'string' &&
-    error.message.toLowerCase().includes('loading chunk')
-  );
-}
 
 // NOTE: only escapes a " if it's not already escaped
 export function escapeDoubleQuotes(str: string) {

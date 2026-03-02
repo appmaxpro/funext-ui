@@ -2,7 +2,7 @@
 /**
  * @internal
  */
-export const EMPTY_ARRAY: never[] = []
+export const EMPTY_ARRAY: never[] = [] as const;
 
 /**
  * @internal

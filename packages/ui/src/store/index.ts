@@ -1,2 +1,2 @@
 export { useStore, createStore } from './store';
-export type { MuiStore, MuiStoreSubscriber, MuiStoreValue } from './store';
+export type { Store, Subscriber, StoreValue } from './store';

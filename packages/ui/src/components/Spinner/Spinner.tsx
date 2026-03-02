@@ -4,7 +4,7 @@ import React, { forwardRef } from "react";
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -34,8 +34,8 @@ export const Spinner = forwardRef<SVGSVGElement, SpinnerProps>(
     className = twMerge(defaultProps.className || "", className);
 
     // 3. set styles
-    const spinnerColor = objectsToString(colors[findMatch(valid.colors, color, "primary")]);
-    const spinnerClasses = twMerge(classnames(objectsToString(base)), className);
+    const spinnerColor = values(colors[findMatch(valid.colors, color, "primary")]);
+    const spinnerClasses = twMerge(classnames(values(base)), className);
 
     // 4. return
     return (

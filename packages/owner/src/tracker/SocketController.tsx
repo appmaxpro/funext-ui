@@ -1,59 +1,62 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector, connect } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { Snackbar } from '@funext/ui';
-import { devicesActions, sessionActions } from './store';
-import { useEffectAsync } from './reactHelper';
-import { useTranslation } from './common/components/LocalizationProvider';
-import { snackBarDurationLongMs } from './common/util/duration';
 import alarm from './resources/alarm.mp3';
-import { eventsActions } from './store/events';
-import useFeatures from './common/util/useFeatures';
+import { useAttributePreference } from './utils/preferences';
+import { useTrackerSession } from './store/session';
+import { useDeviceStore, useDeviceStoreState } from './store/devices';
+import { i18n } from '~/utils/i18n';
+import { useAsyncEffect } from '~/hooks/use-async-effect';
+import { snackBarDurationLongMs } from '~/utils/constant';
 
 const logoutCode = 4000;
 
 const SocketController = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const t = useTranslation();
+  const t = i18n.get;
 
-  const authenticated = useSelector((state) => !!state.session.user);
-  const devices = useSelector((state) => state.devices.items);
-  const includeLogs = useSelector((state) => state.session.includeLogs);
+  const authenticated = useTrackerSession((state) => !!state.user);
+  const devices = useDeviceStore((state) => state.items);
+  const includeLogs = useTrackerSession((state) => state.includeLogs);
+  const sessionActions = useTrackerSession((state) => state);
 
-  const socketRef = useRef();
+  
 
-  const [events, setEvents] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const deviceActions = useDeviceStoreState();
+
+  const socketRef = useRef<WebSocket>();
+
+  const [events, setEvents] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   const soundEvents = useAttributePreference('soundEvents', '');
   const soundAlarms = useAttributePreference('soundAlarms', 'sos');
 
-  const features = useFeatures();
+  //const features = useFeatures();
 
   const connectSocket = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const socket = new WebSocket(`${protocol}//${window.location.host}/api/socket`);
+    const socket = new WebSocket(`${protocol}//${window.location.host}/tracker/socket`);
     socketRef.current = socket;
 
     socket.onopen = () => {
-      dispatch(sessionActions.updateSocket(true));
+      sessionActions.updateSocket(socket)
     };
 
     socket.onclose = async (event) => {
-      dispatch(sessionActions.updateSocket(false));
+      sessionActions.updateSocket(null);
       if (event.code !== logoutCode) {
         try {
-          const devicesResponse = await fetch('/api/devices');
+          const devicesResponse = await fetch('/tracker/devices');
           if (devicesResponse.ok) {
-            dispatch(devicesActions.update(await devicesResponse.json()));
+            deviceActions.update(await devicesResponse.json());
           }
-          const positionsResponse = await fetch('/api/positions');
+          const positionsResponse = await fetch('/tracker/positions');
           if (positionsResponse.ok) {
-            dispatch(sessionActions.updatePositions(await positionsResponse.json()));
+            sessionActions.updatePositions(await positionsResponse.json());
           }
           if (devicesResponse.status === 401 || positionsResponse.status === 401) {
-            navigate('/login');
+            navigate('/auth/login');
           }
         } catch (error) {
           // ignore errors
@@ -65,10 +68,10 @@ const SocketController = () => {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.devices) {
-        dispatch(devicesActions.update(data.devices));
+        deviceActions.update(data.devices);
       }
       if (data.positions) {
-        dispatch(sessionActions.updatePositions(data.positions));
+        sessionActions.updatePositions(data.positions);
       }
       /*
       if (data.events) {
@@ -78,7 +81,7 @@ const SocketController = () => {
         setEvents(data.events);
       }*/
       if (data.logs) {
-        dispatch(sessionActions.updateLogs(data.logs));
+        sessionActions.updateLogs(data.logs);
       }
     };
   };
@@ -87,11 +90,11 @@ const SocketController = () => {
     socketRef.current?.send(JSON.stringify({ logs: includeLogs }));
   }, [socketRef, includeLogs]);
 
-  useEffectAsync(async () => {
+  useAsyncEffect(async () => {
     if (authenticated) {
-      const response = await fetch('/api/devices');
+      const response = await fetch('/tracker/devices');
       if (response.ok) {
-        dispatch(devicesActions.refresh(await response.json()));
+        deviceActions.refresh(await response.json());
       } else {
         throw Error(await response.text());
       }
@@ -103,7 +106,7 @@ const SocketController = () => {
         }
       };
     }
-    return null;
+    //return null;
   }, [authenticated]);
 
   useEffect(() => {
@@ -137,4 +140,5 @@ const SocketController = () => {
   );
 };
 
-export default connect()(SocketController);
+export default SocketController
+//export default connect()(SocketController);

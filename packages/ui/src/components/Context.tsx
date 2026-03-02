@@ -11,10 +11,18 @@ import React, { useEffect, useMemo } from "react";
 import { createGlobalScopedContext } from "../lib/createGlobalScopedContext";
 
 
+
+
+type Floating = {
+  show: () => void;
+}
 export interface MuxFloating {
   context: FloatingContext<ReferenceType>;
   type: string;
+  ref?: React.Ref<Floating>
 }
+
+
 
 const MuxFloatingContext = createGlobalScopedContext<MuxFloating|null>
 ('@funext/ui/context/floating', null)
@@ -22,11 +30,18 @@ const MuxFloatingContext = createGlobalScopedContext<MuxFloating|null>
 export function MuxFloatingProvider({
   context,
   type,
-  children
+  children,
+  ref
 }: {
   children: React.ReactNode;
 } & MuxFloating) {
-  
+  React.useImperativeHandle(ref, () => {
+    return {
+      show: () => {
+
+      }
+    }
+  })
   return <MuxFloatingContext.Provider value={{context, type}}>
     {children}
   </MuxFloatingContext.Provider>

@@ -19,16 +19,16 @@ function getGetThemeBreakpoints(ownerState: GridOwnerState, theme: Props['theme'
    return theme.breakpoints;
 }
 
-function getSelfSpacingVar(axis: 'row' | 'column') {
-  return `--g-${axis}-spacing`;
+function getSelfSpacingVar(axis: 'row' | 'col') {
+  return `--grid-${axis}-spacing`;
 }
 
-function getParentSpacingVar(axis: 'row' | 'column') {
-  return `--g-parent-${axis}-spacing`;
+function getParentSpacingVar(axis: 'row' | 'col') {
+  return `--grid-parent-${axis}-spacing`;
 }
 
-const selfColumnsVar = '--g-columns';
-const parentColumnsVar = '--g-parent-columns';
+const selfColumnsVar = '--grid-cols';
+const parentColumnsVar = '--grid-parent-cols';
 
 export const generateGridSizeStyles = ({ theme, ownerState }: Props) => {
   const styles = {};
@@ -57,7 +57,7 @@ export const generateGridSizeStyles = ({ theme, ownerState }: Props) => {
         style = {
           flexGrow: 0,
           flexBasis: 'auto',
-          width: `calc(100% * ${value} / var(${parentColumnsVar}) - (var(${parentColumnsVar}) - ${value}) * (var(${getParentSpacingVar('column')}) / var(${parentColumnsVar})))`,
+          width: `calc(100% * ${value} / var(${parentColumnsVar}) - (var(${parentColumnsVar}) - ${value}) * (var(${getParentSpacingVar('col')}) / var(${parentColumnsVar})))`,
         };
       }
       appendStyle(styles, style);
@@ -83,7 +83,7 @@ export const generateGridOffsetStyles = ({ theme, ownerState }: Props) => {
           marginLeft:
             value === 0
               ? '0px'
-              : `calc(100% * ${value} / var(${parentColumnsVar}) + var(${getParentSpacingVar('column')}) * ${value} / var(${parentColumnsVar}))`,
+              : `calc(100% * ${value} / var(${parentColumnsVar}) + var(${getParentSpacingVar('col')}) * ${value} / var(${parentColumnsVar}))`,
         };
       }
       appendStyle(styles, style);
@@ -143,9 +143,9 @@ export const generateGridColumnSpacingStyles = ({ theme, ownerState }: Props) =>
     (appendStyle, value) => {
       const spacing = typeof value === 'string' ? value : theme.spacing?.(value);
       appendStyle(styles, {
-        [getSelfSpacingVar('column')]: spacing,
+        [getSelfSpacingVar('col')]: spacing,
         '> *': {
-          [getParentSpacingVar('column')]: spacing,
+          [getParentSpacingVar('col')]: spacing,
         },
       });
     },
@@ -182,7 +182,7 @@ export const generateGridStyles = ({ ownerState }: Props): {} => {
         ownerState.wrap !== 'wrap' && {
           flexWrap: ownerState.wrap,
         }),
-      gap: `var(${getSelfSpacingVar('row')}) var(${getSelfSpacingVar('column')})`,
+      gap: `var(${getSelfSpacingVar('row')}) var(${getSelfSpacingVar('col')})`,
       ...(!ownerState.media && {containerType: 'inline-size'})
     }),
   };

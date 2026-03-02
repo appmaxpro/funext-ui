@@ -11,14 +11,23 @@
     <style>
       .loader {
         position: fixed; top: calc(50% - 25px); left: calc(50% - 25px);
-        width: 50px; aspect-ratio: 1; box-sizing: content-box; animation: ll 1s infinite linear;
-        border-radius: 50%; border: 8px solid lightgray; border-right-color: black;
+        width: 50px; 
+        aspect-ratio: 1; 
+        box-sizing: content-box; 
+        animation: ll 1s infinite linear;
+        border-radius: 50%; 
+        border: 8px solid lightgray; 
+        border-right-color: black;
       }
       @keyframes ll {to{transform: rotate(1turn)}}
     </style>
     <script>
       // Required by some npm packages
-      window.process = { browser: true, env: { ENVIRONMENT: 'BROWSER'} };
+      if (!window.process)
+        window.process = { browser: true, env: { ENVIRONMENT: 'BROWSER', CONTEXT_PATH: "odata"} };
+      if (!window.process.env){
+        window.process.env = { ENVIRONMENT: 'BROWSER'}
+      }
   </script>
   </head>
   <body>

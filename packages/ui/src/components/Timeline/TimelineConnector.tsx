@@ -2,7 +2,7 @@ import React from "react";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -37,8 +37,8 @@ export const TimelineConnector = React.forwardRef<HTMLSpanElement, TimelineConne
     const [width] = useTimelineItem();
 
     // 3. set styles
-    const lineClasses = objectsToString(base.line);
-    const containerClasses = twMerge(objectsToString(base.container), className);
+    const lineClasses = values(base.line);
+    const containerClasses = twMerge(values(base.container), className);
 
     // 4. return
     return (

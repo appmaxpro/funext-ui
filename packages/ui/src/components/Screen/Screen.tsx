@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useTheme, Breakpoint, Breakpoints } from "../../styles";
-import { debounce, shallowEqual } from "../../utils";
+import { debounce, EXCLUDE_CHILDREN, shallowEqual } from "../../utils";
 import { useMediaQuery } from "@mui/system";
 import { useEnhancedEffect } from "../../hooks";
 const breakpointKeys = ["xs", "sm", "md", "lg", "xl"];
@@ -435,7 +435,7 @@ export function IfSize<T extends IfSizeResult>({
         typeof val === "function" ? call(val, result, merge(params, suggest.all)) : val;
             
       setOutput((state: any) => {
-        if (!shallowEqual(state, output)) {
+        if (!shallowEqual(state, output, EXCLUDE_CHILDREN)) {
           return output;
         }
         return state;

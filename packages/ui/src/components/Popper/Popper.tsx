@@ -87,6 +87,8 @@ import {
   getAnimationSafe,
   shouldForwardProp,
 } from "../internal/animation";
+import { useEvent } from "../../hooks/use-event";
+import { useFloatingContext } from "../Context";
 
 const Arrow = styled(FloatingArrow)("");
 
@@ -124,6 +126,12 @@ export type PopperSlots = {
     panel?: Partial<PanelProps<React.ElementType, { animate?: boolean }>>;
   };
 };
+const rawTrigger = Symbol.for("popper-raw-trigger");
+const setRawTrigger = (element: any) => (element["$rawTrigger"] = rawTrigger);
+const hasTrigger = (element: any) =>
+  typeof element === "function" && element["$rawTrigger"] === rawTrigger;
+
+
 export interface PopperProps extends Omit<LayerProps, "as">, AnimatedProps {
   /**
    * When `true`, prevent overflow within the current boundary:
@@ -182,7 +190,11 @@ export interface PopperProps extends Omit<LayerProps, "as">, AnimatedProps {
   Overlay?: React.ComponentType<Partial<OverlayProps>>;
   overlayProps?: Partial<OverlayProps>;
   root?: string | HTMLElement;
-  PopperContentRoot?: React.ComponentType<Partial<PopperContentProps>>;
+  PopperContentRoot?: React.ComponentType<Partial<ComponentRootProps>>;
+  RootComponent?: React.ComponentType<Partial<ComponentRootProps>>;
+  nodeId?: string | undefined;
+  contextProps?: any;
+  type?: string;
 }
 
 const PopperFc = ({
@@ -224,6 +236,10 @@ const PopperFc = ({
   root,
   onPresent,
   PopperContentRoot,
+  RootComponent = PopperContentRoot,
+  nodeId,
+  contextProps: props,
+  type = "popover",
   ...rest
 }: PopperProps) => {
   const [initialized, setInitialized] = React.useState(false);
@@ -253,6 +269,10 @@ const PopperFc = ({
     typeof paddingProps === "number"
       ? paddingProps
       : { top: 0, right: 0, bottom: 0, left: 0, ...paddingProps };
+
+  const trigger = triggerProps as React.ReactElement;
+
+  const hasReference = !!reference && !trigger;
 
   const middleware = useMemo(() => {
     if (middlewareProps) {
@@ -379,9 +399,13 @@ const PopperFc = ({
     arrowHeight,
   ]);
 
+  const parentContext = useFloatingContext();
   // 5. set @floating-ui
   const { context } = useFloating({
+    rootContext:
+      parentContext?.type !== "tooltip" ? parentContext?.context : undefined,
     open,
+    nodeId,
     placement,
     strategy,
     onOpenChange: onOpenChange,
@@ -399,10 +423,10 @@ const PopperFc = ({
     },
   });
 
-  const { getReferenceProps, getFloatingProps } = useInteractions(
+  const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
     [
-      clickProps && triggerProps ? useClick(context, clickProps) : undefined,
-      hoverProps && triggerProps ? useHover(context, hoverProps) : undefined,
+      clickProps && trigger ? useClick(context, clickProps) : undefined,
+      hoverProps && trigger ? useHover(context, hoverProps) : undefined,
       dismiss && useDismiss(context, dismiss),
       ...(elementProps ? elementProps?.(context) : []),
     ].filter(Boolean),
@@ -413,9 +437,11 @@ const PopperFc = ({
       context,
       getReferenceProps,
       getFloatingProps,
+      getItemProps,
       arrowRef,
+      props,
     }),
-    [context, getFloatingProps, getReferenceProps],
+    [context, getFloatingProps, getReferenceProps, getItemProps, props],
   );
 
   React.useEffect(() => {
@@ -424,25 +450,25 @@ const PopperFc = ({
     }
   }, [open]);
 
-  const trigger = triggerProps as React.ReactElement;
-
-  const hasReference = !!reference && !trigger;
   if (lazy && !initialized && !hasReference) {
     //return trigger;
   }
-  const Root = PopperContentRoot ?? PopperContent;
+  const Root = RootComponent ?? ComponentRoot;
 
   return (
-    <PopperContextProvider value={contextValue}>
-      {trigger && (
-        <PopperTrigger
-          getReferenceProps={getReferenceProps}
-          setReference={context.refs.setReference as any}
-          data-state={context.open ? "open" : undefined}
-        >
-          {trigger}
-        </PopperTrigger>
-      )}
+    <PopperContextProvider value={contextValue} type={type}>
+      {trigger &&
+        (hasTrigger(trigger?.type) ? (
+          trigger
+        ) : (
+          <PopperTrigger
+            getReferenceProps={getReferenceProps}
+            setReference={context.refs.setReference as any}
+            data-state={context.open ? "open" : undefined}
+          >
+            {trigger}
+          </PopperTrigger>
+        ))}
       <Presence animate={animate} present={!!open}>
         {({ present }) => (
           <PopperPortal
@@ -487,28 +513,16 @@ interface PopperPortalProps {
   floatingPortal?: boolean | string | HTMLElement;
   present: boolean;
   onPresent?: PopperProps["onPresent"];
-  Overlay?: React.ComponentType<Partial<OverlayProps>>;
-  overlayProps?: Partial<OverlayProps>;
-  open?: boolean;
   render: (ref: React.ForwardedRef<HTMLDivElement>) => React.ReactNode | null;
 }
 const PopperPortal = React.forwardRef<HTMLDivElement, PopperPortalProps>(
   (props, ref) => {
-    const {
-      present,
-      render,
-      portal,
-      floatingPortal,
-      onPresent,
-      open,
-      Overlay,
-      overlayProps,
-    } = props;
+    const { present, render, portal, floatingPortal, onPresent } = props;
 
-    const onPresentRef = React.useRef(false);
+    //const onPresentRef = React.useRef(false);
     React.useEffect(() => {
-      if (onPresent && present !== onPresentRef.current) {
-        onPresentRef.current = present;
+      if (onPresent) {
+        //onPresentRef.current = present;
         onPresent(present);
       }
     }, [present]);
@@ -525,7 +539,7 @@ const PopperPortal = React.forwardRef<HTMLDivElement, PopperPortalProps>(
   },
 );
 
-export interface PopperContentProps extends SxComponentProps, AnimatedProps {
+export interface ComponentRootProps extends SxComponentProps, AnimatedProps {
   context: FloatingContext;
   getFloatingProps: UseInteractionsReturn["getFloatingProps"];
   arrow?: ArrowProps;
@@ -538,7 +552,7 @@ export interface PopperContentProps extends SxComponentProps, AnimatedProps {
   contentProps?: Partial<PanelProps<React.ElementType>>;
 }
 
-const PopperContent = React.forwardRef<HTMLDivElement, PopperContentProps>(
+const ComponentRoot = React.forwardRef<HTMLDivElement, ComponentRootProps>(
   (props, ref) => {
     const {
       context,
@@ -560,23 +574,28 @@ const PopperContent = React.forwardRef<HTMLDivElement, PopperContentProps>(
     const { open, middlewareData, refs, floatingStyles, isPositioned } =
       context;
 
-    const { zIndex } = useLayer();
+    const { zIndex, isTopLayer } = useLayer();
+
+    //const onActivateCB = useEvent(onActivate);
+
+    ///useEffect(()=> onActivateCB(document.activeElement), [isTopLayer])
+    //useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(forwardedRef, () => ref.current)
 
     const ownerState = {
       ...rest,
       navigate,
       arrow,
       animate,
-      isPositioned,
+      isPositioned: isPositioned || animate !== false, // consider it positioned if animation is disabled, to avoid animation flashes
       zIndex,
     };
-
+    //context.dataRef
     const child =
       !navigate && !focusProps ? (
         children
       ) : (
         <FloatingFocusManager context={context} {...focusProps}>
-          <>{children}</>
+          {children}
         </FloatingFocusManager>
       );
 
@@ -628,16 +647,16 @@ const PopperContent = React.forwardRef<HTMLDivElement, PopperContentProps>(
           ref={ref}
         >
           {child}
-          {arrow && (
-            <Arrow
-              data-ui="PopperArrow"
-              {...arrow}
-              ref={arrowRef as any}
-              context={context}
-              data-state={open ? "open" : "close"}
-            />
-          )}
         </ContentSlot>
+        {arrow && (
+          <Arrow
+            data-ui="PopperArrow"
+            {...arrow}
+            ref={arrowRef as any}
+            context={context}
+            data-state={open ? "open" : "close"}
+          />
+        )}
       </PopperRoot>
     );
   },
@@ -674,9 +693,14 @@ const PopperTrigger = React.forwardRef<HTMLButtonElement, PopperTriggerProps>(
 
 export const Popper = Object.assign(PopperFc, {
   Arrow,
+  ComponentRoot,
+  setRawTrigger,
+  hasTrigger,
 });
 
 // @ts-ignore
 Popper.displayName = "Mux.Popper";
+
+setRawTrigger(PopperTrigger);
 
 export default Popper;

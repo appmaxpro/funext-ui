@@ -5,7 +5,7 @@ import { useTailwindTheme } from "../../theme";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 import {
   styled
@@ -38,7 +38,7 @@ export const SpeedDialAction = React.forwardRef<HTMLButtonElement, SpeedDialActi
     } = useTailwindTheme();
 
     // 2. set styles
-    const classes = twMerge(objectsToString(styles), className);
+    const classes = twMerge(values(styles), className);
 
     // 3. return
     return (

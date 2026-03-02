@@ -1,57 +1,63 @@
-'use client';
-import * as React from 'react';
-import {clsx, useTheme, styled as defStyled} from '../../styles';
+"use client";
+import * as React from "react";
+import { clsx, useTheme, styled  } from "../../styles";
 
-import extendSxProp from '../../theme/extendSxProp';
-import styleFunctionSx from '@mui/system/styleFunctionSx';
+import extendSxProp from "../../theme/extendSxProp";
+import styleFunctionSx from "@mui/system/styleFunctionSx";
+import {
+  BoxTypeMap,
+  BoxOwnProps,
+  createBox as muxCreateBox,
+} from "@mui/system";
 
-import { Theme as SystemTheme } from '../../theme';
+import { Theme as SystemTheme } from "../../theme";
+import extendedSxConfig, {
+  muxExtendedSxConfig,
+} from "../../theme/extendedSxConfig";
 
 type BoxOptions<T> = {
   themeId?: string;
   defaultTheme?: T;
   defaultClassName?: string;
-  generateClassName?: (componentName: string) => string
-}
+  generateClassName?: (componentName: string) => string;
+};
 
-export function sizingTransform(value:any) {
-  return value <= 1 && value !== 0 ? `${value * 100}%` : value;
-}
 
+///const propSet = new Set(Object.keys(muxExtendedSxConfig));
+//const boxExtendedSxConfig = styleFunctionSx(muxExtendedSxConfig);
+
+/*
+const BoxRoot = defStyled(muxCreateBox(), {
+    shouldForwardProp: (prop:any) => 
+      prop !== 'theme' &&
+      prop !== 'sx' &&
+      prop !== 'as'
+  })(boxExtendedSxConfig);
+*/
 export default function createBox<
   T extends SystemTheme,
-  AdditionalProps extends Record<string, unknown> = {}
->(options:BoxOptions<T> = {}) {
-  const { themeId, defaultTheme, defaultClassName = 'MuxBox-root', generateClassName } = options;
-  const BoxRoot = defStyled('div', {
-    shouldForwardProp: (prop:any) => prop !== 'theme' && prop !== 'sx' && prop !== 'as',
-  })(styleFunctionSx as any);
+  AdditionalProps extends Record<string, unknown> = {},
+>(options: BoxOptions<T> = {}) {
+  const {
+    //themeId,
+    defaultTheme,
+    defaultClassName = "MuxBox-root",
+    generateClassName,
+  } = options;
+
+  const BoxRoot = styled('div', {
+    name: 'Box',
+    shouldForwardProp: (prop) => prop !== 'theme' && prop !== 'sx' && prop !== 'as',
+  })('');
 
   const Box = React.forwardRef(function Box(inProps, ref) {
-    const theme:SystemTheme = useTheme(defaultTheme);
-    const { className, component = 'div', ...other }:any = extendSxProp(inProps);
-        
-    //console.log("Test box compose:", compose(VX1, VX2, VX3)({VX3: .66}))
-    //console.log("createBox: sx:", other.sx);
-    /*
+    const theme: SystemTheme = useTheme(defaultTheme);
     const {
-      sx, 
-      d,
-      fw,
-      rounded,
-      border,
-      ...rest
-    } = other;
+      className,
+      component = "div",
+      ...other
+    } = extendSxProp(inProps);
 
-    const newSx = {
-      ...sx,
-      d,
-      fw
-    }*/
-
-    
-
-    
     return (
       <BoxRoot
         as={component}
@@ -62,10 +68,9 @@ export default function createBox<
         )}
         theme={theme}
         {...other}
-        
       />
     );
   });
-
+  Box.displayName = "MuxBox";
   return Box;
 }

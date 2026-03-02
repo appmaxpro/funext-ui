@@ -64,6 +64,7 @@ const boxClasses: BoxClasses = generateUtilityClasses('MuxBox', ['root']);
 
 type BoxType = ReturnType<typeof createBox<MaterialTheme, BoxAdditionalProps>>;
 
+
 export const Box = createBox2<MaterialTheme, BoxAdditionalProps>({
   themeId: THEME_ID,
   defaultTheme,

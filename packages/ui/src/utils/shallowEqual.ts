@@ -9,6 +9,8 @@
  * @flow
  */
 
+import { EMPTY_ARRAY } from "../lib/constants";
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 
@@ -29,21 +31,32 @@ function is(x:any, y:any) {
   return x !== x && y !== y;
 }
 
+export const EXCLUDE_CHILDREN:string[] = ["children"] as const;
 /**
  * Performs equality by iterating through keys on an object and returning false
  * when any key has values which are not strictly equal between the arguments.
  * Returns true when the values of all keys are strictly equal.
  */
-export function shallowEqual(objA:any, objB:any) {
+export function shallowEqual(objA:any, objB:any, exclude: string[] = EMPTY_ARRAY) {
+  if(objA == null && objB == null) {
+    return true
+  }
+
+  if(objA == null || objB == null) {
+     return false
+  }
+
   if (is(objA, objB)) {
     return true;
   }
 
+
+
   if (
     typeof objA !== 'object' ||
-    objA === null ||
+    objA == null ||
     typeof objB !== 'object' ||
-    objB === null
+    objB == null
   ) {
     return false;
   }
@@ -57,9 +70,14 @@ export function shallowEqual(objA:any, objB:any) {
 
   // Test for A's keys different from B.
   for (let i = 0; i < keysA.length; i++) {
+    if (exclude.includes(keysA[i])) {
+      continue;
+    }
+
     if (
-      !hasOwnProperty.call(objB, keysA[i]) ||
-      !is(objA[keysA[i]], objB[keysA[i]])
+      !exclude.includes(keysA[i]) &&
+      (!hasOwnProperty.call(objB, keysA[i]) ||
+      !is(objA[keysA[i]], objB[keysA[i]]))
     ) {
       return false;
     }

@@ -3,24 +3,32 @@
 // After React 19 accessing `element.ref` does the opposite.
 // https://github.com/facebook/react/pull/28348
 //
+
+import { isDevelopment, noop } from "../utils"
+
+const EMPTY_REF = noop;
+
 // Access the ref using the method that doesn't yield a warning.
 export function getElementRef(element: React.ReactElement) {
-  // React <=18 in DEV
-  let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get
-  let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
+  if (!element) return EMPTY_REF
+  if (isDevelopment) {
+    // React <=18 in DEV
+    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get
+    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
 
-  if (mayWarn) {
-    return (element as any).ref
-  }
+    if (mayWarn) {
+      return (element as any).ref
+    }
 
-  // React 19 in DEV
-  getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get
-  mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
+    // React 19 in DEV
+    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get
+    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
 
-  if (mayWarn) {
-    return (element.props as {ref?: React.Ref<unknown>}).ref
+    if (mayWarn) {
+      return (element.props as {ref?: React.Ref<unknown>}).ref
+    }
   }
 
   // Not DEV
-  return (element.props as {ref?: React.Ref<unknown>}).ref || (element as any).ref
+  return (element.props as {ref?: React.Ref<unknown>})?.ref || (element as any).ref
 }

@@ -2,7 +2,7 @@ import React from "react";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useAccordion } from "./AccordionContext";
@@ -47,12 +47,12 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
     // 3. set styles
     const buttonStyles = twMerge(
       clsx(
-        objectsToString(base.header.initial),
-        open && objectsToString(base.header.active)
+        values(base.header.initial),
+        open && values(base.header.active)
       ),
       className,
     );
-    const iconClasses = clsx(objectsToString(base.header.icon), iconClass);
+    const iconClasses = clsx(values(base.header.icon), iconClass);
     // 4. return
     return (
       <ButtonRoot {...rest} onClick={composeEventHandlers(()=> setOpen(!open), rest.onClick)}  ref={ref} type="button" disabled={disabled} className={buttonStyles}>

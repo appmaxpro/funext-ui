@@ -1,4 +1,4 @@
-import { FloatingContext, ReferenceType } from "@floating-ui/react";
+import { FloatingContext, ReferenceType, UseInteractionsReturn } from "@floating-ui/react";
 import React from "react";
 
 // @floating-ui types
@@ -28,11 +28,10 @@ export type {
 // typescript types
 export type handler = FloatingContext["onOpenChange"];
 export type content =( () => React.ReactNode) | React.ReactNode;
-interface PopperContextValue {
+interface PopperContextValue<P extends any=never> extends UseInteractionsReturn {
   context: FloatingContext<ReferenceType>;
-  getReferenceProps: (userProps?: React.HTMLProps<Element>) => any;
-  getFloatingProps: (userProps?: React.HTMLProps<HTMLElement>) => any;
   arrowRef: React.MutableRefObject<HTMLElement|null>;
+  props?: P
 };
 
 

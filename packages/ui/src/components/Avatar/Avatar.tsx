@@ -20,7 +20,7 @@ import {
 import type { AlertProps } from "../Alert";
 import { cn } from "../../utils/cn";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 // context
 import { useTailwindTheme } from "../../theme";
 import { mapThemeColor } from "../../hooks";
@@ -354,7 +354,7 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         ]
       : null;
 
-    const cnClassName = cn(objectsToString(variantColorMap), className);
+    const cnClassName = cn(values(variantColorMap), className);
 
     const ownerState = {
       ...props,
@@ -395,7 +395,7 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         <AvatarFallback
           ownerState={ownerState}
           className={classes.fallback}
-          icon="person"
+          icon={alt ? alt[0] : "A"}
         />
       );
     }

@@ -4,9 +4,7 @@ import { styled } from "../../styles";
 // types
 import { ListItemButton, ListItemButtonProps, ListItem } from "../List";
 
-import { Menu, type MenuProps } from "./Menu";
 import { setValidItemTypes } from "./utils";
-
 
 interface ItemProps<E extends HTMLElement>  {
   forwardedRef: React.ForwardedRef<E>
@@ -19,10 +17,6 @@ export interface MenuItemProps extends Omit<ListItemButtonProps, "li"> {
   text?: ReactNode;
   label?: string;
   button?: boolean;
-  menuProps?: Omit<MenuProps, "children">;
-  menu?: boolean;
-  listProps?: any;
-  ListComp?: React.ComponentType | string;
 }
 
 const ListItemButtonRoot = styled(ListItemButton, {
@@ -57,10 +51,6 @@ export const MenuItem = React.forwardRef<
       label,
       children,
       button = true,
-      menuProps,
-      menu = !!menuProps,
-      ListComp = (Menu as any).List,
-      listProps,
       ...rest
     },
     ref,

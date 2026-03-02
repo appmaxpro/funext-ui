@@ -46,7 +46,7 @@ const useUtilityClasses = (ownerState:any) => {
 };
 export interface SwitchBaseProps
   extends StandardProps<
-    Omit<ButtonBaseProps, "children" | "onChange" | "type" | "value">,
+    Omit<ButtonBaseProps, "children" | "onChange" | "type" | "value" | "to">,
     SwitchBaseClassKey
   > {
   autoFocus?: boolean;
@@ -128,6 +128,17 @@ export const SwitchBoxRoot = styled("div", {
   display: "inline-flex",
   alignItems: "center",
   gap: "4px",
+  variants: [
+    {
+      props: {
+        labelPosition: "before"
+      },
+      style: {
+        justifyContent: 'space-between',
+        flexGrow: 1
+      },
+    },
+  ]
 });
 
 export const LabelRoot = styled("label", {
@@ -137,6 +148,7 @@ export const LabelRoot = styled("label", {
   userSelect: "none",
   cursor: "pointer",
   fontWeight: 400,
+  
 });
 
 const SwitchBaseRoot = styled(ButtonBase)({
@@ -174,7 +186,7 @@ const SwitchBaseRoot = styled(ButtonBase)({
       style: {
         marginRight: -12,
       },
-    },
+    }
   ],
 });
 
@@ -290,6 +302,7 @@ const SwitchBase = React.forwardRef<HTMLElement, SwitchBaseProps>(
       ripple,
       focusRipple,
       edge,
+      labelPosition
     };
 
     const classes = useUtilityClasses(ownerState);
@@ -340,7 +353,7 @@ const SwitchBase = React.forwardRef<HTMLElement, SwitchBaseProps>(
     }
 
     return (
-      <SwitchBoxRoot {...boxProps}>
+      <SwitchBoxRoot {...boxProps} ownerState={ownerState}>
         {(labelPosition === "before") && (
           <LabelRoot {...labelProps} htmlFor={id}>
             {label}

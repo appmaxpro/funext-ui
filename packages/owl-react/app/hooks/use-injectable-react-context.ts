@@ -1,4 +1,4 @@
-import { useContextMap, type ContextMap } from 'its-fine';
+import { useContextMap, type ContextMap } from '../its-fine';
 import { type Context, useMemo } from 'react';
 //import { BehaviorSubject, distinctUntilChanged, Observable } from 'rxjs';
 import { reactive } from '@odoo/owl';

@@ -13,20 +13,6 @@
     "material design",
     "icons"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mui/material-ui.git",
-    "directory": "packages/mui-icons-material"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mui/material-ui/issues"
-  },
-  "homepage": "https://mui.com/material-ui/material-icons/",
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/mui-org"
-  },
   "scripts": {
     "build": "shx cp -r lib/ build/ && pnpm build:copy-files && pnpm build:esm-pkg",
     "build:esm-pkg": "node ./scripts/create-esm-package-json.mjs",

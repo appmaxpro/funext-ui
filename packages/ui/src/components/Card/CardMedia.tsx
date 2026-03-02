@@ -107,7 +107,7 @@ const CardMediaRoot = styled('div', {
   ],
 });
 
-const MEDIA_COMPONENTS = ['video', 'audio', 'picture', 'iframe', 'img'];
+const MEDIA_COMPONENTS = ['video', 'audio', 'picture', 'iframe'];
 const IMAGE_COMPONENTS = ['picture', 'img'];
 
 export const CardMedia = React.forwardRef<HTMLElement, CardMediaProps>(function CardMedia(inProps, ref) {

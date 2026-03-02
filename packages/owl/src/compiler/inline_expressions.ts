@@ -288,28 +288,31 @@ export function compileExprToArray(expr: string): Token[] {
         stack.pop();
     }
 
-    let isVar = token.type === "SYMBOL" && !RESERVED_WORDS.includes(token.value);
-    if (token.type === "SYMBOL" && !RESERVED_WORDS.includes(token.value)) {
-      if (prevToken) {
-        // normalize missing tokens: {a} should be equivalent to {a:a}
-        if (
-          groupType === "LEFT_BRACE" &&
-          isLeftSeparator(prevToken) &&
-          isRightSeparator(nextToken)
-        ) {
-          tokens.splice(i + 1, 0, { type: "COLON", value: ":" }, { ...token });
-          nextToken = tokens[i + 1];
-        }
+    let isVar = token.type === "SYMBOL";
+    if (isVar && prevToken) {
+      // normalize missing tokens: {a} should be equivalent to {a:a}
+      if (
+        groupType === "LEFT_BRACE" &&
+        isLeftSeparator(prevToken) &&
+        isRightSeparator(nextToken)
+      ) {
+        tokens.splice(i + 1, 0, { type: "COLON", value: ":" }, { ...token });
+        nextToken = tokens[i + 1];
+      }
 
-        if (prevToken.type === "OPERATOR" && prevToken.value === ".") {
+      if (prevToken.type === "OPERATOR" && prevToken.value === ".") {
+        isVar = false;
+      } else if (prevToken.type === "LEFT_BRACE" || prevToken.type === "COMMA") {
+        if (nextToken && nextToken.type === "COLON") {
           isVar = false;
-        } else if (prevToken.type === "LEFT_BRACE" || prevToken.type === "COMMA") {
-          if (nextToken && nextToken.type === "COLON") {
-            isVar = false;
-          }
         }
       }
+      
     }
+    if (isVar && RESERVED_WORDS.includes(token.value)) {
+      isVar = false;
+    }
+
     if (token.type === "TEMPLATE_STRING") {
       token.value = token.replace!((expr: any) => compileExpr(expr));
     }

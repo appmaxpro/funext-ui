@@ -1,4 +1,5 @@
 import { fetch } from "./client";
+import { DATE_RANGES } from "./constant";
 
 let bundle: Record<string, string> = {};
 
@@ -11,7 +12,11 @@ export namespace i18n {
     // load the translation catalog
     bundle = await fetch({
       url: "assets/messages.js",
-    }).then((res) => res.json());
+    })
+    .then((res) => res.json());
+    (Object.keys(DATE_RANGES ) as Array<keyof typeof DATE_RANGES>)
+    .forEach((key) => 
+      DATE_RANGES[key] = bundle[key] || DATE_RANGES[key])
   }
   export function get(text: string, ...args: any[]): string {
     let message = bundle[text] || bundle[(text || "").trim()] || text;
@@ -24,4 +29,6 @@ export namespace i18n {
     }
     return message;
   }
+
+  export const t = get
 }

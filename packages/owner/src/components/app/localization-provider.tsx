@@ -14,13 +14,14 @@ import {
   type Languages,
   type Localization,
 } from "~/context";
+import { session } from "~/utils/session";
 
-const languages = {
+export const languages = {
   ar: { data: ar, country: "SA", name: "العربية" },
   en: { data: en, country: "US", name: "English" },
 };
 
-const getDefaultLanguage = () => {
+export const getDefaultLanguage = () => {
   const browserLanguages = window.navigator.languages
     ? window.navigator.languages.slice()
     : [];
@@ -55,9 +56,11 @@ export const LocalizationProvider = ({
 
   const direction = /^(ar|he|fa)$/.test(language) ? "rtl" : "ltr";
 
+  
+
   const value = React.useMemo(
     () => ({ languages, language, setLanguage, direction }),
-    [languages, language, setLanguage, direction],
+    [language, setLanguage, direction],
   );
 
   React.useEffect(() => {
@@ -72,6 +75,8 @@ export const LocalizationProvider = ({
     const { data } = languages[language as keyof Languages];
     i18n.loadAssets(data);
   }, [language, direction]);
+
+  console.log("LocalizationContext: language:", language)
 
   return (
     <LocalizationContext.Provider value={value as Localization}>

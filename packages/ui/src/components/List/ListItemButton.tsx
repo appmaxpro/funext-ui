@@ -64,11 +64,15 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
 
    
     const {
-      startIcon = startIconProp,
-      endIcon = endIconProp,
+      startIcon,
+      endIcon,
       ul,
       ripple = rest.ripple ?? item?.ripple 
     } = base ?? EMPTY_RECORD;
+
+
+    startIconProp ??= startIcon
+    endIconProp ??= endIcon
 
     const li = liProps ?? (ul && (!component || component !== 'li'))
     
@@ -103,15 +107,15 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
         );
     //console.log("itemStyles:", itemStyles)
     
-    const prefixComp = !isValidElement(startIcon) || (startIcon as any).type === ListItemPrefix 
-          ? startIcon 
-          : <ListItemPrefix>{startIcon}</ListItemPrefix>
+    const prefixComp = !isValidElement(startIconProp) || (startIconProp as any).type === ListItemPrefix 
+          ? startIconProp 
+          : <ListItemPrefix>{startIconProp}</ListItemPrefix>
 
     //if(active)
     //  console.log("ListItemButton: tabIndex:", tabIndex, ", itemStyles:", itemStyles)
-    const suffixComp = !isValidElement(endIcon)  || (endIcon as any).type === ListItemSuffix 
-      ? endIcon 
-      : <ListItemSuffix>{endIcon}</ListItemSuffix>
+    const suffixComp = !isValidElement(endIconProp)  || (endIconProp as any).type === ListItemSuffix 
+      ? endIconProp 
+      : <ListItemSuffix>{endIconProp}</ListItemSuffix>
 
 
     const isComp = typeof component !== 'string';

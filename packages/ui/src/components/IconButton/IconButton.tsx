@@ -4,7 +4,7 @@ import * as React from "react";
 // utils
 import { cn } from "../../utils/cn";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 import {
   composeClasses,
   generateUtilityClass,
@@ -215,12 +215,12 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       color = mapThemeColor(color, defaultProps.color);
       ripple = ripple ?? defaultProps.ripple;
       // 2. set styles
-      const buttonBase = objectsToString(base);
+      const buttonBase = values(base);
       const variantName = findMatch(valid.variants, variant, "text");
       const colorMatches = findMatch(valid.colors, color, "transparent");
       const buttonVariantColor = variants[variantName][colorMatches];
 
-      const buttonVariant = objectsToString(buttonVariantColor);
+      const buttonVariant = values(buttonVariantColor);
 
       //const sizeName = findMatch(valid.sizes, size, "md");
       //const buttonSize = objectsToString(sizes[sizeName]);

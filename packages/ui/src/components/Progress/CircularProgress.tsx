@@ -237,13 +237,15 @@ export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressPr
     className,
     color = 'primary',
     disableShrink = false,
-    size = 40,
+    size:proSize = SIZE,
     style,
     thickness = 3.6,
     value = 0,
     variant = 'indeterminate',
     ...other
   } = props;
+
+  const size = parseFloat(proSize+"")
   
   const themeColor = mapThemeColor(color);
   const hasThemeColor = themeColor && propTypesColors.includes(themeColor);
@@ -263,9 +265,9 @@ export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressPr
   const circleStyle:any = {};
   const rootStyle:any = {};
   const rootProps:any = {};
-
+   
   if (variant === 'determinate') {
-    const circumference = 2 * Math.PI * ((SIZE - thickness) / 2);
+    const circumference = 2 * Math.PI * ((size - thickness) / 2);
     circleStyle.strokeDasharray = circumference.toFixed(3);
     circleStyle.strokeDashoffset = `${(((100 - value) / 100) * circumference).toFixed(3)}px`;
     rootProps['aria-valuenow'] = Math.round(value);
@@ -283,7 +285,7 @@ export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressPr
       {...rootProps}
       {...other}
       style={{
-        '--progress-color': hasThemeColor ? `var(--tw-${themeColor})` :  themeColor,
+        '--progress-color': hasThemeColor ? `var(--color-${themeColor}, var(--${themeColor}))` :  themeColor,
         width: size, 
         height: size, 
         ...rootStyle, 
@@ -293,15 +295,15 @@ export const CircularProgress = React.forwardRef<HTMLElement, CircularProgressPr
       <CircularProgressSVG
         className={classes.svg}
         ownerState={ownerState}
-        viewBox={`${SIZE / 2} ${SIZE / 2} ${SIZE} ${SIZE}`}
+        viewBox={`${size / 2} ${size / 2} ${size} ${size}`}
       >
         <CircularProgressCircle
           className={classes.circle}
           style={circleStyle}
           ownerState={ownerState}
-          cx={SIZE}
-          cy={SIZE}
-          r={(SIZE - thickness) / 2}
+          cx={size}
+          cy={size}
+          r={(size - thickness) / 2}
           fill="none"
           strokeWidth={thickness}
         />

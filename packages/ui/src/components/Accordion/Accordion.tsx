@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -53,8 +53,8 @@ const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(
     // 3. set styles
     const accordionClasses = twMerge(
       clsx(
-        objectsToString(base.container),
-        disabled && objectsToString(base.disabled),
+        values(base.container),
+        disabled && values(base.disabled),
       ),
       className,
     );

@@ -1,18 +1,21 @@
 import { useRef } from "react";
 import * as React from 'react';
-const UNINITIALIZED = {};
+import { EMPTY_ARRAY } from "../lib/constants";
+//const UNINITIALIZED = {};
 
-export function useLazyRef<F extends (...args: any[]) => any>(
-	fn: F
-): React.MutableRefObject<ReturnType<F>> {
+type FN<R> = (...args: any[]) => R;
 
-	const ref = React.useRef(UNINITIALIZED as unknown as ReturnType<F>);
+export function useLazyRef<R = any>(
+	fn: FN<R>
+): React.MutableRefObject<R> {
 
-  if (ref.current === UNINITIALIZED) {
+	const ref = React.useRef<R>();
+
+  if (ref.current === undefined) {
     ref.current = fn();
   }
 
-	return ref;
+	return ref as React.MutableRefObject<R>;
 }
 
 export default useLazyRef;

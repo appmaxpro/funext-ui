@@ -35,9 +35,12 @@
       ReactCounter: <t t-esc="state.reactCounter"/>
     </div>
     
-    <div class="single mt-5">
+    <div class="mt-5 flex gab-2">
       <ReactButton>
-        Single Button
+        Single Button1
+      </ReactButton>
+      <ReactButton>
+        Single Button2
       </ReactButton>
     </div>
   </div>
@@ -58,9 +61,7 @@
         </div>
       </div>
       <t t-elif="ui.isSm">
-        <t t-tag="{{my_tag}}">
-           <t t-call="maincontent"/>
-        </t>
+        <span>hhh</span>
       </t>
       <t t-else="">
         <t t-call="maincontent"/>

@@ -416,7 +416,7 @@ export const Basic = () => {
           label="Search"
           type="text"
           id="outlined-basic"
-          endAdornment={
+          suffix={
             <IconButton>
               <MaterialIcon icon="account_circle" />
             </IconButton>
@@ -429,12 +429,12 @@ export const Basic = () => {
           type="text"
           id="outlined-basic1"
           variant="standard"
-          startAdornment={
+          prefix={
             <IconButton>
               <MaterialIcon icon="account_box" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton>
               <MaterialIcon icon="account_circle" />
             </IconButton>
@@ -446,7 +446,7 @@ export const Basic = () => {
         <MuiInput
           label="With a start adornment"
           id="input-with-icon-adornment"
-          startAdornment={
+          prefix={
             <IconButton>
               <MaterialIcon icon="account_circle" />
             </IconButton>
@@ -816,7 +816,7 @@ export const SelectButton = () => {
                 <MuiInput
                   {...props}
                   autoFocus
-                  startAdornment={
+                  prefix={
                     <MaterialIcon icon="search" size={20} className="px-1.5" />
                   }
                 />
@@ -1033,7 +1033,7 @@ export const Cmdk = () => {
                   {...props}
                   autoFocus
                   disableBorder
-                  startAdornment={<MaterialIcon icon="search" size={28} />}
+                  prefix={<MaterialIcon icon="search" size={28} />}
                   nativeClassName="font-fw5"
                   adornmentsProps={{
                     start: {
@@ -1309,9 +1309,9 @@ export const AutoSelectCmdk = () => {
                       className="container-hover"
                       autoFocus
                       tabIndex={0}
-                      startAdornment={<MaterialIcon icon="search" size={28} />}
+                      prefix={<MaterialIcon icon="search" size={28} />}
                       size="lg"
-                      endAdornment={
+                      suffix={
                         <Box
                           as="span"
                           sx={{ visibility: "hidden" }}

@@ -5,7 +5,7 @@ import Color from "color";
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -496,26 +496,26 @@ const LinearProgress = React.forwardRef<HTMLDivElement, LinearProgressProps>(
       }
     }
 
-    const progressContainerSize = objectsToString(
+    const progressContainerSize = values(
       sizes[findMatch(valid.sizes, size, "md")]["container"]["initial"],
     );
     const progressContainer = classnames(
-      objectsToString(base.container.initial),
+      values(base.container.initial),
       progressContainerSize,
     );
-    const progressWithLabelSize = objectsToString(
+    const progressWithLabelSize = values(
       sizes[findMatch(valid.sizes, size, "md")]["container"]["withLabel"],
     );
     const progressWithLabel = classnames(
-      objectsToString(base.container.withLabel),
+      values(base.container.withLabel),
       progressWithLabelSize,
     );
 
-    const progressBarSize = objectsToString(
+    const progressBarSize = values(
       sizes[findMatch(valid.sizes, size, "md")]["bar"],
     );
 
-    const progressBar = objectsToString(base.bar);
+    const progressBar = values(base.bar);
 
     const containerClasses = twMerge(
       clsx(classes.root, progressContainer, { [progressWithLabel]: label }),

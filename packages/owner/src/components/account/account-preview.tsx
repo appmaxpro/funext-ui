@@ -6,7 +6,7 @@ import Tooltip from '@funext/ui/Tooltip';
 import {Flex} from '@funext/ui/Box';
 import IconButton, { type IconButtonProps } from '@funext/ui/IconButton';
 import MoreVertIcon from '@funext/icons/MoreVert';
-import { session } from '~/utils/session';
+import { useSession } from '~/hooks/use-session';
 
 export type AccountPreviewVariant = 'condensed' | 'expanded';
 
@@ -76,12 +76,12 @@ export interface AccountPreviewProps {
  */
 function AccountPreview(props: AccountPreviewProps) {
   const { slots, variant = 'condensed', slotProps, open, handleClick, sx } = props;
- 
-  if (!session.info?.user) {
+  const {data} = useSession()
+  if (!data?.user) {
     return null;
   }
 
-  const user = session.info.user;
+  const user = data.user;
 
   const avatarContent = slots?.avatar ? (
     <slots.avatar />

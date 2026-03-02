@@ -25,6 +25,7 @@ import { registerAllTemplate } from "~/owl/templates";
 import "./demo.css";
 import { RootOwlAppContextProvider } from "~/components/owl-context";
 import * as React from "react";
+import { useInTreeCreateRoot } from "~/hooks/use-in-tree-create-root";
 
 //------------------------------------------------------------------------------
 // Helpers
@@ -159,9 +160,11 @@ export class Root extends Component {
   static components = { Navbar, ControlPanel, FormView, Chatter };
   ui: any;
   ref: any;
+  my_tag: string = 'div';
   setup() {
     this.ui = useUI();
     this.ref = useRef("root-ref");
+    this.my_tag = 'div';
 
     onMounted(() => {
       console.log(
@@ -191,7 +194,8 @@ export class Root extends Component {
 // Application Startup
 //------------------------------------------------------------------------------
 export const demoEnv = {
-  ui: createUI()
+  ui: createUI(),
+  inTreeCreateRoot: useInTreeCreateRoot
 };
 let xmlLoaded = false;
 const loadXml = registerAllTemplate("/app/demo/demo.xml").then((loaded) => {
@@ -202,11 +206,18 @@ const loadXml = registerAllTemplate("/app/demo/demo.xml").then((loaded) => {
 export class ReactRoot extends Component {}
 
 export function createReactRoot() {
+
   const [loaded, setLoaded] = React.useState(xmlLoaded);
+
+  const rootContainer = useInTreeCreateRoot()
+
   const app = React.useMemo(
-    () => createOwlApp(ReactRoot as any, { env: demoEnv }),
-    [],
+    () => createOwlApp(ReactRoot as any, { env: {
+      ...demoEnv, 
+      inTreeCreateRoot: (container:any)=> rootContainer.createRoot(container)} }),
+    [rootContainer],
   );
+
   React.useEffect(() => {
     if (!xmlLoaded) {
       loadXml.then((loaded) => {

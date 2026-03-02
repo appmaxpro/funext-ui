@@ -1,11 +1,15 @@
-import {Component as OwlComponent, App, useRef, onMounted, onWillUnmount } from '@odoo/owl';
+import {
+  Component as OwlComponent,
+  App,
+  useRef,
+  onMounted,
+  onWillUnmount,
+} from "@odoo/owl";
 import * as React from "react";
-import { FiberProvider } from "its-fine";
 
-export const OwlAppContext =
-  React.createContext<App | null>(null);
+export const OwlAppContext = React.createContext<App | null>(null);
 
-  OwlAppContext.displayName = "OwlAppContext";
+OwlAppContext.displayName = "OwlAppContext";
 
 export function RootOwlAppContextProvider({
   owlApp,
@@ -14,14 +18,9 @@ export function RootOwlAppContextProvider({
   owlApp: App<any>;
   children: React.ReactNode;
 }) {
-  if (!owlApp)
-    throw new Error("No owlApp passed to RootOwlAppContextProvider");
+  if (!owlApp) throw new Error("No owlApp passed to RootOwlAppContextProvider");
 
   return (
-    <FiberProvider>
-      <OwlAppContext.Provider value={owlApp}>
-          {children}
-      </OwlAppContext.Provider>
-    </FiberProvider>
+    <OwlAppContext.Provider value={owlApp}>{children}</OwlAppContext.Provider>
   );
 }

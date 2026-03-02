@@ -1,0 +1,39 @@
+.rts___tabs {
+  padding: 0;
+}
+
+.rts___btn {
+  border-radius: unset;
+  border: none;
+}
+
+.rts___tab {
+  margin: 0;
+  position: relative;
+  font-weight: 600;
+}
+
+.rts___tab::after {
+  content: "";
+  margin: auto;
+  height: 3px;
+  background: transparent;
+  transition: width 0.5s ease, background-color 0.5s ease;
+  width: 0;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+.rts___tab___selected {
+  color: var(--primary);
+  box-shadow: none;
+  background: transparent;
+}
+.rts___tab___selected::after {
+  background: var(--primary);
+  content: "";
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}

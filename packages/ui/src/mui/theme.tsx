@@ -49,11 +49,20 @@ export function CoreThemeProvider({
           root.removeAttribute("dir");
         };
     }
-    document
-
   }, [dir]);
 
   const mode = theme === 'dark' ? theme : 'light';
+
+
+  useEffect(() => {
+    const root = document.body;
+    if (!root.classList.contains(mode)) {
+      root.classList.remove('dark')
+      root.classList.remove('light')
+      root.classList.add(mode)
+    }
+  }, [mode]);
+
   return (
     <TailwindThemeProvider>
 

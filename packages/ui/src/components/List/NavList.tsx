@@ -6,7 +6,7 @@ import { useTailwindTheme } from "../../theme";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 import { SxComponentProps, styled } from "../../styles";
 
@@ -29,7 +29,7 @@ export const ListItemPrefix = React.forwardRef<HTMLDivElement, ListItemPrefixPro
 
     // 3. set styles
     const listItemPrefixClasses = twMerge(
-      classnames(objectsToString(base.itemPrefix)),
+      classnames(values(base.itemPrefix)),
       className,
     );
 

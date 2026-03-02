@@ -10,7 +10,7 @@ import { useTailwindTheme } from "../../theme";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 import { styled, StyledComponent, SxComponentProps } from "../../styles";
 import { AnimatedProps, getAnimationOrName, shouldForwardProp } from "../internal/animation";
 
@@ -46,7 +46,7 @@ export const SpeedDialContent = React.forwardRef<
   //const mergedRefs = useMergeRefs([ref, refs.setFloating]);
 
   // 2. set styles
-  const classes = twMerge(objectsToString(styles), "z-speed-dial", className);
+  const classes = twMerge(values(styles), "z-speed-dial", className);
 
   const childArray = React.Children.toArray(children);
 

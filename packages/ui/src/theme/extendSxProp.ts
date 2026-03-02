@@ -8,11 +8,12 @@ const splitProps = (props:any) => {
   const config = props?.theme?.unstable_sxConfig ?? defaultSxConfig;
 
   Object.keys(props).forEach((prop) => {
+    let val = props[prop];
     if (config[prop]) {
-      systemProps[prop] = props[prop];
+      systemProps[prop] = val;
     } else {
       //console.log("prop:", prop, ", not found")
-      otherProps[prop] = props[prop];
+      otherProps[prop] = val;
     }
   });
 

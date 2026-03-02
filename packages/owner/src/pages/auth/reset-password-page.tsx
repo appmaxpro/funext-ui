@@ -6,12 +6,12 @@ import {
 import { useNavigate } from 'react-router';
 
 import ArrowBackIcon from '@funext/icons/ArrowBack';
-import LoginLayout from './LoginLayout';
+import AuthLayout from './auth-layout';
 import useQuery from '../../hooks/use-query';
 import { useCatch } from '../../hooks/use-catch';
 import { snackBarDurationShortMs } from '~/utils/constant';
 import { i18n } from '~/utils/i18n';
-
+import { fetch } from "~/utils/client";
 
 const PREFIX = 'ResetPassword';
 
@@ -52,12 +52,12 @@ const ResetPasswordPage = () => {
     event.preventDefault();
     let response;
     if (!token) {
-      response = await fetch('/api/password/reset', {
+      response = await fetch('/auth/password/reset', {
         method: 'POST',
         body: new URLSearchParams(`email=${encodeURIComponent(email)}`),
       });
     } else {
-      response = await fetch('/api/password/update', {
+      response = await fetch('/auth/password/update', {
         method: 'POST',
         body: new URLSearchParams(`token=${encodeURIComponent(token)}&password=${encodeURIComponent(password)}`),
       });
@@ -70,10 +70,15 @@ const ResetPasswordPage = () => {
   });
 
   return (
-    <LoginLayout>
+    <>
       <ContainerRoot className={ResetPasswordClasses.container}>
         <div className={ResetPasswordClasses.header}>
-          <IconButton color="primary" onClick={() => navigate('/login')}>
+          <IconButton 
+            color="primary" 
+            to={{
+                pathname: "../login",
+                replace: true
+            }}>
             <ArrowBackIcon />
           </IconButton>
           <Text className={ResetPasswordClasses.title} color="primary">
@@ -114,11 +119,11 @@ const ResetPasswordPage = () => {
       </ContainerRoot>
       <Snackbar
         open={snackbarOpen}
-        onClose={() => navigate('/login')}
+        onClose={() => navigate('../login')}
         autoHideDuration={snackBarDurationShortMs}
         message={!token ? t('loginResetSuccess') : t('loginUpdateSuccess')}
       />
-    </LoginLayout>
+    </>
   );
 };
 

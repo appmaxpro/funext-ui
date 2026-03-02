@@ -11,7 +11,7 @@ const MonthlyRevenue = (props: Props) => {
     const { value } = props;
     return (
         <CardWithIcon
-            to="/orders"
+            to="states"
             icon={DollarIcon}
             title={"Monthly Revenue"}
             subtitle={value}

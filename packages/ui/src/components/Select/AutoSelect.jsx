@@ -55,7 +55,7 @@ const useUtilityClasses = (ownerState) => {
     inputRoot: ["inputRoot"],
     input: ["input", inputFocused && "inputFocused"],
     tag: ["tag", `tag-size-${size}`],
-    endAdornment: ["endAdornment"],
+    suffix: ["suffix"],
     extraAdornment: ["extraAdornment"],
     clearIndicator: ["clearIndicator"],
     popupIndicator: ["popupIndicator", popupOpen && "popupIndicatorOpen"],
@@ -565,10 +565,10 @@ export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
     className: classes.panel,
   });
 
-  let startAdornment;
+  let prefix;
 
   if (renderInputValue) {
-    startAdornment = renderInputValue(value);
+    prefix = renderInputValue(value);
   } else {
     if (multiple && value.length > 0) {
       const getCustomizedTagProps = (params) => ({
@@ -580,9 +580,9 @@ export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       });
 
       if (renderTags) {
-        startAdornment = renderTags(value, getCustomizedTagProps, ownerState);
+        prefix = renderTags(value, getCustomizedTagProps, ownerState);
       } else {
-        startAdornment = value.map((option, index) => {
+        prefix = value.map((option, index) => {
           const { key, ...customTagProps } = getCustomizedTagProps(index);
           return (
             <Chip
@@ -596,19 +596,19 @@ export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
       }
     }
 
-    if (limitTags > -1 && Array.isArray(startAdornment)) {
-      const more = startAdornment.length - limitTags;
+    if (limitTags > -1 && Array.isArray(prefix)) {
+      const more = prefix.length - limitTags;
       if ((!focused || limitTags === 0) && more > 0) {
-        startAdornment = startAdornment.splice(0, limitTags);
-        startAdornment.push(
-          <Chip key={startAdornment.length} size={size}>
+        prefix = prefix.splice(0, limitTags);
+        prefix.push(
+          <Chip key={prefix.length} size={size}>
             {getLimitTagsText(more)}
           </Chip>,
         );
       }
     }
-    if (startAdornment && startAdornment.length) {
-      startAdornment = <>{startAdornment}</>;
+    if (prefix && prefix.length) {
+      prefix = <>{prefix}</>;
     }
   }
 
@@ -820,13 +820,13 @@ export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
               multiple ? "min-w-inherit" : "min-w-[30px]",
             ),
           },
-          startAdornment,
+          prefix,
           variant,
           nativeClassName: classes.input,
           placeholder,
           name,
           forceInline: !!renderInputValue
-            ? React.isValidElement(startAdornment)
+            ? React.isValidElement(prefix)
             : multiple && limitTags !== 0,
           required,
 
@@ -843,7 +843,7 @@ export const AutoSelect = React.forwardRef(function AutoSelect(inProps, ref) {
           ...((hasClearIcon ||
             hasPopupIcon ||
             React.isValidElement(extraAdornment)) && {
-            endAdornment: (
+            suffix: (
               <>
                 {hasClearIcon ? (
                   <AutoSelectClearIndicator

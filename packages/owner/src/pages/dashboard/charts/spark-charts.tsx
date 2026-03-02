@@ -3,30 +3,34 @@ import { createSparks } from "./spark-data";
 import ReactApexChart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
 import React from "react";
+import { EMPTY_ARRAY } from "~/utils/constant";
+const maxCardHeight = undefined;
+const minCardHeight = 160;
+const cardSx={minHeight: minCardHeight, px: 0, pb:0, mb: '-3px'};
 
 function SparkCharts() {
-  const { spark1, spark2, spark3 } = React.useMemo(createSparks, []);
+  const chart = React.useMemo(createSparks, EMPTY_ARRAY);
   return (
-    <Grid columns={{ lg: 3, md: 1 }} gap={8} container>
-      <Grid sx={{ maxHeight: 444 }}>
+    <Grid columns={{ md: 4, xs: 1 }} gap={4} container justify="center">
+      <Grid size={1} maxHeight={maxCardHeight}>
         <Card>
-          <Card.Body>
-            <ReactApexChart options={spark1 as ApexOptions} />
-          </Card.Body>
-          <div id="spark1"></div>
-        </Card>
-      </Grid>
-      <Grid>
-        <Card>
-          <Card.Body>
-            <ReactApexChart options={spark2 as ApexOptions} />
+          <Card.Body sx={cardSx}>
+
+            <ReactApexChart options={chart.optionsSpark1 as ApexOptions} series={chart.seriesSpark1} type="area"/>
           </Card.Body>
         </Card>
       </Grid>
-      <Grid>
+      <Grid size={1} maxHeight={maxCardHeight}>
         <Card>
-          <Card.Body>
-            <ReactApexChart options={spark3 as ApexOptions} />
+          <Card.Body sx={cardSx}>
+            <ReactApexChart options={chart.optionsSpark2 as ApexOptions} series={chart.seriesSpark2} type="area"/>
+          </Card.Body>
+        </Card>
+      </Grid>
+      <Grid size={1} maxHeight={maxCardHeight}>
+        <Card>
+          <Card.Body sx={cardSx}>
+            <ReactApexChart options={chart.optionsSpark3 as ApexOptions} series={chart.seriesSpark3} type="area"/>
           </Card.Body>
         </Card>
       </Grid>

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { type SxComponentProps, styled } from "../../styles";
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -66,7 +66,7 @@ export const Step = React.forwardRef<HTMLDivElement, StepProps>(
     const classes = useMemo(
       () =>
         twMerge(
-          objectsToString(base.initial),
+          values(base.initial),
           stepClasses,
           targetClasses,
           className,

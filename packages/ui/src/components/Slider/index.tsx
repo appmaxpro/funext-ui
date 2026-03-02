@@ -5,7 +5,7 @@ import merge from "deepmerge";
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -106,27 +106,27 @@ export const Slider = React.forwardRef<HTMLDivElement, SliderProps>(
         // 3. set styles
         const sliderContainerClasses = twMerge(
           classnames(
-            objectsToString(base.container),
-            objectsToString(colors[findMatch(valid.colors, color, "gray")]),
-            objectsToString(
+            values(base.container),
+            values(colors[findMatch(valid.colors, color, "gray")]),
+            values(
               sizes[findMatch(valid.sizes, size, "md")]["container"],
             ),
             className,
           ),
         );
         const sliderBarClasses = twMerge(
-          classnames(objectsToString(base.bar), barClassName),
+          classnames(values(base.bar), barClassName),
         );
         const sliderTrackClasses = classnames(
-          objectsToString(base.track),
-          objectsToString(sizes[findMatch(valid.sizes, size, "md")]["track"]),
+          values(base.track),
+          values(sizes[findMatch(valid.sizes, size, "md")]["track"]),
         );
         const sliderThumbClasses = classnames(
-          objectsToString(base.thumb),
-          objectsToString(sizes[findMatch(valid.sizes, size, "md")]["thumb"]),
+          values(base.thumb),
+          values(sizes[findMatch(valid.sizes, size, "md")]["thumb"]),
         );
         const sliderClasses = classnames(
-          objectsToString(base.slider),
+          values(base.slider),
           twMerge(sliderTrackClasses, trackClassName),
           twMerge(sliderThumbClasses, thumbClassName),
         );

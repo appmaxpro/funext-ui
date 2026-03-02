@@ -8,3 +8,12 @@
 declare module "maplibre-google-maps" {
   export function googleProtocol(params:any, abortController:any):Promise<GetResourceResponse<any>>;
 }
+/*
+declare module "react-router" {
+  export type ExtRouteObject = RouteObject & {
+    props: any
+  }
+  export function createBrowserRouter(routes: Array<ExtRouteObject> );
+  export * from "react-router";
+}
+  */

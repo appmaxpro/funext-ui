@@ -2,7 +2,7 @@ import React from "react";
 
 // utils
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -33,7 +33,7 @@ export const Timeline = React.forwardRef<HTMLUListElement, TimelineProps>(
     const { base } = styles;
 
     // 3. set styles
-    const classes = twMerge(objectsToString(base), className);
+    const classes = twMerge(values(base), className);
 
     // 4. return
     return (

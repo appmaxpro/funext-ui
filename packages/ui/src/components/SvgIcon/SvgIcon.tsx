@@ -12,10 +12,10 @@ import {
 import { capitalize } from "../../utils";
 import { OverridableStringUnion } from "../../theme/tw/props";
 
-const svgIconClasses = generateUtilityClasses("MuiSvgIcon", ["root"]);
+const svgIconClasses = generateUtilityClasses("MuxSvgIcon", ["root"]);
 
 export function getSvgIconUtilityClass(slot: string): string {
-  return generateUtilityClass("MuiSvgIcon", slot);
+  return generateUtilityClass("MuxSvgIcon", slot);
 }
 
 const useUtilityClasses = (ownerState:any) => {
@@ -32,7 +32,7 @@ const useUtilityClasses = (ownerState:any) => {
 };
 
 const SvgIconRoot = styled("svg", {
-  name: "MuiSvgIcon",
+  name: "MuxSvgIcon",
   slot: "Root",
   overridesResolver: (props, styles) => styles.root,
 })(
@@ -88,7 +88,7 @@ const SvgIconRoot = styled("svg", {
 
 export const SvgIcon = React.forwardRef<SVGAElement, SvgIconProps>(
   function SvgIcon(inProps, ref) {
-    const props = useMuxDefaultProps({ props: inProps, name: "MuiSvgIcon" });
+    const props = useMuxDefaultProps({ props: inProps, name: "MuxSvgIcon" });
     let fs = typeof props.size === 'number' ?  props.size : undefined;
     const {
       children,

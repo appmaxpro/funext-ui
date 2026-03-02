@@ -10,7 +10,7 @@ import type { ListStylesType } from "../../components/List/style";
 
 import { useTailwindTheme } from "../../theme";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../..//utils/objectsToString";
+import values from "../../utils/values";
 
 export interface ListContextProviderProps {
   value: ListContextValues;
@@ -131,7 +131,7 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
       ...(asObject(itemSelected) ?? interactiveStyles?.selected),
     };
 
-    console.log("defaultItemSelected:", defaultItemSelected)
+    //console.log("defaultItemSelected:", defaultItemSelected)
 
     const defaultItemDisabled = {
       ...styleItem?.initial,
@@ -145,12 +145,12 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
 
     const active = hasActive
       ? twMerge(
-          objectsToString(createItemInteractive("active", defaultItemActive)),
+          values(createItemInteractive("active", defaultItemActive)),
         )
       : undefined;
     const hover = hasHover
       ? twMerge(
-          objectsToString(
+          values(
             createItemInteractive("hover", defaultItemHover),
           ).replace("active:", ""),
         )
@@ -158,12 +158,12 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
 
     const focus = hasFocus
       ? twMerge(
-          objectsToString(createItemInteractive("focus", defaultItemFocus)),
+          values(createItemInteractive("focus", defaultItemFocus)),
         )
       : undefined;
 
     const initial = twMerge(
-      objectsToString({
+      values({
         ...styleItem?.initial,
         ...ctxItemInitial,
         
@@ -175,7 +175,7 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
     return {
       ...otherValues,
       list: twMerge(
-        objectsToString(listStyle),
+        values(listStyle),
         listTheme.defaultProps?.className,
         listClassName,
       ),
@@ -186,11 +186,11 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
         focus: focus,
         all: twMerge(initial, hover, className),
         default: twMerge(initial, active, focus, className),
-        disabled: twMerge(objectsToString(defaultItemDisabled), className),
+        disabled: twMerge(values(defaultItemDisabled), className),
         selected: hasSelect
           ? twMerge(
               initial,
-              objectsToString(createItemInteractive("", defaultItemSelected)),
+              values(createItemInteractive("", defaultItemSelected)),
               className,
             )
           : initialDefault,

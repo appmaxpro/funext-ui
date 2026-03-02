@@ -86,7 +86,7 @@ export const Sizing = () => {
           onChange={(e: any) => setValue(e.target.value)}
           placeholder="placeholder"
           label="Adornment md"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -96,7 +96,7 @@ export const Sizing = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -109,12 +109,12 @@ export const Sizing = () => {
           placeholder="placeholder"
           label="Adornment lg"
           size="lg"
-          startAdornment={
+          prefix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -137,7 +137,7 @@ export const Sizing = () => {
           variant="standard"
           shrink
           size="lg"
-          startAdornment={
+          prefix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="close" />
             </IconButton>
@@ -201,7 +201,7 @@ export const Filled = () => {
           placeholder="placeholder"
           label="Adornment md"
           variant={variant}
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               variant="text"
@@ -210,7 +210,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -223,7 +223,7 @@ export const Filled = () => {
           label="Adornment lg"
           variant={variant}
           size="lg"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -232,7 +232,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -255,7 +255,7 @@ export const Filled = () => {
           label="No border"
           variant={variant}
           disableBorder
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -264,7 +264,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -307,7 +307,7 @@ export const Filled = () => {
           label="Custom md"
           variant={variant}
           as="div"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -316,7 +316,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -331,7 +331,7 @@ export const Filled = () => {
           variant={variant}
           size="lg"
           as="div"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -340,7 +340,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -369,7 +369,7 @@ export const Filled = () => {
           placeholder="No label md"
           variant={variant}
           size="md"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -378,7 +378,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>
@@ -390,7 +390,7 @@ export const Filled = () => {
           placeholder="No label lg"
           variant={variant}
           size="lg"
-          startAdornment={
+          prefix={
             <IconButton
               onClick={() => {}}
               size="inherit"
@@ -400,7 +400,7 @@ export const Filled = () => {
               <MaterialIcon icon="close" />
             </IconButton>
           }
-          endAdornment={
+          suffix={
             <IconButton onClick={() => {}} size="inherit" variant="text">
               <MaterialIcon icon="alarm" />
             </IconButton>

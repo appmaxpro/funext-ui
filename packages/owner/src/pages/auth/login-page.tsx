@@ -18,7 +18,7 @@ import CloseIcon from "@funext/icons/Close";
 import { useTheme } from "@funext/ui/styles";
 import { useNavigate } from "react-router";
 
-import LoginLayout from "./LoginLayout";
+import AuthLayout from "./auth-layout";
 import {
   generateLoginToken,
   handleLoginTokenListeners,
@@ -31,7 +31,8 @@ import { Icons } from "@funext/ui/components";
 import { useCatch } from "~/hooks/use-catch";
 import { useLocalization } from "~/context";
 import { useLocalStorageState } from "~/hooks/use-local-storage-state";
-
+import { readCookie, fetch } from "~/utils/client";
+import { itemStyle } from "@funext/ui/components/List/styles.js";
 
 const optionSx = {
   position: "fixed",
@@ -92,7 +93,7 @@ const LoginPage = () => {
     setFailed(false);
     try {
       const query = `email=${encodeURIComponent(email!)}&password=${encodeURIComponent(password)}`;
-      const response = await fetch("/api/session", {
+      const response = await fetch("/auth/session", {
         method: "POST",
         body: new URLSearchParams(
           code.length ? `${query}&code=${code}` : query,
@@ -119,7 +120,7 @@ const LoginPage = () => {
 
   const handleTokenLogin = useCatch(async (token:string) => {
     const response = await fetch(
-      `/api/session?token=${encodeURIComponent(token)}`,
+      `/auth/session?token=${encodeURIComponent(token)}`,
     );
     if (response.ok) {
       const user = await response.json();
@@ -131,7 +132,7 @@ const LoginPage = () => {
   });
 
   const handleOpenIdLogin = () => {
-    document.location = "/api/session/openid/auth";
+    document.location = "/auth/session/openid/auth";
   };
 
   useEffect(() => nativePostMessage("authentication"), []);
@@ -148,26 +149,9 @@ const LoginPage = () => {
   }
 
   return (
-    <LoginLayout>
+    <AuthLayout>
       <Box sx={optionSx}>
-        {languageEnabled && (
-            <Menu>
-              <Menu.Trigger>
-                <Button variant="outlined" fullWidth color="inherit" className="flex justify-between">
-                  <span>{language}</span>
-                  <Icons.ChevronDown/>
-                </Button>
-              </Menu.Trigger>
-              {languageList.map((it) => (
-                <MenuItem key={it.code} title={it.name} onClick={()=> setLanguage(it.code)}>
-                  <Box component="span" sx={{ mr: 1 }}>
-                    {/*<ReactCountryFlag countryCode={it.country} svg />*/}
-                  </Box>
-                  {it.name}
-                </MenuItem>
-              ))}
-            </Menu>
-        )}
+        
       </Box>
       <div className="flex flex-col gap-4">
         {useMediaQuery(theme.breakpoints.down("lg")) && (
@@ -182,7 +166,8 @@ const LoginPage = () => {
           autoComplete="email"
           autoFocus={!email}
           onChange={(e:any) => setEmail(e.target.value)}
-          helperText={failed && "Invalid username or password"}
+          helperText={failed && t("Invalid username or email")}
+          
         />
         <Input
           required
@@ -206,11 +191,44 @@ const LoginPage = () => {
             onChange={(e:any) => setCode(e.target.value)}
           />
         )}
+        {languageEnabled && (
+            <Menu
+              menuProps={{
+                panelProps: {
+                  style: {
+                  width: 'var(--popper-reference-width)'
+                }
+                },
+                listProps: {
+                  itemStyle: {
+                    className : 'py-2 px-3'
+                  },
+                  hover: true
+                }
+              }}
+              
+            >
+              <Menu.Trigger>
+                <Button ripple={false} variant="outlined" fullWidth color="inherit" className="flex justify-between">
+                  <span>{languageList.find(a => a.code === language)?.name }</span>
+                  <Icons.ChevronDown size='sm'/>
+                </Button>
+              </Menu.Trigger>
+              {languageList.map((it) => (
+                <MenuItem className="py-2 px-3" key={it.code} title={it.name} onClick={()=> setLanguage(it.code)}>
+                  <Box component="span" sx={{ mr: 1 }}>
+                    {/*<ReactCountryFlag countryCode={it.country} svg />*/}
+                  </Box>
+                  {it.name}
+                </MenuItem>
+              ))}
+            </Menu>
+        )}
         <Button
           onClick={handlePasswordLogin}
           type="submit"
           variant="filled"
-          color="secondary"
+          color="primary"
           disabled={!email || !password || (codeEnabled && !code)}
         >
           {t("loginLogin")}
@@ -219,26 +237,17 @@ const LoginPage = () => {
           <Button
             onClick={() => handleOpenIdLogin()}
             variant="filled"
-            color="secondary"
+            color="primary"
           >
             {t("loginOpenId")}
           </Button>
         )}
         <div className="flex justify-center gap-4 mt-4">
-          {registrationEnabled && (
-            <Link
-              onClick={() => navigate("/auth/register")}
-              //className={classes.link}
-              underline="none"
-              variant="caption"
-            >
-              {t("loginRegister")}
-            </Link>
-          )}
           {emailEnabled && (
             <Link
-              onClick={() => navigate("/auth/reset-password")}
+              //onClick={() => navigate("/auth/reset-password")}
               //className={classes.link}
+              href="/auth/reset-password"
               underline="none"
               variant="caption"
             >
@@ -260,7 +269,7 @@ const LoginPage = () => {
           </IconButton>
         }
       />
-    </LoginLayout>
+    </AuthLayout>
   );
 };
 

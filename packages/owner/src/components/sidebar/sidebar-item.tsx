@@ -12,34 +12,35 @@ import Panel from '@funext/ui/Panel';
 import Text from '@funext/ui/Text';
 import ExpandMoreIcon from '@funext/icons/ExpandMore';
 import invariant from 'invariant';
-import { SidebarItemContext, RouteContext } from '../../context';
+import { SidebarItemContext, useNavContext } from '../../context';
 import { getItemPath, getNavTitle } from '../../utils/navigation';
-import type { Routes, OutletRoute, SidebarItemProps } from '../../utils/types';
+import type { Navigation, OutletRoute, SidebarItemProps } from '../../utils/types';
 import { Dimensions } from '~/utils/constant';
 
 const ListItemButton = styled(List.ItemButton)(({ theme }) => ({
   borderRadius: 8,
-  '&.Mui-selected': {
-    '& .MuiListItemIcon-root': {
+  '&[data-selected]': {
+    color: 'var(--primary)',
+    '& .MuxListItemIcon-root': {
       color: (theme.vars ?? theme).palette.primary.dark,
     },
-    '& .MuiText-root': {
+    '& .MuxText-root': {
       color: (theme.vars ?? theme).palette.primary.dark,
     },
-    '& .MuiSvgIcon-root': {
+    '& .MuxSvgIcon-root': {
       color: (theme.vars ?? theme).palette.primary.dark,
     },
-    '& .MuiAvatar-root': {
+    '& .MuxAvatar-root': {
       backgroundColor: (theme.vars ?? theme).palette.primary.dark,
     },
-    '& .MuiTouchRipple-child': {
+    '& .MuxTouchRipple-child': {
       backgroundColor: (theme.vars ?? theme).palette.primary.dark,
     },
   },
-  '& .MuiSvgIcon-root': {
+  '& .MuxSvgIcon-root': {
     color: (theme.vars ?? theme).palette.action.active,
   },
-  '& .MuiAvatar-root': {
+  '& .MuxAvatar-root': {
     backgroundColor: (theme.vars ?? theme).palette.action.active,
   },
 }));
@@ -56,7 +57,7 @@ const LIST_ITEM_ICON_SIZE = 34;
  * - [DashboardSidebarPageItem API](https://mui.com/toolpad/core/api/dashboard-sidebar-page-item)
  */
 function SidebarItem(props: SidebarItemProps) {
-  const navigationContext = React.useContext(RouteContext);
+  const navigationContext = useNavContext();
   const pageItemContextProps = React.useContext(SidebarItemContext);
 
   invariant(pageItemContextProps, 'No navigation page item context provided.');
@@ -116,9 +117,13 @@ function SidebarItem(props: SidebarItemProps) {
 
   const title = getNavTitle(item);
 
+  const itemHasChild = item.children && (
+          (item.actions && item.actions.includes('sidebar') ) ||
+          (!item.actions && item.childNav !== false))
+
   const listItem = (
-    <List.Item
-      {...(item.children && isMini
+    <List.Item as="div" li={true} className='ssxxx'
+      {...(itemHasChild && isMini
         ? {
             onMouseEnter: () => {
               setHoveredMiniSidebarItemId(id);
@@ -137,17 +142,19 @@ function SidebarItem(props: SidebarItemProps) {
       <ListItemButton
         selected={selected}
         disabled={disabled}
+        data-selected={selected ?  '' : undefined}
         li={false}
+        
         sx={{
           px: 1.4,
           height: isMini ? 60 : 48,
         }}
-        {...(item.children && !isMini
+        {...(itemHasChild && !isMini
           ? {
               onClick: handleClick,
             }
           : {})}
-        {...(!item.children
+        {...(!itemHasChild
           ? {
               LinkComponent,
               ...(hasExternalHref
@@ -160,6 +167,7 @@ function SidebarItem(props: SidebarItemProps) {
               onClick: handleClick,
             }
           : {})}
+          color="inherit"
       >
         {item.icon || isMini ? (
           <Box
@@ -231,9 +239,9 @@ function SidebarItem(props: SidebarItemProps) {
           />
         ) : null}
         {item.action && !isMini && isSidebarFullyExpanded ? item.action : null}
-        {item.children ? <ExpandMoreIcon sx={nestedNavigationCollapseSx} /> : null}
+        {itemHasChild ? <ExpandMoreIcon sx={nestedNavigationCollapseSx} /> : null}
       </ListItemButton>
-      {item.children && isMini ? (
+      {itemHasChild && isMini ? (
         <Grow in={id === hoveredMiniSidebarItemId}>
           <Box
             sx={{
@@ -249,7 +257,7 @@ function SidebarItem(props: SidebarItemProps) {
                 transform: 'translateY(calc(50% - 30px))',
               }}
             >
-              {renderNestedNavigation(item.children)}
+              {renderNestedNavigation(item.children!)}
             </Panel>
           </Box>
         </Grow>
@@ -260,9 +268,9 @@ function SidebarItem(props: SidebarItemProps) {
   return (
     <React.Fragment key={id}>
       {listItem}
-      {item.children && !isMini ? (
+      {itemHasChild && !isMini ? (
         <Collapse open={expanded} unmountOnExit>
-          {renderNestedNavigation(item.children)}
+          {renderNestedNavigation(item.children!)}
         </Collapse>
       ) : null}
     </React.Fragment>

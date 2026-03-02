@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // context
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 import { 
   styled, 
@@ -115,7 +115,7 @@ const resolvePanelProps = (props:PanelProps, theme: TailwindTheme) =>  {
   // 3. set styles
   const panelRoot = '';//objectsToString(base.initial);
   const matchesVariant = variants[findMatch(valid.variants, variant, "")];
-  const cardVariant = matchesVariant && objectsToString(
+  const cardVariant = matchesVariant && values(
     matchesVariant[findMatch(valid.colors, color, "default")],
   );
 

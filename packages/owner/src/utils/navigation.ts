@@ -1,45 +1,45 @@
-import { pathToRegexp } from 'path-to-regexp';
-import invariant from 'invariant';
+import { pathToRegexp } from "path-to-regexp";
+import invariant from "invariant";
 import type {
-  Routes,
-  RouteItem,
+  Navigation,
+  NavItem,
   NavRoute,
   PageRoute,
   ModalRoute,
   OutletRoute,
   NavSubheaderItem,
-} from './types';
+} from "./types";
 
-export const getItemKind = (item: RouteItem) => item.kind ?? 'page';
+export const getItemKind = (item: NavItem) => item.kind ?? "page";
 
+export const isOutletRoute = (item: NavItem): item is OutletRoute =>
+  ["page", "modal"].includes(getItemKind(item));
 
-export const isOutletRoute = (item: RouteItem): item is OutletRoute =>
-  ['page', 'modal'].includes(getItemKind(item));
+export const isPageRoute = (item: NavItem): item is PageRoute =>
+  getItemKind(item) === "page";
 
-export const isPageRoute = (item: RouteItem): item is PageRoute =>
-  getItemKind(item) === 'page';
-
-export const isModalRoute = (item: RouteItem): item is ModalRoute =>
-  getItemKind(item) === 'modal';
-
+export const isModalRoute = (item: NavItem): item is ModalRoute =>
+  getItemKind(item) === "modal";
 
 export const getNavTitle = (item: OutletRoute | NavSubheaderItem) => {
-  return isOutletRoute(item) ? (item.title ?? item.segment ?? '') : item.title;
+  return isOutletRoute(item) ? (item.title ?? item.path ?? "") : item.title;
 };
 
 /**
  * Builds a map of Nav page items to their respective paths. This map is used to quickly
  * lookup the path of a Nav item. It will be cached for the lifetime of the Nav.
  */
-function buildItemToPathMap(routes: Routes): Map<RouteItem, string> {
-  const map = new Map<RouteItem, string>();
+function buildItemToPathMap(routes: Navigation): Map<NavItem, string> {
+  const map = new Map<NavItem, string>();
 
-  const visit = (item: RouteItem, base: string) => {
+  const visit = (item: NavItem, base: string) => {
     if (isOutletRoute(item)) {
       // Append segment to base path. Make sure to always have an initial slash, and slashes between segments.
-      const path =
-        `${base.startsWith('/') ? base : `/${base}`}${base && base !== '/' && item.segment ? '/' : ''}${item.segment || ''}` ||
-        '/';
+      let path =
+        `${base.startsWith("/") ? base : `/${base}`}${base && base !== "/" && item.path ? "/" : ""}${item.path || ""}` ||
+        "/";
+
+      path = path.replaceAll(/\/\//g, "/");
       map.set(item, path);
       if (item.children) {
         for (const child of item.children) {
@@ -50,18 +50,18 @@ function buildItemToPathMap(routes: Routes): Map<RouteItem, string> {
   };
 
   for (const item of routes) {
-    visit(item, '');
+    visit(item, "");
   }
 
   return map;
 }
 
-const itemToPathMapCache = new WeakMap<Routes, Map<RouteItem, string>>();
+const itemToPathMapCache = new WeakMap<Navigation, Map<NavItem, string>>();
 
 /**
  * Gets the cached map of Routes page items to their respective paths.
  */
-function getItemToPathMap(routes: Routes) {
+function getItemToPathMap(routes: Navigation) {
   let map = itemToPathMapCache.get(routes);
   if (!map) {
     map = buildItemToPathMap(routes);
@@ -74,19 +74,26 @@ function getItemToPathMap(routes: Routes) {
  * Build a lookup map of paths to Nav items. This map is used to match paths against
  * to find the active page.
  */
-function buildItemLookup(routes: Routes) {
+function buildItemLookup(routes: Navigation) {
   const map = new Map<string | RegExp, OutletRoute>();
-  const visit = (item: RouteItem) => {
+  const visit = (item: NavItem) => {
     if (isOutletRoute(item)) {
       const path = getItemPath(routes, item);
-      if (map.has(path)) {
-        console.warn(`Duplicate path in routes: ${path}`);
+      const keyExists = map.has(path);
+      if (keyExists) {
+        console.warn(`Duplicate path in routes: ${path} of item:\n${item}`);
       }
 
-      map.set(path, item);
-      if (item.pattern) {
-        const basePath = item.segment ? path.slice(0, -item.segment.length) : path;
-        map.set(pathToRegexp(basePath + item.pattern), item);
+      if (!keyExists || !item.path) {
+        map.set(path, item);
+        const pattern =
+          item.pattern ||
+          (item.path && /(\:|\?)/.test(item.path) ? item.path : null);
+        if (pattern) {
+          const basePath = item.path ? path.slice(0, -item.path.length) : path;
+          map.set(pathToRegexp(basePath + pattern), item);
+          item.pattern = pattern;
+        }
       }
       if (item.children) {
         for (const child of item.children) {
@@ -100,8 +107,11 @@ function buildItemLookup(routes: Routes) {
   }
   return map;
 }
-const itemLookupMapCache = new WeakMap<Routes, Map<string | RegExp, OutletRoute>>();
-function getItemLookup(routes: Routes) {
+const itemLookupMapCache = new WeakMap<
+  Navigation,
+  Map<string | RegExp, OutletRoute>
+>();
+function getItemLookup(routes: Navigation) {
   let map = itemLookupMapCache.get(routes);
   if (!map) {
     map = buildItemLookup(routes);
@@ -114,11 +124,14 @@ function getItemLookup(routes: Routes) {
  * Matches a path against the routes to find the active page. i.e. the page that should be
  * marked as selected in the routes.
  */
-export function matchPath(routes: Routes, path: string): OutletRoute | null {
+export function matchPath(
+  routes: Navigation,
+  path: string,
+): OutletRoute | null {
   const lookup = getItemLookup(routes);
 
   for (const [key, item] of lookup.entries()) {
-    if (typeof key === 'string' && key === path) {
+    if (typeof key === "string" && key === path) {
       return item;
     }
     if (key instanceof RegExp && key.test(path)) {
@@ -132,7 +145,7 @@ export function matchPath(routes: Routes, path: string): OutletRoute | null {
 /**
  * Gets the path for a specific Routes page item.
  */
-export function getItemPath(routes: Routes, item: OutletRoute): string {
+export function getItemPath(routes: Navigation, item: OutletRoute): string {
   const map = getItemToPathMap(routes);
   const path = map.get(item);
   invariant(path, `Item not found in routes: ${item.title}`);
@@ -143,7 +156,7 @@ export function getItemPath(routes: Routes, item: OutletRoute): string {
  * Checks if a specific Nav page item has the active page as a child item.
  */
 export function hasSelectedNavChildren(
-  routes: Routes,
+  routes: Navigation,
   item: OutletRoute,
   activePagePath: string,
 ): boolean {
@@ -162,4 +175,37 @@ export function hasSelectedNavChildren(
   }
 
   return false;
+}
+
+export function buildNavigation(routes: Navigation, fallbackComponent: any) {
+  const visit = (item: NavItem) => {
+    const itemCopy = {...item}
+    if (isOutletRoute(item)) {
+      
+      if (item.children) {
+        delete (itemCopy as OutletRoute).children;
+        const children:Navigation = [];
+        (itemCopy as OutletRoute).children = children;
+
+        for (let child of item.children) {
+          children.push(child = visit(child));
+
+          if (!(child as any).parent)
+            Object.defineProperties(child, {
+              parent: {
+                get: () => itemCopy,
+              },
+            });
+        }
+      }
+    }
+    return itemCopy;
+  };
+  
+  const copy:Navigation = [];
+  for (const item of routes) {
+    copy.push(visit(item));
+  }
+
+  return copy;
 }

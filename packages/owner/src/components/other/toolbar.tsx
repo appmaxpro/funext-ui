@@ -173,7 +173,7 @@ const AppBarRoot = styled(Panel, {
       .map(([color, __]) => ({
         [`&[data-tone="${color}"]`]: {
           "--app-bar-background": `var(--${color})`,
-          "--app-bar-color": `var(--${color}-, #fff)`,
+          "--app-bar-color": `var(--${color}-fg, #fff)`,
         },
       })).reduce((prev, next) => ({...prev, ...next}), {}) ,
 

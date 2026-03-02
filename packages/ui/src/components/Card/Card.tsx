@@ -3,7 +3,7 @@ import React from "react";
 // utils
 import { twMerge } from "tailwind-merge";
 import findMatch from "../../utils/findMatch";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { 
@@ -88,8 +88,8 @@ const resolvePanelProps = (props:CardProps, theme: any) =>  {
   let color = mapThemeColor(props.color, defaultProps.color);
 
   // 3. set styles
-  const cardRoot = objectsToString(base.initial);
-  const cardVariant = objectsToString(
+  const cardRoot = values(base.initial);
+  const cardVariant = values(
     variants[findMatch(valid.variants, variant, "outlined")][
       findMatch(valid.colors, color, "default")
     ],

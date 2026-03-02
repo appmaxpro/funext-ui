@@ -7,9 +7,10 @@ import React from "react";
 import { GlobalStyles } from "@funext/ui/GlobalStyles";
 import type { ThemeMode } from "~/utils/types";
 import { PaletteModeContext, useLocalization } from "~/context";
+import { ListContextProvider } from "@funext/ui";
+import { APP_THEME_MODE } from "~/utils/constant";
 
 const COLOR_SCHEME_STORAGE_KEY = "owner-app-color-scheme";
-const MODE_STORAGE_KEY = "owner-app-mode";
 
 function usePreferredMode(window?: Window) {
   const prefersDarkMode = useMediaQuery(
@@ -34,7 +35,7 @@ interface AppThemeProviderProps {
   theme?: AppTheme;
   window?: Window;
 }
-
+const _EMPTY = {}
 /**
  * Compatibility layer for classic v5 themes. It will handle state management for the theme switcher.
  * In the v6 theme, this state management is handled by `useColorScheme`. But this hook will crash if
@@ -47,7 +48,7 @@ function AppThemeProvider(props: AppThemeProviderProps) {
 
   const preferredMode = usePreferredMode(appWindow);
   const [userMode, setUserMode] = useLocalStorageState<ThemeMode>(
-    MODE_STORAGE_KEY,
+    APP_THEME_MODE,
     "system",
   );
 
@@ -67,7 +68,7 @@ function AppThemeProvider(props: AppThemeProviderProps) {
     () => ({
       themeMode,
       setThemeMode: setUserMode,
-      isDualTheme,
+      isDualTheme: true,
     }),
     [isDualTheme, themeMode, setUserMode],
   );
@@ -77,9 +78,10 @@ function AppThemeProvider(props: AppThemeProviderProps) {
   return (
     <CoreThemeProvider
       dir={direction}
-      theme={dualAwareTheme as any}
+      theme={themeMode}
       //options={options}
       options={{
+        enableCssLayer: true,
         components: {
           MuxLink: {
             defaultProps: {
@@ -95,8 +97,24 @@ function AppThemeProvider(props: AppThemeProviderProps) {
       }}
     >
       <PaletteModeContext.Provider value={themeModeContextValue}>
+        <>
         <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
-        {children}
+        <ListContextProvider 
+        value={{
+           item: {
+            hover: "bg-header-med-hover hover:text-item hover:text-opacity-90",
+            disabled: "",
+            className: "px-3 py-3",
+          },
+          ul: false,
+          global: true
+        }}>
+
+        
+          {children}
+        </ListContextProvider>
+        </>
+        
       </PaletteModeContext.Provider>
     </CoreThemeProvider>
   );

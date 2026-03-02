@@ -6,12 +6,13 @@ import {
   ComponentNode,
   Fiber,
   blockDom as bdom,
+  helpers,
   type ComponentConstructor,
-  type BDom
+  type BDom,
+  markRaw
 } from "@odoo/owl";
 import type { OwlRoot, OwlProps as Props } from "../components/types";
 //import { vComponentTemplate } from "../components/owl-v-react";
-//import { ReactOutlet } from "~/components/reac-outlet";
 import { OwlReactWrapper, vOlwRapperTemplate } from "~/components/owl-react-wrapper";
 import { extendsOwlComponent } from "~/utils/owl-component-factory";
 import { portalTemplate, OwlPortal } from "./owl-portal";
@@ -116,16 +117,20 @@ E = any
           }
 
           if (ReactComp) {
-            console.log("OwlApp create react component props:", name);
+            console.log("OwlApp create react component:", name, ", with props:", props);
+            const inTreeCreateRoot = this.env.inTreeCreateRoot || props.inTreeCreateRoot
+
             props = {
-              inTreeCreateRoot: this.env.inTreeCreateRoot,
+              ...props,
+              inTreeCreateRoot: inTreeCreateRoot ? helpers.markRaw(inTreeCreateRoot) : inTreeCreateRoot,
               isTopLevelReact: !this.env.inTreeCreateRoot,
               __reactName: name,
-              ...props,
-              component: ReactComp,
+              component: helpers.markRaw(ReactComp),
             };
           }
-        } else {
+        } 
+        
+        else {
           console.log("OwlApp create dynamic component:", name);
         }
 
@@ -158,7 +163,8 @@ function setupReact(CC: any) {
       console.log("OwlApp wrap reacts:", Object.keys(CC.reacts));
       Object.entries(CC.reacts).forEach(([k, v]) => {
         console.log("OwlApp create react component:", k);
-        CC.components[k] = extendsOwlComponent(k, v, OwlReactWrapper);
+
+        CC.components[k] = extendsOwlComponent(k, markRaw(v as any), OwlReactWrapper);
       });
     }
   }

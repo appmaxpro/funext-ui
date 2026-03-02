@@ -16,6 +16,7 @@ import {
   FloatingFocusManagerProps,
   FloatingTree,
   FloatingContext,
+  UseFloatingOptions,
 } from "@floating-ui/react";
 
 // types
@@ -50,11 +51,12 @@ import { Layer, LayerProps, LayerProvider, useLayer } from "../../lib/layer";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
 import { Portal, PortalProps } from "../../lib/portal";
 import OverlayComp, { OverlayProps } from "../Overlay";
-import { useRefs } from "../../hooks";
+import { useEventCallback, useRefs } from "../../hooks";
 import { EMPTY_RECORD } from "../../lib/constants";
 import {
   AnimatableProps,
   AnimatedProps,
+  AnimatedOrNameProps,
   EMPTY_STYLES,
   getAnimation,
   getAnimationData,
@@ -62,10 +64,12 @@ import {
   getAnimationOrName,
   getAnimationStyles,
   shouldForwardProp,
+  getAnimationSafe,
 } from "../internal/animation";
 import { isRecord } from "../../lib/isRecord";
 import { onOpenChangeEvent } from "../../lib/openChangeEvent";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
+import { useEvent } from "../../hooks/use-event";
 
 export interface DialogClasses {
   /** Styles applied to the root element. */
@@ -332,22 +336,30 @@ const DialogPanel = styled(Panel, {
     ],
   })),
   getAnimation,
-) as StyledComponent<SxComponentProps & PanelProps & AnimatedProps>;
+) as StyledComponent<SxComponentProps & PanelProps & AnimatedOrNameProps>;
 
 const defaultOverlayProps = {
   visible: true,
   lockScroll: true,
-};
+} as const;;
 
 const defaultAnimate = {
   animate: true,
-  animation: "liteScaleFade",
-};
+  animation: "fadeScaleCss",
+} as const;
 
 const defaultPanelProps = {
   fill: true,
-};
+} as const as Partial<PanelProps>;
 
+const defaultDismiss = {
+  outsidePressEvent: "mousedown",
+} as const;
+
+const defaultFocusProps = {
+  modal: true
+} as const;
+const defaultBackdropProps = {} as const;
 export interface DialogProps extends SxComponentProps {
   /**
    * The id(s) of the element(s) that describe the dialog.
@@ -367,9 +379,10 @@ export interface DialogProps extends SxComponentProps {
   open?: boolean;
   onOpenChange?: handler;
   onClose?: ()=> void;
+  onPresent?: (present: boolean) => void;
   dismiss?: DismissProps;
   animate?: boolean;
-  animation?: AnimatedProps | boolean;
+  animation?: AnimatedOrNameProps | boolean;
   children: React.ReactNode;
   elevation?: number;
   /**
@@ -422,6 +435,7 @@ export interface DialogProps extends SxComponentProps {
   focusProps?: Omit<FloatingFocusManagerProps, "context">;
   root?: PortalProps['floatingPortal'];
   strategy?: 'absolute' | 'fixed';
+  middleware?: UseFloatingOptions['middleware']
 }
 
 const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
@@ -437,15 +451,13 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       "aria-modal": ariaModal = true,
       open = false,
       size,
-      dismiss = {
-        outsidePressEvent: "mousedown",
-      },
+      dismiss = defaultDismiss,
       animate: animateProps = true,
       animation: animationProps,
       className,
       reference: target,
 
-      backdropProps = {},
+      backdropProps = defaultBackdropProps,
       elevation = 24,
       children,
       fullScreen = size === "xxl",
@@ -461,20 +473,22 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       zOffset,
       overlayProps = defaultOverlayProps,
       Overlay = modal ? OverlayComp : undefined,
-      focusProps = modal ? { modal } : undefined,
+      focusProps = modal ? defaultFocusProps : undefined,
       handler,
       onOpenChange = handler,
       onClose,
       root,
       strategy,
+      onPresent,
+      middleware,
       ...rest
     } = props;
     const isFullScreen = fullScreen || size === "xxl";
     const isRec = isRecord(animationProps);
     const prefersReducedMotion = usePrefersReducedMotion();
-    const animate = isRec && animationProps.animate !== false
-      ? animationProps.animate === true || prefersReducedMotion
-      : animationProps === true;
+    const animate = isRec
+      ? animationProps.animate || (animationProps.animate !== false && prefersReducedMotion)
+      : animationProps === true || ( animationProps !== false && prefersReducedMotion);
 
     const animation = isRec
         ? animationProps
@@ -493,22 +507,27 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       scroll,
     };
 
-    const fnOnOpenChange =  onOpenChangeEvent({onOpenChange, onClose});
 
+    const fnOnOpenChange =  onOpenChangeEvent(onOpenChange, onClose);
+    const parentContext = useFloatingContext()?.context;
     //const useDismissRef = React.use
     // 5. set @floating-ui
     const { context } = useFloating({
+      rootContext: parentContext,
       open,
       onOpenChange: fnOnOpenChange,
       strategy: strategy,
+      
       elements: target
         ? {
             reference: isElement(target) ? target : target?.current,
           }
         : undefined,
+      middleware
     });
 
     const classes = useUtilityClasses(ownerState);
+    context.dataRef
 
     // 7. return
     return (
@@ -519,6 +538,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
               portal={!!portal}
               floatingPortal={root ?? (!!focusProps || modal)}
               present={present}
+              onPresent={onPresent}
               render={(contentRef: React.ForwardedRef<HTMLDivElement>) => (
                 <LayerProvider zOffset={zOffset}>
                   {(modal && Overlay && !isFullScreen) && (
@@ -560,7 +580,9 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
                         id: id,
                         fill: true,
                         ...panelProps,
-                        className: clsx(classes.panel, panelProps.className),
+                        className: panelProps.className 
+                            ? clsx(classes.panel, panelProps.className)
+                            : classes.panel,
                       }}
                       Container={Container}
                       containerProps={{
@@ -595,10 +617,16 @@ interface DialogPortalProps {
   floatingPortal?: boolean;
   present: boolean;
   render: (ref: React.ForwardedRef<HTMLDivElement>) => React.ReactNode | null;
+  onPresent?: DialogProps['onPresent']
 }
 const DialogPortal = React.forwardRef<HTMLDivElement, DialogPortalProps>(
   (props, ref) => {
-    const { present, render, portal, floatingPortal } = props;
+    const { present, render, portal, floatingPortal, onPresent: onPresentFn  } = props;
+    const onPresent = useEvent(onPresentFn);
+    
+    useEffect(() => {
+        onPresent(present)
+    }, [present])
 
     if (present) {
       let child = render(ref);
@@ -623,7 +651,7 @@ interface DialogContentProps {
   contentProps: DialogProps["panelProps"];
   Container: DialogProps["Container"];
   containerProps: any;
-  animation?: AnimatedProps;
+  animation?: AnimatedOrNameProps;
   modal?: boolean;
   uiOwnerState: any;
   present: boolean;
@@ -634,7 +662,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   (props, forwardRef) => {
     const {
       context,
-      dismiss,
+      dismiss = defaultDismiss,
       animate,
       animation: animationProps,
       children,
@@ -673,7 +701,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     const animation = React.useMemo(
       () =>
         getAnimationData(
-          { className, style, animate, animation: animationProps },
+          { 
+            className, 
+            style, 
+            animate, 
+            animation: typeof animationProps === "string" ? {animate, animation: animationProps} :  animationProps },
           open,
         ),
       [open, animationProps, className, style, animate],

@@ -30,12 +30,13 @@ export function useRefs<T=any>(
     (value: T) => {
       (combinedRef as unknown as MutableRefObject<T>).current = value;
       refs.forEach((ref) => {
-        if (ref && typeof ref === "function") ref(value);
-        if (ref && typeof ref === "object")
+        if (ref == null) return;
+        if (typeof ref === "function") ref(value);
+        if (typeof ref === "object")
           (ref as MutableRefObject<T>).current = value;
       });
     },
-    [...refs],
+    refs,
   );
   return combinedRef as unknown as MergedRef<MergedRefType<T>>;
 }

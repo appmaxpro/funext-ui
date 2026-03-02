@@ -1,29 +1,37 @@
 'use client';
 import * as React from 'react';
-import { RouteContext } from '../context';
+import { useNavContext } from '../context';
 import { getItemPath, getNavTitle, matchPath } from '../utils/navigation';
-import type { Breadcrumb } from '../utils/types';
-import { useLocation, useNavigation } from 'react-router';
+import type { Breadcrumb, Navigation, NavItem, OutletRoute } from '../utils/types';
+import { useLocation, matchPath as routeMatchPath, matchRoutes, useNavigate, useNavigation } from 'react-router';
 
 export interface ActivePage {
   title: string;
   path: string;
   breadcrumbs: Breadcrumb[];
+  navItem: OutletRoute;
+  root: OutletRoute;
+  state?: any;
 }
 
 export function useActivePage(): ActivePage | null {
-  const navigationContext = React.useContext(RouteContext);
+  const navigation = useNavContext();
   const location = useLocation();
   //const routerContext = React.useContext(RouterContext);
   const pathname = location?.pathname ?? '/';
-  const activeItem = matchPath(navigationContext, pathname);
+  //const navigator = useNavigation
 
-  const rootItem = matchPath(navigationContext, '/');
+
+  const activeItem = matchPath(navigation, pathname);
+
+  const rootItem = matchPath(navigation, '/');
 
   return React.useMemo(() => {
     if (!activeItem) {
-      return null;
+      console.warn("No active page for path:", pathname)
+      return null as any;
     }
+    
 
     const breadcrumbs: Breadcrumb[] = [];
 
@@ -39,11 +47,11 @@ export function useActivePage(): ActivePage | null {
     for (const segment of segments) {
       const path = `${prefix}/${segment}`;
       prefix = path;
-      const item = matchPath(navigationContext, path);
+      const item = matchPath(navigation, path);
       if (!item) {
         continue;
       }
-      const itemPath = getItemPath(navigationContext, item);
+      const itemPath = getItemPath(navigation, item);
       const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
       if (lastCrumb?.path !== itemPath) {
         breadcrumbs.push({
@@ -55,8 +63,10 @@ export function useActivePage(): ActivePage | null {
 
     return {
       title: getNavTitle(activeItem),
-      path: getItemPath(navigationContext, activeItem),
+      path: getItemPath(navigation, activeItem),
       breadcrumbs,
+      navItem: activeItem,
+      root: rootItem
     };
-  }, [activeItem, rootItem, pathname, navigationContext]);
+  }, [activeItem, rootItem, pathname, navigation]);
 }

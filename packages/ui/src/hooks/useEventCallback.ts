@@ -1,5 +1,6 @@
 import * as React from 'react';
 import useEnhancedEffect from './useEnhancedEffect';
+import { noop } from '../utils';
 
 /**
  * Inspired by https://github.com/facebook/react/issues/14099#issuecomment-440013892
@@ -11,16 +12,16 @@ function useEventCallback<Fn extends (...args: any[]) => any = (...args: unknown
 function useEventCallback<Args extends unknown[], Return>(
   fn: (...args: Args) => Return,
 ): (...args: Args) => Return;
+
 function useEventCallback<Args extends unknown[], Return>(
-  fn: (...args: Args) => Return,
+  fn: ((...args: Args) => Return) = (noop as (...args: Args) => Return),
 ): (...args: Args) => Return {
-  const ref = React.useRef(fn);
+  const ref = React.useRef(fn ?? noop);
   useEnhancedEffect(() => {
-    ref.current = fn;
+    ref.current = fn ?? noop;
   });
   return React.useRef((...args: Args) =>
-    // @ts-expect-error no thing hide `this`
-    (0, ref.current!)(...args),
+    ref.current(...args),
   ).current;
 }
 

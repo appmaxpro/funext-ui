@@ -3,12 +3,12 @@ import React from "react";
 import { isElementHidden } from "../List/utils";
 import { isRecord } from "../../lib/isRecord";
 
-let _validTypes: Array<any> = [];
+let _validTypes: Set<any> = new Set();
 export const setValidItemTypes = (...types: any) => {
-  _validTypes = [..._validTypes, ...types];
+  types.forEach((type:any) => _validTypes.add(type));
 };
 
-export const isValidItemType = (comp: any) => _validTypes.includes(comp.type);
+export const isValidItemType = (comp: any) => comp?.type && _validTypes.has(comp.type);
 
 export const isMenuItemValid = (comp: any) => {
   const valid =

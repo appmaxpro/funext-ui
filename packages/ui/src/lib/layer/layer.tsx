@@ -3,6 +3,7 @@ import {EMPTY_RECORD} from '../constants'
 import {LayerProvider} from './layerProvider'
 import {useLayer} from './useLayer'
 import { styled, SxComponentProps } from '../../styles'
+import { useEvent } from '../../hooks/use-event'
 
 /**
  * @public
@@ -30,7 +31,9 @@ const LayerChildren = forwardRef(function LayerChildren(
   const {zIndex, isTopLayer} = useLayer()
   const lastFocusedRef = useRef<HTMLElement | null>(null)
   const ref = useRef<HTMLDivElement | null>(null)
-  const isTopLayerRef = useRef<boolean>(isTopLayer)
+  //const isTopLayerRef = useRef<boolean>(isTopLayer)
+
+  const onActivateCB = useEvent(onActivate)
 
   useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(forwardedRef, () => ref.current)
 
@@ -38,14 +41,14 @@ const LayerChildren = forwardRef(function LayerChildren(
   // the callback in that case. We use a ref to track the previous value of isTopLayer to
   // determine if the layer has become the top layer since the last render.
   useEffect(() => {
-    const becameTopLayer = isTopLayerRef.current !== isTopLayer && isTopLayer
+    //const becameTopLayer = isTopLayerRef.current !== isTopLayer && isTopLayer
 
-    if (becameTopLayer) {
-      onActivate?.({activeElement: lastFocusedRef.current})
+    if (isTopLayer) {
+      onActivateCB({activeElement: lastFocusedRef.current})
     }
 
-    isTopLayerRef.current = isTopLayer
-  }, [isTopLayer, onActivate])
+    //isTopLayerRef.current = isTopLayer
+  }, [isTopLayer])
 
   const handleFocus = useCallback(
     (event: FocusEvent<HTMLDivElement, Element>) => {
@@ -69,6 +72,7 @@ const LayerChildren = forwardRef(function LayerChildren(
     <StyledLayer
       {...restProps}
       data-ui="Layer"
+
       onFocus={handleFocus}
       ref={ref}
       style={{...style, zIndex}}
@@ -95,4 +99,7 @@ export const Layer = forwardRef(function Layer(
     </LayerProvider>
   )
 })
+
+Object.assign(Layer, {LayerChildren})
+
 Layer.displayName = 'ForwardRef(Layer)'

@@ -1,7 +1,7 @@
 import React from "react";
 // utils
 import classnames from "classnames";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 import { twMerge } from "tailwind-merge";
 
 // context
@@ -38,7 +38,7 @@ export const AccordionBody = React.forwardRef<HTMLDivElement, AccordionBodyProps
 
     const bodyClasses = twMerge(
           clsx(
-            objectsToString(base.body),
+            values(base.body),
           ),
           className,
         );

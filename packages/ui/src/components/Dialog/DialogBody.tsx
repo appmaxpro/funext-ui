@@ -3,7 +3,7 @@ import React from "react";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";

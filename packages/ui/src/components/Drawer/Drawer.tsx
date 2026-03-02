@@ -247,7 +247,7 @@ const DrawerPanel = styled(Panel, {
   },
 })(
   memoTheme(({ theme }) => ({
-    overflowY: "auto",
+    overflow: "hidden auto",
     display: "flex",
     flexDirection: "column",
     //height: "100%",
@@ -425,6 +425,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       style,
       root,
       container = isElement(root) ? root : root?.current,
+      onClose,
       ...other
     } = props;
 
@@ -437,20 +438,8 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
       mounted.current = true;
     }, []);
 
-    const [openState, setOpenState] = React.useState(false);
 
     const ownerDirection = getDirection(direction, isRtl);
-
-    React.useEffect(() => {
-      if (open) {
-        const tm = setTimeout(() => setOpenState(true), 2000);
-        return () => {
-          clearTimeout(tm);
-        };
-      } else {
-        setOpenState(false);
-      }
-    }, [open, setOpenState]);
 
     //console.log("Drawer:render");
     const ownerState = {
@@ -522,11 +511,11 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
         appear={mounted.current}
         //temporary={variant === "temporary"}
         onEntered={() => {
-          setOpenState(true);
+          //setOpenState(true);
           //console.log("Drawer:OpenState");
         }}
         onExited={() => {
-          setOpenState(false);
+          //setOpenState(false);
           //console.log("Drawer:CloseState");
         }}
         container={
@@ -550,9 +539,11 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     // variant === temporary
     return (
       <DrawerRoot
+        
         Container={DrawerContainer}
         containerProps={{ownerState , style}}
         PanelComponent={DrawerPanel}
+        onClose={onClose}
         panelProps={{
           square: true,
           fill:true,

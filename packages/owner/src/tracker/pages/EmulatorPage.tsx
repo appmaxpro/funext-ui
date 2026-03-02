@@ -109,7 +109,7 @@ const EmulatorPage = () => {
         params.append("id", devices[deviceId].uniqueId);
         params.append("lat", latitude);
         params.append("lon", longitude);
-        response = await fetch(window.location.origin, {
+        response = await fetch(`${window.location.origin}/tracker`, {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",

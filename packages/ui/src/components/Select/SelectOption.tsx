@@ -3,7 +3,7 @@ import React from "react";
 // utils
 import classnames from "classnames";
 import { twMerge } from "tailwind-merge";
-import objectsToString from "../../utils/objectsToString";
+import values from "../../utils/values";
 
 // context
 import { useTailwindTheme } from "../../theme";
@@ -61,9 +61,9 @@ export const SelectOption = ({
   }
 
   // 3. set styles
-  const optionBaseClasses = objectsToString(base.option.initial);
-  const optionActiveClasses = objectsToString(base.option.active);
-  const optionDisabledClasses = objectsToString(base.option.disabled);
+  const optionBaseClasses = values(base.option.initial);
+  const optionActiveClasses = values(base.option.active);
+  const optionDisabledClasses = values(base.option.disabled);
   const classes = twMerge(
     classnames(optionBaseClasses, {
       [optionActiveClasses]: selectedIndex === index,

@@ -8,8 +8,10 @@ type Props = {
   el: Node | undefined;
 };
 
+
+
 const Child: React.FC<Props> = ({ el }) => 
-  !el || el?.nodeType === Node.TEXT_NODE
+  !el || (el.nodeType === Node.TEXT_NODE || el.nodeType === Node.COMMENT_NODE)
   ? el?.textContent?.trim()
   : <ChildEl el={el as HTMLElement}/>
 
@@ -19,6 +21,7 @@ const ChildEl: React.FC<{el: HTMLElement}> = ({ el }) => {
     if (!ref.current) {
       return;
     }
+    
     ref.current.appendChild(el);
   }, [ref, el]);
 

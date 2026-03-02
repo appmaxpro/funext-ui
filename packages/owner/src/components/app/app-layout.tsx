@@ -34,12 +34,16 @@ import {
 import { AppBar, Toolbar } from "../other/toolbar";
 import useScrollTrigger from "../../hooks/use-scroll-trigger";
 import { HideOnScroll } from "~/components/other/hide-on-scroll";
-import { RouteContext } from "~/context";
+import { LayoutContext } from "~/context";
 import { NavigationSidebar } from "~/components/sidebar/navigation-sidebar";
-import type { OutletRoute, Routes } from "~/utils/types";
+import type { OutletRoute, Navigation, NavRoute } from "~/utils/types";
 import { Account, type AccountProps } from "~/components/account/account";
 import { AppTitle, type AppTitleProps } from "~/components/app/app-title";
 import { ToolbarActions } from "./toolbar-actions";
+import { Dimensions } from "~/utils/constant";
+import { isOutletRoute } from "~/utils/navigation";
+import { MenuIon } from "./menu-icon";
+import { AppBottomNavigation, MemoAppBottomNavigation } from "./app-bottom-navigation";
 
 export interface SidebarFooterProps {
   mini: boolean;
@@ -95,12 +99,12 @@ export interface AppLayoutProps {
    * @default []
    * @deprecated Set the navigation in the [AppProvider](https://mui.com/toolpad/core/react-app-provider/#navigation) instead.
    */
-  routes?: Routes;
+  routes?: Navigation;
   /**
    * Whether the sidebar should not be collapsible to a mini variant in desktop and tablet viewports.
-   * @default false
+   * @default true
    */
-  disableCollapsibleSidebar?: boolean;
+  miniSidebar?: boolean;
   /**
    * Whether the sidebar should start collapsed in desktop size screens.
    * @default false
@@ -144,8 +148,27 @@ export interface AppLayoutProps {
    */
   sx?: SxProps;
 
-  hideOnScrollTop?: boolean;
-  hideOnScrollBottom?: boolean;
+  hideTopOnScroll?: boolean;
+  hideBottomOnScroll?: boolean;
+  showBackIcon?: boolean;
+}
+
+function filterNavigation(navigation?: Navigation) {
+  if (navigation) {
+    let items = navigation.filter(
+      (item) =>
+        isOutletRoute(item) &&
+        ((!item.type && item.showNav !== false) ||
+          (item.type && item.type === "sidebar")),
+    );
+
+    if (items.length) {
+      if (items.length === 1) {
+        return filterNavigation((items[0] as NavRoute).children);
+      }
+      return items;
+    }
+  }
 }
 
 /**
@@ -160,37 +183,41 @@ export interface AppLayoutProps {
  */
 function AppLayout(props: AppLayoutProps) {
   const {
-    children,
-    disableCollapsibleSidebar = false,
-    defaultSidebarCollapsed = false,
-    hideNavigation = false,
-    sidebarExpandedWidth = 320,
-    renderPageItem,
-    slots,
-    slotProps,
-    sx,
-    hideOnScrollTop,
-    hideOnScrollBottom,
-    routes,
-  } = props;
-
-  const theme = useTheme();
-
-  const navigationContext = React.useContext(RouteContext);
-  const navigation = routes ?? navigationContext;
-  const appWindowContext: any = null;
-
-  const {
     mdUp,
     mdDown,
     smUp: smUp,
     smDown,
     xsDown,
-
     xlUp,
     current,
     width,
   } = useScreenSize();
+
+  const {
+    children,
+    miniSidebar = true,
+    defaultSidebarCollapsed = !mdDown,
+    hideNavigation: hideNavigationProps = false,
+    sidebarExpandedWidth = 320,
+    renderPageItem,
+    slots,
+    slotProps,
+    sx,
+    hideTopOnScroll,
+    hideBottomOnScroll,
+    showBackIcon = true,
+    routes,
+  } = props;
+
+  const theme = useTheme();
+
+  const navigationContext = useNavContext;
+  const navigation = React.useMemo(
+    () => filterNavigation(routes ?? navigationContext),
+    [routes],
+  );
+
+  const hideNavigation = hideNavigationProps || !navigation;
 
   const [isNavigationExpanded, setIsNavigationExpanded] = React.useState(
     mdDown ? false : !defaultSidebarCollapsed,
@@ -201,6 +228,12 @@ function AppLayout(props: AppLayoutProps) {
 
   const [isNavigationFullyCollapsed, setIsNavigationFullyCollapsed] =
     React.useState(!isNavigationExpanded);
+
+  React.useEffect(() => {
+    if (mdDown) {
+      setIsNavigationExpanded(false);
+    }
+  }, [mdDown, setIsNavigationExpanded]);
 
   React.useEffect(() => {
     if (isNavigationExpanded) {
@@ -240,8 +273,8 @@ function AppLayout(props: AppLayoutProps) {
   );
 
   const toggleNavigationExpanded = React.useCallback(() => {
-    setIsNavigationExpanded(!isNavigationExpanded);
-  }, [isNavigationExpanded, setIsNavigationExpanded]);
+    setIsNavigationExpanded((state) => !state);
+  }, [setIsNavigationExpanded]);
 
   const handleNavigationLinkClick = React.useCallback(() => {
     selectedItemIdRef.current = "";
@@ -256,48 +289,29 @@ function AppLayout(props: AppLayoutProps) {
     }
   }, [navigationContext]);
 
-  const isMini = !disableCollapsibleSidebar && !isNavigationExpanded;
+  const isMini = miniSidebar && !isNavigationExpanded;
 
   const contentRef = React.useRef<Node | null>(null);
-
-  const getMenuIcon = React.useCallback(
-    (isExpanded: boolean) => {
-      const expandMenuActionText = "Expand";
-      const collapseMenuActionText = "Collapse";
-
-      return (
-        <Tooltip
-          content={`${isExpanded ? collapseMenuActionText : expandMenuActionText} menu`}
-          hoverProps={{
-            delay: {
-              open: 1000,
-              close: 0,
-            },
-          }}
-        >
-          <IconButton
-            aria-label={`${isExpanded ? collapseMenuActionText : expandMenuActionText} navigation menu`}
-            onClick={toggleNavigationExpanded}
-          >
-            {isExpanded ? <MenuOpenIcon /> : <MenuIcon />}
-          </IconButton>
-        </Tooltip>
-      );
+  const [hasScrollerRef, setHasScrollerRef] = React.useState(false);
+  const setScrollerRef = React.useCallback(
+    (ref: HTMLElement | null) => {
+      contentRef.current = ref;
+      setHasScrollerRef(!!ref);
     },
-    [toggleNavigationExpanded],
+    [setHasScrollerRef],
   );
 
-  const hasDrawerTransitions = smUp && (disableCollapsibleSidebar || !mdDown);
+  const hasDrawerTransitions = smUp && (!miniSidebar || !mdDown);
 
-  const ToolbarActionsSlot = slots?.toolbarActions ?? ToolbarActions;
+  const ToolbarActionsSlot = slots?.toolbarActions //?? ToolbarActions;
   const ToolbarAccountSlot = slots?.toolbarAccount ?? Account;
   const SidebarFooterSlot = slots?.sidebarFooter ?? null;
-  const BottomNavigationSlot = slots?.bottomNavigation ?? null;
+  const BottomNavigationSlot = slots?.bottomNavigation ?? smDown ? MemoAppBottomNavigation : null;
 
   const getDrawerContent = React.useCallback(
     (isMini: boolean, viewport: "phone" | "tablet" | "desktop") => (
       <React.Fragment>
-        <Box height="100px" />
+        <Toolbar />
         <Box
           component="nav"
           aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
@@ -306,15 +320,15 @@ function AppLayout(props: AppLayoutProps) {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            overflow: "auto",
-            pt: /*navigationContext[0]?.kind === 'header' &&*/ !isMini ? 0 : 2,
+            overflow: "hidden auto",
+            pt: navigationContext[0]?.kind === "header" && !isMini ? 0 : 2,
             ...(hasDrawerTransitions
               ? getDrawerSxTransitionMixin(isNavigationFullyExpanded, "padding")
               : {}),
           }}
         >
           <NavigationSidebar
-            subNavigation={navigation}
+            subNavigation={navigation!}
             onLinkClick={handleNavigationLinkClick}
             isMini={isMini}
             isFullyExpanded={isNavigationFullyExpanded}
@@ -334,14 +348,19 @@ function AppLayout(props: AppLayoutProps) {
       handleNavigationLinkClick,
       hasDrawerTransitions,
       isNavigationFullyExpanded,
-      //navigationContext,
+      isNavigationFullyCollapsed,
+      sidebarExpandedWidth,
+      navigationContext,
+      renderPageItem,
       slotProps?.sidebarFooter,
     ],
   );
 
   const getDrawerSharedSx = React.useCallback(
     (isMini: boolean, isTemporary: boolean) => {
-      const drawerWidth = isMini ? 64 : sidebarExpandedWidth;
+      const drawerWidth = isMini
+        ? Dimensions.sidebarMiniWidth
+        : sidebarExpandedWidth;
 
       return {
         displayPrint: "none",
@@ -363,169 +382,166 @@ function AppLayout(props: AppLayoutProps) {
   const layoutRef = React.useRef<Element | null>(null);
 
   return (
-    <Box
-      ref={layoutRef}
-      sx={{
-        position: "relative",
-        display: "flex",
-        overflow: "hidden",
-        height: "100vh",
-        width: "100%",
-        flexDirection: "column",
-        ...sx,
-      }}
-      data-screen-current={current}
-      data-screen-width={`${width}`}
-      data-xs-down={`${xsDown}`}
-      data-sm-down={`${smDown}`}
-      data-md-down={`${mdDown}`}
+    <LayoutContext.Provider
+      value={React.useMemo(() => ({ setScrollerRef }), [setScrollerRef])}
     >
-      <HideOnScroll
-        target={contentRef.current}
-        direction="down"
-        enabled={hideOnScrollTop}
-      >
-        <AppBar className="item-enter" color="primary" position="fixed">
-          <Toolbar sx={{ mx: { xs: -0.75, sm: -1.5 } }}>
-            <Box
-              display="flex"
-              justify="space-between"
-              items="center"
-              sx={{
-                flexWrap: "wrap",
-                width: "100%",
-              }}
-            >
-              <Box display="flex">
-                {!hideNavigation ? (
-                  <Box sx={{ mr: 1 }}>{getMenuIcon(isNavigationExpanded)}</Box>
-                ) : null}
-                {slots?.appTitle ? (
-                  <slots.appTitle {...slotProps?.appTitle} />
-                ) : (
-                  /* Hierarchy of application of `branding`
-                   * 1. Branding prop passed in the `slotProps.appTitle`
-                   * 2. Branding prop passed to the `AppLayout`
-                   * 3. Branding prop passed to the `AppProvider`
-                   */
-                  <AppTitle {...slotProps?.appTitle} />
-                )}
-              </Box>
-              <Flex
-                direction="row"
-                alignItems="center"
-                spacing={1}
-                sx={{ marginLeft: "auto" }}
-              >
-                <ToolbarActionsSlot {...slotProps?.toolbarActions} />
-                <ToolbarAccountSlot {...slotProps?.toolbarAccount} />
-              </Flex>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      </HideOnScroll>
-
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: 0,
-          width: "100%",
-          pb: 7,
-          overflowY: "auto",
-        }}
-        ref={contentRef}
+        ref={layoutRef}
+        position="relative"
+        display="flex"
+        overflow="hidden"
+        height="100vh"
+        width="100%"
+        flexDirection="column"
+        sx={sx}
+        data-screen-current={current}
+        data-screen-width={`${width}`}
+        data-xs-down={`${xsDown}`}
+        data-sm-down={`${smDown}`}
+        data-md-down={`${mdDown}`}
       >
-        <Toolbar />
-        {!hideNavigation ? (
-          <React.Fragment>
-            {smDown || (!mdUp && mdDown && disableCollapsibleSidebar) ? (
+        <Box>
+          <HideOnScroll
+            target={contentRef.current}
+            direction="down"
+            enabled={hideTopOnScroll}
+          >
+            <AppBar className="item-enter" color="primary" position="fixed">
+              <Toolbar sx={{ mx: { xs: -0.75, sm: -1.5 } }}>
+                <Flex
+                  justify="space-between"
+                  items="center"
+                  flexWrap="nowrap"
+                  width="100%"
+                >
+                  <Flex>
+                    <MenuIon
+                      hideNavigation={hideNavigation}
+                      showBack={!!showBackIcon}
+                      isExpanded={isNavigationExpanded}
+                      toggleNavigationExpanded={toggleNavigationExpanded}
+                      navigation={navigation}
+                    />
+
+                    {slots?.appTitle ? (
+                      <slots.appTitle {...slotProps?.appTitle} />
+                    ) : (
+                      /* Hierarchy of application of `branding`
+                       * 1. Branding prop passed in the `slotProps.appTitle`
+                       * 2. Branding prop passed to the `AppLayout`
+                       * 3. Branding prop passed to the `AppProvider`
+                       */
+                      <AppTitle {...slotProps?.appTitle} />
+                    )}
+                  </Flex>
+                  <Flex
+                    items="center"
+                    ml="auto"
+                  >
+                    {ToolbarActionsSlot && <ToolbarActionsSlot {...slotProps?.toolbarActions} />}
+                    {ToolbarAccountSlot && <ToolbarAccountSlot {...slotProps?.toolbarAccount} />}
+                  </Flex>
+                </Flex>
+              </Toolbar>
+            </AppBar>
+          </HideOnScroll>
+        </Box>
+
+        <Flex
+          direction="column"
+          flex="1"
+          justify="center"
+          minWidth={0}
+          width="100%"
+          overflow="hidden"
+        >
+          {!hideNavigation ? (
+            <React.Fragment>
+              {smDown || (!mdUp && mdDown && !miniSidebar) ? (
+                <Drawer
+                  container={layoutRef.current as any}
+                  variant="temporary"
+                  open={isNavigationExpanded}
+                  onClose={handleSetNavigationExpanded(false)}
+                  keepMounted={true}
+                  panelProps={{
+                    "data-panel": "Temporary",
+                    fill: true,
+                    className: drawerClasses.panel,
+                  }}
+                  strategy="fixed"
+                  sx={{
+                    ...getDrawerSharedSx(false, true),
+                  }}
+                >
+                  {getDrawerContent(false, "phone")}
+                </Drawer>
+              ) : null}
+            </React.Fragment>
+          ) : null}
+          <Flex
+            width="100%"
+            flex="1"
+            items="stretch"
+            height="max-content"
+            overflow="hidden"
+          >
+            {smUp && !hideNavigation && (
               <Drawer
-                container={layoutRef.current as any}
-                variant="temporary"
-                open={isNavigationExpanded}
-                onClose={handleSetNavigationExpanded(false)}
-                keepMounted={true}
+                variant="permanent"
+                sx={{
+                  ...getDrawerSharedSx(isMini, false),
+                }}
                 panelProps={{
-                  "data-panel": "Temporary",
+                  "data-panel": "Permanent",
                   fill: true,
                   className: drawerClasses.panel,
                 }}
-                backdrop={smDown ? {} : undefined}
+              >
+                {getDrawerContent(isMini, mdDown ? "tablet" : "desktop")}
+              </Drawer>
+            )}
+              <Flex
+                component="main"
+                direction="column"
+                //padding={4}
+                flex="1"
+                minWidth={0}
+                overflow={hasScrollerRef ? "hidden" : "hidden auto"}
+                ref={!hasScrollerRef ? contentRef : undefined}
+                height="100vh"
                 sx={{
-                  ...getDrawerSharedSx(false, true),
+                  perspective: 1200
                 }}
               >
-                {getDrawerContent(false, "phone")}
-              </Drawer>
-            ) : null}
-          </React.Fragment>
-        ) : null}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            flex: 1,
-
-            width: "100%",
-            alignItems: "stretch",
-            height: "max-content",
-          }}
-        >
-          {smUp && (
-            <Drawer
-              variant="permanent"
-              sx={{
-                ...getDrawerSharedSx(isMini, false),
-              }}
-              panelProps={{
-                "data-panel": "Permanent",
-                fill: true,
-                className: drawerClasses.panel,
-              }}
-            >
-              {getDrawerContent(isMini, mdDown ? "tablet" : "desktop")}
-            </Drawer>
-          )}
-          <Box
-            component="main"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              minWidth: 0,
-              overflow: "auto",
-              justifyContent: "center",
-              padding: 4,
-            }}
-          >
-            {children}
-          </Box>
-        </Box>
-        {/*
+                <Toolbar />
+                {children}
+              </Flex>
+          </Flex>
+          {/*
         <BottomNavigation sx={{ visibility: "hidden" }}>
           <BottomNavigationAction icon={<HomeIcon />} label="Home" />
         </BottomNavigation>
         */}
-      </Box>
-      {BottomNavigationSlot && (
-        <HideOnScroll
-          target={contentRef.current}
-          direction="up"
-          enabled={hideOnScrollBottom}
-        >
-          <Panel
-            square
-            elevation={3}
-            fill
-            sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
+        </Flex>
+        {BottomNavigationSlot && (
+          <HideOnScroll
+            target={contentRef.current}
+            direction="up"
+            enabled={hideBottomOnScroll}
           >
-            <BottomNavigationSlot />
-          </Panel>
-        </HideOnScroll>
-      )}
-    </Box>
+            <Panel
+              square
+              elevation={3}
+              fill
+              sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
+            >
+              <BottomNavigationSlot />
+            </Panel>
+          </HideOnScroll>
+        )}
+      </Box>
+    </LayoutContext.Provider>
   );
 }
 

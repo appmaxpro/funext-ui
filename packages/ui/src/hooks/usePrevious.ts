@@ -7,9 +7,6 @@ export default function usePrevious<T>(value: T) {
   // persisted correctly between renders.
   return React.useMemo(() => {
     if (ref.current.value !== value) {
-
-
-      
       ref.current.previous = ref.current.value;
       ref.current.value = value;
     }
