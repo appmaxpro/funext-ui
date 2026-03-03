@@ -1,6 +1,4 @@
 import React from "react";
-import "./styles.css";
-import "react-tabs-scrollable/dist/rts.css";
 // you must use this css file in order to apply the styles and put it in the bottom of your imports
 //import "./mui-tabs.css";
 import { styled, ButtonBase, type SxComponentProps, type ButtonBaseProps } from "@funext/ui";

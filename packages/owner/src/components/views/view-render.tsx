@@ -47,6 +47,17 @@ function BlockWrap({
   return <CP {...props()} />;
 }
 
+const FormAndItems = {
+  ...Form,
+  ...Object.keys(Items)
+    .filter((k) => !(k in Form))
+    .reduce(
+      (prev, key) =>
+        (prev[key] = Items[key as keyof typeof Items] || 1) && prev,
+      {} as any,
+    ),
+};
+
 registerBlockHandlers<SchemaBlock>("form", {
   id: "form",
   scope: "form",
@@ -54,12 +65,6 @@ registerBlockHandlers<SchemaBlock>("form", {
     if (block.sType === "form") {
       block.Comp = ViewComponent;
     }
-  },
-  map: function (
-    s: Schema,
-    scope: { root?: ResourceView; scope: string; ctx: any },
-  ) {
-    return undefined;
   },
   render: function ({
     block,
@@ -79,12 +84,15 @@ registerBlockHandlers<SchemaBlock>("form", {
       case "panel":
         return <Form.Panel {...props(block)} item={block} />;
     }
-    const CP = ListAndItems[block.type!] ?? ListAndItems[block.sType!];
+    const CP = FormAndItems[block.type!] ?? FormAndItems[block.sType!];
     if (CP) return <BlockWrap block={block} CP={CP} props={props} />;
     return render(block);
   },
   canRender: function (block: Partial<SchemaBlock>, s: Schema): boolean {
     return block.type! in Form || block.type! in Items;
+  },
+  doScope: function (props, parent) {
+    return { ...props, C: FormAndItems } as any;
   },
 });
 
@@ -123,7 +131,7 @@ registerBlockHandlers<SchemaBlock>("list", {
     render: (block: SchemaBlock) => React.ReactNode;
   }) {
     if (block.type === "List") return <List.Root {...props(block)} />;
-    if (block.type === "Field") return <CBField field={block as FieldBlock} />;
+    if (block.type === "Field") return <List.Field {...props(block)} field={block as FieldBlock} />;
 
     const CP = ListAndItems[block.type!] ?? ListAndItems[block.sType!];
     if (CP) return <BlockWrap block={block} CP={CP} props={props} />;
@@ -137,6 +145,6 @@ registerBlockHandlers<SchemaBlock>("list", {
         : false;
   },
   doScope: function (props, parent) {
-    return { ...props, Comps: ListAndItems } as any;
+    return { ...props, C: ListAndItems } as any;
   },
 });

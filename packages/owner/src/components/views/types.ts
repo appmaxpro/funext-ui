@@ -1,6 +1,7 @@
 import type {
   DataRecord,
   DataStore,
+  FieldBlock,
   FilterViewBlock,
   Resource,
   ResourceView,
@@ -298,8 +299,15 @@ export interface WidgetBlockProps extends SxComponentProps {
 
 }
 
+export interface FieldBlockProps extends SxComponentProps {
+  field: FieldBlock;
+
+}
+
 
 export interface WidgetBlockPropsWithRef extends WidgetBlockProps {
   ref?: React.Ref<React.ElementType>;
 
 }
+
+export type IndexRecord = DataRecord | number

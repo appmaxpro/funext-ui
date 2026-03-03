@@ -69,7 +69,7 @@ export const RawVirtualList: React.FC<Omit<VirtualListProps, 'itemProps'>> = (pr
     useCallback(() => {
       if (
         state !== "loading" &&
-        state !== "hasError" &&
+        state !== "error" &&
         items.length === model.to
       ) {
         retryFn();
@@ -82,18 +82,18 @@ export const RawVirtualList: React.FC<Omit<VirtualListProps, 'itemProps'>> = (pr
         {...others}
         itemData={items}
         footer={
-          state === "loading" || state === "hasError" ? (
+          state === "loading" || state === "error" ? (
             <div ref={(el) => model.setStickyFooter(el)}>Loading ...</div>
           ) : null
         }
         component={ListComponent}
         model={model}
       >
-        {ListItem}
+        {Item}
       </List>
   );
 };
 
 export type { ListItemProps as VirtualListItemProps };
 export { createListItemRef as createVirtualListItemRef };
-export default VirtualList;
+export default RawVirtualList;

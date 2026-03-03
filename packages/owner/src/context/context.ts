@@ -23,7 +23,7 @@ import type {
   WidgetBlock
 } from "~/utils/block-types";
 import type { ListModifiers, ListParams } from "~/components/views/list-types";
-import type { Tab } from "~/components/views/types";
+import type { IndexRecord, Tab } from "~/components/views/types";
 import type { IWidgetState } from "~/components/views/form";
 
 //@ts-ignore
@@ -134,13 +134,15 @@ export const useEvalDataContext = () => {
 };
 
 export type ListViewValue = {
-  willRender: (record: DataRecord, resetContext?: boolean) => DataContext;
-  showDetail: (record: DataRecord | Identifier, option?: {}) => Promise<void>;
+  getContext: (record: IndexRecord) => DataContext;
+  showDetail?: (record: DataRecord | Identifier, option?: {}) => Promise<void>;
 };
 
 export const ListViewContext = React.createContext<ListViewValue>(
   undefined as any,
 );
+
+export const useListViewContext = () => React.useContext(ListViewContext);
 
 export type ViewSearchState = {
   search: AdvancedSearchState;

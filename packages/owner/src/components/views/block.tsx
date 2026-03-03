@@ -1,26 +1,30 @@
 import KeyboardArrowDown from "@funext/icons/KeyboardArrowDown";
 import {
-  Card, Collapse,
+  Card,
+  Collapse,
   Flex,
   Grid,
   IconButton,
   Panel,
   Text,
-  useEvent
+  useEvent,
 } from "@funext/ui";
 import { isPlainObject } from "lodash";
 import * as React from "react";
 import { useResourceContext, useViewBlockContext } from "~/context";
 import {
   EMPTY_ARRAY,
-  EMPTY_RECORD, type SxProps
+  EMPTY_RECORD,
+  isField,
+  type Schema,
+  type SxProps,
 } from "~/utils";
 import { createEvalContext } from "~/utils/eval-context";
 import {
   type Block,
   type BlockCardProps,
   type BlockProps,
-  type Props
+  type Props,
 } from "../../utils/block-types";
 import { evalFnProps, getHandlerRender } from "./block-handler";
 
@@ -48,10 +52,23 @@ type BlockParams = {
   key?: any;
   evalSlots?: boolean;
   render?: boolean;
+  ref?: any;
 };
 
 function evalSlots(block: Block, params: BlockParams) {
   let props = evalFnProps(block.props, params.ctx);
+  /*
+  if ("schema" in block && isField(block.schema! as Schema)) {
+    props = props ?? {};
+    props.field = block;
+    
+    if (isField(block.schema! as Schema)) {
+      props.field = block;
+    } else {
+      props.block = block;
+    }
+  }*/
+
   if (block.slots && params.evalSlots !== false) {
     props = props || {};
     Object.entries(block.slots).forEach(
@@ -157,8 +174,6 @@ function evalProps(
   return children ? { ...inProps, children } : inProps;
 }
 
-
-
 function renderBlock(
   block: Block,
   params: BlockParams,
@@ -166,6 +181,11 @@ function renderBlock(
 ): React.ReactNode {
   if (!block || !isPlainObject(block)) {
     return block as React.ReactNode;
+  }
+  if (params.ref) {
+    ref ??= params.ref;
+    params = { ...params };
+    delete params.ref;
   }
 
   if (block.render) {
@@ -176,26 +196,32 @@ function renderBlock(
         evalProps(
           options?.block ?? block,
           options ? { ...params, ...options } : params,
-          ref,
+          (options?.ref ?? (options?.block ?? block) === block)
+            ? ref
+            : undefined,
         ),
       render: (out, options) =>
         out === block
-          ? renderDefault(out ?? block, params, out === block ? ref : undefined)
+          ? renderDefault(out ?? block, params, ref)
           : renderBlock(block, options ? { ...params, ...options } : params),
     });
   }
 
   const handler = getHandlerRender(block);
   if (handler) {
-    return handler.render({
-      block,
-      ctx: params.ctx,
-      props: (out) => evalProps(out ?? block, params),
-      render: (out) =>
-        out === block
-          ? renderDefault(out ?? block, params, out === block ? ref : undefined)
-          : renderBlock(out ?? block, params),
-    });
+    try {
+      return handler.render({
+        block,
+        ctx: params.ctx,
+        props: (out) => evalProps(out ?? block, params, ref),
+        render: (out) =>
+          out === block
+            ? renderDefault(out ?? block, params, ref)
+            : renderBlock(out ?? block, params),
+      });
+    } finally {
+      ref = undefined;
+    }
   }
 
   //const { tag = "other", type, ...rest } = block;
@@ -250,9 +276,8 @@ function renderDefault(
   if (React.isValidElement(block)) {
     return block;
   }
-  
 
-  return params.factory.render(tag, props)
+  return params.factory.render(tag, props);
 }
 
 const Block = ({

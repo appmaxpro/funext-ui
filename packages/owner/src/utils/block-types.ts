@@ -72,6 +72,7 @@ export interface BlockRenderProps {
     ctx?: object;
     block?: Block;
     evalSlots?: boolean;
+    ref?: any;
   }) => any;
 }
 

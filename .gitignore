@@ -8,6 +8,10 @@ coverage
 build
 dist
 storybook-static
+packages/icons/material-icons
+packages/icons/lib
+packages/icons/legacy
+packages/icons/build
 
 # Eclispe
 bin

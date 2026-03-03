@@ -389,7 +389,7 @@ export type AdvancedSearchState = {
 };
 
 
-export function isField(widget: Widget): widget is Field {
+export function isField(widget: Widget|Schema): widget is Field {
   return widget.type === "field" && !!widget.name;
 }
 

@@ -3,7 +3,7 @@ import React from "react";
 import { Tabs as ScrollableTabs } from "react-tabs-scrollable";
 import "react-tabs-scrollable/dist/rts.css";
 // you must use this css file in order to apply the styles and put it in the bottom of your imports
-import "./styles.css";
+import "./tabs.css";
 import { IconButton, useRtl, Icons, type ButtonBaseProps } from "@funext/ui";
 import Tab from "./tab";
 
