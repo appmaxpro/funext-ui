@@ -6,6 +6,7 @@ import {
   memoTheme,
   styled,
   type Theme,
+  useScreenSize,
 } from "@funext/ui";
 import LogoImage from "./LogoImage";
 
@@ -46,6 +47,9 @@ const MainRoot = styled("main")(
       [theme.breakpoints.up("lg")]: {
         padding: theme.spacing(0, 25, 0, 0),
       },
+      [theme.breakpoints.down("sm")]: {
+        boxShadow: "none",
+      },
     },
     [`& .${LoginLayoutClasses.form}`]: {
       maxWidth: theme.spacing(80),
@@ -57,11 +61,12 @@ const MainRoot = styled("main")(
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
+  const {lgUp} = useScreenSize()
 
   return (
     <MainRoot className={LoginLayoutClasses.root}>
       <div className={LoginLayoutClasses.sidebar}>
-        {!useMediaQuery(theme.breakpoints.down("lg")) && (
+        {lgUp && (
           <LogoImage color={theme.palette.secondary.contrastText} />
         )}
       </div>

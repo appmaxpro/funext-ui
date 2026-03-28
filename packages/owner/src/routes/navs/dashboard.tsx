@@ -1,38 +1,54 @@
-import PersonIcon from "@funext/icons/Person";
-import DashboardIcon from "@funext/icons/Dashboard";
-import SettingsIcon from "@funext/icons/Settings";
 import saleNav from './sale'
-import { ProtectedRoute } from "../protected-route";
 import type { NavRoute } from "~/utils/types";
+import { Icons } from '~/components';
+import authNav from "./auth";
+import resNav from "./res";
+import { RouterProvider } from '../router-provider';
+import Home from '~/pages/smb/home/home';
 
 export default {
     kind: "page",
     path: "/",
     hasErrorBoundary: true,
-    Component: ProtectedRoute,
+    Component: RouterProvider,
     actions: ["bottomNav", "sidebar"],
+    props: {
+      custom: true
+    },
     children: [
       {
         title: "Dashboard",
-        icon: <DashboardIcon />,
-        CP: 'Dashboard',
+        icon: <Icons.Dashboard />,
+        ///CP: 'Dashboard',
+        Component: Home,
         actions: ["tab", "sidebar"],
+        props: {
+          custom: true
+        },
       },
       {
         title: "Settings",
-        icon: <SettingsIcon />,
+        icon: <Icons.Settings />,
         CP: 'Settings',
-        actions: ["tab", "sidebar"],
-        path: 'settings'
+        actions: ["tab"],
+        path: 'settings',
+        props: {
+          custom: true
+        },
       },
       {
         title: "Account",
-        icon: <PersonIcon />,
+        icon: <Icons.Person />,
         CP: 'Account',
-        actions: ["tab", "sidebar"],
-        path: 'account'
+        actions: ["tab"],
+        path: 'account',
+        props: {
+          custom: true
+        },
       },
-      ...saleNav
+      ...saleNav,
+      authNav,
+      resNav
     ]
 
 } as const satisfies NavRoute

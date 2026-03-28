@@ -1,21 +1,21 @@
 'use client';
-import * as React from 'react';
-import { styled, type Theme, type SxProps } from '@funext/ui';
+import { styled, type SxProps, type Theme } from '@funext/ui';
 import Avatar from '@funext/ui/Avatar';
 import Box from '@funext/ui/Box';
 import Collapse from '@funext/ui/Collapse';
 import Grow from '@funext/ui/Grow';
-import List from '@funext/ui/List';
 import Link from '@funext/ui/Link';
+import List from '@funext/ui/List';
+import * as React from 'react';
 
 import Panel from '@funext/ui/Panel';
 import Text from '@funext/ui/Text';
-import ExpandMoreIcon from '@funext/icons/ExpandMore';
 import invariant from 'invariant';
+import { Dimensions } from '~/utils/constant';
 import { SidebarItemContext, useNavContext } from '../../context';
 import { getItemPath, getNavTitle } from '../../utils/navigation';
 import type { Navigation, OutletRoute, SidebarItemProps } from '../../utils/types';
-import { Dimensions } from '~/utils/constant';
+import { Icons } from '../shared';
 
 const ListItemButton = styled(List.ItemButton)(({ theme }) => ({
   borderRadius: 8,
@@ -229,7 +229,7 @@ function SidebarItem(props: SidebarItemProps) {
           </Box>
         ) : null}
         {!isMini ? (
-          <List.ItemText
+          <List.Text
             primary={title}
             sx={{
               ml: 1.2,
@@ -239,7 +239,7 @@ function SidebarItem(props: SidebarItemProps) {
           />
         ) : null}
         {item.action && !isMini && isSidebarFullyExpanded ? item.action : null}
-        {itemHasChild ? <ExpandMoreIcon sx={nestedNavigationCollapseSx} /> : null}
+        {itemHasChild ? <Icons.ChevronDown sx={nestedNavigationCollapseSx} /> : null}
       </ListItemButton>
       {itemHasChild && isMini ? (
         <Grow in={id === hoveredMiniSidebarItemId}>

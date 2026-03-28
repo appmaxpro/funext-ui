@@ -426,8 +426,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const [value, setValue, isControlled] = useControlled({
       name: "input",
       prop: "value",
-      state: !notInput ? '' : val,
-      defaultState: defaultValue ,
+      state: notInput ? '' : val,
+      defaultState: notInput ?  undefined : defaultValue as string,
     });
 
     const restOnFocus = useEvent(rest.onFocus)
@@ -749,8 +749,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {...(nativeProps as React.ComponentProps<"div">)}
         ref={inputRef as any}
         className={clsx(nativeCls, !multiLines ? "whitespace-nowrap	" : "")}
-        //onFocus={handleFocus}
-        //onBlur={handleBlur}
+        onFocus={restOnFocus as any}
+        onBlur={restOnBlur as any}
         as={as}
         aria-invalid={hasError ? "true" : undefined}
         ownerState={ownerState}

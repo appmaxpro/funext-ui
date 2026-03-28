@@ -9,8 +9,8 @@ import { useAsyncEffect } from "~/hooks/use-async-effect";
 import { getDashboardData } from "~/utils/dashboard-data";
 import { ProvinceSales } from "./charts/province-sales";
 import { SparkCharts } from "./charts/spark-charts";
-import { Container } from "~/components/app/container";
-import { DateFilterFilter } from "~/components/views/components/data-view-filter";
+import { Container } from "~/components/shared/container";
+import { DateFilterFilter } from "~/scope/views/data/data-view-filter";
 
 interface OrderStats {
   revenue: number;

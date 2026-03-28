@@ -258,7 +258,7 @@ const Menu = React.forwardRef<
       </FloatingTree>
     );
   }
-
+  
   let { children, trigger: menuTrigger, ...rest } = props;
 
   if (!rest.reference && menuTrigger !== false) {
@@ -389,7 +389,7 @@ const MenuInner: React.FC<Partial<MenuProps>> = ({
   );
 };
 
-interface MenuListProps extends ListProps<"div">, ComponentRootProps {
+interface MenuListProps extends Omit<ListProps<"div">, "navigate">, ComponentRootProps {
   children: React.ReactNode;
   closeOnItemClick?: boolean;
   allowHover: boolean;
@@ -618,6 +618,8 @@ type MenuType = React.FC<MenuProps> & {
   Item: typeof MenuItem;
   Divider: typeof ItemDivider;
   Header: typeof MenuHeader;
+  Prefix: typeof List.Prefix;
+  Suffix: typeof List.Suffix;
 };
 
 const Root: MenuType = Object.assign(Menu, {
@@ -626,6 +628,8 @@ const Root: MenuType = Object.assign(Menu, {
   Item: MenuItem,
   Divider: ItemDivider,
   Header: MenuHeader,
+  Prefix: List.Prefix,
+  Suffix: List.Suffix,
 }) as MenuType;
 
 Menu.displayName = "Mux.Menu";

@@ -1,3 +1,5 @@
+import { KeepLast } from "./concurrency";
+
 export type Task<T> = () => Promise<T>;
 
 export class TaskQueue {
@@ -7,6 +9,7 @@ export class TaskQueue {
   #paused = false;
   #waiting: Promise<void> | undefined;
   #finished: (() => void) | undefined;
+  #keepLast = new KeepLast();
 
   #run(force: boolean = false) {
     if (!force && this.#running) {
@@ -81,6 +84,16 @@ export class TaskQueue {
       }
     });
     
+  }
+
+  addLast(fn: ()=> void) {
+    
+    const onDone = new Promise((resolve, reject) => {
+      const runLast = async () => 1;
+      this.#queue.push(() => runLast().then(resolve).catch(reject));
+      this.#run();
+    });
+    return this.#keepLast.add(onDone).then(() => fn());
   }
 
   get all() {

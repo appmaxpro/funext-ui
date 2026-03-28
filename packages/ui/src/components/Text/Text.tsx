@@ -103,7 +103,7 @@ export const TextRoot = styled("span", {
     ...Object.entries(theme.palette?.text || {})
       .filter(([, value]) => typeof value === "string")
       .map(([color]) => ({
-        props: { color: `text${capitalize(color)}` },
+        props: { color: `text-${capitalize(color)}` },
         style: {
           color: ((theme.vars || theme) as any).palette.text[color],
         },

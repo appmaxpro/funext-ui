@@ -1,32 +1,17 @@
-import {
-  buildNavigation,
-  getItemPath,
-  getNavTitle,
-  isOutletRoute,
-  matchPath,
-} from "~/utils/navigation";
+import React from "react";
+import { NavigationContext, useNavigationContext } from "~/context";
+import { buildNavigation, isOutletRoute } from "~/utils/navigation";
 import type {
-  Breadcrumb,
-  Navigation,
   NavigationObject,
   NavItem,
   Navigation as NavRoutes,
   OutletRoute,
 } from "~/utils/types";
-import React from "react";
-import { NavigationContext, useNavigationContext } from "~/context";
 
-import authNav from "./navs/auth";
+import { Route, Routes, type RouteProps } from "react-router";
+import { deepClone } from "~/utils";
 import dashboardNav from "./navs/dashboard";
-import RouteView, { getNullView } from "./route-view";
-import { useViewStore, type ViewState } from "~/store/views";
-import {
-  Route,
-  Routes,
-  type RouteObject,
-  type RouteProps,
-  renderMatches,
-} from "react-router";
+import { getNullView } from "./route-view";
 
 export default function NavigationProvider({
   children,
@@ -39,7 +24,9 @@ export default function NavigationProvider({
 }) {
   const navigation: NavigationObject = React.useMemo(
     () => ({
-      navigation: navigationProps ? navigationProps : buildNavigation([dashboardNav, authNav], RouteView),
+      navigation: navigationProps
+        ? navigationProps
+        : buildNavigation([deepClone(dashboardNav)]),
       root,
       isRoot: !root,
     }),
@@ -79,7 +66,7 @@ function createRoute(navItem: NavItem, index: number): React.ReactNode {
       hasErrorBoundary,
       path,
       Component = getNullView(navItem),
-      id
+      id,
     } = navItem;
 
     const route: RouteProps = {
@@ -113,7 +100,7 @@ function createRoute(navItem: NavItem, index: number): React.ReactNode {
         delete route.Component;
       }
     }
-    return <Route {...route} key={index}/>;
+    return <Route {...route} key={index} />;
   }
 }
 
@@ -128,7 +115,7 @@ export function NavigationRoutes() {
   return routes;
 }
 
-function ChildRoutes({ navigation}: { navigation: NavRoutes }) {
+function ChildRoutes({ navigation }: { navigation: NavRoutes }) {
   const routes = React.useMemo(() => {
     const routesChildren = (navigation || []).map(createRoute).filter(Boolean);
     console.log("ChildRoutes:: routes:", navigation);
@@ -138,8 +125,5 @@ function ChildRoutes({ navigation}: { navigation: NavRoutes }) {
   return routes;
 }
 
-
-export {
-  createRoute as createNavRoute
-}
+export { createRoute as createNavRoute };
 //function getViewState()

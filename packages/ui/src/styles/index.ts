@@ -1,32 +1,31 @@
-import * as React from 'react';
-import type{
-  ComponentProps, 
-  JSXElementConstructor, 
-  ElementType, 
+import type { StyledComponent } from '@emotion/styled';
+import type { SxProps, SystemProps } from '@mui/system';
+import type {
+  ComponentProps,
   ComponentType,
+  ElementType,
+  JSXElementConstructor,
   ReactNode
 } from 'react';
 import extendSxProp from '../theme/extendSxProp';
-import type { Interpolation, SxProps, SystemProps } from '@mui/system';
-export {default as composeClasses} from '@mui/utils/composeClasses';
-import type { StyledComponent } from '@emotion/styled';
+export { default as composeClasses } from '@mui/utils/composeClasses';
 
 import type { Theme } from '../theme';
-import {internal_useTheme as useTheme} from '../theme/useTheme';
-import twx  from '../theme/tw/twx';
+import twx from '../theme/tw/twx';
+import { internal_useTheme as useTheme } from '../theme/useTheme';
 
 export * from '../theme';
-
-export * from './clsx';
-export {default as styled } from './styled';
-export {default as getOverlayAlpha} from './getOverlayAlpha';
-export {default as useSlot} from './useSlot';
-export {default as memoTheme} from '../theme/memoTheme';
-export {default as generateUtilityClasses} from './generateUtilityClasses';
-export {default as generateUtilityClass} from './generateUtilityClass';
+export * from './useDefaultProps'
 export { getPath } from '@mui/system/style';
+export { default as memoTheme } from '../theme/memoTheme';
 export { alpha } from '../utils';
+export * from './clsx';
+export { default as generateUtilityClass } from './generateUtilityClass';
+export { default as generateUtilityClasses } from './generateUtilityClasses';
+export { default as getOverlayAlpha } from './getOverlayAlpha';
 export * from './globalCss';
+export { default as styled } from './styled';
+export { default as useSlot } from './useSlot';
 
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -52,46 +51,31 @@ export declare type StyledComponentOwner<
     ownerState: O;
 }>;
 
-export type{
-  Direction,
+export type {
   Breakpoint,
   BreakpointOverrides,
   Breakpoints,
   BreakpointsOptions,
-  CreateMUIStyled,
-  Interpolation,
-  CSSInterpolation,
-  CSSObject,
+  CreateMUIStyled, CSSInterpolation,
+  CSSObject, Direction, Interpolation
 } from '@mui/system';
 
 export {
-  css,
-  keyframes,
-  // color manipulators
-  hexToRgb,
-  rgbToHex,
-  hslToRgb,
-  decomposeColor,
-  recomposeColor,
-  getContrastRatio,
+  css, darken, decomposeColor, emphasize, getContrastRatio,
   getLuminance,
-  emphasize,
-  darken,
-  lighten,
-  StyledEngineProvider,
+  // color manipulators
+  hexToRgb, hslToRgb, keyframes, lighten, recomposeColor, rgbToHex, StyledEngineProvider
 } from '@mui/system';
 
-export * from './DefaultPropsProvider';
 
 export type {
   StyledComponent,
   SxProps,
   Theme
-}
+};
 
-export { 
-  useTheme, 
-  extendSxProp, 
-  twx
+export {
+  extendSxProp,
+  twx, useTheme
 };
 

@@ -3,18 +3,23 @@
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
-export interface NavSubheaderItem {
+export interface BasicNavItem {
+  showNav?: boolean;
+  childNav?: boolean;
+}
+
+export interface NavSubheaderItem extends BasicNavItem {
   kind: 'header';
   title: string;
 }
 
-export interface NavDividerItem {
+export interface NavDividerItem extends BasicNavItem{
   kind: 'divider';
 }
 
 
 type NavActionType = 'sidebar' | 'bottomNav' | 'tabs' | 'tab'
-export interface RouteAction {
+export interface RouteAction extends BasicNavItem {
   title?: string;
   icon?: React.ReactNode;
   action?: React.ReactNode;
@@ -29,12 +34,10 @@ export interface NavRoute extends RouteAction{
   children?: Navigation;
   actions?: NavActionType[];
   isolate?: boolean;
-  props?: Record<string, any> | ((params?:Record<string, any>) => any);
+  props?: Record<string, any>;
   Component?: React.ComponentType | null;
   CP?: string;
   hasErrorBoundary?: boolean;
-  showNav?: boolean;
-  childNav?: boolean;
   parent?: NavRoute;
   id?: string;
   
@@ -223,3 +226,4 @@ export type Simplify<T> = T extends Function ? T : { [K in keyof T]: T[K] };
 export type RequiredExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
 
 export type Orientation = 'horizontal' | 'vertical';
+

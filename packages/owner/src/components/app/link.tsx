@@ -18,7 +18,9 @@ export interface UseLinkOptions {
   /**
    * The URL that the link should navigate to.
    */
-  href?: string
+  href?: string;
+
+  to?: string;
 
   /**
    * The event handler function that should be called when the link is clicked.
@@ -59,7 +61,7 @@ export interface UseLinkOptions {
  * ```
  */
 export function useLink(options: UseLinkOptions): {onClick: React.MouseEventHandler<HTMLElement>} {
-  const {onClick: onClickProp, href, target, replace = false, state} = options
+  const {onClick: onClickProp, to, href=to, target, replace = false, state} = options
   //const navigation = useNavigation();
   let navigate = useNavigate();
 
@@ -106,7 +108,11 @@ export interface LinkProps {
   /**
    * Whether to replace the current URL in the browser history instead of adding a new entry.
    */
-  replace?: boolean
+  replace?: boolean;
+
+  to?: string;
+
+  state?: any;
 }
 
 /**
@@ -132,8 +138,8 @@ export const Link = React.forwardRef(function Link(
   props: LinkProps & React.HTMLProps<HTMLAnchorElement>,
   ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
-  const {onClick: onClickProp, href, target, replace, ...restProps} = props
-  const {onClick} = useLink({onClick: onClickProp, href, target, replace})
+  const {onClick: onClickProp, to, href=to, target, replace, state, ...restProps} = props
+  const {onClick} = useLink({onClick: onClickProp, href, target, state, replace})
 
   return <a {...restProps} onClick={onClick} href={href} target={target} ref={ref} />
 })

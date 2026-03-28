@@ -1,4 +1,4 @@
-import { get, isEmpty, isPlainObject } from "lodash";
+import { get, isPlainObject } from "lodash";
 
 import { i18n } from "~/utils/i18n";
 import { moment } from "~/utils/l10n";
@@ -13,11 +13,11 @@ import {
 import { LoadingCache } from "~/utils/cache";
 
 import type { DataContext, DataRecord, Property } from "./data-types";
-import { compileExpr } from "./expressions";
-import { EMPTY_OBJECT, EMPTY_RECORD } from "./constant";
-import h, { blockSet } from "./h";
-import type { BlockRenderProps } from ".";
+import { EMPTY_OBJECT } from "./constant";
+import h from "./h";
+import type { BlockRenderProps } from "./block-types";
 import type React from "react";
+import { evalCode } from "./eval";
 
 export type EvalContextOptions = {
   valid?: (name?: string) => boolean;
@@ -30,9 +30,27 @@ export type EvalContextOptions = {
   helpers?: Record<string, any>;
   log?: boolean;
 };
+const refSymbol = Symbol.for("$$ref");
+
+type Ref<X> = {
+  readonly current: X;
+  readonly [refSymbol]: 1;
+};
+
+export function createRef(get: () => DataContext): Ref<DataContext> {
+  const ref = Object.create({});
+  Object.defineProperty(ref, "current", {
+    get,
+  });
+  return ref;
+}
+
+function isRef(value: object): value is Ref<DataContext> {
+  return "current" in value;
+}
 
 export function createEvalContext(
-  context: DataContext,
+  context: Ref<DataContext> | DataContext,
   options?: EvalContextOptions,
 ) {
   const {
@@ -41,7 +59,7 @@ export function createEvalContext(
     helpers: moreHelpers = {},
     components,
     log,
-    ...others
+    //...others
   } = (options ?? {}) as any;
 
   //const noFields = !!options?.field;
@@ -70,8 +88,16 @@ export function createEvalContext(
     get _popup() {
       return options?.popup === true;
     },
-    get _record() {
-      return (options?.record ?? context._record) ? context._record : context;
+    get _record(): DataRecord {
+      return (options?.record ?? helpers._ctx._record)
+        ? helpers._ctx._record
+        : helpers._ctx;
+    },
+    get _ctx(): DataContext {
+      return isRef(context) ? context.current : (context as DataContext);
+    },
+    get _exec() {
+      return options?.execute ?? execute;
     },
     _extends(...sources: any[]) {
       return Object.assign({}, helpers, ...sources);
@@ -86,7 +112,7 @@ export function createEvalContext(
         const key = path.substring(0, dotIndex);
         if (isJsonField(key)) {
           const subPath = path.substring(dotIndex + 1);
-          const jsonText = context[key];
+          const jsonText = helpers._ctx[key];
           const json = tryJson(jsonText);
           if (json) {
             return get(json, subPath);
@@ -202,12 +228,12 @@ export function createEvalContext(
     },
     _image(fieldName: string, imageName: string) {
       let record = helpers._record;
-      let model = context._model;
+      let model = helpers._xtx._model;
 
       if (fieldName) {
-        const field = options?.field?.(fieldName);
+        const field = helpers._field(fieldName);
         if (field && field.target) {
-          record = helpers._get(fieldName) || EMPTY_RECORD;
+          record = helpers._get(fieldName) || EMPTY_OBJECT;
           model = field.target;
         }
       }
@@ -216,17 +242,16 @@ export function createEvalContext(
       const version = record.version || record.$version || 0;
 
       return id
-        ? `ws/rest/${model}/${id}/${imageName}/download?image=true&v=${version}&parentId=${id}&parentModel=${model}`
+        ? `rest/${model}/${id}/${imageName}/download?image=true&v=${version}&parentId=${id}&parentModel=${model}`
         : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
     },
     _execute(action: string, actionContext?: DataContext) {
       const ctx = isPlainObject(actionContext) ? actionContext : null;
-      const { _exact, ...otherCtx } = ctx ?? EMPTY_RECORD;
-
-      return execute(action, {
+      const { _exact, ...otherCtx } = ctx ?? EMPTY_OBJECT;
+      return helpers._exec(action, {
         context: ctx
-          ? { ...(!_exact && context), ...otherCtx }
-          : { ...context },
+          ? { ...(!_exact && helpers._ctx), ...otherCtx }
+          : helpers._ctx,
         exact: !!_exact,
       });
     },
@@ -234,8 +259,8 @@ export function createEvalContext(
       return (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        execute(name, {
-          context,
+        helpers._exec(name, {
+          context: helpers._ctx,
         });
       };
     },
@@ -243,7 +268,7 @@ export function createEvalContext(
     ...moreHelpers,
     ...globalHelpers,
     ...components,
-    ...others,
+    //...others,
   };
 
   function isJsonField(name: string) {
@@ -272,7 +297,7 @@ export function createEvalContext(
 }
 
 function createProxy(
-  context: DataContext,
+  ref: Ref<DataContext> | DataContext,
   helpers: Record<string, any>,
   isJsonField: (name: string) => boolean,
   tryJson: (value: unknown) => any,
@@ -281,29 +306,22 @@ function createProxy(
   type Context = DataContext & typeof helpers;
 
   let parentContext: unknown = undefined;
+  const hasRef = isRef(ref);
 
-  return new Proxy<Context>(context as Context, {
+  return new Proxy<Context>((hasRef ? ref.current : ref) as Context, {
     get(target, p, receiver) {
       if (log) {
         console.log("Proxy get:", p);
       }
-
-      if (
-        p === "_parent" &&
-        (parentContext ||
-          Reflect.has(target, "_parent") ||
-          receiver._getParent ||
-          helpers._getParent)
-      ) {
+      const ctx = hasRef ? ref.current : ref;
+      if (p === "_parent") {
         return (
-          parentContext ??
-          (parentContext = Reflect.has(target, "_parent")
-            ? Reflect.get(target, "_parent")
-            : (receiver._getParent || helpers._getParent)())
+          Reflect.get(ctx, "_parent", receiver) ??
+          Reflect.get(helpers, "_parent", receiver)
         );
       }
 
-      const record = target._record ? target._record : target;
+      const record = helpers._record;
 
       let value = Reflect.get(record, p, receiver) ?? get(record, p);
       if (p === "id" && value && value === 0) {
@@ -322,7 +340,7 @@ function createProxy(
           }
         } else if (p === "_subContext") {
           return (sub: object) =>
-            sub === target || sub === receiver
+            sub === target || sub === ref || sub === ctx || sub === receiver
               ? receiver
               : createSubEvalContext(receiver, sub);
         }
@@ -331,14 +349,6 @@ function createProxy(
       if (p in helpers) {
         if (log) console.log("Proxy get helper value:", p);
         return helpers[p as keyof typeof helpers];
-      }
-
-      if (p === "_this") {
-        return receiver;
-      }
-
-      if (p === "_ctx") {
-        return context;
       }
 
       if (log) {
@@ -363,12 +373,14 @@ export function createSubEvalContext<Context extends object>(
   context: Context,
   sub: object,
 ) {
-  let record = sub;
-  let hasRec = "_record" in sub;
+  const hasRef = isRef(sub);
+  const ctx = hasRef ? sub.current : sub;
+
+  let hasRec = "_record" in ctx;
   let set: (prop: string | symbol, value?: any) => any | undefined;
 
-  if (hasRec && "_set" in sub && typeof sub._set === "function") {
-    set = sub._set as (prop: string | symbol, value?: any) => any;
+  if (hasRec && "_set" in ctx && typeof ctx._set === "function") {
+    set = ctx._set as (prop: string | symbol, value?: any) => any;
   }
 
   return new Proxy<Context>(sub as Context, {
@@ -378,45 +390,66 @@ export function createSubEvalContext<Context extends object>(
         return Reflect.get(sub, p, receiver);
       }
       */
+      const ctx = hasRef ? (target as Ref<Context>).current : target;
       let value;
       try {
         if (hasRec) {
           value =
-            Reflect.get((target as any)._record, p, receiver) ??
-            get((target as any)._record, p);
+            Reflect.get((ctx as any)._record, p, receiver) ??
+            get((ctx as any)._record, p);
         } else {
-          value = Reflect.get(target, p, receiver) ?? get(target, p);
+          value = Reflect.get(ctx, p, receiver) ?? get(target, p);
         }
       } catch (e) {}
 
       if (value === undefined) {
         if (p === "_subContext") {
           return (sub: object) =>
-            sub === target || sub === receiver || sub === context
+            sub === target || sub === ctx || sub === receiver || sub === context
               ? receiver
               : createSubEvalContext(receiver, sub);
         }
-        value = Reflect.get(target, p, receiver);
+        value = Reflect.get(ctx, p, receiver);
       }
       return value;
     },
     set(target, p, value, receiver) {
       try {
-        
         if (set) return set(p, value) ?? true;
-        
-        return Reflect.set(hasRec ? (target as any)._record : target, p, value, receiver);
+        const ctx = hasRef ? (target as Ref<Context>).current : target;
+        return Reflect.set(
+          hasRec ? (ctx as any)._record : ctx,
+          p,
+          value,
+          receiver,
+        );
       } catch (e) {}
       return Reflect.set(context, p, value, receiver);
     },
   });
 }
 
+function safeCode(code: string) {
+  return code.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+}
+
 var cache = new LoadingCache<(ctx: DataContext) => any>();
 
 export function evalExpr<T>(expr: string): (ctx: DataContext) => T {
+  if (typeof expr === "function") {
+    return expr;
+  }
   return cache.get(expr, () => {
-    return new Function("ctx", expr) as (ctx: DataContext) => T;
+    try {
+      console.log("Try evalExpr: ", expr);
+      return evalCode(expr, "ctx") as (ctx: DataContext) => T;
+    } catch (e) {
+      console.error(e);
+      (window as any)._expr = expr;
+      throw e;
+    } finally {
+      console.log("Complete evalExpr: ");
+    }
   });
 }
 
@@ -428,27 +461,72 @@ const globalRender = {
 
 export function evalRender(
   expr: string,
+  scope?: Record<string, any>,
 ): React.FunctionComponent<BlockRenderProps> {
+  if (typeof expr === "function") {
+    return expr;
+  }
   return renderCache.get(expr, () => {
-    const fn = new Function("h", "ctx", "c", expr);
-    let P = EMPTY_OBJECT;
+    let P = scope ?? EMPTY_OBJECT;
     const c = new Proxy(P, {
       get: (target, prop, receiver) => {
-        let value = Reflect.get(target, prop, receiver);
-        if (value === undefined && "C" in target) {
-          value = Reflect.get(target.C, prop, receiver);
+        let value = Reflect.get(P, prop, receiver);
+        if (value === undefined && "C" in P) {
+          value = Reflect.get(P.C, prop, receiver);
         }
         return value;
       },
     });
-    return function (props: BlockRenderProps) {
-      P = props;
-      //blockSet.set(props)
+    try {
+      const fn = evalCode(expr, "h, ctx, props, c");
+      return function (props: BlockRenderProps) {
+        try {
+          console.log("Try evalRender: ", expr);
+          return fn(h, props.ctx, props.props, c);
+        } finally {
+          console.log("Complete evalRender: ");
+        }
+      };
+    } catch (e) {
+      console.error(e);
+      (window as any)._expr = expr;
+      throw e;
+    }
+  });
+}
+
+export function miniRender(expr: string) {
+  if (typeof expr === "function") {
+    return expr;
+  }
+  try {
+    const fn = evalCode(expr, "h, ctx");
+    return function (ctx: object) {
       try {
-        return fn(h, props.ctx, c);
+        console.log("Try miniRender: ", expr);
+        return fn(h, ctx);
       } finally {
-        //blockSet.restore()
+        console.log("Complete miniRender: ");
       }
     };
+  } catch (e) {
+    console.error(e);
+    (window as any)._expr = expr;
+    throw e;
+  }
+}
+
+export function createScopeContext(ctx: any, parent: object) {
+  return new Proxy(ctx, {
+    get: (target, prop, receiver) => {
+      let value = Reflect.get(target, prop, receiver);
+      if (value === undefined && "C" in target) {
+        value = Reflect.get(target.C, prop, receiver);
+      }
+      if (value === undefined) {
+        value = Reflect.get(parent, prop, receiver);
+      }
+      return value;
+    },
   });
 }

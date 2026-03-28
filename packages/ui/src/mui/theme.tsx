@@ -1,24 +1,15 @@
 'use client'
 // @ts-nocheck
 import {
-  cloneElement,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  Fragment
+  useEffect
 } from "react";
-import {createPortal} from 'react-dom';
 
 //import {darkTheme, lightTheme} from './emotion';
 //import GlobalStyles from '../global';
 
-import { TailwindThemeProvider } from "../theme";
-import { useMediaQuery } from "../hooks";
-
-import { globalCss, Theme, ClassValue, cssx } from "../styles";
+import { globalCss } from "../styles";
 import MuiThemeProvider, { MuxThemeOption } from "../theme/MuiThemeProvider";
+import { TailwindThemeProvider } from './tw-provider';
 
 const InputGlobalStyles = globalCss({
   '@keyframes mux-auto-fill': { from: { display: 'block' } },

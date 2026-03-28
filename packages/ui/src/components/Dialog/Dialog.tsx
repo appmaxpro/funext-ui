@@ -17,6 +17,7 @@ import {
   FloatingTree,
   FloatingContext,
   UseFloatingOptions,
+  UseDismissProps,
 } from "@floating-ui/react";
 
 // types
@@ -43,7 +44,7 @@ import {
   css,
   type SxComponentProps,
 } from "../../styles";
-import { capitalize, isElement } from "../../utils";
+import { capitalize, isElement, percent } from "../../utils";
 import Panel, { PanelProps } from "../Panel";
 import { MuxFloatingProvider, useFloatingContext } from "../Context";
 import { Presence } from "../../lib/presence";
@@ -70,65 +71,8 @@ import { isRecord } from "../../lib/isRecord";
 import { onOpenChangeEvent } from "../../lib/openChangeEvent";
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 import { useEvent } from "../../hooks/use-event";
-
-export interface DialogClasses {
-  /** Styles applied to the root element. */
-  root: string;
-  /** Styles applied to the container element if `scroll="panel"`. */
-  scrollPanel: string;
-  /** Styles applied to the container element if `scroll="body"`. */
-  scrollBody: string;
-  /** Styles applied to the container element. */
-  container: string;
-  /** Styles applied to the Panel component. */
-  panel: string;
-  /** Styles applied to the Panel component if `scroll="panel"`. */
-  panelScrollPanel: string;
-  /** Styles applied to the Panel component if `scroll="body"`. */
-  panelScrollBody: string;
-  /** Styles applied to the Panel component if `maxWidth=false`. */
-  panelSizeFalse: string;
-  /** Styles applied to the Panel component if `maxWidth="xs"`. */
-  panelSizeXs: string;
-  /** Styles applied to the Panel component if `maxWidth="sm"`. */
-  panelSizeSm: string;
-  /** Styles applied to the Panel component if `maxWidth="md"`. */
-  panelSizeMd: string;
-  /** Styles applied to the Panel component if `maxWidth="lg"`. */
-  panelSizeLg: string;
-  /** Styles applied to the Panel component if `maxWidth="xl"`. */
-  panelSizeXl: string;
-  /** Styles applied to the Panel component if `fullWidth={true}`. */
-  panelFullWidth: string;
-  /** Styles applied to the Panel component if `fullScreen={true}`. */
-  panelFullScreen: string;
-}
-
-export type DialogClassKey = keyof DialogClasses;
-
-export function getDialogUtilityClass(slot: string): string {
-  return generateUtilityClass("MuxDialog", slot);
-}
-
-const dialogClasses: DialogClasses = generateUtilityClasses("MuxDialog", [
-  "root",
-  "scrollPanel",
-  "scrollBody",
-  "container",
-  "panel",
-  "panelScrollPanel",
-  "panelScrollBody",
-  "panelSizeFalse",
-  "panelSizeXs",
-  "panelSizeSm",
-  "panelSizeMd",
-  "panelSizeLg",
-  "panelSizeXl",
-  "panelFullWidth",
-  "panelFullScreen",
-]);
-
-export { dialogClasses };
+import { dialogClasses, getDialogUtilityClass } from "./dialogClasses";
+import { height, maxHeight } from "@mui/system";
 
 const useUtilityClasses = (ownerState: any) => {
   const { classes, scroll, size, fullWidth, fullScreen } = ownerState;
@@ -184,6 +128,7 @@ export const DialogContainerRoot = styled("div", {
   shouldForwardProp,
 })({
   height: "100%",
+  overflow: "hidden",
   "@media print": {
     height: "auto",
   },
@@ -191,9 +136,7 @@ export const DialogContainerRoot = styled("div", {
   outline: 0,
   variants: [
     {
-      props: {
-        scroll: "panel",
-      },
+      props: ({ ownerState }: any) => ownerState.scroll !== "body",
       style: {
         display: "flex",
         justifyContent: "center",
@@ -246,12 +189,21 @@ const DialogPanel = styled(Panel, {
         duration: theme.transitions.duration.enteringScreen,
         easing: theme.transitions.easing.sharp,
       }),
-    "@media print": {
-      overflowY: "visible",
-      boxShadow: "none",
-    },
 
+    [`&:has(>.${dialogClasses.dialogBody})`]: {
+      overflow: "hidden",
+      maxHeight: "100%",
+    },
     variants: [
+      {
+        props: {
+          scroll: "hidden",
+        },
+        style: {
+          display: "flex",
+          flexDirection: "column",
+        },
+      },
       {
         props: {
           scroll: "panel",
@@ -313,12 +265,6 @@ const DialogPanel = styled(Panel, {
           },
         })),
       {
-        props: ({ ownerState }: any) => ownerState.fullWidth,
-        style: {
-          width: "calc(100% - 64px)",
-        },
-      },
-      {
         props: ({ ownerState }: any) => ownerState.fullScreen,
         style: {
           margin: 0,
@@ -341,23 +287,25 @@ const DialogPanel = styled(Panel, {
 const defaultOverlayProps = {
   visible: true,
   lockScroll: true,
-} as const;;
+} as const;
 
 const defaultAnimate = {
   animate: true,
-  animation: "fadeScaleCss",
+  animation: "fadeScale",
 } as const;
 
 const defaultPanelProps = {
   fill: true,
 } as const as Partial<PanelProps>;
 
-const defaultDismiss = {
+const defaultDismiss: UseDismissProps = {
   outsidePressEvent: "mousedown",
+  bubbles: false,
+  capture: false,
 } as const;
 
 const defaultFocusProps = {
-  modal: true
+  modal: true,
 } as const;
 const defaultBackdropProps = {} as const;
 export interface DialogProps extends SxComponentProps {
@@ -378,7 +326,7 @@ export interface DialogProps extends SxComponentProps {
 
   open?: boolean;
   onOpenChange?: handler;
-  onClose?: ()=> void;
+  onClose?: () => void;
   onPresent?: (present: boolean) => void;
   dismiss?: DismissProps;
   animate?: boolean;
@@ -389,7 +337,7 @@ export interface DialogProps extends SxComponentProps {
    * The component used to render the body of the dialog.
    * @default Panel
    */
-  PanelComponent?: React.ComponentType ;
+  PanelComponent?: React.ComponentType;
   /**
    * Props applied to the [`Panel`](https://mui.com/material-ui/api/panel/) element.
    * @default {}
@@ -404,7 +352,7 @@ export interface DialogProps extends SxComponentProps {
    * Determine the container for scrolling the dialog.
    * @default 'panel'
    */
-  scroll?: "body" | "panel";
+  scroll?: "body" | "panel" | "hidden";
 
   /**
    * If `true`, the dialog is full-screen.
@@ -426,16 +374,16 @@ export interface DialogProps extends SxComponentProps {
    */
   size?: Breakpoint | "xxl" | false;
 
-  
   portal?: boolean;
   zOffset?: number;
   onActivate?: (props: { activeElement: HTMLElement | null }) => void;
   Overlay?: React.ComponentType<Partial<OverlayProps>>;
   overlayProps?: Partial<OverlayProps>;
   focusProps?: Omit<FloatingFocusManagerProps, "context">;
-  root?: PortalProps['floatingPortal'];
-  strategy?: 'absolute' | 'fixed';
-  middleware?: UseFloatingOptions['middleware']
+  root?: PortalProps["floatingPortal"];
+  strategy?: "absolute" | "fixed";
+  middleware?: UseFloatingOptions["middleware"];
+  keep?: boolean;
 }
 
 const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
@@ -465,7 +413,7 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       PanelComponent,
       panelProps = defaultPanelProps,
       Container,
-      scroll = "panel",
+      scroll = "hidden",
       onClick,
       containerProps,
       modal = true,
@@ -478,26 +426,30 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       onOpenChange = handler,
       onClose,
       root,
-      strategy,
+      strategy = "fixed",
       onPresent,
       middleware,
+      keep,
       ...rest
     } = props;
     const isFullScreen = fullScreen || size === "xxl";
     const isRec = isRecord(animationProps);
     const prefersReducedMotion = usePrefersReducedMotion();
     const animate = isRec
-      ? animationProps.animate || (animationProps.animate !== false && prefersReducedMotion)
-      : animationProps === true || ( animationProps !== false && prefersReducedMotion);
+      ? animationProps.animate ||
+        (animationProps.animate !== false && prefersReducedMotion)
+      : animationProps === true ||
+        (animationProps !== false && prefersReducedMotion);
 
-    const animation = isRec
+    const animation = (
+      isRec
         ? animationProps
         : animate
-          ? defaultAnimate
-          : undefined;
+          ? (animationProps ?? defaultAnimate)
+          : undefined
+    ) as AnimatedOrNameProps;
 
-
-    //console.log("animation:", animation, ", animationProps:", animationProps)      
+    //console.log("animation:", animation, ", animationProps:", animationProps)
     // 2. set default props
     const ownerState = {
       ...props,
@@ -507,27 +459,26 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
       scroll,
     };
 
-
-    const fnOnOpenChange =  onOpenChangeEvent(onOpenChange, onClose);
+    const fnOnOpenChange = onOpenChangeEvent(onOpenChange, onClose);
     const parentContext = useFloatingContext()?.context;
     //const useDismissRef = React.use
     // 5. set @floating-ui
     const { context } = useFloating({
-      rootContext: parentContext,
+      //rootContext: parentContext,
       open,
       onOpenChange: fnOnOpenChange,
       strategy: strategy,
-      
+
       elements: target
         ? {
             reference: isElement(target) ? target : target?.current,
           }
         : undefined,
-      middleware
+      middleware,
     });
 
     const classes = useUtilityClasses(ownerState);
-    context.dataRef
+    context.dataRef;
 
     // 7. return
     return (
@@ -539,9 +490,10 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
               floatingPortal={root ?? (!!focusProps || modal)}
               present={present}
               onPresent={onPresent}
+              keep={keep}
               render={(contentRef: React.ForwardedRef<HTMLDivElement>) => (
-                <LayerProvider zOffset={zOffset}>
-                  {(modal && Overlay && !isFullScreen) && (
+                <LayerProvider zOffset={zOffset} enabled={present || open}>
+                  {modal && present && Overlay && !isFullScreen && (
                       <Overlay
                         data-ui="DialogOverlay"
                         data-animate={animate ? "" : undefined}
@@ -552,23 +504,27 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
                         //ref={contentRef}
                         //onClick={(event)=> context.onOpenChange(false, event)}
                       />
-                  )}
+                    )}
                   <DialogRoot
                     {...rest}
                     style={{
                       position: context.strategy,
                       ...rest.style,
+                      ...((!present && keep) && { display: "none" }),
                     }}
                     className={clsx(classes.root, className)}
                     ownerState={ownerState}
                     data-ui="Dialog"
+                    data-present={present ? "true" : "false"}
                     animate={animate}
+
                     ref={ref}
                   >
+                    
                     <DialogContent
                       context={context}
                       focusProps={focusProps as any}
-                      animate={animate}
+                      animate={(present || open) && animate}
                       animation={animation}
                       Content={PanelComponent}
                       contentProps={{
@@ -580,13 +536,16 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
                         id: id,
                         fill: true,
                         ...panelProps,
-                        className: panelProps.className 
-                            ? clsx(classes.panel, panelProps.className)
-                            : classes.panel,
+                        className: panelProps.className
+                          ? clsx(classes.panel, panelProps.className)
+                          : classes.panel,
                       }}
                       Container={Container}
                       containerProps={{
-                        className: clsx(classes.container, containerProps?.className),
+                        className: clsx(
+                          classes.container,
+                          containerProps?.className,
+                        ),
                         ...containerProps,
                       }}
                       modal={modal}
@@ -598,8 +557,6 @@ const DialogFc = React.forwardRef<HTMLDivElement, DialogProps>(
                       {children}
                     </DialogContent>
                   </DialogRoot>
-
-                  
                 </LayerProvider>
               )}
             />
@@ -617,18 +574,26 @@ interface DialogPortalProps {
   floatingPortal?: boolean;
   present: boolean;
   render: (ref: React.ForwardedRef<HTMLDivElement>) => React.ReactNode | null;
-  onPresent?: DialogProps['onPresent']
+  onPresent?: DialogProps["onPresent"];
+  keep?: boolean;
 }
 const DialogPortal = React.forwardRef<HTMLDivElement, DialogPortalProps>(
   (props, ref) => {
-    const { present, render, portal, floatingPortal, onPresent: onPresentFn  } = props;
+    const {
+      present,
+      render,
+      portal,
+      floatingPortal,
+      onPresent: onPresentFn,
+      keep,
+    } = props;
     const onPresent = useEvent(onPresentFn);
-    
-    useEffect(() => {
-        onPresent(present)
-    }, [present])
 
-    if (present) {
+    useEffect(() => {
+      onPresent(present);
+    }, [present]);
+
+    if (present || keep) {
       let child = render(ref);
       if (portal) {
         child = <Portal floatingPortal={floatingPortal}>{child}</Portal>;
@@ -655,7 +620,6 @@ interface DialogContentProps {
   modal?: boolean;
   uiOwnerState: any;
   present: boolean;
-  
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
@@ -679,17 +643,26 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     const layer = useLayer();
     const { isTopLayer } = layer;
 
-    const outsidePress = React.useCallback(() => {
-      console.log("outsidePress: isTopLayer:", isTopLayer);
-      return isTopLayer;
-    }, [isTopLayer]);
+    /*
+     React.useEffect(() => {
+      console.log(
+        "DialogContent (",
+        contentProps?.id,
+        ") isTopLayer: ",
+        isTopLayer,
+        ", level:", level,
+        ", size:", size
+      );
+    }, [level, size, isTopLayer]);*/
 
     const { getFloatingProps } = useInteractions(
       [
         useRole(context),
         useDismiss(context, {
-          enabled: !!dismiss,
-          outsidePress,
+          enabled: !!dismiss && isTopLayer,
+          //outsidePressEvent: 'click',
+          //escapeKey: isTopLayer,
+          ///outsidePress,
           ...dismiss,
         }),
       ].filter(Boolean),
@@ -701,11 +674,15 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     const animation = React.useMemo(
       () =>
         getAnimationData(
-          { 
-            className, 
-            style, 
-            animate, 
-            animation: typeof animationProps === "string" ? {animate, animation: animationProps} :  animationProps },
+          {
+            className,
+            style,
+            animate,
+            animation:
+              typeof animationProps === "string"
+                ? { animate, animation: animationProps }
+                : animationProps,
+          },
           open,
         ),
       [open, animationProps, className, style, animate],
@@ -720,17 +697,25 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         {...containerProps}
         //as={Container}
         data-state={open ? "open" : "close"}
-        ownerState={containerProps?.ownerState ? {...uiOwnerState, ...containerProps.ownerState} : uiOwnerState}
+        ownerState={
+          containerProps?.ownerState
+            ? { ...uiOwnerState, ...containerProps.ownerState }
+            : uiOwnerState
+        }
       >
         <Panel
           data-ui="DialogContent"
           {...finalProps}
           {...animation}
-          ownerState={finalProps.ownerState ?  {...uiOwnerState, ...finalProps.ownerState} : uiOwnerState}
+          ownerState={
+            finalProps.ownerState
+              ? { ...uiOwnerState, ...finalProps.ownerState }
+              : uiOwnerState
+          }
           //as={Content as any}
           animate={animate}
           data-state={open ? "open" : "close"}
-          data-animate={JSON.stringify((animationProps as any))}
+          data-animate={JSON.stringify(animation as any)}
           ref={ref}
         >
           {children}
@@ -755,13 +740,13 @@ export const useDialogContext = useFloatingContext;
 export type { DialogHeaderProps, DialogBodyProps, DialogFooterProps };
 
 type DialogMembers = {
-  Header: typeof DialogHeader,
-  Body: typeof DialogBody,
-  Content: typeof DialogBody,
-  Footer: typeof DialogFooter,
-}
+  Header: typeof DialogHeader;
+  Body: typeof DialogBody;
+  Content: typeof DialogBody;
+  Footer: typeof DialogFooter;
+};
 
-const Dialog:React.FC<DialogProps> & DialogMembers = Object.assign(DialogFc, {
+const Dialog: React.FC<DialogProps> & DialogMembers = Object.assign(DialogFc, {
   Header: DialogHeader,
   Body: DialogBody,
   Content: DialogBody,

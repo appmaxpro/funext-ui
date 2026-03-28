@@ -8,19 +8,19 @@ import React, {
   type ReactNode,
 } from "react";
 import { Outlet, useNavigation, useParams } from "react-router";
-import { Views } from "~/components/views/data-views";
-import { useActivePage } from "~/hooks/use-active-page";
-import { Layout } from "~/layout/layout";
+import { DataViews } from "~/scope/views/data/data-views";
+import { Layout } from "~/components/layout/layout";
 import { Cache } from "~/utils/cache";
 import * as PAGES from "../pages";
 import { HttpWatch } from "~/components/http-watch";
 import RouteView, {getNullView} from "./route-view";
 import { Box, Presence, useRefs } from "@funext/ui";
-import { router as stateRouter, routerBus, startRouter } from "./router";
 import type { OutletRoute } from "~/utils/types";
 import { getItemPath } from "~/utils/navigation";
 import { useNavContext } from "~/context";
-import { Toolbar } from "~/components/other/toolbar";
+import { Toolbar } from "~/components/shared/toolbar";
+import { useRouter } from "~/hooks/use-router";
+import { useActivePageRoute } from "~/hooks";
 //import { useIsAnimating } from "@funext/ui/lib/presence/presence";
 
 
@@ -90,7 +90,7 @@ function ViewAnimate({
   if (!animate) {
     return (
       <div className={className}>
-        {props.model ? <Views Comp={Comp} {...props} /> : <Comp {...props} />}
+        {props.model ? <DataViews Comp={Comp} {...props} /> : <Comp {...props} />}
       </div>
     );
   }
@@ -99,7 +99,7 @@ function ViewAnimate({
     <Presence animate={true} present={show}>
       {({ present, animating }) => {
         const children = props.model ? (
-          <Views Comp={Comp} {...props} />
+          <DataViews Comp={Comp} {...props} />
         ) : (
           <Comp {...props} />
         );
@@ -136,7 +136,7 @@ function isParentOf(child: OutletRoute, parent?: OutletRoute) {
 }
 
 function useViewOutletRoute() {
-  const { navItem:outletRoute } = useActivePage() || {};
+  const outletRoute = useActivePageRoute() || {};
   const outletRouteRef = useRef<OutletRoute>();
   useEffect(()=>{
     if(outletRoute && !outletRoute.isolate)
@@ -148,9 +148,8 @@ function useViewOutletRoute() {
 
 export const ProtectedRoute = React.memo(
   function () {
-    const outletRoute = useViewOutletRoute()
+    const {route: outletRoute, params} = useRouter()
     const navigation = useNavContext();
-    const params = useParams();
     const viewPropsRef = useRef<any>();
     const currentView = useRef<any>();
     const viewIndexRef = useRef<number>(0);
@@ -302,8 +301,8 @@ export const ProtectedRoute = React.memo(
 
     return (
       <Layout
-        enableAppLayout={viewProps.enableLayout}
-        appLayoutProps={viewProps.layoutProps}
+        enable={viewProps.enableLayout}
+        props={viewProps.layoutProps}
       >
         {children}
         <HttpWatch />

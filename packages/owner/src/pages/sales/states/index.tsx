@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
-import type { SaleTargetStatesProps } from "../uitls/types";
-import { DataViewList } from "~/components/views/data-view-list";
-import { DataViewSingle } from "~/components/views/data-view-single";
+import type { SaleTargetStatesProps } from "../types";
+import { DataViewList } from "~/scope/views/data/data-view-list";
+import { DataViewSingle } from "~/scope/views/data/data-view-single";
 import { SaleTargetStateBox } from "../components/sale-target";
 import React from "react";
 

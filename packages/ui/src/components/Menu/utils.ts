@@ -12,14 +12,14 @@ export const isValidItemType = (comp: any) => comp?.type && _validTypes.has(comp
 
 export const isMenuItemValid = (comp: any) => {
   const valid =
-    !isMenuItemDisabled(comp) &&
+    !isItemDisabled(comp) &&
     (isValidItemType(comp) || comp.props?.role === "menuitem");
   //console.log("isMenuItemValid not Disabled:", !isMenuItemDisabled(comp),  ",menuitem:", comp.props?.role === 'menuitem', ", valid:", valid, ', type:', comp.type);
 
   return valid;
 };
 
-export const isMenuItemDisabled = (comp: any) =>
+export const isItemDisabled = (comp: any) =>
   !comp ||
   comp.props?.disabled ||
   comp.props?.["area-disabled"] ||

@@ -1,10 +1,15 @@
-import type { GridProps, FlexProps, SxThemeProps } from "@funext/ui";
 import type { ManipulateType } from "dayjs";
-import type { Block, BlockRenderProps } from "./block-types";
 import type React from "react";
+import { EMPTY_ARRAY } from "./constant";
 
 export type Identifier = number | string;
 
+
+interface BlockRenderProps {
+  ctx?: any;
+  ref?: any;
+  props: any;
+}
 export type ErrorReport = {
   title?: string;
   message?: string;
@@ -92,15 +97,17 @@ export interface BaseSchema {
 export interface Schema extends BaseSchema{
   uid?: string;
   type: string;
+  tag?: any;
   name?: string;
   title?: string;
   help?: string;
   handler?: string;
   props?: Record<string, any> | ((ctx: any) => Record<string, any>);
+  if?: string;
 }
 
 export interface Property {
-  type: PropertyType;
+  pType: PropertyType;
   name: string;
   placeholder?: string;
   canSuggest?: boolean;
@@ -109,7 +116,7 @@ export interface Property {
   onSelect?: string;
   target?: string;
   targetName?: string;
-  targetSearch?: string;
+  targetSearch?: string[];
   aggregate?: string;
   sortable?: boolean;
   orderBy?: string;
@@ -119,6 +126,7 @@ export interface Property {
   options?: Option[];
   multiple?: boolean;
   domain?: DomainsGet;
+  filterDomain?: DomainsGet;
   context?: Record<string, any>;
   required?: boolean;
   requiredIf?: string;
@@ -126,37 +134,45 @@ export interface Property {
   validate?: string;
 
   canDirty?: boolean;
-  defaults?: any;
+  defaultValue?: any;
   min?: number;
   max?: number;
   pattern?: string;
+  scale?: number;
+  parse?: (value:any, ctx: object)=> any;
+  format?: (value:any, ctx: object)=> string|null;
+
 }
 
 export interface WidgetRenderer {
   ctx: any;
   block?: any;
-  factory?: (type: any, props?: any) => React.ReactNode;
   evalProps?: (block: any) => any;
 }
 
-export interface Widget extends Schema{
-  showTitle?: boolean;
+export interface Widget extends Omit<Schema, 'props'>{
   hidden?: boolean;
   hideIf?: string;
   readonly?: boolean;
   readonlyIf?: string;
   depends?: string;
-  sx?: SxThemeProps | ((ctx: any) => SxThemeProps) | string;
   widget?: string;
-  slots?: Record<string, Widget> | ((ctx: any) => Record<string, Widget>)
+  slots?: Record<string, Widget> | ((ctx: any) => Record<string, Widget>);
+  props?: Record<string, any>;
+  cProps?: (ctx: any) => Record<string, any>;
   render?: React.FunctionComponent<BlockRenderProps> ;
-  items?: Widget[],
+  items?: Widget[];
+  context?: DataContext
 }
 
 export interface Field extends Omit<Property & Widget, 'type'> {
   type: "field";
   name: string;
-  pType: PropertyType;
+  noTitle?: boolean;
+}
+
+export interface WidgetOptions extends Widget{
+  
 }
 
 export interface Container<W extends Widget|Container|Field = Widget> extends Widget {
@@ -167,26 +183,35 @@ export interface LayoutWidget extends Container {
   type: "flex" | "grid";
 }
 
+
+export interface ResourceMeta {
+  fields: Property[];
+  get: (name: string) => Property | undefined;
+}
+
 export interface ResourceView extends Omit<Schema, 'name'>  {
   name: string;
   items: Widget[];
+  model?: string;
 }
 
-export interface FormView extends ResourceView {
+export interface BaseFormView extends ResourceView {
+  side?: 'left' | 'bottom' | 'popover';
+  onSubmit?: (context: DataContext) => Promise<any>;
+  validate?: (context: DataContext) => Promise<any>;
+}
+
+export interface FormView extends BaseFormView {
   type: "form";
   mode?: 'edit' | 'show';
-  side?: 'left' | 'bottom' | 'popover';
   readonly?: boolean;
   edit?: boolean;
   delete?: boolean;
   create?: boolean;
-  readonlyIf?: boolean | ((context: DataContext) => boolean);
-  onSubmit?: (context: DataContext) => Promise<any>;
+  readonlyIf?: ((context: DataContext) => boolean);
   onEdit?: (context: DataContext) => Promise<any>;
   onDelete?: (context: DataContext) => Promise<any>;
-  onNew?: (context: DataContext) => Promise<any>;
-  validate?: (context: DataContext) => Promise<any>;
-  
+  onNew?: (context: DataContext) => Promise<any>;  
 }
 
 export interface ListView extends ResourceView {
@@ -198,33 +223,39 @@ export interface CustomView extends ResourceView {
   type: "custom";
 }
 
+export interface FilterFormView extends BaseFormView {
+   type: "filter-form";
+}
+
 export interface FilterView extends ResourceView {
   type: "filter";
-  form?: FormView;
+  form?: FilterFormView;
   sidebar?: Container;
   defaults?: Record<string, any>;
 }
 
 export interface ResourceContext extends DataContext {
   processWidget: (schema: Partial<Widget>) => Widget;
-  get: (name: string) => Property | undefined;
+  get: ResourceMeta['get'];
 };
 
-export interface Resource extends Omit<Schema, 'name'>{
+export interface Resource extends Omit<Schema, 'name'>, ResourceMeta{
   readonly type: "resource";
   readonly name: string;
   readonly model?: string;
-  views: ResourceView[];
-  filter?: FilterView;
-  fields: Property[];
-  get: (name: string) => Property | undefined;
+  readonly views: ResourceView[];
+  readonly filter?: FilterView;
   readonly params?: Record<string, any>;
   
   viewType?: string;
-  sortedFields?: SortedField[];
+  readonly sorted?: SortedField[];
   readonly evalContext: ResourceContext;
   readonly context: DataContext;
   readonly domain?: Domains;
+}
+
+export interface RelationField extends Field {
+  views?: ResourceView[];
 }
 
 export interface Filter {
@@ -244,7 +275,7 @@ export interface Criteria {
 export type SearchOptions = {
   limit?: number;
   offset?: number;
-  order?: string[];
+  order?: string;
   fields?: string[];
   domain?: Domains;
   context?: DataContext;
@@ -256,6 +287,15 @@ export type SearchOptions = {
   infinite?: boolean;
   signal?: AbortSignal;
 };
+
+export type RequestSearchOptions = {
+  limit?: number;
+  offset?: number;
+  silent?:boolean;
+  single?: boolean;
+  infinite?: boolean;
+  signal?: AbortSignal;
+}
 
 export type SearchPage = {
   offset?: number;
@@ -389,8 +429,72 @@ export type AdvancedSearchState = {
 };
 
 
+export type ActionOptions = {
+  action: string;
+  model?: string;
+  context?: DataContext;
+  domain?: Domains;
+};
+
+export type ActionResult = {
+  pending?: string;
+  exportFile?: string;
+  exportToken?: string;
+  signal?: string;
+  signalData?: any;
+  info?: {
+    title?: string;
+    message: string;
+    confirmBtnTitle?: string;
+  };
+  error?: {
+    title?: string;
+    message: string;
+    action?: string;
+    confirmBtnTitle?: string;
+  };
+  alert?: {
+    title?: string;
+    message: string;
+    action?: string;
+    confirmBtnTitle?: string;
+    cancelBtnTitle?: string;
+  };
+  notify?:
+    | { title: string; message: string }
+    | { title: string; message: string }[];
+  errors?: Record<string, string>;
+  values?: DataRecord;
+  attrs?: Record<string, Record<string, any>>;
+  reload?: boolean;
+  validate?: boolean;
+  close?: boolean;
+  canClose?: boolean;
+  save?: boolean;
+  new?: boolean;
+  //view?: ActionView;
+  report?: {
+    report?: boolean;
+    reportLink?: string;
+    reportFile?: string;
+    reportFormat?: "pdf" | "html";
+    attached?: {
+      id: number;
+      fileName: string;
+    };
+  }
+};
+
+
+
+
 export function isField(widget: Widget|Schema): widget is Field {
   return widget.type === "field" && !!widget.name;
+}
+
+const relTypes = ['mtm', 'otm', 'mto']
+export function isRelationField(widget: Field): widget is RelationField {
+  return relTypes.includes(widget.pType)
 }
 
 export function isRecordProps(props: Schema["props"]): props is Record<string, any> {
@@ -401,6 +505,20 @@ export function isContainer(widget: Widget): widget is Container {
   return "items" in widget && Array.isArray(widget.items);
 }
 
+export function getWidgetItems(widget: Widget) {
+  if( "items" in widget && widget.items)
+     return Array.isArray(widget.items) ? widget.items : [widget.items]  ;
+  return EMPTY_ARRAY as Widget[]
+}
+
 export function getWidgetProp(props: Schema["props"], key:string) {
   if(isRecordProps(props)) return (props as any)[key]
+}
+
+export function getMultiValues(value?: null | number | string) {
+  return value ? String(value).split(/\s*,\s*/) : [];
+}
+
+export function joinMultiValues(values: string[]) {
+  return values.join(",");
 }

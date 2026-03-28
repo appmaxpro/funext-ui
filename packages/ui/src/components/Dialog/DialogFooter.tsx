@@ -3,7 +3,7 @@ import React from "react";
 import { styled, SxComponentProps, StyledComponentOwner, clsx } from "../../styles";
 // types
 import type { className, children } from "../../types/components/dialog";
-import { dialogClasses } from "./types";
+import { dialogClasses } from "./dialogClasses";
 
 export interface DialogFooterProps extends SxComponentProps<"div"> {
   className?: className;
@@ -27,7 +27,7 @@ export const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
     
     // 4. return
     return (
-      <DialogFooterRoot {...rest} ref={ref} className={clsx(dialogClasses.footer, className) }>
+      <DialogFooterRoot {...rest} ref={ref} className={clsx(dialogClasses.dialogFooter, className) }>
         {children}
       </DialogFooterRoot>
     );

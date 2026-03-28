@@ -10,9 +10,15 @@ ReactDOM.render(
   document.getElementById("root")
 );*/
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Code to run when the DOM is ready
+  console.log("DOM is ready!");
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <App />
 );
+});
+
 /*
 if (navigator.serviceWorker) {
     navigator.serviceWorker

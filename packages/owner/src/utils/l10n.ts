@@ -8,9 +8,9 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 
-import { limitScale } from "./format";
 //import { toKebabCase } from "@/utils/names";
 import { session } from "./session";
+import { limitScale } from "./constant";
 
 dayjs.extend(localizedFormat);
 dayjs.extend(customParseFormat);

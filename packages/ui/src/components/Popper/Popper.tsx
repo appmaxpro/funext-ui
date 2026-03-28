@@ -1,94 +1,81 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 
 // @floating-ui
 import {
-  offset as fuiOffset,
-  flip,
-  shift,
-  hide,
-  size,
-  inline,
-  arrow as fuiArrow,
-  Middleware,
   autoUpdate,
-  useFloating,
-  useInteractions,
-  useRole,
-  useClick,
-  useDismiss,
-  useHover,
-  UseHoverProps,
-  UseClickProps,
-  safePolygon,
-  limitShift,
-  UseInteractionsReturn,
+  Boundary,
+  flip,
+  FloatingArrow,
   FloatingFocusManager,
   FloatingFocusManagerProps,
-  FloatingArrow,
-  FloatingOverlay,
-  Boundary,
-  useMergeRefs,
-  Rect,
+  arrow as fuiArrow,
+  offset as fuiOffset,
+  hide,
+  inline,
+  limitShift,
+  Middleware,
+  shift,
+  size,
+  useClick,
+  UseClickProps,
+  useDismiss,
+  useFloating,
+  useHover,
+  UseHoverProps,
+  useInteractions,
+  UseInteractionsReturn,
+  useMergeRefs
 } from "@floating-ui/react";
 
 // utils
-import merge from "deepmerge";
 
 // context
-import { useTailwindTheme } from "../../theme";
 
 // types
 import type {
-  handler,
-  Placement,
   ArrowProps,
   DismissProps,
-  Side,
-  FloatingContext,
   ElementProps,
+  FloatingContext,
+  handler,
+  Placement,
+  Side,
 } from "./types";
 
 // popover components
-import { isElement } from "../../utils";
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
 import {
   getPlacementSides,
-  origin,
-  transformOrigin,
+  transformOrigin
 } from "../../lib/helpers/origin";
-import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
+import { isElement } from "../../utils";
 
-import {
-  DEFAULT_POPPER_DISTANCE,
-  DEFAULT_FALLBACK_PLACEMENTS,
-  DEFAULT_POPPER_PADDING,
-  DEFAULT_POPPER_ARROW,
-} from "./constants";
+import { useSize } from "../../hooks/use-size";
+import { EMPTY_ARRAY, EMPTY_RECORD } from "../../lib/constants";
+import { getElementRef } from "../../lib/getElementRef";
+import { isRecord } from "../../lib/isRecord";
+import { LayerProps, LayerProvider, useLayer } from "../../lib/layer";
+import { Portal } from "../../lib/portal";
+import { Presence } from "../../lib/presence";
 import {
   styled,
   StyledComponent,
-  SxComponentProps,
-  useSlot,
-  useTheme,
+  SxComponentProps
 } from "../../styles";
-import { Layer, LayerProps, LayerProvider, useLayer } from "../../lib/layer";
-import { isRecord } from "../../lib/isRecord";
-import { useSize } from "../../hooks/use-size";
-import { useRefs } from "../../hooks";
-import { Portal } from "../../lib/portal";
-import { Presence } from "../../lib/presence";
-import Overlay, { OverlayProps } from "../Overlay";
-import Panel, { PanelProps } from "../Panel";
-import { PopperContextProvider } from "./PopperContext";
-import { EMPTY_ARRAY, EMPTY_RECORD } from "../../lib/constants";
-import { zIndex } from "../../theme/types";
-import { getElementRef } from "../../lib/getElementRef";
+import { useFloatingContext } from "../Context";
 import {
   AnimatedProps,
   getAnimationSafe,
   shouldForwardProp,
 } from "../internal/animation";
-import { useEvent } from "../../hooks/use-event";
-import { useFloatingContext } from "../Context";
+import Overlay, { OverlayProps } from "../Overlay";
+import Panel, { PanelProps } from "../Panel";
+import {
+  DEFAULT_FALLBACK_PLACEMENTS,
+  DEFAULT_POPPER_ARROW,
+  DEFAULT_POPPER_PADDING
+} from "./constants";
+import { PopperContextProvider } from "./PopperContext";
 
 const Arrow = styled(FloatingArrow)("");
 
@@ -696,6 +683,7 @@ export const Popper = Object.assign(PopperFc, {
   ComponentRoot,
   setRawTrigger,
   hasTrigger,
+  Trigger: PopperTrigger
 });
 
 // @ts-ignore

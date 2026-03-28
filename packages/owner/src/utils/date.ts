@@ -80,7 +80,14 @@ export function getDateDomain(
     return [[name, "=", getValue(value, type)]];
   }
 
-  const now = moment().locale(l10n.getLocale());
+  const now = moment();
+
+  (window as any).moment = moment;
+
+  console.warn("getDateDomain::now:", now);
+  if (typeof value !== "string") {
+    return null
+  }
 
   if (value === "today") {
     return [[name, "=", getValue(now, type)]];
@@ -88,7 +95,21 @@ export function getDateDomain(
 
   if (value === "last_day") {
     return [
-      [name, "=", getValue(now.clone().subtract(1, "d").startOf("d"), type)],
+      [name, "=", getValue(now.subtract(1, "d").startOf("d"), type)],
+    ];
+  }
+
+
+
+  if((value as string).includes('range_')) {
+    let ds = (value as string).replace("range_", "").split("-");
+    if(ds.length === 1) {
+      return [[name, "=", getValue(moment(new Date(parseInt(ds[0]))), type)]];
+    }
+    return [
+      "&",
+      [name, ">=", getValue(moment(new Date(parseInt(ds[0]))), type)],
+      [name, "<=", getValue(moment(new Date(parseInt(ds[1]))), type)],
     ];
   }
 
@@ -102,42 +123,45 @@ export function getDateDomain(
 
   const qyt = unitType === "quarter" ? 3 : 1;
 
-  const timeUnit = unitType === "quarter" ? "m" : (unitType as ManipulateType);
+  const timeUnit = unitType === "quarter" ? "M" : (unitType as ManipulateType);
+   
 
+  console.log("getDateDomain:::", {period, partType, qyt,unitType, timeUnit})
   if (period === "this") {
     return [
       "&",
-      [
-        [name, ">=", getValue(getStartOf(now, unitType), type)],
-        [name, "<", getValue(getEndOf(now.clone(), unitType), type)],
-      ],
+      
+        [name, ">=", getValue(now.clone().startOf(unitType), type)],
+        [name, "<", getValue(now.clone().add(qyt, timeUnit).startOf(unitType), type)],
+      
     ];
   }
 
   if (period === "next") {
     return [
       "&",
-      [
+      
         [name, ">=", getValue(now.clone().add(qyt, timeUnit).startOf(unitType), type)],
         [
           name,
           "<",
           getValue(now.clone().add(qyt + 1, timeUnit).startOf(unitType), type),
         ],
-      ],
+      
     ];
   }
-
+  
+  
   return [
     "&",
     [
-      [
+      
         name,
         ">=",
         getValue(now.clone().subtract(qyt, timeUnit).startOf(unitType), type),
       ],
       [name, "<", getValue(now.clone().add(qyt, timeUnit).startOf(unitType), type)],
-    ],
+    
   ];
 }
 

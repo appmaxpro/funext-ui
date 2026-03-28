@@ -1,6 +1,8 @@
+import { EMPTY_ARRAY } from "./constant";
 
 const hasOwn = Object.prototype.hasOwnProperty;
-
+const is = Object.is 
+/*
 function is(x: unknown, y: unknown) {
     if (x === y) {
         return x !== 0 || y !== 0 || 1 / x === 1 / y;
@@ -8,33 +10,58 @@ function is(x: unknown, y: unknown) {
         // eslint-disable-next-line no-self-compare
         return x !== x && y !== y;
     }
-}
+}*/
 
-export const shallowEqual = (objA: any, objB: any) => {
-    if (is(objA, objB)) return true;
+export const EXCLUDE_CHILDREN:string[] = ["children"] as const;
+/**
+ * Performs equality by iterating through keys on an object and returning false
+ * when any key has values which are not strictly equal between the arguments.
+ * Returns true when the values of all keys are strictly equal.
+ */
+export function shallowEqual(objA:any, objB:any, exclude?: string[]) {
+  if(objA == null && objB == null) {
+    return true
+  }
+
+  if(objA == null || objB == null) {
+     return false
+  }
+
+  if (is(objA, objB)) {
+    return true;
+  }
+
+
+
+  if (
+    typeof objA !== 'object' ||
+    objA == null ||
+    typeof objB !== 'object' ||
+    objB == null
+  ) {
+    return false;
+  }
+
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  // Test for A's keys different from B.
+  for (let i = 0; i < keysA.length; i++) {
+    if (exclude?.includes(keysA[i])) {
+      continue;
+    }
 
     if (
-        typeof objA !== 'object' ||
-        objA === null ||
-        typeof objB !== 'object' ||
-        objB === null
+      (!hasOwn.call(objB, keysA[i]) ||
+      !is(objA[keysA[i]], objB[keysA[i]]))
     ) {
-        return false;
+      return false;
     }
+  }
 
-    const keysA = Object.keys(objA);
-    const keysB = Object.keys(objB);
-
-    if (keysA.length !== keysB.length) return false;
-    Object.is
-    for (let i = 0; i < keysA.length; i++) {
-        if (
-            !hasOwn.call(objB, keysA[i]) ||
-            !Object.is(objA[keysA[i]], objB[keysA[i]])
-        ) {
-            return false;
-        }
-    }
-
-    return true;
-};
+  return true;
+}

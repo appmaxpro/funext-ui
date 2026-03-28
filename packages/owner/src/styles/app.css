@@ -58,7 +58,7 @@ body, html {
 
 @layer theme {
   body {
-    @apply bg-body text-fg;
+    @apply bg-bg text-fg;
     height: 100%;
   }
 }
@@ -70,8 +70,6 @@ body, html {
 ul{
     list-style: none;
 }
-
-
 
 
 .pt-page-rotateRoomBottomOut {
@@ -114,7 +112,18 @@ ul{
 	animation: moveFromRight .6s ease both;
 }
 
-
+div[data-portal]{
+   z-index: 1;
+   position: relative;
+}
+div[data-floating-ui-portal]{
+  z-index: 1;
+  position: relative;
+}
+.parent-view {
+  overflow: hidden;
+  height: 100%;
+}
 /* move from / to  */
 
 

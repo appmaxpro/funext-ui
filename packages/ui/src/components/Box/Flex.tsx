@@ -34,7 +34,6 @@ export interface InlineProps extends Omit<BoxProps, 'display' | 'd'> {
 
 export const Flex = styled(Box, {
   name: "Flex",
-  slot: "root",
 })({
   display: 'flex'
 }) ;
@@ -47,6 +46,14 @@ export const Flex:React.ForwardRefExoticComponent<StyledComponent<FlexProps>> = 
 export const InLine = styled(Box)({
   display: 'inline-flex'
 }) as StyledComponent<InlineProps>;
+
+
+export const Stack = styled(Box, {
+  name: "Stack",
+})({
+  display: 'flex',
+  flexDirection: 'column'
+}) ;
 
 
 export default Flex;  

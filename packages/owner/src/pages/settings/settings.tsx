@@ -1,11 +1,8 @@
-import { useParams } from "react-router";
-import { DataContext, useViewContext } from "~/context";
-import { useAsync } from "~/hooks/use-async";
 import React from "react";
-import { Container } from "~/components/app/container";
+import { Container } from "~/components/shared/container";
 import { Card, Flex, Radio, Switch } from "@funext/ui";
 import { i18n } from "~/utils/i18n";
-import { useLocalStorageState } from "~/hooks/use-local-storage-state";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 import { APP_THEME_MODE } from "~/utils/constant";
 import type { ThemeMode } from "~/utils/types";
 import { languages } from "~/components/app/localization-provider";
@@ -14,13 +11,9 @@ import DarkModeIcon from "@funext/icons/DarkMode";
 import LightModeIcon from "@funext/icons/LightMode";
 import SettingsSystemDaydreamIcon from "@funext/icons/SettingsSystemDaydream";
 
-export default function Settings({
-  children,
-  id,
-  ...rest
-}: { children: React.ReactNode; id: string } & Record<string, any>) {
+export default function Settings(props?: Record<string, any>) {
   return (
-    <Container {...rest}>
+    <Container {...props}>
       <ThemeModeCard />
       <LanguageCard />
       <SettingsCard />
@@ -29,10 +22,7 @@ export default function Settings({
 }
 
 function ThemeModeCard() {
-  const [mode, setMode] = useLocalStorageState<ThemeMode>(
-    APP_THEME_MODE,
-    "system",
-  );
+  const [mode, setMode] = useLocalStorage<ThemeMode>(APP_THEME_MODE, "system");
   return (
     <Card>
       <Card.Header title={i18n.get("Appearance")} />
@@ -81,7 +71,7 @@ function ThemeModeCard() {
 }
 
 function LanguageCard() {
-  const [lang, setLanguage] = useLocalStorageState("language");
+  const [lang, setLanguage] = useLocalStorage("language");
   return (
     <Card>
       <Card.Header title={i18n.get("Language")} />
@@ -101,9 +91,8 @@ function LanguageCard() {
 }
 
 function SettingsCard() {
-  const [notifications, setNotifications] =
-    useLocalStorageState("notifications");
-  const [hideAppOnScroll, setHideAppOnScroll] = useLocalStorageState(
+  const [notifications, setNotifications] = useLocalStorage("notifications");
+  const [hideAppOnScroll, setHideAppOnScroll] = useLocalStorage(
     "hideAppOnScroll",
     "1",
   );

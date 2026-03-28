@@ -2,13 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 
 import { type SessionInfo, session, loadSession } from "~/utils/session";
 import { useAsync } from "./use-async";
-import { useLocalStorageState } from "./use-local-storage-state";
+import { useLocalStorage } from "./use-local-storage";
 
 
 const login = session.login.bind(session);
 
 export function useSession() {
-  const [token, setApiToken] = useLocalStorageState("ssToken");
+  const [token, setApiToken] = useLocalStorage("ssToken");
   const doLoadSession = useCallback(()=> loadSession(token, setApiToken), [setApiToken])
   const { state, error } = useAsync(doLoadSession, []);
   const [data, setData] = useState<SessionInfo | null>(session.info);

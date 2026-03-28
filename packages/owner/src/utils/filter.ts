@@ -1,14 +1,23 @@
 import { extend, isArray, isEmpty } from "lodash";
 import lodashGet from "lodash/get";
 import { getDateDomain } from "~/utils/date";
-import type { Field, Option, DomainsGet, Container, PropertyType, Widget, Domains } from "./data-types";
+import {
+  type Field,
+  type Option,
+  type DomainsGet,
+  type Container,
+  type PropertyType,
+  type Widget,
+  type Domains,
+  isContainer,
+} from "./data-types";
 import { EMPTY_ARRAY } from "./constant";
 const FilterContainerTypes = ["list", "col", "row"];
 const LOGICAL = ["&", "|"];
 
 export type OP = "&" | "|";
 
-export declare type DomainGet = DomainsGet
+export declare type DomainGet = DomainsGet;
 
 export interface FilterOption extends Option {
   domain?: any[] | DomainGet;
@@ -29,7 +38,6 @@ export type WidgetType =
   | "test"
   | "custom";
 
-
 export type ContainerWidgetType = "panel" | "list" | "group";
 
 export type Comparison =
@@ -49,16 +57,18 @@ export type Comparison =
 
 const containerTypes = ["panel", "list", "group"];
 
-export type FilterWidget  = Widget & {
+export type FilterWidget = Widget & {
   widget?: WidgetType | ContainerWidgetType;
   //op?: OP;
-}
+};
 
 export interface FilterFormField extends Field {
   value?: string | number | boolean | Date | object | Array<any>;
 }
 
-export interface FilterField extends Omit<Field, 'widget'>, Omit<FilterWidget, 'type' | 'name'>  {
+export interface FilterField
+  extends Omit<Field, "widget">,
+    Omit<FilterWidget, "type" | "name"> {
   field?: string;
   pType: PropertyType;
   value?: string | number | boolean | Date | object | Array<any>;
@@ -66,20 +76,25 @@ export interface FilterField extends Omit<Field, 'widget'>, Omit<FilterWidget, '
 }
 
 export interface FilterFieldSelect extends FilterField {
-  multiple?: boolean;
   op?: OP;
 }
 
 export interface FilterFieldOptions extends FilterFieldSelect {
   widget: "select";
-  options: Array<FilterOption>;
+  options: Array<Option>;
   optionsName?: string;
 }
 
-export interface FilterFieldRelation extends FilterFieldSelect {
+export interface FilterFieldDateOptions
+  extends Omit<FilterFieldSelect, "options"> {
+  widget: "select";
+  options: Array<string>;
+  optionsName?: string;
+}
+
+export interface FilterFieldRelation extends Omit<FilterFieldSelect, "domain"> {
   widget: "m2o";
-  resource: string;
-  filterDomain: any[];
+  domain?: Field["domain"];
 }
 
 export interface NodeSearchFilterField extends FilterFieldSelect {
@@ -97,23 +112,13 @@ export interface FilterContainer extends Container<FilterWidget> {
   op?: OP;
 }
 
-
-export interface TestFilter extends Omit<FilterWidget, 'name' | 'title'>{
+export interface TestFilter extends Omit<FilterWidget, "name" | "title">, Option {
   widget: "test";
   domain?: DomainGet;
-  name: string;
-  title: string;
-  checked?: (values: any, ctx?: object) => boolean;
-  value?: any;
-  eval?: string;
 }
 
-export interface ValueFilter extends Omit<TestFilter, 'checked' | 'value' | 'eval'> {
+export interface ValueFilter extends Omit<TestFilter, "checked" | "value"> {
   value: any;
-}
-
-export interface CheckedFilter extends Omit<TestFilter, 'checked' | 'value' | 'eval'> {
-  checked: (values: any) => boolean;
 }
 
 
@@ -123,52 +128,50 @@ export interface FilterGroup extends Container<TestFilter> {
   name: string;
 }
 
-export interface FilterTabs extends Container<ValueFilter> {
+export interface FilterTabs extends FilterField {
   widget: "tabs";
   multiple: false;
-  name: string;
+  options: Array<Option>;
 }
 
 export interface FilterList extends FilterContainer {
   widget: "list";
 }
 
-export interface SidebarFilter extends Omit<Widget, 'items'> {
-  items: Array<FilterGroup|FilterField>;
+export interface SidebarFilter extends Omit<Widget, "items"> {
+  items: Array<FilterGroup | FilterField>;
   openState: Record<string, boolean>;
 }
 
 export type Filter = FilterContainer | FilterWidget;
 
-
-export function isField(widget: FilterWidget): widget is FilterField {
-  return widget.type === "field";
-}
-
+/*
 export function isContainer(widget: FilterWidget): widget is FilterContainer {
   return containerTypes.includes(widget.type) || 'items' in widget;
-}
+}*/
 
 export const isSelect = (widget: FilterWidget): widget is FilterFieldSelect =>
-  widget.widget === "m2o" || widget.widget === "select";
+  widget.widget === "m2o" || widget.widget === "select" || 'options' in widget;
 
-
-export function isFilterChecked(item:TestFilter, value: any, multiple: boolean, ctx?:object){
-    if (multiple && !Array.isArray(value))  value = EMPTY_ARRAY;
-    if(item.value) {
-      return multiple ? value.includes(item.value) : value === item.value
-    }
-    if(item.checked) {
-       return item.checked(value, ctx)
-    }
-    return false;
+export function isField(widget: FilterWidget): widget is FilterField {
+  return widget.type === "field" || isSelect(widget);
 }
 
 function addToDomainArray(domain: any[], newDomain: any[]) {
   if (Array.isArray(newDomain) && newDomain.length) {
-    if (Array.isArray(newDomain[0])) {
+    let [first, ...rest] = newDomain;
+    if (Array.isArray(first)) {
       domain.push(...newDomain);
-    } else {
+    } 
+    else if(first === '&' || first === '|' ) {
+       if (Array.isArray(rest[0])) {
+         domain.push(first);
+         domain.push(...rest);
+       } else {
+         domain.push(rest);
+       }
+    }
+    else {
       domain.push(newDomain);
     }
   }
@@ -190,17 +193,21 @@ export const buildDomain = (
   values: any,
   ctx?: any,
 ): Domains[] | null => {
-  const result: any[] = [];
+  return build(filter, values, ctx);
+};
 
+const build = (
+  filter: Filter,
+  values: any,
+  ctx?: any,
+  parent?: Filter,
+): Domains[] | null => {
+  const result: any[] = [];
   if (isContainer(filter)) {
     const childResult: any[] = [],
       children = filter.items || [];
     for (let filterChild of children) {
-      const filterChildValue = buildDomain(
-        filterChild,
-        values,
-        ctx,
-      );
+      const filterChildValue = build(filterChild, values, ctx, filter);
       if (filterChildValue && filterChildValue.length) {
         addToDomainArray(childResult, filterChildValue);
       }
@@ -212,11 +219,10 @@ export const buildDomain = (
       result.push(...childResult);
     }
   } else if (isField(filter)) {
-    let value =
-      ctx && filter.name ? ctx[filter.name] : (filter.value as any);
+    let value = ctx && filter.name ? ctx[filter.name] : (filter.value as any);
     const name = filter.name;
     const field = filter.field || filter.name;
-    const comp = filter.comp || (filter.pType === "string" ? "like" : "=");
+    let comp = filter.comp || (filter.pType === "string" ? "like" : "=");
     const domain = filter.domain;
 
     if (
@@ -277,16 +283,19 @@ export const buildDomain = (
               value = null;
             }
           }
+          break;
         default: {
-          if (filter.widget === "select") {
+          if (isSelect(filter) && filter.options) {
+            
             const optionMap: any = {};
             let optFilter = filter as FilterFieldOptions;
-
 
             for (let option of optFilter.options!) {
               optionMap[option.value!] = option;
             }
             if (optFilter.multiple) {
+              comp = filter.comp ?? 'in';
+              let op = optFilter.op ?? '|'
               if (Array.isArray(value)) {
                 const domainOptions = [];
                 const inOptions = [];
@@ -297,7 +306,8 @@ export const buildDomain = (
                       typeof option.domain === "function"
                         ? option.domain(ctx || values)
                         : option.domain;
-                    addToDomainArray(domainOptions, domain);
+                    //addToDomainArray(domainOptions, domain);
+                    domainOptions.push(domain);
                   } else {
                     if (comp === "in" || comp === "not in") {
                       inOptions.push(val);
@@ -308,12 +318,12 @@ export const buildDomain = (
                 }
                 const selectLength =
                   domainOptions.length + (inOptions.length ? 1 : 0);
-                if (optFilter.op && selectLength > 1) {
+                if ( op ) {
                   for (let i = 0; i < selectLength - 1; i++)
                     result.push(optFilter.op);
                 }
 
-                if (domainOptions.length) result.push(domainOptions);
+                if (domainOptions.length) result.push(...domainOptions);
 
                 if (inOptions.length) {
                   result.push([field, comp, inOptions]);
@@ -342,8 +352,12 @@ export const buildDomain = (
 
       if (value != null && value !== Infinity) {
         values[filter.name!] = value;
-        if (Array.isArray(value) && isSelect(filter)) {
-          if (value.length && filter.multiple && ["in", "not in"].includes(comp)) {
+        if (Array.isArray(value)) {
+          if (
+            value.length &&
+            filter.multiple
+          ) {
+            comp = filter.comp ?? 'in';
             if (value.length === 1) {
               result.push([field, comp === "in" ? "=" : "!=", value]);
             } else {
@@ -359,6 +373,13 @@ export const buildDomain = (
         }
       }
     }
+  } else {
+    console.warn(
+      "Filter:: unknown filter entry: ",
+      filter,
+      parent ? " in parent:" : "",
+      parent ? parent : "",
+    );
   }
 
   return result.length ? result : null;
@@ -378,7 +399,7 @@ export const setValues = (filter: Filter, values: any): any => {
         }
       }
     }
-    (filter as any).value = value
+    (filter as any).value = value;
   }
 };
 
@@ -387,10 +408,9 @@ const getResultValues = (
   values: any,
   result: any = {},
 ): any => {
-
   if (isContainer(filter)) {
     for (let filterChild of filter.items) {
-      getResultValues(filterChild, values, result);
+      getResultValues(filterChild as FilterWidget, values, result);
     }
   } else if ((filter as FilterField).name) {
     let filterField = filter as FilterField;
@@ -408,10 +428,7 @@ const getResultValues = (
   return result;
 };
 
-export const getValues = (
-  filters: Filter | Filter[],
-  values?: any,
-): any => {
+export const getValues = (filters: Filter | Filter[], values?: any): any => {
   filters = Array.isArray(filters) ? filters : [filters];
   let result = {};
   for (let filter of filters) getResultValues(filter, values, result);
@@ -426,17 +443,14 @@ export const getDefaults = (
   result = result || {};
   filters = Array.isArray(filters) ? filters : [filters];
   for (let filter of filters) _getDefaults(filter, result);
-  
+
   return Object.keys(result).length ? result : null;
 };
 
-export const _getDefaults = (
-  filter: FilterWidget,
-  result: any,
-): any => {
+export const _getDefaults = (filter: FilterWidget, result: any): any => {
   if (isContainer(filter)) {
     for (let filterChild of filter.items) {
-      getDefaults(filterChild, result);
+      getDefaults(filterChild as FilterWidget, result);
     }
   } else if (isField(filter)) {
     let value = filter.value as any;

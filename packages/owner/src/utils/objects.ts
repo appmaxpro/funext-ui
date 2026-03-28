@@ -1,3 +1,4 @@
+import { EMPTY_OBJECT } from "./constant";
 
 export type ObjectKey = string | symbol;
 
@@ -34,7 +35,7 @@ export function omit<T extends Record<ObjectKey, unknown>>(
   obj: T,
   exclude: ObjectKey[] | ((key: ObjectKey) => boolean),
 ): Partial<T> {
-  return Object.entries(obj)
+  return Object.entries(obj ?? EMPTY_OBJECT)
     .filter(([key]) => !includesKey(exclude, key))
     .reduce((prev, [key, value]) => ({ ...prev, [key]: value }), {});
 }
@@ -63,6 +64,7 @@ export function pick<T extends Record<ObjectKey, unknown>>(
   obj: T,
   include: ObjectKey[] | ((key: ObjectKey) => boolean),
 ): Partial<T> {
+  
   return omit(obj, (key) => includesKey(include, key));
 }
 
@@ -123,6 +125,9 @@ export function deepSet<T extends object>(
   path: DeepPath,
   value: unknown,
 ) {
+
+  if(!obj) return;
+  
   const props = toPath(path);
   const last = props.pop();
 
@@ -326,4 +331,11 @@ export function isPlainObject(
  */
 export function isObject(value: any): value is object {
   return typeof value === "object";
+}
+
+export function getBoolean(
+  value: any,
+  defaults?: boolean
+) {
+  return value != null ? /^(1|t|y|true|yes)$/.test(value) : defaults;
 }

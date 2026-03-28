@@ -9,5 +9,5 @@ export function resolveRef<T extends HTMLElement | null | undefined>(
     return maybeRef;
   }
 
-  return 'current' in maybeRef ? maybeRef.current : maybeRef;
+  return "current" in maybeRef ? maybeRef.current as T : maybeRef;
 }

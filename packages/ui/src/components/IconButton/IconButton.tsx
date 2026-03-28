@@ -113,6 +113,11 @@ let IconButtonRoot = styled(ButtonBase, {
       //color: theme.palette.action.disabled,
       opacity: .5
     },
+
+    '& svg': {
+      fontSize: "inherit",
+    },
+
     variants: [
       {
         props: {
@@ -176,9 +181,6 @@ let IconButtonRoot = styled(ButtonBase, {
         style: {
           padding: "4px",
           fontSize: "20px",
-          ['& [data-ui="icon"]']:{
-            fontSize: ''
-          }
         },
       },
     ],

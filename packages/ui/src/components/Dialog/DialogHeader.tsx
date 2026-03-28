@@ -6,7 +6,7 @@ import { clsx, styled, type SxComponentProps } from "../../styles";
 // types
 import IconButton from "../IconButton";
 import Close from "../internal/svg-icons/Close";
-import { dialogClasses } from "./types";
+import { dialogClasses } from "./dialogClasses";
 
 export interface DialogHeaderProps extends SxComponentProps<"div"> {
   onClose?: ()=> void;
@@ -14,6 +14,8 @@ export interface DialogHeaderProps extends SxComponentProps<"div"> {
   actions?: React.ReactNode;
   divider?: boolean;
 }
+
+const titleClass = 'DialogTitle';
 
 const DialogHeaderRoot = styled('div', {
   name: 'MuxDialogHeader',
@@ -23,7 +25,7 @@ const DialogHeaderRoot = styled('div', {
   flex: '0 0 auto',
   padding: '12px 16px',
   flexWrap: 'nowrap',
-  [`& .${dialogClasses.title}`]:{
+  [`& .${titleClass}`]:{
      flex: '1'
   },
   ['& .MuxButtonBase-root']: {
@@ -36,12 +38,12 @@ export const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
     
     // 4. return
     return (
-      <DialogHeaderRoot {...rest} ref={ref} className={clsx(dialogClasses.header, className)}>
-        <div className={clsx(dialogClasses.title, className)}>
+      <DialogHeaderRoot {...rest} ref={ref} className={clsx(dialogClasses.dialogHeader, className)}>
+        <div className={clsx(titleClass, titleClassName)}>
           {children}
         </div>
         {actions}
-        {onClose && <IconButton onClick={onClose}><Close/></IconButton>}
+        {onClose && <IconButton onClick={onClose}><Close /></IconButton>}
          
       </DialogHeaderRoot>
     );

@@ -20,20 +20,20 @@ import type {
   SaleTargetProps,
   SaleTargetSideProps,
   SaleTargetStatesProps,
-} from "../uitls/types";
+} from "../types";
 import { i18n } from "~/utils/i18n";
 import { getProgressClass } from "../uitls/colors";
 import StorefrontIcon from "@funext/icons/Storefront";
 import PersonIcon from "@funext/icons/Person";
 import ScheduleIcon from "@funext/icons/Schedule";
 import LocalShippingIcon from "@funext/icons/LocalShipping";
-import { Container } from "~/components/app/container";
+import { Container } from "~/components/shared/container";
 import { PortalTitle } from "~/components/app/portal-title";
-import { PercentageProgress } from "~/components/other/circular-progress";
-import { useDataContext, useRecordContext } from "~/context";
+import { PercentageProgress } from "~/components/shared/circular-progress";
+import { useRecord } from "~/context";
 
 export const SaleTargetStateBox = () => {
-  const data = useRecordContext() as SaleTargetStatesProps;
+  const data = useRecord() as SaleTargetStatesProps;
   //console.log("SaleTargetStateBox: data:", data)
   return (
     <>
@@ -55,7 +55,7 @@ export const SaleTargetStateBox = () => {
 };
 
 export const SaleTargetBranchBox = () => {
-  const data: SaleTargetBranchProps = useDataContext();
+  const data = useRecord() as SaleTargetBranchProps;
   return (
     <>
       <PortalTitle title={data.title}>

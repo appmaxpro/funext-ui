@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { useNavContext } from '../context';
 import { getItemPath, getNavTitle, matchPath } from '../utils/navigation';
-import type { Breadcrumb, Navigation, NavItem, OutletRoute } from '../utils/types';
-import { useLocation, matchPath as routeMatchPath, matchRoutes, useNavigate, useNavigation } from 'react-router';
+import type { Breadcrumb, OutletRoute } from '../utils/types';
+import { useRouter } from './use-router';
 
 export interface ActivePage {
   title: string;
@@ -16,33 +16,37 @@ export interface ActivePage {
 
 export function useActivePage(): ActivePage | null {
   const navigation = useNavContext();
-  const location = useLocation();
+  const router = useRouter();
   //const routerContext = React.useContext(RouterContext);
-  const pathname = location?.pathname ?? '/';
   //const navigator = useNavigation
 
 
-  const activeItem = matchPath(navigation, pathname);
+  //const activeItem = route;
 
-  const rootItem = matchPath(navigation, '/');
+  //const rootItem = matchPath(navigation, '/');
 
   return React.useMemo(() => {
+    
+    const activeItem = router.route;
+    console.log("useActivePage:: route:", activeItem )
     if (!activeItem) {
-      console.warn("No active page for path:", pathname)
+      console.warn("No active page for path:", router.location.pathname)
       return null as any;
     }
-    
+    let root = activeItem;
+    while(root.parent)
+      root = root.parent
 
     const breadcrumbs: Breadcrumb[] = [];
 
-    if (rootItem) {
+    if (root) {
       breadcrumbs.push({
-        title: getNavTitle(rootItem),
+        title: getNavTitle(root),
         path: '/',
       });
     }
 
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = router.location.pathname.split('/').filter(Boolean);
     let prefix = '';
     for (const segment of segments) {
       const path = `${prefix}/${segment}`;
@@ -62,11 +66,11 @@ export function useActivePage(): ActivePage | null {
     }
 
     return {
-      title: getNavTitle(activeItem),
-      path: getItemPath(navigation, activeItem),
+      title: activeItem.title,
+      path: location.pathname,
       breadcrumbs,
       navItem: activeItem,
-      root: rootItem
+      root
     };
-  }, [activeItem, rootItem, pathname, navigation]);
+  }, [router]);
 }

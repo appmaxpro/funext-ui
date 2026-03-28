@@ -1,10 +1,10 @@
 import * as React from "react";
 import Button, { type ButtonProps } from "@funext/ui/Button";
-import LogoutIcon from "@funext/icons/Logout";
 import { i18n } from "~/utils/i18n";
 import { ConfirmSignOut } from "./confirm-sign-out";
 import { session } from "~/utils/session";
 import { useSession } from "~/hooks/use-session";
+import { Icons } from "../shared";
 
 export type SignOutButtonProps = ButtonProps & {
   text?: React.ReactNode;
@@ -54,7 +54,7 @@ function SignOutButton({ confirm, onLogout, ...props }: SignOutButtonProps) {
           filter: "opacity(1)",
         },
       }}
-      startIcon={<LogoutIcon />}
+      startIcon={<Icons.Logout />}
       {...props}
     >
       {props.text ?? i18n.get("signOutLabel")}

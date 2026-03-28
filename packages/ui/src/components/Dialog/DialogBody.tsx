@@ -1,23 +1,11 @@
 import React from "react";
 
 // utils
-import classnames from "classnames";
-import { twMerge } from "tailwind-merge";
-import values from "../../utils/values";
 
 // context
-import { useTailwindTheme } from "../../theme";
-import { clsx, styled, SxThemeProps, type SxComponentProps } from "../../styles";
+import { clsx, styled, type SxComponentProps } from "../../styles";
 // types
-import type {
-  divider,
-  className,
-  children,
-} from "../../types/components/dialog";
-import { dialogClasses } from "./types";
-
-
-
+import { dialogClasses } from "./dialogClasses";
 
 export interface DialogBodyProps extends SxComponentProps<"div"> {
   divider?: boolean;
@@ -29,39 +17,51 @@ const DialogBodyRoot = styled("div", {
   flex: "1 1 auto",
   // Add iOS momentum scrolling for iOS < 13.0
   WebkitOverflowScrolling: "touch",
-  overflowY: 'auto',
-  padding: '20px 24px',
-    variants: [
-      {
-        props: ({ ownerState }:any) => ownerState.dividers,
-        style: {
-          padding: '16px 24px',
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
+  overflowY: "auto",
+  padding: "20px 24px",
+  "&::after": {
+    content: '""',
+    display: "inline-block",
+    verticalAlign: "middle",
+    height: 0,
+    width: 0,
+  },
+  variants: [
+    {
+      props: ({ ownerState }: any) => ownerState.dividers,
+      style: {
+        padding: "16px 24px",
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+      },
+    },
+    {
+      props: ({ ownerState }: any) => !ownerState.dividers,
+      style: {
+        [`.${dialogClasses.dialogHeader} + &`]: {
+          paddingTop: 0,
+        },
+        [`.${dialogClasses.dialogFooter} + &`]: {
+          paddingBottom: 0,
         },
       },
-      {
-        props: ({ ownerState }:any) => !ownerState.dividers,
-        style: {
-          [`.${dialogClasses.header} + &`]: {
-            paddingTop: 0,
-          },
-        },
-      },
-    ],
-
-    
-
+    },
+  ],
 });
 
 export const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ divider, className, children, ...rest }, ref) => {
     // 1. init
-    
-    const ownerState = {divider}
+
+    const ownerState = { divider };
     // 4. return
     return (
-      <DialogBodyRoot {...rest} ref={ref} className={clsx(dialogClasses.body, className)} ownerState={ownerState}>
+      <DialogBodyRoot
+        {...rest}
+        ref={ref}
+        className={clsx(dialogClasses.dialogBody, className)}
+        ownerState={ownerState}
+      >
         {children}
       </DialogBodyRoot>
     );

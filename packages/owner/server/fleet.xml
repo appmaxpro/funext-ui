@@ -1,0 +1,108 @@
+<resource name="fleet" model="fleet_vehicle">
+  <property name="id" type="int" readonly="t" />
+  <property name="name" />
+  <property name="created_date" type="datetime" readonly="t" />
+  <property name="active" type="boolean" readonly="t" />
+  <property name="license_plate" />
+  <property name="image" />
+  <property name="brand_model" />
+  <property name="model_year" />
+  <property name="odometer_count" type="int" />
+  <property name="color" />
+  <property name="statistic" type="otm" />
+  <property name="state" />
+  <property name="driver" type="mto" />
+  <property name="device_id" type="int" />
+  <property name="purchase_amount" type="decimal" />
+  <property name="last_trip_date" type="datetime" />
+  <property name="current_trip" type="mto" />
+
+  <form mode="show">
+    <Stack gap="4">
+      <Card>
+        <Card.Header>
+          <slot name="title">
+            <field name="name" />
+          </slot>
+        </Card.Header>
+      </Card>
+      <tabs>
+          <pane title="General">
+            <Card.Body>
+
+            </Card.Body>
+          </pane>
+          <pane title="Current Trip" hideIf="!ctx.current_trip">
+            <Card.Body>
+
+            </Card.Body>
+          </pane>
+          <pane title="Static" hideIf="!ctx.current_trip">
+            <Card.Body>
+
+            </Card.Body>
+          </pane>
+        </tabs>
+    </Stack>
+  </form>
+
+
+  <list props="{layout: {type: 'raw'}, estimatedItemSize: 90}">
+    <Block>
+      <List.Item className="p-0">
+        <List.Button e_to="`fleet/${ctx.id}`">
+          <List.Prefix>
+            <Icon name="LocalShipping" />
+          </List.Prefix>
+          <List.Text e_primary="ctx.name">
+            <prop name="h_secondary">
+              (ctx.driver ? ctx.driver[1] : "")
+            </prop>
+          </List.Text>
+          <h>
+            return h.div(
+              {class: 'flex'},
+              h.List.Prefix(
+                 h.Icon({name: 'LocalShipping'})
+              ),
+              h.List.Text(
+                {primary: h.h5("Local Test eval using h")}
+              )
+            )
+          </h>
+
+        </List.Button>
+      </List.Item>
+    </Block>
+  </list>
+
+  <filter>
+    <form>
+      <stack>
+        <field name="name" title="Truck Name" />
+        <field name="license_plate" title="Plate Number" />
+      </stack>
+    </form>
+    <sidebar>
+      <item widget="tabs" name="tab">
+        <option title="All"/>
+        <option value="1" domain="[['current_trip', '!=', false]]" title="Running"/>
+        
+        <option value="3" domain="[['fleet_type_id', 'ilike', 'xl']]" title="Heavy"/>
+        <option value="4" domain="[['fleet_type_id', 'ilike', 'sm']]" title="Tow truck"/>
+        <option value="2" domain="[['current_trip', '!=', false]]" title="Out Of Service"/>
+      </item>
+      <field name="driver_id" pType="mto" widget="tabs" target="res.partner"  
+         filterDomain="[['is_driver', '=', true]]"/>
+      <field name="last_trip_date" pType="date" options="['last', 'current', 'range']"/>
+      <field name="god" pType="select" multiple="true">
+         <options>
+           <option value="1" title="Test1"/>
+           <option value="2" title="Test2"/>
+           <option value="3" title="Test3"/>
+           <option value="4" title="Test4"/>
+         </options>
+      </field>
+    </sidebar>
+  </filter>
+</resource>

@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { CODEC_STRING, type Codec } from '~/utils/codec';
+import { CODEC_JSON, CODEC_STRING, type Codec } from '~/utils/codec';
 
 // storage events only work across tabs, we'll use an event emitter to announce within the current tab
 const currentTabChangeListeners = new Map<string, Set<() => void>>();
@@ -80,7 +80,7 @@ function setValue(area: Storage, key: string | null, value: string | null) {
     return;
   }
   try {
-    if (value === null) {
+    if (value == null) {
       area.removeItem(key);
     } else {
       area.setItem(key, String(value));
@@ -132,25 +132,25 @@ const getKeyServerSnapshot = () => null;
  * Since the storage API isn't available in server-rendering environments, we
  * return null during SSR and hydration.
  */
-export function useStorageState(
+export function useStorage(
   area: Storage,
   key: string | null,
   initializer?: string | null | StorageStateInitializer<string>,
   options?: DefaultStorageStateOptions,
 ): UseStorageStateHookResult<string>;
-export function useStorageState<T>(
+export function useStorage<T>(
   area: Storage,
   key: string | null,
   initializer: T | null | StorageStateInitializer<T>,
   options: StorageStateOptions<T>,
 ): UseStorageStateHookResult<T>;
-export function useStorageState<T = string>(
+export function useStorage<T = string>(
   area: Storage,
   key: string | null,
   initializer: T | null | StorageStateInitializer<T> = null,
   options?: DefaultStorageStateOptions | StorageStateOptions<T>,
 ): UseStorageStateHookResult<T> {
-  const codec = (options?.codec ?? CODEC_STRING) as Codec<T>;
+  const codec = (options?.codec ?? CODEC_JSON) as Codec<T>;
 
   const [initialValue] = React.useState(initializer);
   const encodedInitialValue = React.useMemo(

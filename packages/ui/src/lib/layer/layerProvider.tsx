@@ -9,6 +9,7 @@ import {LayerContextValue} from './types'
 export interface LayerProviderProps {
   children?: React.ReactNode;
   zOffset?: number;
+  enabled?: boolean;
   //zOffset?: number | number[]
 }
 
@@ -16,7 +17,7 @@ export interface LayerProviderProps {
  * @public
  */
 export function LayerProvider(props: LayerProviderProps): React.JSX.Element {
-  const {children, zOffset: zOffsetProp = 0} = props
+  const {children, zOffset: zOffsetProp = 0, enabled=true} = props
 
   // Get parent context values
   const parentContextValue = useContext(LayerContext)
@@ -92,7 +93,7 @@ export function LayerProvider(props: LayerProviderProps): React.JSX.Element {
   )
 
   // Register this layer on mount
-  useEffect(() => parentRegisterChild?.(level), [level, parentRegisterChild])
+  useEffect(() => enabled ? parentRegisterChild?.(level) : undefined, [level, enabled, parentRegisterChild])
 
   const value: LayerContextValue = useMemo(
     () => ({

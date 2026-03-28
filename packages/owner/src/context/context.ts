@@ -5,26 +5,24 @@ import React from "react";
 import type {
   Navigation,
   NavigationObject,
-  NavRoute,
   SidebarItemContextProps,
   ThemeMode,
 } from "~/utils/types";
 //import type { SearchOptions } from "~/utils/data";
 import type {
   AdvancedSearchState,
+  Block,
   DataContext,
   DataRecord,
-  Identifier, SearchOptions,
-  SearchResult
-} from "~/utils/data-types";
-import type { DataStore } from "~/utils/data-store";
-import type {
+  DataStore,
+  SearchOptions,
+  SearchResult,
   ViewBlock,
   WidgetBlock
-} from "~/utils/block-types";
-import type { ListModifiers, ListParams } from "~/components/views/list-types";
-import type { IndexRecord, Tab } from "~/components/views/types";
-import type { IWidgetState } from "~/components/views/form";
+} from "~/utils";
+
+import type { IFormContext as IIFormContext, IWidgetState, ResourceContext as ResourceContextValue, ViewProps } from "~/scope/types";
+import type { RouterState } from "~/routes/types";
 
 //@ts-ignore
 export const NavigationContext = React.createContext<NavigationObject>(null);
@@ -84,65 +82,52 @@ export const LayoutContext = React.createContext<LayoutContextValue>({
 });
 export const useLayoutContext = () => React.useContext(LayoutContext);
 
-export type NavTabsNode = {
-  parent?: NavTabsNode;
-  nav: NavRoute;
-};
 
-export const TabsContext = React.createContext<NavTabsNode>(null as any);
-
-export const useTabsContext = () => React.useContext(TabsContext);
-
-export const isNavTabsMounted = (
-  nav: NavRoute,
-  node?: NavTabsNode,
-): boolean => {
-  if (!node) return false;
-  if (node.nav === nav) return true;
-
-  return isNavTabsMounted(nav, node.parent);
-};
-
-export type ResourceContext = {
-  tab: Tab;
-  dataStore: DataStore;
-  listParams: ListParams;
-  modifiers: ListModifiers;
-  doSearch: (option?: SearchOptions) => Promise<SearchResult>;
-};
-
-export const ResourceContext = React.createContext<ResourceContext>(
+export const ResourceContext = React.createContext<ResourceContextValue>(
   null as any,
 );
 
-export const ViewBlockContext = React.createContext<ViewBlock>(null as any);
+export const ViewContext = React.createContext<ViewProps<any>>(null as any);
+
+export const WidgetControlContext = React.createContext<{
+  register: (block: WidgetBlock) => IWidgetState
+}>(null as any);
 
 export const RecordContext = React.createContext<DataRecord>({});
 
 export const useResourceContext = () => React.useContext(ResourceContext);
 
-export const useViewBlockContext = () => React.useContext(ViewBlockContext);
+export function useViewContext<T extends ViewBlock=any>() {
+  return React.useContext<ViewProps<T>>(ViewContext as any);
+}
 
-export const useRecordContext = () => React.useContext(RecordContext);
+export function useViewBlock<T extends ViewBlock=any>() {
+  const {view} = useViewContext<T>()
+  return view
+}
+
+
+
+export const useRecord = () => React.useContext(RecordContext);
 
 export const EvalDataContext = React.createContext<DataContext>(null as any);
 
 export const useEvalDataContext = () => {
   const last = React.useContext(EvalDataContext);
-  const { tab } = useResourceContext();
-  return last ?? tab.action.evalContext;
+  const viewContext = useViewContext()
+  return last ?? (viewContext as any)?.evalContext;
 };
 
+
 export type ListViewValue = {
-  getContext: (record: IndexRecord) => DataContext;
-  showDetail?: (record: DataRecord | Identifier, option?: {}) => Promise<void>;
+  setItemBlock: (block: Block) => void;
 };
 
 export const ListViewContext = React.createContext<ListViewValue>(
   undefined as any,
 );
 
-export const useListViewContext = () => React.useContext(ListViewContext);
+export const useListView = () => React.useContext(ListViewContext);
 
 export type ViewSearchState = {
   search: AdvancedSearchState;
@@ -155,12 +140,22 @@ export type ViewContextValue = ViewSearchState & {
   type?: "details" | "list";
 };
 
-export const ViewContext = React.createContext<ViewContextValue>(null as any);
+export const ViewDataContext = React.createContext<ViewContextValue>(null as any);
 
-export const useViewContext = () => React.useContext(ViewContext);
+export const useViewDataContext = () => React.useContext(ViewDataContext);
 
 
-export const useDataContext = () => useRecordContext() as any;
-
-export const BlockContext = React.createContext<WidgetBlock>(undefined as any);
+export const WidgetBlockContext = React.createContext<WidgetBlock>(undefined as any);
 export const WidgetStateContext = React.createContext<IWidgetState>(undefined as any);
+
+export const useWidgetBlock = () => React.useContext(WidgetBlockContext);
+export const useWidgetState = () => React.useContext(WidgetStateContext);
+//export const BlocContext = React.createContext<ViewContextValue>(null as any);
+
+
+export const IFormContext = React.createContext<IIFormContext>(undefined as any);
+export const useFormContext = () => React.useContext(IFormContext);
+
+export const RouterContext = React.createContext<RouterState>(null as any);
+
+export const useRouterContext = () => React.useContext(RouterContext);

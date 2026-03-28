@@ -5,13 +5,13 @@ import {
   type BottomNavigationProps,
 } from "@funext/ui";
 import { useMemo, useCallback } from "react";
-import { useActivePage } from "~/hooks/use-active-page";
 import { getItemPath, isPageRoute } from "~/utils/navigation";
 import type { Navigation, NavRoute, OutletRoute } from "~/utils/types";
 import { isLeftClickEvent, isModifiedEvent, useLink } from "./link";
-import { useNavigate } from "react-router";
 import React from "react";
 import { useNavContext } from "~/context";
+import { useRouter } from "~/hooks/use-router";
+import { useActivePageRoute } from "~/hooks";
 
 
 const _tabMoveToLeft = {
@@ -26,19 +26,19 @@ const _tabMoveToRight = {
 
 export function AppBottomNavigation(props: Partial<BottomNavigationProps>) {
   const rootNavigation = useNavContext();
-  const { navItem } = useActivePage()!;
-  let navigate = useNavigate();
+  const route = useActivePageRoute()!;
+  let router = useRouter();
   let rtl = useRtl()
 
   const parentNav = useMemo(
     () =>
-      navItem.parent?.type === "bottomNav" ||
-      navItem.parent?.actions?.includes("bottomNav")
-        ? navItem.parent
-        : navItem.type === "bottomNav" || navItem.actions?.includes("bottomNav")
-          ? navItem
+      route.parent?.type === "bottomNav" ||
+      route.parent?.actions?.includes("bottomNav")
+        ? route.parent
+        : route.type === "bottomNav" || route.actions?.includes("bottomNav")
+          ? route
           : null,
-    [navItem],
+    [route],
   );
 
   const tabs = useMemo(() => {
@@ -55,7 +55,7 @@ export function AppBottomNavigation(props: Partial<BottomNavigationProps>) {
 
   const onChange = (event: React.SyntheticEvent, value: OutletRoute): void => {
       
-      if (navItem === value) {
+      if (route === value) {
         event.preventDefault();
         return;
       }
@@ -74,9 +74,9 @@ export function AppBottomNavigation(props: Partial<BottomNavigationProps>) {
 
       const href = getItemPath(rootNavigation!, value);
 
-      const isBackward = tabs.indexOf(value) > tabs.indexOf(navItem)
+      const isBackward = tabs.indexOf(value) > tabs.indexOf(route)
       
-      navigate(href, { 
+      router.navigate(href, { 
         replace: true, 
         state: {
           saveCache: true,
@@ -88,7 +88,7 @@ export function AppBottomNavigation(props: Partial<BottomNavigationProps>) {
 
   if (parentNav) {
     const items = parentNav.children as NavRoute[];
-    const value = navItem === parentNav ? items[0] : navItem;
+    const value = route === parentNav ? items[0] : route;
     return (
       <BottomNavigation showLabels {...props} value={value} onChange={onChange}>
         {items

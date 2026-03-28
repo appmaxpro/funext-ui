@@ -24,8 +24,6 @@ export interface ListItemButtonProps extends ButtonBaseProps<any> {
   selected?: boolean;
   active?: boolean;
   hover?: boolean;
-  startIcon?: React.ReactNode;
-  endIcon?: React.ReactNode;
   li?: boolean,
   divider?: boolean;
   gutters?: boolean;
@@ -39,8 +37,6 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
     component=as,
     disabled, 
     selected, 
-    startIcon: startIconProp,
-    endIcon: endIconProp,
     active,
     hover = true,
     children, 
@@ -64,15 +60,10 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
 
    
     const {
-      startIcon,
-      endIcon,
       ul,
       ripple = rest.ripple ?? item?.ripple 
     } = base ?? EMPTY_RECORD;
 
-
-    startIconProp ??= startIcon
-    endIconProp ??= endIcon
 
     const li = liProps ?? (ul && (!component || component !== 'li'))
     
@@ -107,19 +98,6 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
         );
     //console.log("itemStyles:", itemStyles)
     
-    const prefixComp = !isValidElement(startIconProp) || (startIconProp as any).type === ListItemPrefix 
-          ? startIconProp 
-          : <ListItemPrefix>{startIconProp}</ListItemPrefix>
-
-    //if(active)
-    //  console.log("ListItemButton: tabIndex:", tabIndex, ", itemStyles:", itemStyles)
-    const suffixComp = !isValidElement(endIconProp)  || (endIconProp as any).type === ListItemSuffix 
-      ? endIconProp 
-      : <ListItemSuffix>{endIconProp}</ListItemSuffix>
-
-
-    const isComp = typeof component !== 'string';
-
     const button = <ListItemButtonRoot
       {...(rest as any)}
       component={component}
@@ -134,10 +112,9 @@ export const ListItemButton = React.forwardRef<HTMLElement, ListItemButtonProps>
       data-gutters={gutters ? '' : undefined}
       data-dense={dense ? '' : undefined}
       data-divider={divider ? '' : undefined}
+      area-disabled={disabled ? 'true' : undefined}
       className={itemStyles}>
-        {prefixComp}  
         {children}
-        {suffixComp}
     </ListItemButtonRoot>;
 
     if (component === 'li' || !li) {

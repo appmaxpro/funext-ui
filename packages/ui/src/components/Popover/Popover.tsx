@@ -83,7 +83,7 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
       } else {
         const actChildren = React.Children.toArray(children);
         trigger = actChildren[0];
-        children = actChildren.slice(1, -1);
+        children = actChildren.slice(1);
       }
     }
 
@@ -111,7 +111,10 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
   },
 );
 
-export const Popover = Object.assign(PopoverFc, { safePolygon: safePolygon });
+export const Popover = Object.assign(PopoverFc, { 
+  safePolygon: safePolygon ,
+  Trigger: Popper.Trigger
+});
 Popover.displayName = "Mux.Popover";
 
 export default Popover;

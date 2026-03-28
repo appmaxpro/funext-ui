@@ -8,7 +8,7 @@ export function useCompletion(options: {
   target: string;
   targetName?: string;
   targetSearch?: string[];
-  fetchFields?: string[];
+  fields?: string[];
   limit?: number;
   sortBy?: string;
 }) {
@@ -16,19 +16,31 @@ export function useCompletion(options: {
     target,
     targetName,
     targetSearch,
-    fetchFields,
+    fields: fetchFields,
     sortBy,
     limit = DEFAULT_COMPLETION_PAGE_SIZE,
   } = options;
 
   const dataSource = useMemo(() => new DataSource(target), [target]);
-  
+
   const names = useMemo(
     () =>
       uniq(
         [[targetName], targetSearch]
           .flat()
-          .filter((name) => name !== "id" && Boolean(name)),
+          .filter((name) => name !== "id" && Boolean(name))
+          .map((name) => name?.split(' ')[0]),
+      ) as string[],
+    [targetName, targetSearch],
+  );
+
+  const ops = useMemo(
+    () =>
+      uniq(
+        [[targetName], targetSearch]
+          .flat()
+          .filter((name) => name !== "id" && Boolean(name))
+          .map((name) => name?.split(' ')[1] ?? 'ilike'),
       ) as string[],
     [targetName, targetSearch],
   );
@@ -37,32 +49,32 @@ export function useCompletion(options: {
     async (
       term: string,
       opts?: {
-        _domain?: Domains;
-        _context?: DataContext;
+        domain?: Domains;
+        context?: DataContext;
         offset?: number;
       },
     ) => {
-      const { _domain, _context, offset } = opts || {};
+      const { domain: _domain, context: _context, offset } = opts || {};
 
-      let terms:Domains|undefined = undefined;
+      let terms: Domains | undefined = undefined;
       if (term) {
-        terms = []
-        for (let i =0; i < names.length -1; i++) {
-          terms.push('|' as any)
+        terms = [];
+        for (let i = 0; i < names.length - 1; i++) {
+          terms.push("|" as any);
         }
-        for (let i =0; i < names.length; i++) {
-          terms.push([names[i], 'ilike', term])
+        for (let i = 0; i < names.length; i++) {
+          terms.push([names[i], ops[i] as any, term]);
         }
       }
 
-      let domain:Domains =  [];
+      let domain: Domains = [];
 
       if (_domain?.length) {
-          domain.push(...(_domain as Domain[]))
+        domain.push(...(_domain as Domain[]));
       }
 
       if (terms) {
-          domain.push(...terms)
+        domain.push(...terms);
       }
 
       return dataSource.search({
@@ -72,7 +84,7 @@ export function useCompletion(options: {
         offset,
         fields: uniq(["id", ...(fetchFields || []), ...names]),
         context: _context,
-        domain
+        domain,
       });
     },
     [dataSource, sortBy, limit, names, fetchFields],

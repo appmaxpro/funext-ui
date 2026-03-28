@@ -1,20 +1,24 @@
 //import { dialogs } from "@/components/dialogs";
+import type { Domain } from "domain";
 import { readCookie, fetch, type RequestArgs, type RequestOptions } from "./client";
-import { CONTEXT_PATH, EMPTY_RECORD } from "./constant";
+import { EMPTY_OBJECT, EMPTY_RECORD } from "./constant";
+import convert from "./convert";
 import type {
-  Criteria,
-  DataContext,
   DataRecord,
-  Perms,
-  ErrorReport,
-  ReadOptions,
+  Perms, ReadOptions,
   SaveOptions,
   SaveResult,
   DeleteOption,
   SearchResult,
   SearchOptions,
+  ResourceMeta,
+  Property,
+  ActionOptions,
+  ActionResult,
+  DataContext,
+  Domains,
+  Identifier
 } from "./data-types";
-import { i18n } from "./i18n";
 import { reject, rejectAsAlert } from "./reject";
 import { getHeaders } from "./session";
 
@@ -26,23 +30,27 @@ export type FetchOptions = RequestOptions
 
 export class DataSource {
   #model;
-
-  constructor(model: string) {
+  #showErrors:boolean;
+  constructor(model: string, showErrors = false) {
     this.#model = model;
+    this.#showErrors = showErrors;
   }
 
   get model() {
     return this.#model;
   }
 
+  set showErrors(showErrors: boolean) {
+    this.#showErrors = showErrors;
+  }
+
   static async fromResponse(resp: Response){
-      const { error: dataError, data:result } = await resp.json();
-      const error = dataError || (result && result.error || undefined)
-      const data = error ? undefined : result;
-      return {
-        error,
-        data
-      }
+      return  await resp.json();
+  }
+
+  mapContext(context?: DataContext){
+  
+    return context ? {context: {...context, lang: 'en'}} : undefined
   }
 
 
@@ -55,7 +63,7 @@ export class DataSource {
 
   async search(options: SearchOptions): Promise<SearchResult> {
     const url = `${this.model}/search`;
-    const { silent, params, limit, single, signal, ...rest } = options ?? {};
+    const { silent, params, limit, context, single, signal, ...rest } = options ?? {};
     const resp = await this.fetch({
       url,
       method: "POST",
@@ -63,6 +71,7 @@ export class DataSource {
       body: {
         params: {
           limit,
+          ...this.mapContext(context),
           ...rest,
           ...params
         }
@@ -70,12 +79,17 @@ export class DataSource {
     }, silent ? { silent } : undefined);
 
     if (resp.ok) {
-      const {error, data} = await DataSource.fromResponse(resp);
+      const data = await resp.json()
+      //console.log("search::", {json, error, data})
       const {
-        offset,
-        total,
-        records = single ? data : data.records || [],
-      } = data;
+        data: records,
+        offset = 0,
+        total = Array.isArray(records) ? records.length : 1,
+        error,
+      } = data ?? EMPTY_OBJECT;
+      
+      console.log("search records::", data)
+      //const newLimit = limit == null && limit > 0 
 
       return !error
         ? {
@@ -88,14 +102,16 @@ export class DataSource {
               page: limit != null && limit > 0 ? Math.floor(offset / limit) + 1 : undefined
             },
           }
-        : rejectAsAlert(error);
+        : this.#showErrors 
+        ? rejectAsAlert(error) 
+        : Promise.reject(error);
     }
 
     return Promise.reject(resp.status);
   }
 
   async read(
-    id: number,
+    id: Identifier,
     options?: ReadOptions,
     silent?: boolean,
   ): Promise<DataRecord> {
@@ -352,3 +368,75 @@ export class DataSource {
   }
 }
 
+
+
+export function getDefaultValues(fields?: Property[], defaults?:DataRecord) {
+  const result: DataRecord = fields?.reduce(
+    (acc, field) => {
+      let { defaultValue, name } = field;
+
+      if (defaultValue === undefined || name.includes(".")) {
+        return acc;
+      }
+      if(acc[name] != null) {
+         return acc;
+      }
+
+      
+      const value = convert(defaultValue, { props: field });
+      return { ...acc, [name]: value };
+    },
+    defaults ?? {},
+  ) ?? {};
+  return result;
+}
+
+export function getDefaultValue(field: Property) {
+   let { defaultValue, name } = field;
+
+    if (defaultValue === undefined || name.includes(".")) {
+      return undefined;
+    }
+
+   return convert(defaultValue, { props: field });
+
+}
+
+function prepareActionResult(
+  data: any,
+  errors?: ActionResult["errors"],
+): ActionResult[] {
+  const res = errors ? [{ errors }] : ([] as ActionResult[]);
+
+  if (Array.isArray(data)) {
+    return [
+      ...res,
+      ...data.map((item) => {
+        const { "signal-data": signalData, ...rest } = item;
+        return {
+          ...rest,
+          ...(signalData && { signalData }),
+        };
+      }),
+    ];
+  }
+
+  return res;
+}
+
+
+export async function action(options: ActionOptions): Promise<ActionResult[]> {
+  const url = "ws/action";
+  const resp = await fetch({
+    url,
+    method: "POST",
+    body: options,
+  });
+
+  if (resp.ok) {
+    const { status, data, errors } = await resp.json();
+    return status === 0 ? prepareActionResult(data, errors) : reject(data);
+  }
+
+  return Promise.reject(resp.status);
+}

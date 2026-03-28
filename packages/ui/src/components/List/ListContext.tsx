@@ -69,7 +69,7 @@ const createItemInteractive = (name: string, def: ItemInteractive) => {
 };
 
 export const ListContextProvider:React.FC<ListContextProviderProps> = ({
-  value,
+  value: props,
   children,
 }: ListContextProviderProps) => {
   const {
@@ -88,7 +88,7 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
     suffix,
     global,
     ...otherValues
-  } = value;
+  } = props;
 
   const { list } = useTailwindTheme();
   const listTheme = list as ListStylesType;
@@ -226,13 +226,13 @@ export const ListContextProvider:React.FC<ListContextProviderProps> = ({
     [defaults],
   );
 
-  const values = useMemo(() => ({
+  const value:any = useMemo<any>(() => ({
     ...defaults,
     getItemStyle: itemStyle,
-    base: value
-  }), [itemStyle]);
+    base: props
+  } as any), [itemStyle]);
 
-  return <ListContext.Provider value={values}>{children}</ListContext.Provider>;
+  return <ListContext.Provider value={value}>{children}</ListContext.Provider>;
 };
 
 export const ListContextConsumer = ListContext.Consumer;

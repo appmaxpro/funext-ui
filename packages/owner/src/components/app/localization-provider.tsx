@@ -7,7 +7,7 @@ import en from "../../assets/l10n/en.json";
 import "dayjs/locale/ar";
 import "dayjs/locale/en";
 import { i18n } from "~/utils/i18n";
-import { useLocalStorageState } from "~/hooks/use-local-storage-state";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 import {
   LocalizationContext,
   useLocalization,
@@ -50,7 +50,7 @@ export const LocalizationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [lang, setLanguage] = useLocalStorageState("language");
+  const [lang, setLanguage] = useLocalStorage("language");
 
   const language = (lang ?? getDefaultLanguage()) as keyof Languages;
 
@@ -86,9 +86,7 @@ export const LocalizationProvider = ({
 };
 
 export const useTranslation = () => {
-  const context = useLocalization();
-  const { data } = context.languages[context.language];
-  return React.useMemo(() => (key: string) => data[key], [data]);
+  return i18n.t;
 };
 
 export const useTranslationKeys = (predicate: (element: any) => boolean) => {

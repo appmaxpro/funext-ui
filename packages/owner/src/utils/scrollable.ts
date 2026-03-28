@@ -1,21 +1,23 @@
-import { getComputedStyle, isHTMLElement } from '@floating-ui/utils/dom';
+//import { getComputedStyle, isHTMLElement } from "@floating-ui/utils/dom";
+import { isElement } from "@funext/ui";
 
-export type ScrollAxis = 'horizontal' | 'vertical';
+export type ScrollAxis = "horizontal" | "vertical";
 
 export function isScrollable(element: HTMLElement, axis: ScrollAxis): boolean {
   const style = getComputedStyle(element);
 
-  if (axis === 'vertical') {
+  if (axis === "vertical") {
     const overflowY = style.overflowY;
     return (
-      (overflowY === 'auto' || overflowY === 'scroll') &&
+      (overflowY === "auto" || overflowY === "scroll") &&
       element.scrollHeight > element.clientHeight
     );
   }
 
   const overflowX = style.overflowX;
   return (
-    (overflowX === 'auto' || overflowX === 'scroll') && element.scrollWidth > element.clientWidth
+    (overflowX === "auto" || overflowX === "scroll") &&
+    element.scrollWidth > element.clientWidth
   );
 }
 
@@ -39,12 +41,12 @@ export function hasScrollableAncestor(
 export function findScrollableTouchTarget(
   target: EventTarget | null,
   root: HTMLElement,
-  axis: ScrollAxis = 'vertical',
+  axis: ScrollAxis = "vertical",
 ): HTMLElement | null {
-  let node = isHTMLElement(target) ? target : null;
+  let node = isElement(target) ? target : null;
   while (node && node !== root) {
-    if (isScrollable(node, axis)) {
-      return node;
+    if (isScrollable(node as HTMLElement, axis)) {
+      return node as HTMLElement;
     }
     node = node.parentElement;
   }

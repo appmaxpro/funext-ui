@@ -24,7 +24,6 @@ export * from './store'
 // context
 export {
   TailwindThemeContext as MaterialTailwindTheme,
-  TailwindThemeProvider,
   useTailwindTheme,
 } from "./theme";
 

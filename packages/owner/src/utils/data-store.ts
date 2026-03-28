@@ -2,14 +2,13 @@ import getObjValue from "lodash/get";
 import isEqual from "lodash/isEqual";
 import isPlainObject from "lodash/isPlainObject";
 
-import {
-  DataSource,
-} from "./data";
+import { DataSource } from "./data";
 
 import type {
   DeleteOption,
   Domains,
   ExportResult,
+  Identifier,
   ReadOptions,
   SaveOptions,
   SaveResult,
@@ -20,23 +19,32 @@ import type {
 import type { DataContext, DataRecord } from "./data-types";
 import { getDefaultPageSize } from "./session";
 import { EMPTY_ARRAY, EMPTY_RECORD } from "./constant";
-import { pick } from "./objects";
+import { deepMerge, pick } from "./objects";
+import { isEmpty } from "lodash";
+import { removeEmpty } from "./removeEmpty";
 
 function ifDiff<T>(current: T, value: T): T {
   return isEqual(current, value) ? current : value;
 }
 
-const TO_PIC1 = ['limit', 'order', 'active', 'fields', "s", "param", "context"]
+function ifDiffVal<T>(current: T, value: T): T {
+  return isEmpty(value) || isEqual(current, value) ? current : value;
+}
+
+function mergeIfDiffVal<T>(current: T, value: T): T {
+  return isEmpty(value) || isEqual(current, value)
+    ? current
+    : current
+      ? (deepMerge(current, value!) as T)
+      : value;
+}
+
+const TO_PIC1 = ["limit", "order", "active", "fields", "s", "param", "context"];
 function ifSearch1(current: SearchOptions, value: SearchOptions) {
   const ci = pick(current, TO_PIC1);
   const vi = pick(value, TO_PIC1);
-  return ifDiff(ci, vi) !== ci
+  return ifDiff(ci, vi) !== ci;
 }
-
-function iDomain1(current: SearchOptions, value: SearchOptions) {
-   return ifDiff(current.domain, value.domain)
-}
-
 
 function updateRecord(
   initialRecord: DataRecord,
@@ -82,17 +90,18 @@ export class DataStore extends DataSource {
 
   constructor(model: string, options: SearchOptions = {}) {
     super(model);
-    
-    this.#domain = options.domain && options.domain.length ? [...options.domain] : undefined;
-    this.#options = {...options, domain: undefined};
+
+    this.#domain =
+      options.domain && options.domain.length ? [...options.domain] : undefined;
+    this.#options = { ...options, domain: undefined };
     this.#page = {
       offset: options.offset ?? 0,
       limit: options.limit ?? getDefaultPageSize(),
       total: 0,
       pages: 0,
-      page: 0
+      page: 0,
     };
-    this.subscribe = this.subscribe.bind(this)
+    this.subscribe = this.subscribe.bind(this);
   }
 
   get options() {
@@ -107,10 +116,10 @@ export class DataStore extends DataSource {
     return this.#records;
   }
 
-  async refresh(){
-    let records = this.#records ?? []
+  async refresh() {
+    let records = this.#records ?? [];
     this.#records = [];
-    await this.search({...this.#options, offset: 0})
+    await this.search({ ...this.#options, offset: 0 });
   }
 
   subscribe(listener: DataStoreListener) {
@@ -148,113 +157,184 @@ export class DataStore extends DataSource {
     }, {} as DataContext);
   }
 
-  #prepareOption(options: SearchOptions) : SearchOptions {
+  getRecords(ids: Identifier[]) {
+    const recs = this.records.map((r) => [
+      r.id,
+      r,
+    ]);
+    const curIds = new Map<Identifier, DataRecord>(recs as any);
+    return ids.map(id => curIds.get(id))
+  }
+
+  getMissing(ids: Identifier[]) {
+    if(ids.length < 10) {
+      return ids.filter(id => !this.records.some(r => r.id === id))
+    }
+    const recs = this.records.map((r) => [
+      r.id,
+      r,
+    ]);
+    const curIds = new Map<Identifier, DataRecord>(recs as any);
+
+    return ids.filter(id => !curIds.has(id))
+  }
+
+  get nextOffset() {
+    const page = this.page;
+    return (page.offset ?? 0) + ((page.page ?? 1) - 1) * (page.limit ?? 0)
+  }
+
+  #prepareOption(options: SearchOptions): SearchOptions {
     const opts = this.#options;
     const { offset, limit } = this.#page;
-    const { context, domain:newDomain } = opts ?? EMPTY_RECORD;
-    let domain:Domains|undefined = opts.domain;
+    const { context, domain: newDomain } = options ?? EMPTY_RECORD;
 
-    if (opts.domain && newDomain && newDomain.length) {
-      domain = ifDiff(opts.domain, newDomain) as Domains
-    }
-    else if (newDomain && newDomain.length) {
-      domain = newDomain
-    }
+    let domain: Domains | undefined = ifDiffVal(
+      opts.domain,
+      newDomain,
+    ) as Domains;
+    const newContext = mergeIfDiffVal(opts.context, context);
 
-    return {
+    return removeEmpty({
       ...opts,
       offset,
       limit,
       ...options,
       domain: domain?.length ? domain : undefined,
-      context: context
-        ? this.#setVersion(context)
-        : undefined,
-
-    };
+      context: newContext ? this.#setVersion(newContext) : undefined,
+    });
   }
 
-  #accept(options: SearchOptions, page: SearchPage, records: DataRecord[], reset?: boolean) {
+  #accept(
+    options: SearchOptions,
+    page: SearchPage,
+    records: DataRecord[],
+    reset?: boolean,
+  ) {
     //const _options = ifDiff(this.#options, options);
-    const pChange = ifSearch1(this.#options, options)
-    
-    const d1 = ifDiff(this.#options.domain, options.domain)
-    const domChange = d1 !== this.#options.domain
+    const pChange = ifSearch1(this.#options, options);
 
-    let _records = records ;
+    const d1 = ifDiffVal(this.#options.domain, options.domain);
+    const domChange = d1 !== this.#options.domain;
+
+    let _records = records;
     const _page = ifDiff(this.#page, page);
     const pOffset = this.#page.offset !== page.offset;
 
-    if (pChange || domChange || pOffset){
+    const resetOffset = !pOffset && (page.offset ?? 0) < (this.#page.offset ?? 0);
+
+    const infinite = options.infinite ?? this.#options.infinite;
+    const infiniteChange = infinite !== this.#options.infinite;
+    const toInfinite = infinite && !infiniteChange && !pChange && !domChange && !resetOffset;
+
+    if (pChange || domChange || _page !== this.#page || infiniteChange) {
       this.#options = options;
-    } else if(_page ===  this.#page) {
-      _records = ifDiff(this.#records, records)
+    } else if (_page === this.#page && !toInfinite) {
+      _records = ifDiff(this.#records, records);
     }
 
-    const changed =
+    let changed =
       pChange ||
       domChange ||
       this.#records !== _records ||
-      _page !==  this.#page;
+      _page !== this.#page;
 
     this.#page = _page;
 
-    const infinite = options.infinite ?? this.#options.infinite;
-    const infiniteChange = infinite !== this.#options.infinite
-    if (infinite && !infiniteChange && !pChange && !domChange){
-      const newKeys = new Set<any>(records.map( r => r.id));
-      const lastRecords = this.records; 
-      const newRecords = lastRecords.filter (r => !newKeys.has(r.id))
-      this.#records = newRecords.concat(_records);
-    } 
-    else {
+    if (toInfinite) {
+      const newKeys = new Set<any>(_records.map((r) => r.id));
+      const lastRecords = this.records.filter((r) => !newKeys.has(r.id));
+      this.#records = lastRecords.concat(_records);
+      changed = true;
+    } else {
+      _records = ifDiff(this.#records, records);
       this.#records = _records;
     }
 
+    console.log("DataStore changed trigger:", changed, changed && ", records:", changed ? records : "")
+
     if (changed) this.#notify();
+  }
+
+  #acceptNoRest(
+    options: SearchOptions,
+    page: SearchPage,
+    records: DataRecord[],
+  ) {
+    const infinite = options.infinite ?? this.#options.infinite;
+    const infiniteChange = infinite !== this.#options.infinite;
+    const toInfinite = infinite && !infiniteChange;
+    let changed = false;
+
+    if (toInfinite) {
+      const newKeys = new Set<any>(records.map((r) => r.id));
+      const lastRecords = this.records.filter((r) => !newKeys.has(r.id));
+      const offset = this.records.length;
+      this.#records = lastRecords.concat(records);
+      changed = true;
+      this.#page = {
+          ...this.page, 
+          offset,
+      }
+      this.#notify();
+    }
+
   }
 
   async search(options: SearchOptions, reset?: boolean): Promise<SearchResult> {
     const opts = this.#prepareOption(options);
     const { page, records = [] } = await this._search(opts);
-
-    this.#accept(opts, page, records);
-
+    
+    if (reset !== false) {
+      this.#accept(opts, page, records);
+      return {
+        page,
+        records: this.records,
+      };
+    } else{
+      this.#acceptNoRest(opts, page, records);
+    }
     return {
       page,
-      records: this.records,
+      records,
     };
   }
 
   async _search(options: SearchOptions): Promise<SearchResult> {
-      if(this.#domain) {
-        const domain = options.domain ? this.#domain.concat(options.domain) : this.#domain;
-        options = {
-          ...options,
-          domain: domain as Domains
-        }
-      }
-      return await super.search(options);
+    if (this.#domain) {
+      const domain = options.domain
+        ? this.#domain.concat(options.domain)
+        : this.#domain;
+      options = {
+        ...options,
+        domain: domain as Domains,
+      };
+    }
+    return await super.search(options);
   }
 
   async read(
-    id: number,
+    id: Identifier,
     options?: ReadOptions,
     silent?: boolean,
   ): Promise<DataRecord> {
     const res = await super.read(id, options, silent);
     if (res) {
-      const records = this.records.slice();
-      const recInd = records.findIndex((r) => r.id === res.id);
-      if (recInd > -1) {
-        records[recInd] = updateRecord(records[recInd], res);
-        this.#accept(this.#options, this.#page, records);
+      //const records = this.records.slice();
+      const records = this.records;
+      const index = records.findIndex((r) => r.id === res.id);
+      if (index > -1) {
+        const old = records[index]
+        records[index] = updateRecord(old, res);
+        if(!isEqual(old, records[index])) {
+          //this.#accept(this.#options, this.#page, records);
+          this.#records = records.slice();
+          this.#notify();
+        }
       }
     }
     return res;
   }
-
-
 
   async delete(options: DeleteOption | DeleteOption[]): Promise<number> {
     const opts = [options].flat();
@@ -308,5 +388,4 @@ export class DataStore extends DataSource {
 
     return res;
   }
-
 }

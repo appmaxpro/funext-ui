@@ -26,14 +26,14 @@ export const fadeInLeftKf = keyframes`
   }
 `;
 
-export const fadeOutLeftKf = keyframes`
+export const fadeInDownKf = keyframes`
   from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(0, -100%, 0);
   }
   to {
-    opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(-100%, 0, 0);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 `;
 
@@ -48,6 +48,30 @@ export const fadeInRightKf = keyframes`
     }
 `;
 
+
+export const fadeInUpKf = keyframes`
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`;
+
+
+export const fadeOutLeftKf = keyframes`
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(-100%, 0, 0);
+  }
+`;
+
 export const fadeOutRightKf = keyframes`
   from {
       opacity: 1;
@@ -59,18 +83,6 @@ export const fadeOutRightKf = keyframes`
     }
 `;
 
-export const fadeInDownKf = keyframes`
-  from {
-      opacity: var(--tw-enter-opacity, 1);
-      transform: translate3d(0, -100%, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-`;
-
-
 export const fadeOutDownKf = keyframes`
   from {
     opacity: 1;
@@ -79,17 +91,6 @@ export const fadeOutDownKf = keyframes`
   to {
     opacity: var(--tw-enter-opacity, 1);
     transform: translate3d(0, -100%, 0);
-  }
-`;
-
-export const fadeInUpKf = keyframes`
-  from {
-    opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(0, 100%, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 `;
 
@@ -197,16 +198,19 @@ const slideFadeInCss = css`
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-duration: 400ms;
   will-change: transform, opacity;
+  
 
   &[data-side="left"] {
     animation-name: ${fadeInLeftKf};
   }
 
   &[data-side="right"] {
+    
     animation-name: ${fadeInRightKf};
   }
 
   &[data-side="top"] {
+    
     animation-name: ${fadeInUpKf};
   }
 
@@ -344,11 +348,17 @@ const cache = new WeakMap<
   object,
   SerializedStyles | Map<string, SerializedStyles>
 >();
-
 function getAnimation(
   props: AnimatedOrNameProps,
 ): ReturnType<typeof css> | undefined {
-  
+  const result = _getAnimation(props)
+  //console.log("getAnimation:::", props, ", result:", result)
+  return result
+}
+function _getAnimation(
+  props: AnimatedOrNameProps,
+): ReturnType<typeof css> | undefined {
+  //console.log("getAnimation:::", props)
   if (typeof props === "string") return animations[props];
 
   if (!props.animate) return EMPTY_STYLES;
@@ -401,17 +411,18 @@ function getAnimation(
 
 function getAnimationOr(styles: SerializedStyles) {
   return (props: AnimatedProps) =>
-    (getAnimation(props) ?? props.animate) ? styles : EMPTY_STYLES;
+    getAnimation(props) ?? (props.animate ? styles : EMPTY_STYLES);
 }
 
 function getAnimationOrName(otherName: string) {
   return (props: AnimatedProps) =>
-    (getAnimation(props) ?? props.animate)
+    getAnimation(props) ?? ( props.animate
       ? (animations[otherName] ?? EMPTY_STYLES)
-      : EMPTY_STYLES;
+      : EMPTY_STYLES);
 }
 
 function getAnimationSafe(props: AnimatedOrNameProps) {
+  
   return getAnimation(props) ?? EMPTY_STYLES;
 }
 
@@ -430,19 +441,26 @@ const shouldForwardProp = (propName: PropertyKey) =>
   propName === 'as' || (shouldForwardAnimateProp(propName) && rootShouldForwardProp(propName))
 
 function getAnimationData(
-  props: AnimatableProps & {
+  props:{
     animate?:boolean; 
     className?: string, 
     style?: any, 
     openStyle?: any, 
-    closeStyle?: any  
+    closeStyle?: any ,
+    animation?: AnimatedProps | string; 
   },
   open?: boolean,
 ) {
-  const { animation: animationProps, ...others } = props;
+  let { animation: animationProps, ...others } = props;
   if (open == null || !animationProps) return others;
+  let inAnimation:AnimatedProps|undefined ;
+  if(!animationProps || typeof animationProps === 'string') {
+    return props
+  } else{
+    inAnimation = animationProps;
+  }
 
-  const { animate = props.animate, animation, enter, exit } = animationProps;
+  const { animate = props.animate, animation, enter, exit } = inAnimation;
   if (!animate) {
     return others;
   }

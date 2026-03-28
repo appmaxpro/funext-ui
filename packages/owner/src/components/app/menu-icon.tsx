@@ -1,14 +1,11 @@
 import { Box, IconButton, Tooltip, useRtl, useScreenSize } from "@funext/ui";
 import { useMemo } from "react";
-import { useActivePage } from "~/hooks/use-active-page";
-import type { Navigation, NavRoute } from "~/utils/types";
-import MenuOpenIcon from "@funext/icons/MenuOpen";
-import MenuIcon from "@funext/icons/Menu";
-import ArrowForward from "@funext/icons/ArrowForward";
-import ArrowBack from "@funext/icons/ArrowBack";
+import type { Navigation, NavRoute } from "~/utils";
+import { Icons } from "~/components/shared/icons";
 
 import { i18n } from "~/utils/i18n";
-import { useNavigate } from "react-router";
+import { useRouter } from "~/hooks/use-router";
+import { useActivePageRoute } from "~/hooks";
 
 function flatNavigation(prev: Navigation, navigation?: Navigation): Navigation {
   if (navigation) {
@@ -42,13 +39,13 @@ export function MenuIon({
   toggleNavigationExpanded: () => void;
 }) {
   const rtl = useRtl();
-  const { navItem, root } = useActivePage()!;
+  const route = useActivePageRoute()!;
   const {mdDown} = useScreenSize()
-  const navigate = useNavigate()
-
+  const router = useRouter()
+  //console.log("MenuIon::route:", route)
   const navigation = useMemo(() => flatNavigation([], navigationProps), []);
 
-  if (mdDown && showBack && navItem !== root) {
+  if (mdDown && showBack && route && (route.parent && route.parent.parent)) {
     return (
       <Box sx={{ mr: 1 }}>
         <Tooltip
@@ -62,16 +59,16 @@ export function MenuIon({
         >
           <IconButton
             aria-label={`back navigation menu`}
-            onClick={()=> navigate(-1)}
+            onClick={()=> router.navigate(-1)}
           >
-            {rtl ? <ArrowForward /> : <ArrowBack />}
+            {rtl ? <Icons.ArrowForward /> : <Icons.ArrowBack />}
           </IconButton>
         </Tooltip>
       </Box>
     );
   }
 
-  if (!hideNavigation && navigation.includes(navItem)) {
+  if (!hideNavigation && navigation.includes(route)) {
     const expandMenuActionText = "Expand";
     const collapseMenuActionText = "Collapse";
 
@@ -90,7 +87,7 @@ export function MenuIon({
             aria-label={`${isExpanded ? collapseMenuActionText : expandMenuActionText} navigation menu`}
             onClick={toggleNavigationExpanded}
           >
-            {isExpanded ? <MenuOpenIcon /> : <MenuIcon />}
+            {isExpanded ? <Icons.MenuOpen /> : <Icons.Menu />}
           </IconButton>
         </Tooltip>
       </Box>

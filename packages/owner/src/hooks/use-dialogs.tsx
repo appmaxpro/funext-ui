@@ -21,6 +21,8 @@ export interface OpenDialogOptions<R> {
    * @returns A promise that resolves when the dialog can be closed.
    */
   onClose?: (result: R) => Promise<void>;
+
+  dialogProps?: Partial<React.ComponentProps<typeof Dialog>>;
 }
 
 export interface AlertOptions extends OpenDialogOptions<void> {
@@ -52,6 +54,8 @@ export interface ConfirmOptions extends OpenDialogOptions<boolean> {
    * The text to show in the "Cancel" button. Defaults to `'Cancel'`.
    */
   cancelText?: React.ReactNode;
+
+  
 }
 
 export interface PromptOptions extends OpenDialogOptions<string | null> {
@@ -201,7 +205,7 @@ export function AlertDialog({ open, payload, onClose }: AlertDialogProps) {
   const {onClick, loading} = useDialogLoadingButton(() => onClose());
   return (
     <Dialog
-      maxWidth="xs"
+      size="xs"
       //fullWidth
       open={open}
       onClose={() => onClose()}
@@ -232,8 +236,9 @@ export function ConfirmDialog({ open, payload, onClose }: ConfirmDialogProps) {
   const okButtonProps = useDialogLoadingButton(() => onClose(true));
   return (
     <Dialog
-      maxWidth="xs"
-      fullWidth
+      size="xs"
+      //fullWidth
+      {...payload.dialogProps}
       open={open}
       onClose={() => onClose(false)}
       //container={appWindowContext?.document.body}
@@ -272,11 +277,13 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
   const name = "input";
   return (
     <Dialog
-      maxWidth="xs"
+      size="xs"
       fullWidth
+      {...payload.dialogProps}
       open={open}
       onClose={() => onClose(null)}
-      PanelProps={{
+      panelProps={{
+        ...payload.dialogProps?.panelProps,
         component: "form",
         onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
@@ -293,7 +300,7 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
             setLoading(false);
           }
         },
-      }}
+      } as any}
       //container={appWindowContext?.document.body}
     >
       <Dialog.Header>{payload.title ?? t("confirm")}</Dialog.Header>

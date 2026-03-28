@@ -24,10 +24,6 @@ export interface ListItemProps extends Omit<SxComponentProps<"li">, 'title'> {
   selected?: boolean;
   active?: boolean;
   hover?: boolean;
-  children: ReactNode;
-  startIcon?: ReactNode;
-  endIcon?: ReactNode;
-  title?: ReactNode;
   button?: boolean;
   href?: string;
   divider?: boolean;
@@ -47,10 +43,7 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
       hover,
 
       itemType,
-      startIcon: startIconProp,
-      endIcon: endIconProp,
-      title: titleProps,
-      children: childrenProps,
+      children,
       button,
       divider,
       gutters,
@@ -66,14 +59,9 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
 
     const {
       getItemStyle,
-      base
+      base,
+      
     } = useListContext()!;
-
-    const {
-      startIcon = startIconProp,
-      endIcon = endIconProp,
-      ul,
-    } = base ?? EMPTY_RECORD;
 
     const hasHover: any = hover ?? (button ? true : undefined);
 
@@ -103,43 +91,14 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
       ],
     );
 
-    const prefixComp =
-      !isValidElement(startIcon) ||
-      (startIcon as any).type == ListItemPrefix ? (
-        startIcon
-      ) : (
-        <ListItemPrefix>{startIcon}</ListItemPrefix>
-      );
 
-    const suffixComp =
-      !isValidElement(endIcon) || (endIcon as any).type == ListItemSuffix ? (
-        endIcon
-      ) : (
-        <ListItemSuffix>{endIcon}</ListItemSuffix>
-      );
+    const li = (base?.ul &&  (liProps !== false  && (!component || component !== 'li')))
 
-    const li = (ul &&  (liProps !== false  && (!component || component !== 'li')))
-
-    const title = titleProps ?? childrenProps;
-    const children = titleProps ? childrenProps : null;
-    const itemChild = children ? (
-      <div className={itemStyles}>
-        {prefixComp}
-        {title}
-        {suffixComp}
-      </div>
-    ) : (
-      <>
-        {prefixComp}
-        {title}
-        {suffixComp}
-      </>
-    );
-    const item = (
+    return (
       <ListItemRoot
         
         {...(rest as any)}
-        as={component}
+        as={component ?? li ? 'li' : 'div'}
         disabled={typeof as === "string" && disabled ? `true` : undefined}
         area-disabled={disabled ? "true" : undefined}
         active={typeof active === "boolean" ? undefined : active}
@@ -149,16 +108,11 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
         data-dense={dense ? '' : undefined}
         data-divider={divider ? '' : undefined}
       >
-        {itemChild}
         {children}
       </ListItemRoot>
     );
 
-    if (component || !li) {
-      return item;
-    }
-
-    return <li  area-disabled={disabled ? "true" : undefined}>{item}</li>;
+    
   },
 );
 

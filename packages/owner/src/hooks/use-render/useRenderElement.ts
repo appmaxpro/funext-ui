@@ -21,7 +21,6 @@ import { EMPTY_RECORD, getElementRef } from "~/utils";
 //import { useMergedRefs, useMergedRefsN, useNoopRefs } from './useMergedRefs';
 import { resolveClassName } from "~/utils/resolveClassName";
 import { resolveStyle } from "~/utils/resolveStyle";
-import { isDevelopment } from "@funext/ui";
 import { composeRefs } from "~/utils/compose-ref";
 
 type IntrinsicTagName = keyof React.JSX.IntrinsicElements;

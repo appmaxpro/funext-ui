@@ -10,14 +10,22 @@ type OnOpenChange = (
 
 export function onOpenChangeEvent(
   onOpenChange?: OnOpenChange,
-  onClose?: () => void
+  onClose?: () => void,
 ): OnOpenChange {
-  const onOpenChangeFn = useEvent(onOpenChange)
-  const onCloseFn = useEvent(onClose)
+  const onOpenChangeFn = useEvent(onOpenChange);
+  const onCloseFn = useEvent(onClose);
   return useEvent((open: boolean, event?: Event, reason?: OpenChangeReason) => {
-    if (!open)
-        onCloseFn();
+    
     onOpenChangeFn(open, event, reason);
+    if (!open) {
+      onCloseFn();
+      console.log("DialogContent onOpenChangeEventx:", event);
+      if (event && event.preventDefault) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
+    }
   });
 }
 /*

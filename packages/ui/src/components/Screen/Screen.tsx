@@ -204,6 +204,7 @@ export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
     });
     
     const newState = computeSize(rect.width, cValue.width, theme.breakpoints);
+    /*
     if (debugId)
       console.log(
         "useResizeDetector: change:",
@@ -214,7 +215,7 @@ export function useResizeDetector<T extends HTMLElement = HTMLDivElement>(
         (newState || (withHeight && rect.height != cValue.height)) && true,
         ", oldWidth:",
         cValue.width,
-      );
+      );*/
 
       
     if (newState) {

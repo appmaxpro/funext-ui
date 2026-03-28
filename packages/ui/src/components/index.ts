@@ -32,7 +32,6 @@ export * from "./Panel";
 export * from "./Divider";
 export * from "./Link";
 export * from "./Box";
-export * from "./Stack";
 export * from "./Grid";
 export * from "./Select/AutoSelect";
 export * from "./Focus";
@@ -45,11 +44,21 @@ export * from "./internal/animation";
 export * from "./Select/index.jsx";
 
 import * as chevron from "./internal/svg-icons/chevron";
-import CloseIcon from "./internal/svg-icons/Close"
-import SearchIcon from "./internal/svg-icons/Search"
+import Close from "./internal/svg-icons/Close"
+import Search from "./internal/svg-icons/Search"
+import CheckBox from "./internal/svg-icons/CheckBox"
+import CheckBoxOutlineBlank from "./internal/svg-icons/CheckBoxOutlineBlank"
+import CheckCircle from "./internal/svg-icons/CheckCircle"
+import Separator from "./internal/svg-icons/Separator"
+import Circle from "./internal/svg-icons/RadioButtonUnchecked"
 
-export const Icons = {
+export const SvgIcons = {
    ...chevron,
-   CloseIcon,
-   SearchIcon
+   Separator,
+   Close,
+   Search,
+   CheckBox,
+   CheckBoxOutlineBlank,
+   CheckCircle,
+   Circle
 }

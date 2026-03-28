@@ -19,7 +19,6 @@ import MapPositions from "../components/map-positions";
 import MapScale from "../components/map-scale";
 //import MapGeocoder from "../map/geocoder/MapGeocoder";
 
-import ArrowBackIcon from "@funext/icons/ArrowBack";
 import { useNavigate } from "react-router";
 import { Dimensions } from "~/utils/constant";
 import { i18n } from "~/utils/i18n";
@@ -31,7 +30,8 @@ import {
 } from "../store/devices";
 import { useTrackerSession } from "../store/session";
 import { useCatch } from "~/hooks/use-catch";
-import { Toolbar } from "~/components/other/toolbar";
+import { Toolbar } from "~/components/shared/toolbar";
+import { BackButton } from "~/components";
 
 const PREFIX = "MapPage";
 
@@ -145,9 +145,7 @@ const EmulatorPage = () => {
           classes={{ panel: MapPageClasses.drawerPaper }}
         >
           <Toolbar>
-            <IconButton sx={{ mr: 2 }} onClick={() => navigate(-1)}>
-              <ArrowBackIcon />
-            </IconButton>
+            <BackButton/>
             <Text variant="h6" className={MapPageClasses.title}>
               {t("sharedEmulator")}
             </Text>

@@ -59,7 +59,7 @@ const commonIconStyles = [
   {
     props: { size: 'sm' },
     style: {
-      '&>[data-ui=Icon]': {
+      '& svg': {
         fontSize: "1.125rem",
       },
     },
@@ -67,7 +67,7 @@ const commonIconStyles = [
   {
     props: { size: 'md' },
     style: {
-      '&>[data-ui=Icon]': {
+      '& svg': {
         fontSize: "1.5rem",
       },
     },
@@ -75,7 +75,7 @@ const commonIconStyles = [
   {
     props: { size: 'lg' },
     style: {
-      '&>[data-ui=Icon]': {
+      '& svg': {
         fontSize: "1.875rem",
       },
     },

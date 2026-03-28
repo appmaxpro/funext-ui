@@ -6,6 +6,7 @@ import { styled, useTheme } from "@funext/ui/styles";
 import { AppLogo } from "./app-logo";
 import { useScreenSize, type SizeContextValue } from "@funext/ui";
 import { useActivePage } from "~/hooks/use-active-page";
+import { useActivePageRoute } from "~/hooks";
 
 const LogoContainer = styled("div")({
   position: "relative",
@@ -38,9 +39,9 @@ export function AppTitle(props: AppTitleProps) {
   const logSs = props?.logSs;
   const showLogoAt = props.showLogo ?? "root";
   const showLogoSs = logSs ? useScreenSize()[logSs] : true;
-  const { navItem, root } = useActivePage()!;
+  const navItem = useActivePageRoute()!;
   const showLogo =
-    showLogoSs && (showLogoAt === "root" ? root === navItem : true);
+    showLogoSs && (showLogoAt === "root" ? !navItem.parent : true);
 
   return (
     

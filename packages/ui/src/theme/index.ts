@@ -1,18 +1,16 @@
-export * from './theme';
-export * from './TailwindThemeProvider';
 export * from './createTheme';
-export {default as createTheme} from './createTheme';
-export {default as memoTheme} from './memoTheme';
-export { default as defaultTheme} from './defaultTheme';
+export { default as createTheme } from './createTheme';
+export { default as defaultTheme } from './defaultTheme';
+export { default as memoTheme } from './memoTheme';
+export * from './theme';
 export * from './ThemeProvider';
-export { default as ThemeProvider} from './ThemeProvider';
-export { default as useRtl} from './useRtl';
-import { StyledComponent as SStyledComponent, StyledOptions } from '@emotion/styled';
-import {StyleFunction, SxConfig, SystemProps} from '@mui/system';
-import {Theme as MuxTheme} from './theme';
+export { default as ThemeProvider } from './ThemeProvider';
+export { default as useRtl } from './useRtl';
+import { SystemProps } from '@mui/system';
+import { Theme as MuxTheme } from './theme';
 
-export  {default as THEME_ID} from './identifier';
-
+export { default as THEME_ID } from './identifier';
+export * from './TailwindThemeContext';
 
 export type ExSxConfig = {
 

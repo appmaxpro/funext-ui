@@ -21,5 +21,14 @@ declare global {
   }
 }
 
+declare module "*.txt" {
+  const content: string;
+  export default content;
+}
+
+declare module "*.xml" {
+  const content: string;
+  export default content;
+}
 // At least one export statement
 export {};

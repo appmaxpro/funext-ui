@@ -129,7 +129,7 @@ export function matchPath(
   path: string,
 ): OutletRoute | null {
   const lookup = getItemLookup(routes);
-
+  
   for (const [key, item] of lookup.entries()) {
     if (typeof key === "string" && key === path) {
       return item;
@@ -146,9 +146,19 @@ export function matchPath(
  * Gets the path for a specific Routes page item.
  */
 export function getItemPath(routes: Navigation, item: OutletRoute): string {
+
   const map = getItemToPathMap(routes);
   const path = map.get(item);
-  invariant(path, `Item not found in routes: ${item.title}`);
+  
+  if(!path) {
+    if(item.parent) {
+      return getItemPath(routes, item.parent)
+    }
+    console.warn(`Item (${item.title}) not found in routes: `, routes)
+  }
+
+  invariant(path, `Item (${item.title}) not found in routes: ${routes}`);
+
   return path;
 }
 
@@ -177,7 +187,29 @@ export function hasSelectedNavChildren(
   return false;
 }
 
-export function buildNavigation(routes: Navigation, fallbackComponent: any) {
+export function hasSelectedRoute(current: OutletRoute, active: OutletRoute): boolean {
+  return current.path === active.path
+}
+
+export function hasSelectedChildren(current: OutletRoute, active: OutletRoute): boolean {
+  //if(active === current) return true
+  if (current.children) {
+    return current.children.some((nestedItem) => {
+      if (!isOutletRoute(nestedItem)) {
+        return false;
+      }
+
+      if (nestedItem.children) {
+        return hasSelectedChildren(nestedItem, active);
+      }
+
+      return nestedItem === active;
+    });
+  }
+  return false
+}
+
+export function buildNavigation(routes: Navigation, fallbackComponent?: any) {
   const visit = (item: NavItem) => {
     const itemCopy = {...item}
     if (isOutletRoute(item)) {

@@ -10,14 +10,16 @@ import type {
 import {
   getItemPath,
   getNavTitle,
+  hasSelectedChildren,
   hasSelectedNavChildren,
+  hasSelectedRoute,
   isOutletRoute,
 } from "../../utils/navigation";
-import { SidebarItemContext, useNavContext } from "../../context";
+import { SidebarItemContext } from "../../context";
 import { getDrawerSxTransitionMixin } from "../../utils/ui";
 import { SidebarItem } from "./sidebar-item";
-import { useActivePage } from "~/hooks/use-active-page";
 import { Dimensions } from "~/utils/constant";
+import { useActivePageRoute } from "~/hooks";
 
 interface NavigationSidebarItemProps {
   id: string;
@@ -52,17 +54,17 @@ function NavigationSidebarItem({
   sidebarExpandedWidth,
   renderPageItem,
 }: NavigationSidebarItemProps) {
-  const navigationContext = useNavContext();
+  //const navigationContext = useNavContext();
 
-  const activePage = useActivePage();
+  const activePage = useActivePageRoute();
 
   const isActive =
-    !!activePage && activePage.path === getItemPath(navigationContext, item);
+    !!activePage && hasSelectedRoute(item, activePage);
 
   // Show as selected in mini sidebar if any of the children matches path, otherwise show as selected if item matches path
   const isSelected =
     activePage && item.children && isMini
-      ? hasSelectedNavChildren(navigationContext, item, activePage.path)
+      ? hasSelectedChildren(item, activePage)
       : isActive && !item.children;
 
   const pageItemContextProps: SidebarItemContextProps = React.useMemo(
@@ -145,9 +147,9 @@ function NavigationSidebar({
   sidebarExpandedWidth,
   renderPageItem,
 }: NavigationSidebarProps) {
-  const navigationContext = useNavContext();
+  //const navigationContext = useNavContext();
 
-  const activePage = useActivePage();
+  const activePage = useActivePageRoute();
 
   const initialExpandedItemIds = React.useMemo(
     () =>
@@ -161,14 +163,13 @@ function NavigationSidebar({
             isOutletRoute(navigationItem) &&
             navigationItem.showNav !== false &&
             !!activePage &&
-            hasSelectedNavChildren(
-              navigationContext,
+            hasSelectedChildren(
               navigationItem,
-              activePage.path,
+              activePage,
             ),
         )
         .map(({ originalIndex }) => `page-${depth}-${originalIndex}`),
-    [activePage, depth, navigationContext, subNavigation],
+    [activePage, depth, subNavigation],
   );
 
   const [expandedItemIds, setExpandedItemIds] = React.useState(

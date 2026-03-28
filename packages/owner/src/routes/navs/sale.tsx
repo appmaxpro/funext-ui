@@ -1,21 +1,23 @@
-import DashboardIcon from "@funext/icons/Dashboard";
-import ShoppingCartIcon from "@funext/icons/ShoppingCart";
-import { RouteTabs } from "~/components/views/data-view-tabs";
+import { RouteTabs } from "~/scope/views/data/data-view-tabs";
 import type { NavRoute } from "~/utils/types";
 import RouteView from "../route-view";
+import { Icons } from "~/components";
 
 export default [
   {
     title: "Sales Regions",
     path: "states",
-    icon: <ShoppingCartIcon />,
+    icon: <Icons.ShoppingCart />,
     childNav: false,
-
+    props: {
+      custom: true
+    },  
     children: [
       {
         CP: "SaleTargetStates",
         props: {
           model: "states",
+          custom: true
         },
       },
       {
@@ -23,6 +25,7 @@ export default [
         CP: "SaleTargetStates",
         props: {
           model: "states",
+          custom: true
         },
         children: [],
       },
@@ -33,6 +36,9 @@ export default [
     path: "branches",
     type: "tabs",
     Component: RouteTabs,
+    props: {
+      custom: true
+    },
     children: [
       {
         CP: "SaleTargetBranches",
@@ -42,6 +48,7 @@ export default [
         Component: RouteView,
         props: {
           model: `branches`,
+          custom: true
         },
       },
       {
@@ -52,6 +59,7 @@ export default [
         Component: RouteView,
         props: {
           model: `branches/expense`,
+          custom: true
         },
       },
     ],

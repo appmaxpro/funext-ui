@@ -9,7 +9,7 @@ import { useAttributePreference, usePreference } from "../utils/preferences";
 
 import { mapImages } from "./preloadImages";
 import useMapStyles from "./useMapStyles";
-import { useLocalStorageState } from "~/hooks/use-local-storage-state";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 
 const element = document.createElement("div");
 element.style.width = "100%";
@@ -56,7 +56,7 @@ map.addControl(new maplibregl.NavigationControl());
 
 const switcher = new SwitcherControl(
   () => updateReadyValue(false),
-  (styleId: any) => useLocalStorageState("selectedMapStyle", styleId),
+  (styleId: any) => useLocalStorage("selectedMapStyle", styleId),
   () => {
     map.once("styledata", () => {
       const waiting = () => {
@@ -84,7 +84,7 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
     "activeMapStyles",
     "locationIqStreets,locationIqDark,openFreeMap",
   );
-  const [defaultMapStyle] = useLocalStorageState(
+  const [defaultMapStyle] = useLocalStorage(
     "selectedMapStyle",
     usePreference("map", "locationIqStreets"),
   );

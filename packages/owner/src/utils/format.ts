@@ -2,7 +2,9 @@ import _ from "lodash";
 
 
 //import { toKebabCase } from "./names";
-import { l10n } from "./l10n";
+import { l10n, moment } from "./l10n";
+import { DEFAULT_SCALE, EMPTY_OBJECT } from "./constant";
+import { getMultiValues, type Option } from "./data-types";
 
 export type FormatOptions = {
   props?: any;
@@ -13,7 +15,7 @@ export type Formatter = (value: any, opts?: FormatOptions) => string;
 
 export function getTimeFormat({ props }: FormatOptions = {}) {
   if (props?.timeFormat) return props.timeFormat;
-  const seconds = props?.seconds || props?.widgetAttrs?.seconds;
+  const seconds = props?.seconds || props?.props?.seconds;
   let format = "HH:mm";
   if (seconds) {
     format += ":ss";
@@ -50,13 +52,34 @@ const formatDuration: Formatter = (value, opts = {}) => {
 
   let text = h + ":" + m;
 
-  if (props?.seconds || props?.widgetAttrs?.seconds) {
+  if (props?.seconds || props?.props?.seconds) {
     text = text + ":" + s;
   }
 
   return text;
 };
 
+const formatDate: Formatter = (value, opts = {}) => {
+  const format = getDateFormat(opts);
+  return value ? moment(value).format(format) : "";
+};
+
+const formatTime: Formatter = (value, opts = {}) => {
+  const format = getTimeFormat(opts);
+  return value
+    ? moment(value, [
+        "YYYY-MM-DDTHH:mm:ss",
+        "YYYY-MM-DDTHH:mm:ssZ[Z]",
+        "HH:mm:ss",
+        "HH:mm",
+      ]).format(format)
+    : "";
+};
+
+const formatDateTime: Formatter = (value, opts = {}) => {
+  const format = getDateTimeFormat(opts);
+  return value ? moment(value).format(format) : "";
+};
 
 const formatString: Formatter = (value, opts = {}) => {
   const { props, context } = opts;
@@ -78,32 +101,13 @@ function addCurrency(value: string, symbol: string) {
   return value;
 }
 
-export const DEFAULT_SCALE = 2;
 
-const MIN_SCALE = 0;
-const MAX_SCALE = 20;
-
-export function limitScale(value?: number) {
-  if (value == null) {
-    return value;
-  }
-
-  if (value < MIN_SCALE) {
-    return MIN_SCALE;
-  }
-
-  if (value > MAX_SCALE) {
-    return MAX_SCALE;
-  }
-
-  return value;
-}
 
 const formatNumber: Formatter = (value, opts = {}) => {
   const { props, context = {} } = opts;
-  let { scale, currency, pType, type, widgetAttrs } = props ?? {};
+  let { scale, currency, pType, type, props:attrs } = props ?? {};
   // special case for filter, ie using hard coded currency, see __currency
-  const { currencyText } = widgetAttrs ?? {};
+  const { currencyText } = attrs ?? {};
 
   if (
     (value === null || value === undefined) &&
@@ -193,6 +197,23 @@ const formatBoolean: Formatter = (value, opts = {}) => {
   return Boolean(value).toString();
 };
 
+const formatSelection: Formatter = (value, opts = {}) => {
+  const { props: { options = EMPTY_OBJECT, multiple, widget } = EMPTY_OBJECT } = opts;
+  if (multiple || widget === "checkbox-select") {
+    return getMultiValues(value)
+      .map(
+        (item) =>
+          options?.find((x:Option) => String(x.value) === item)?.title ?? item,
+      )
+      .join(", ");
+  } else {
+    const item = options.find(
+      (x:Option) => String(x.value) === String(value),
+    );
+    return item?.title ?? "";
+  }
+};
+
 
 const formatOne: Formatter = (value, opts = {}) => {
   const { props, context: record } = opts;
@@ -218,35 +239,39 @@ const formatMany: Formatter = (value, opts = {}) => {
 
 export const Formatters = {
   string: formatString,
-  integer: formatInteger,
+  text: formatString,
+  int: formatInteger,
   long: formatInteger,
   decimal: formatNumber,
+  float: formatNumber,
   percent: formatPercent,
   boolean: formatBoolean,
   duration: formatDuration,
-  "one-to-one": formatOne,
-  "one-to-many": formatMany,
-  "many-to-one": formatOne,
-  "many-to-many": formatMany,
+  time: formatTime,
+  date: formatDate,
+  datetime: formatDateTime,
+  select: formatSelection,
+  //"one-to-one": formatOne,
+  "otm": formatMany,
+  "mto": formatOne,
+  "mtm": formatMany,
 };
 
 const format: Formatter = (value, opts = {}) => {
   const { props, context } = opts;
+  if (typeof props?.format === 'function') {
+    return props?.format(context ?? EMPTY_OBJECT)
+  }
+  
   let type = props?.pType ?? props?.type;
   //if (type) type = toKebabCase(type);
 
-  if (type === "enum") type = "enumeration";
   if (props?.widget === "duration") type = "duration";
-  if (props?.selection) type = "selection";
+  if (props?.options) type = "select";
 
   let val = value;
-  const name = props?.name;
-
-  if (context && val === undefined) {
-    
-  }
-
-  const func = Formatters[type as keyof typeof Formatters];
+  
+  const func = Formatters[value as keyof typeof Formatters];
   if (func) {
     return func(val, opts);
   }

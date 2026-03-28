@@ -25,12 +25,12 @@ export interface SessionInfo {
     help?: string;
     mode?: string;
     pollingInterval?: number;
-    swaggerUI?: {
-      enabled?: boolean;
-      allowTryItOut?: boolean;
-    };
-    
     resetPasswordEnabled?: boolean;
+    totp?: boolean;
+    disableLoginLanguage?: boolean;
+    openIdForce?: boolean;
+    emailEnabled?: boolean;
+    singlePage?: boolean;
   };
   authentication?: {
     callbackUrl?: string;
@@ -40,6 +40,7 @@ export interface SessionInfo {
     currentClient?: string;
     tenants?: Record<string, string>;
     tenant?: string;
+    
   };
   user?: {
     id: number;
@@ -154,6 +155,7 @@ export class Session {
       username: string;
       password: string;
       newPassword?: string;
+      code?: string;
     },
     options?: {
       params?: URLSearchParams;
@@ -174,7 +176,7 @@ export class Session {
     const { status, ok } = response;
 
     if (!ok) {
-      return Promise.reject(status);
+      return Promise.reject(response);
     }
 
     const data = await response.json();
@@ -183,7 +185,8 @@ export class Session {
 
     if (user) {
       this.#info = data;
-      setApiToken(user.token)
+      setApiToken(user.token);
+      this.#notify();
       return data;
     }
 

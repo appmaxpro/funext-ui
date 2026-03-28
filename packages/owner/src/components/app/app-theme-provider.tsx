@@ -2,7 +2,7 @@ import { createTheme, ThemeProvider, type Theme } from "@funext/ui/styles";
 import { useMediaQuery } from "@funext/ui/hooks";
 import { CoreThemeProvider } from "@funext/ui/mui";
 import { Link as LinkComponent } from "~/components/app/link";
-import { useLocalStorageState } from "~/hooks/use-local-storage-state";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 import React from "react";
 import { GlobalStyles } from "@funext/ui/GlobalStyles";
 import type { ThemeMode } from "~/utils/types";
@@ -47,7 +47,7 @@ function AppThemeProvider(props: AppThemeProviderProps) {
   const isDualTheme = "light" in theme || "dark" in theme;
 
   const preferredMode = usePreferredMode(appWindow);
-  const [userMode, setUserMode] = useLocalStorageState<ThemeMode>(
+  const [userMode, setUserMode] = useLocalStorage<ThemeMode>(
     APP_THEME_MODE,
     "system",
   );

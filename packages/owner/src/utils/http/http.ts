@@ -1,5 +1,17 @@
-import type{ RequestOptions } from "../client";
 import fetch from "./http-fetch";
+
+export type RequestOptions = {
+  silent?: boolean;
+};
+
+export type RequestArgs = {
+  url: string;
+  method?: "GET" | "PUT" | "POST" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
+  headers?: HeadersInit;
+  signal?: AbortSignal;
+  body?: any;
+  options?: RequestOptions;
+};
 
 export type HttpInterceptorArgs = {
   input: RequestInfo | URL;

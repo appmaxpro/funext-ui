@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useMediaQuery,
   MenuItem,
@@ -7,47 +7,43 @@ import {
   Input,
   Link,
   Snackbar,
-  IconButton,
-  Tooltip,
-  Box,
-  Spinner,
-  memoTheme
+  IconButton, Box,
+  Spinner
 } from "@funext/ui";
 // ReactCountryFlag from "react-country-flag";
-import CloseIcon from "@funext/icons/Close";
 import { useTheme } from "@funext/ui/styles";
 import { useNavigate } from "react-router";
 
 import AuthLayout from "./auth-layout";
 import {
-  generateLoginToken,
   handleLoginTokenListeners,
-  nativePostMessage,
+  nativePostMessage
 } from "../../tracker/utils/native-interface";
 import LogoImage from "./LogoImage";
 import { i18n } from "~/utils/i18n";
 import { useTrackerSession } from "~/tracker/store/session";
-import { Icons } from "@funext/ui/components";
+import { SvgIcons } from "@funext/ui/components";
 import { useCatch } from "~/hooks/use-catch";
 import { useLocalization } from "~/context";
-import { useLocalStorageState } from "~/hooks/use-local-storage-state";
-import { readCookie, fetch } from "~/utils/client";
-import { itemStyle } from "@funext/ui/components/List/styles.js";
+import { useLocalStorage } from "~/hooks/use-local-storage";
+import { fetch } from "~/utils/client";
+import { session } from "~/utils/session";
+import { Icons } from "~/components";
 
 const optionSx = {
   position: "fixed",
   top: 4,
-  right: 'calc(4 * var(--spacing))',
+  right: "calc(4 * var(--spacing))",
   display: "flex",
   flexDirection: "row",
-  gap: 'calc(2 * var(--spacing))', //
+  gap: "calc(2 * var(--spacing))", //
 };
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const t = i18n.get;
-  
+
   const { languages, language, setLanguage } = useLocalization();
   const languageList = Object.entries(languages).map((values) => ({
     code: values[0],
@@ -57,60 +53,49 @@ const LoginPage = () => {
 
   const [failed, setFailed] = useState(false);
 
-  const [email = "", setEmail] = useLocalStorageState("loginEmail");
+  const [email = "", setEmail] = useLocalStorage("loginEmail");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
 
   const registrationEnabled = false;
-  
-  const languageEnabled = useTrackerSession(
-    (state) => !state.server.attributes["ui.disableLoginLanguage"],
-  );
-  const changeEnabled = useTrackerSession(
-    (state) => !state.server.attributes.disableChange,
-  );
-  const emailEnabled = useTrackerSession(
-    (state) => state.server.emailEnabled,
-  );
-  const openIdEnabled = useTrackerSession(
-    (state) => state.server.openIdEnabled,
-  );
-  const openIdForced = useTrackerSession(
-    (state) =>
-      state.server.openIdEnabled && state.server.openIdForce,
-  );
+  const application = session.info?.application;
+  const languageEnabled = application?.disableLoginLanguage !== true;
+
+  const emailEnabled = application?.emailEnabled !== false;
+
+  const openIdForced = application?.openIdForce === true;
+
   const [codeEnabled, setCodeEnabled] = useState(false);
 
   const [announcementShown, setAnnouncementShown] = useState(false);
-  const announcement = useTrackerSession(
-    (state) => state.server.announcement,
-  );
+  const announcement = useTrackerSession((state) => state.server.announcement);
 
-  const trackerSession = useTrackerSession()
+  const trackerSession = useTrackerSession();
 
-  const handlePasswordLogin = async (event:any) => {
+  const handlePasswordLogin = async (event: any) => {
     event.preventDefault();
     setFailed(false);
     try {
       const query = `email=${encodeURIComponent(email!)}&password=${encodeURIComponent(password)}`;
-      const response = await fetch("/auth/session", {
-        method: "POST",
-        body: new URLSearchParams(
-          code.length ? `${query}&code=${code}` : query,
-        ),
-      });
-      if (response.ok) {
-        const user = await response.json();
-        generateLoginToken();
-        trackerSession.updateUser(user);
+      const response = await session
+        .login({
+          username: email!,
+          password: password!,
+          code,
+        })
+        .catch(async (response:Response) => {
+          if (
+            response.status === 401 &&
+            response.headers.get("WWW-Authenticate") === "TOTP"
+          ) {
+            setCodeEnabled(true);
+          } else {
+            throw Error(await response.text());
+          }
+        });
+
+      if (response?.user) {
         navigate("/");
-      } else if (
-        response.status === 401 &&
-        response.headers.get("WWW-Authenticate") === "TOTP"
-      ) {
-        setCodeEnabled(true);
-      } else {
-        throw Error(await response.text());
       }
     } catch (error) {
       setFailed(true);
@@ -118,10 +103,10 @@ const LoginPage = () => {
     }
   };
 
-  const handleTokenLogin = useCatch(async (token:string) => {
-    const response = await fetch(
-      `/auth/session?token=${encodeURIComponent(token)}`,
-    );
+  const handleTokenLogin = useCatch(async (token: string) => {
+    const response = await fetch({
+      url: `/auth/session?token=${encodeURIComponent(token)}`,
+    });
     if (response.ok) {
       const user = await response.json();
       trackerSession.updateUser(user);
@@ -138,9 +123,11 @@ const LoginPage = () => {
   useEffect(() => nativePostMessage("authentication"), []);
 
   useEffect(() => {
-    const listener = (token:string) => handleTokenLogin(token);
+    const listener = (token: string) => handleTokenLogin(token);
     handleLoginTokenListeners.add(listener);
-    return () => {handleLoginTokenListeners.delete(listener);}
+    return () => {
+      handleLoginTokenListeners.delete(listener);
+    };
   }, []);
 
   if (openIdForced) {
@@ -150,9 +137,7 @@ const LoginPage = () => {
 
   return (
     <AuthLayout>
-      <Box sx={optionSx}>
-        
-      </Box>
+      <Box sx={optionSx}></Box>
       <div className="flex flex-col gap-4">
         {useMediaQuery(theme.breakpoints.down("lg")) && (
           <LogoImage color={theme.palette.primary.main} />
@@ -165,9 +150,8 @@ const LoginPage = () => {
           value={email}
           autoComplete="email"
           autoFocus={!email}
-          onChange={(e:any) => setEmail(e.target.value)}
+          onChange={(e: any) => setEmail(e.target.value)}
           helperText={failed && t("Invalid username or email")}
-          
         />
         <Input
           required
@@ -178,7 +162,7 @@ const LoginPage = () => {
           type="password"
           autoComplete="current-password"
           autoFocus={!!email}
-          onChange={(e:any) => setPassword(e.target.value)}
+          onChange={(e: any) => setPassword(e.target.value)}
         />
         {codeEnabled && (
           <Input
@@ -188,41 +172,39 @@ const LoginPage = () => {
             name="code"
             value={code}
             type="number"
-            onChange={(e:any) => setCode(e.target.value)}
+            onChange={(e: any) => setCode(e.target.value)}
           />
         )}
         {languageEnabled && (
-            <Menu
-              menuProps={{
-                panelProps: {
-                  style: {
-                  width: 'var(--popper-reference-width)'
-                }
-                },
-                listProps: {
-                  itemStyle: {
-                    className : 'py-2 px-3'
-                  },
-                  hover: true
-                }
-              }}
-              
-            >
-              <Menu.Trigger>
-                <Button ripple={false} variant="outlined" fullWidth color="inherit" className="flex justify-between">
-                  <span>{languageList.find(a => a.code === language)?.name }</span>
-                  <Icons.ChevronDown size='sm'/>
-                </Button>
-              </Menu.Trigger>
-              {languageList.map((it) => (
-                <MenuItem className="py-2 px-3" key={it.code} title={it.name} onClick={()=> setLanguage(it.code)}>
-                  <Box component="span" sx={{ mr: 1 }}>
-                    {/*<ReactCountryFlag countryCode={it.country} svg />*/}
-                  </Box>
-                  {it.name}
-                </MenuItem>
-              ))}
-            </Menu>
+          <Menu matchReferenceWidth>
+            <Menu.Trigger>
+              <Button
+                ripple={false}
+                variant="outlined"
+                fullWidth
+                color="inherit"
+                className="flex justify-between"
+              >
+                <span>
+                  {languageList.find((a) => a.code === language)?.name}
+                </span>
+                <SvgIcons.ChevronDown size="sm" />
+              </Button>
+            </Menu.Trigger>
+            {languageList.map((it) => (
+              <MenuItem
+                className="py-2 px-3"
+                key={it.code}
+                title={it.name}
+                onClick={() => setLanguage(it.code)}
+              >
+                <Box component="span" sx={{ mr: 1 }}>
+                  {/*<ReactCountryFlag countryCode={it.country} svg />*/}
+                </Box>
+                {it.name}
+              </MenuItem>
+            ))}
+          </Menu>
         )}
         <Button
           onClick={handlePasswordLogin}
@@ -233,7 +215,7 @@ const LoginPage = () => {
         >
           {t("loginLogin")}
         </Button>
-        {openIdEnabled && (
+        {(application?.openIdForce) && (
           <Button
             onClick={() => handleOpenIdLogin()}
             variant="filled"
@@ -243,7 +225,7 @@ const LoginPage = () => {
           </Button>
         )}
         <div className="flex justify-center gap-4 mt-4">
-          {emailEnabled && (
+          {(application?.resetPasswordEnabled) && (
             <Link
               //onClick={() => navigate("/auth/reset-password")}
               //className={classes.link}
@@ -265,7 +247,7 @@ const LoginPage = () => {
             color="inherit"
             onClick={() => setAnnouncementShown(true)}
           >
-            <CloseIcon size="sm" />
+            <Icons.Close size="sm" />
           </IconButton>
         }
       />

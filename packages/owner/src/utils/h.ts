@@ -1,30 +1,10 @@
 import isPropValid from "@emotion/is-prop-valid";
 import styled from "@emotion/styled";
 import React from "react";
-import { EMPTY_RECORD, omit, type BlockRenderProps } from ".";
+import { EMPTY_OBJECT, EMPTY_RECORD } from "./constant";
 import { cn } from "@funext/ui";
-
-let render: BlockRenderProps | null = null;
-
-let prev: {
-  current: BlockRenderProps | null;
-} = {
-  current: null,
-};
-
-export const blockSet = {
-  set: (current: BlockRenderProps) => {
-    if (render) {
-      prev.current = render;
-    }
-    render = current;
-  },
-
-  restore: () => {
-    render = prev.current;
-    prev.current = null;
-  },
-};
+import * as ReactIs from "react-is";
+import get from "lodash/get";
 // Creates an array of React.createElement arguments in a performant way
 function createArguments(component: any, properties: any, children: any) {
   var argLength = children.length + 2;
@@ -40,51 +20,62 @@ function createArguments(component: any, properties: any, children: any) {
   return args;
 }
 
+// bind it to avoid mutating the original function
+declare type Ht = (
+  component: any,
+  props: any,
+  children?: any,
+) => ReturnType<typeof React.createElement>;
+
+interface H extends Ht {
+  C: any;
+}
+
 function r(component: any, props: any, children?: any) {
-  if (props && props === render?.props) {
-    const result = props();
-    if (result?.children) {
-      children = result?.children;
+  if (
+    children == null &&
+    props &&
+    (props.constructor !== Object || React.isValidElement(props))
+  ) {
+    props = {children: Array.isArray(props) ? props : [props]};
+  }
+
+  console.log("R::FN:", { component, props, children });
+
+  if (props != null) {
+    props = { ...props };
+    const className = props.className || props["class"] || undefined;
+    if (typeof component === "string")
+      props = Object.keys(props ?? EMPTY_RECORD)
+        .filter(isPropValid)
+        .reduce((prev, prop) => {
+          prev[prop] = props[prop];
+          return prev;
+        }, {} as any);
+
+    if (className) {
+      props.className = cn(className);
+      if (props["class"]) {
+        delete props["class"];
+      }
     }
   }
-  // A properties object is optional so shift arguments if missing
-  else if (!children && React.isValidElement(props)) {
-    children = props;
-    props = {};
+
+  // Don't use an array if there's only one child
+  if (Array.isArray(children) && children.length <= 1) children = children[0];
+
+  if (children == null) {
+    return React.createElement(component, props);
   }
 
-  const className = props.className || props["class"] || undefined;
-  if (typeof component === "string")
-    props = Object.keys(props ?? EMPTY_RECORD)
-      .filter(isPropValid)
-      .reduce((prev, prop) => {
-        prev[prop] = props[prop];
-        return prev;
-      }, {} as any);
-
-  if (className) {
-    props.className = cn(className);
-    if (props["class"]) {
-      delete props["class"];
-    }
-  }
-
-  
-  if (Array.isArray(children) && children.length === 1) {
-    children = children[0];
+  if (props == null) {
+    return React.createElement(component, { children });
   }
 
   // When there's only one child, call createElement normally
   // to achieve a minor performance gain
   if (!Array.isArray(children)) {
     return React.createElement(component, props, children);
-  } 
-  // Don't use an array if there's only one child
-  else if(children.length === 1) {
-     children = children[0];
-  }
-  else if(children.length === 0) {
-     return React.createElement.apply(React, props);
   }
 
   // When many children, use apply to prevent unnecessary key warnings
@@ -92,45 +83,97 @@ function r(component: any, props: any, children?: any) {
   return React.createElement.apply(React, args);
 }
 
+let C: any = EMPTY_OBJECT;
+let fns: any = EMPTY_OBJECT;
+let proxies: any[] = [];
+
 type CreateComponent = <P>(p: P) => React.ComponentType<P>;
 
-const h = new Proxy(r, {
+// bind it to avoid mutating the original function
+const ht: Ht = r.bind(null);
+(ht as H).C = EMPTY_OBJECT;
+const t = ht as H;
+
+const h = new Proxy(t, {
   apply: (target, thisArg, argArray) => {
     return Reflect.apply(target, thisArg, argArray);
   },
   get: (target, prop, receiver) => {
     //console.log("get prop:",  "(", prop, "), has:", Reflect.has(target, prop))
-    if (Reflect.has(target, prop)) {
-      const value = Reflect.get(target, prop, receiver);
+    const value = Reflect.get(target, prop, receiver);
+    if (value) {
       if (typeof value === "function") {
-        //return value;
-        if ("$embed" in value) return value;
-        return function (...args: any[]) {
-          //console.log(`Method called: ${prop} with arguments: ${JSON.stringify(args)}`);
-          // Use .apply() or .call() to ensure the 'this' context (receiver) is correct
-          return value.apply(target, args);
-        };
+        return (value as any)._h_embed_ ? value : value.bind(null, target);
       }
       return value;
     }
 
-    if (typeof prop === "string" && prop in styled) {
-      const fn = function (props: any, ...children: any[]) {
-        /*
-        console.log(
-          `Method target: ${prop} with arguments: ${JSON.stringify(args)}`,
-        );
-        */
+    if (prop in styled) {
+      const Comp = (styled as any)[prop]();
+      const fn = target.bind(null, Comp);
+      /*
+      const fn = function (...children: any[]) {
+        
         // Use .apply() or .call() to ensure the 'this' context (receiver) is correct
         //return target(prop, ...args);
-        return r(prop, props, children);
-      };
-      Object.assign(fn, { $embed: 0 });
-      Object.assign(target, { [prop]: fn });
+        return target.apply([Comp, ...children]);
+      };*/
+
+      Object.assign(fn, { _h_embed_: 1 });
+      (target as any)[prop] = fn;
       return fn;
     }
-    return null;
+
+    let c = Reflect.get(C, prop, receiver);
+    console.log("H::Proxy prop:", { prop, c });
+    if (c) {
+      return c;
+    }
+    let fn = Reflect.get(fns, prop, receiver);
+    if (typeof fn === "function") {
+      return fn.bind(target);
+    }
+    return fn;
   },
 });
+
+function expandFn(C: any) {
+  C = { ...C };
+  Object.keys(C).forEach((k) => {
+    //Accept [A-Z] while A = 65 AND Z = 90
+    if (
+      k &&
+      typeof k === "string" &&
+      k.codePointAt(0)! > 64 &&
+      k.codePointAt(0)! < 91 &&
+      ReactIs.isValidElementType(C[k])
+    ) {
+      //const c = r.bind(null, C[k]);
+      C[k] = Object.assign(r.bind(null, C[k]), C[k]);
+      //proxies.push(main[key]);
+    }
+  });
+
+  return Object.assign(r.bind(null, C), C);
+}
+
+const setC = (cc: any, ...expand: string[]) => {
+  C = { ...cc };
+  proxies = [];
+  //expand.forEach(extended);
+  Object.keys(C).forEach((k) => {
+    if (expand.includes(k)) {
+      C[k] = expandFn(C[k]);
+    } else {
+      C[k] = Object.assign(r.bind(null, C[k]), C[k]);
+    }
+  });
+  console.log("H::Proxy::C:", C);
+  console.log("H::Proxy::styled:", styled);
+};
+
+const setFns = (newFns: any) => (fns = newFns);
+
+export { setC, setFns };
 
 export default h;

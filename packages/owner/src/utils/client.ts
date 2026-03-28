@@ -1,5 +1,5 @@
 import { isArrayLikeObject, isPlainObject } from "lodash";
-import { $request, $use } from "./http";
+import { $request, $use, type RequestArgs, type RequestOptions } from "./http";
 import { FUNEXT_API_SERVER, CONTEXT_PATH } from "./constant";
 
 export const CSRF_HEADER_NAME = "X-CSRF-Token";
@@ -54,18 +54,11 @@ $use(async (args, next) => {
   return next();
 });
 
-export type RequestOptions = {
-  silent?: boolean;
-};
 
-export type RequestArgs = {
-  url: string;
-  method?: "GET" | "PUT" | "POST" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
-  headers?: HeadersInit;
-  signal?: AbortSignal;
-  body?: any;
-  options?: RequestOptions;
-};
+export type {
+  RequestArgs,
+  RequestOptions
+}
 
 const baseURL = "/";
 let URL =  FUNEXT_API_SERVER ?? '';

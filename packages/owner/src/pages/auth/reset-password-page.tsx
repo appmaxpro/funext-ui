@@ -52,12 +52,14 @@ const ResetPasswordPage = () => {
     event.preventDefault();
     let response;
     if (!token) {
-      response = await fetch('/auth/password/reset', {
+      response = await fetch({
+        url: '/auth/password/reset',
         method: 'POST',
         body: new URLSearchParams(`email=${encodeURIComponent(email)}`),
       });
     } else {
-      response = await fetch('/auth/password/update', {
+      response = await fetch( {
+        url: '/auth/password/update',
         method: 'POST',
         body: new URLSearchParams(`token=${encodeURIComponent(token)}&password=${encodeURIComponent(password)}`),
       });

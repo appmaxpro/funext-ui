@@ -33,7 +33,7 @@ export interface DialogProviderProps {
  * - [DialogsProvider API](https://mui.com/toolpad/core/api/dialogs-provider)
  */
 function DialogsProvider(props: DialogProviderProps) {
-  const { children, unmountAfter = 1000 } = props;
+  const { children, unmountAfter = 2000 } = props;
   const [stack, setStack] = React.useState<DialogStackEntry<any, any>[]>([]);
   const keyPrefix = React.useId();
   const nextId = React.useRef(0);
@@ -71,13 +71,18 @@ function DialogsProvider(props: DialogProviderProps) {
   });
 
   const closeDialogUi = useEventCallback(function closeDialogUi<R>(dialog: Promise<R>) {
+    const onPercent = (percent: boolean)=> {
+      if(!percent)
+         setStack((prevStack) => prevStack.filter((entry) => entry.promise !== dialog));
+    }
     setStack((prevStack) =>
-      prevStack.map((entry) => (entry.promise === dialog ? { ...entry, open: false } : entry)),
+      prevStack.map((entry) => (entry.promise === dialog ? { ...entry, open: false, onPercent } : entry)),
     );
+    /*
     setTimeout(() => {
       // wait for closing animation
       setStack((prevStack) => prevStack.filter((entry) => entry.promise !== dialog));
-    }, unmountAfter);
+    }, unmountAfter);*/
   });
 
   const closeDialog = useEventCallback(async function closeDialog<R>(

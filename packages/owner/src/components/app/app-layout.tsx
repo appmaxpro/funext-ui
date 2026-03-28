@@ -1,53 +1,41 @@
 "use client";
 import * as React from "react";
 import {
-  styled,
   useTheme,
   type SxProps,
   Box,
   Flex,
   Drawer,
   drawerClasses,
-  IconButton,
-  Tooltip,
-  Text,
-  Link,
-  BottomNavigation,
-  BottomNavigationAction,
   useScreenSize,
   Panel,
-  Slide,
-  Presence,
   type BottomNavigationProps,
 } from "@funext/ui";
-
-import MenuOpenIcon from "@funext/icons/MenuOpen";
-import MenuIcon from "@funext/icons/Menu";
-import PersonIcon from "@funext/icons/Person";
-import HomeIcon from "@funext/icons/Home";
-import SettingsIcon from "@funext/icons/Settings";
 
 import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from "../../utils/ui";
-import { AppBar, Toolbar } from "../other/toolbar";
-import useScrollTrigger from "../../hooks/use-scroll-trigger";
-import { HideOnScroll } from "~/components/other/hide-on-scroll";
-import { LayoutContext } from "~/context";
+import { AppBar, Toolbar } from "../shared/toolbar";
+import { HideOnScroll } from "~/components/shared/hide-on-scroll";
+import { LayoutContext, useNavContext } from "~/context";
 import { NavigationSidebar } from "~/components/sidebar/navigation-sidebar";
 import type { OutletRoute, Navigation, NavRoute } from "~/utils/types";
 import { Account, type AccountProps } from "~/components/account/account";
 import { AppTitle, type AppTitleProps } from "~/components/app/app-title";
-import { ToolbarActions } from "./toolbar-actions";
 import { Dimensions } from "~/utils/constant";
 import { isOutletRoute } from "~/utils/navigation";
 import { MenuIon } from "./menu-icon";
-import { AppBottomNavigation, MemoAppBottomNavigation } from "./app-bottom-navigation";
+import { MemoAppBottomNavigation } from "./app-bottom-navigation";
 
 export interface SidebarFooterProps {
   mini: boolean;
 }
+
+type AppBarExtProps = React.ComponentProps<typeof AppBar> & {
+  isExpanded: boolean;
+  toggleNavigationExpanded: () => void;
+};
 
 export interface AppLayoutSlotProps {
   appTitle?: AppTitleProps;
@@ -55,6 +43,7 @@ export interface AppLayoutSlotProps {
   toolbarAccount?: AccountProps;
   sidebarFooter?: SidebarFooterProps;
   bottomNavigation?: BottomNavigationProps;
+  appBar?: React.ComponentProps<typeof AppBar>;
 }
 
 export interface AppLayoutSlots {
@@ -67,19 +56,21 @@ export interface AppLayoutSlots {
    * The toolbar actions component used in the layout header.
    * @default ToolbarActions
    */
-  toolbarActions?: React.JSXElementConstructor<{}>;
+  toolbarActions?: React.ComponentType<{}>;
   /**
    * The toolbar account component used in the layout header.
    * @default Account
    */
-  toolbarAccount?: React.JSXElementConstructor<AccountProps>;
+  toolbarAccount?: React.ComponentType<AccountProps>;
   /**
    * Optional footer component used in the layout sidebar.
    * @default null
    */
-  sidebarFooter?: React.JSXElementConstructor<SidebarFooterProps>;
+  sidebarFooter?: React.ComponentType<SidebarFooterProps>;
 
-  bottomNavigation?: React.JSXElementConstructor<BottomNavigationProps>;
+  bottomNavigation?: React.ComponentType<BottomNavigationProps>;
+
+  appBar?: React.ComponentType<AppBarExtProps>;
 }
 
 export interface AppLayoutProps {
@@ -211,7 +202,7 @@ function AppLayout(props: AppLayoutProps) {
 
   const theme = useTheme();
 
-  const navigationContext = useNavContext;
+  const navigationContext = useNavContext();
   const navigation = React.useMemo(
     () => filterNavigation(routes ?? navigationContext),
     [routes],
@@ -302,11 +293,12 @@ function AppLayout(props: AppLayoutProps) {
   );
 
   const hasDrawerTransitions = smUp && (!miniSidebar || !mdDown);
-
-  const ToolbarActionsSlot = slots?.toolbarActions //?? ToolbarActions;
+  const AppBarExt = slots?.appBar;
+  const ToolbarActionsSlot = slots?.toolbarActions; //?? ToolbarActions;
   const ToolbarAccountSlot = slots?.toolbarAccount ?? Account;
   const SidebarFooterSlot = slots?.sidebarFooter ?? null;
-  const BottomNavigationSlot = slots?.bottomNavigation ?? smDown ? MemoAppBottomNavigation : null;
+  const BottomNavigationSlot =
+    (slots?.bottomNavigation ?? smDown) ? MemoAppBottomNavigation : null;
 
   const getDrawerContent = React.useCallback(
     (isMini: boolean, viewport: "phone" | "tablet" | "desktop") => (
@@ -406,44 +398,48 @@ function AppLayout(props: AppLayoutProps) {
             direction="down"
             enabled={hideTopOnScroll}
           >
-            <AppBar className="item-enter" color="primary" position="fixed">
-              <Toolbar sx={{ mx: { xs: -0.75, sm: -1.5 } }}>
-                <Flex
-                  justify="space-between"
-                  items="center"
-                  flexWrap="nowrap"
-                  width="100%"
-                >
-                  <Flex>
-                    <MenuIon
-                      hideNavigation={hideNavigation}
-                      showBack={!!showBackIcon}
-                      isExpanded={isNavigationExpanded}
-                      toggleNavigationExpanded={toggleNavigationExpanded}
-                      navigation={navigation}
-                    />
+            {AppBarExt ? (
+              <AppBarExt
+                {...slotProps?.appBar}
+                isExpanded={isNavigationExpanded}
+                toggleNavigationExpanded={toggleNavigationExpanded}
+              />
+            ) : (
+              <AppBar className="item-enter" color="primary" position="fixed">
+                <Toolbar 
+                sx={{ mx: { xs: -0.75, sm: -1.5 } }} 
+                className="justify-between nowrap w-full">
+                    <Flex>
+                      <MenuIon
+                        hideNavigation={hideNavigation}
+                        showBack={!!showBackIcon}
+                        isExpanded={isNavigationExpanded}
+                        toggleNavigationExpanded={toggleNavigationExpanded}
+                        navigation={navigation}
+                      />
 
-                    {slots?.appTitle ? (
-                      <slots.appTitle {...slotProps?.appTitle} />
-                    ) : (
-                      /* Hierarchy of application of `branding`
-                       * 1. Branding prop passed in the `slotProps.appTitle`
-                       * 2. Branding prop passed to the `AppLayout`
-                       * 3. Branding prop passed to the `AppProvider`
-                       */
-                      <AppTitle {...slotProps?.appTitle} />
-                    )}
-                  </Flex>
-                  <Flex
-                    items="center"
-                    ml="auto"
-                  >
-                    {ToolbarActionsSlot && <ToolbarActionsSlot {...slotProps?.toolbarActions} />}
-                    {ToolbarAccountSlot && <ToolbarAccountSlot {...slotProps?.toolbarAccount} />}
-                  </Flex>
-                </Flex>
-              </Toolbar>
-            </AppBar>
+                      {slots?.appTitle ? (
+                        <slots.appTitle {...slotProps?.appTitle} />
+                      ) : (
+                        /* Hierarchy of application of `branding`
+                         * 1. Branding prop passed in the `slotProps.appTitle`
+                         * 2. Branding prop passed to the `AppLayout`
+                         * 3. Branding prop passed to the `AppProvider`
+                         */
+                        <AppTitle {...slotProps?.appTitle} />
+                      )}
+                    </Flex>
+                    <Flex items="center" ml="auto">
+                      {ToolbarActionsSlot && (
+                        <ToolbarActionsSlot {...slotProps?.toolbarActions} />
+                      )}
+                      {ToolbarAccountSlot && (
+                        <ToolbarAccountSlot {...slotProps?.toolbarAccount} />
+                      )}
+                    </Flex>
+                </Toolbar>
+              </AppBar>
+            )}
           </HideOnScroll>
         </Box>
 
@@ -501,22 +497,22 @@ function AppLayout(props: AppLayoutProps) {
                 {getDrawerContent(isMini, mdDown ? "tablet" : "desktop")}
               </Drawer>
             )}
-              <Flex
-                component="main"
-                direction="column"
-                //padding={4}
-                flex="1"
-                minWidth={0}
-                overflow={hasScrollerRef ? "hidden" : "hidden auto"}
-                ref={!hasScrollerRef ? contentRef : undefined}
-                height="100vh"
-                sx={{
-                  perspective: 1200
-                }}
-              >
-                <Toolbar />
-                {children}
-              </Flex>
+            <Flex
+              component="main"
+              direction="column"
+              //padding={4}
+              flex="1"
+              minWidth={0}
+              overflow={hasScrollerRef ? "hidden" : "hidden auto"}
+              ref={!hasScrollerRef ? contentRef : undefined}
+              height="100vh"
+              sx={{
+                perspective: 1200,
+              }}
+            >
+              <Toolbar />
+              {children}
+            </Flex>
           </Flex>
           {/*
         <BottomNavigation sx={{ visibility: "hidden" }}>

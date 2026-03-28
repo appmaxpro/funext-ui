@@ -1,10 +1,13 @@
 import type { Theme } from "@funext/ui/styles";
+import styled from "@emotion/styled";
 import React from "react";
+import * as ReactIs from "react-is";
 import get from "lodash/get";
 import type { Field, Property, Schema } from "./data-types";
 
 export function getDrawerSxTransitionMixin(isExpanded: boolean, property: string) {
   return {
+    height: '100%',
     transition: (theme: Theme) =>
       theme.transitions.create(property, {
         easing: theme.transitions.easing.sharp,
@@ -72,6 +75,12 @@ export function useOptionLabel({ targetName, targetSearch }: Property|Field) {
     [targetName, targetSearch],
   );
 }
+
+export function isReactType(item:any) {
+  return ReactIs.isValidElementType(item)
+}
+
+
 
 /*
 

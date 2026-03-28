@@ -2,14 +2,14 @@ import type { SetStateAction } from "react";
 
 import { create } from 'zustand'
 
-export type Block = {
+export type Blocker = {
   count: number,
   get blocked(): boolean;
   set(state: SetStateAction<boolean>): any;
 };
 
 
-const useBlockStore = create<Block>((set, get) => ({
+const useBlockerStore = create<Blocker>((set, get) => ({
   count: 0,
   get blocked(){return get().count > 0},
   set(state){
@@ -27,7 +27,7 @@ export async function block<T>(
   task: () => T,
   ms?: number,
 ): Promise<Awaited<T>> {
-  const set = useBlockStore((state) => state.set);
+  const set = useBlockerStore((state) => state.set);
   try {
     set( true);
     await wait(ms);
@@ -37,4 +37,4 @@ export async function block<T>(
   }
 }
 
-export const useHttpBlock = useBlockStore;
+export const useHttpBlock = useBlockerStore;

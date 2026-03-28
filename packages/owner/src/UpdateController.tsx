@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { Snackbar, IconButton } from '@funext/ui';
-import RefreshIcon from '@funext/icons/Refresh';
 //import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import { useTrackerSession } from './tracker/store/session';
 import { useTranslation } from './components/app/localization-provider';
+import { Icons } from './components';
+import { i18n } from './utils';
 
 // Based on https://vite-pwa-org.netlify.app/frameworks/react.html
 const UpdateController = () => {
@@ -48,10 +49,10 @@ console.log("UpdateController: done")
   return (
     <Snackbar
       open={needRefresh}
-      message={t('settingsUpdateAvailable')}
+      message={i18n.t('settingsUpdateAvailable')}
       action={(
         <IconButton color="inherit" onClick={() => updateServiceWorker(true)}>
-          <RefreshIcon />
+          <Icons.Refresh />
         </IconButton>
       )}
     />

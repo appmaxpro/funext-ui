@@ -19,11 +19,11 @@ const SvgRoot = styled("div")({
   ["&>svg"]: imgSx,
 });
 
-const LogoImage = ({ color }: { color?: string }) => {
+const LogoImage = ({ color, expanded }: { color?: string, expanded?: boolean }) => {
   const theme = useTheme();
 
-  const expanded = !useMediaQuery(theme.breakpoints.down("lg"));
-
+  //const expanded = !useMediaQuery(theme.breakpoints.down("lg"));
+  /*
   const logo = useTrackerSession((state) => state.server.attributes?.logo);
   const logoInverted = useTrackerSession(
     (state) => state.server.attributes?.logoInverted,
@@ -34,7 +34,7 @@ const LogoImage = ({ color }: { color?: string }) => {
       return <ImgRoot src={logoInverted} alt="" />;
     }
     return <ImgRoot src={logo} alt="" />;
-  }
+  }*/
   return (
     <SvgRoot style={{color}}>
       <AppLogo/>

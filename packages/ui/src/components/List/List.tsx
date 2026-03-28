@@ -20,8 +20,9 @@ import {
 import { SxComponentProps, styled, clsx } from "../../styles";
 import { twMerge } from "tailwind-merge";
 import ListSubheader from "./ListSubheader";
-import ItemText from "./ItemText";
+import Text from "./ItemText";
 import Box from "../Box";
+import { ArrowNavigation, ArrowNavigationProps } from "../Focus";
 
 export * from "./ListSubheader";
 export * from "./ItemText";
@@ -34,8 +35,8 @@ const ListRoot = styled(Box, {
 })({
   display: "flex",
   flexDirection: "column",
-  minWidth: 160
-}).withComponent('ul');
+  minWidth: 160,
+}).withComponent("ul");
 
 export interface ListProps<
   T extends
@@ -55,95 +56,120 @@ export interface ListProps<
   dense?: boolean;
   prefix?: string;
   suffix?: string;
+  navigate?: ArrowNavigationProps["selector"];
   component?: React.ComponentType | string;
 }
 
-const List:React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>((props, ref) => {
-  const {
-    className,
-    children,
-    listStyle,
-    itemStyle,
-    hover,
-    select,
-    active,
-    focus,
-    ripple,
-    divider,
-    gutters,
-    dense,
-    as,
-    component = as,
-    isolate = false,
-    prefix,
-    suffix,
-    ...rest
-  } = props;
+const List: React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>(
+  (props, ref) => {
+    const {
+      className,
+      children,
+      listStyle,
+      itemStyle,
+      hover,
+      select,
+      active,
+      focus,
+      ripple,
+      divider,
+      gutters,
+      dense,
+      as,
+      component = as,
+      isolate = false,
+      prefix,
+      suffix,
+      navigate,
+      ...rest
+    } = props;
 
-  const ul = !component || component === "ul";
-  let globalBase:ListContextValues|null = null;
-  try {
-    const {base} = useListContext(false)!;
-    globalBase = !isolate && base?.global ? base : null;
-    //console.log("List Base ListContext:", base);
-    if (
-      !isolate &&
-      base &&
-      !base.global &&
-      base.ul == ul &&
-      base.divider == divider &&
-      base.dense == dense &&
-      base.gutters == gutters
-    ) {
-      return (
-        <ListRoot
-          {...(rest as any)}
-          ref={ref as any}
-          className={twMerge(base.className, className)}
-        >
-          {children}
-        </ListRoot>
-      );
-    }
-  } catch (e) {
-    console.error(e);
-  }
-  //console.log("List Base itemStyle:", globalBase?.item);
-  return (
-    <ListContextProvider
-      value={{
-        item: itemStyle && globalBase?.item
-          ? {...itemStyle, className: twMerge(globalBase.className, itemStyle.className)}
-          : itemStyle ?? globalBase?.item,
-        className: className,
-        hover,
-        active,
-        select,
-        focus,
-        ripple,
-        divider,
-        gutters,
-        dense,
-        ul,
-        prefix,
-        suffix,
-      }}
-    >
-      <ListContextConsumer>
-        {({ list }: any) => (
+    const ul = !component || component === "ul";
+    let globalBase: ListContextValues | null = null;
+    try {
+      const { base } = useListContext(false)!;
+      globalBase = !isolate && base?.global ? base : null;
+      //console.log("List Base ListContext:", base);
+      if (
+        !isolate &&
+        base &&
+        !base.global &&
+        base.ul == ul &&
+        base.divider == divider &&
+        base.dense == dense &&
+        base.gutters == gutters
+      ) {
+        return navigate ? (
+          <ArrowNavigation selector={navigate} ref={ref as any}>
+            <ListRoot
+              {...(rest as any)}
+              className={twMerge(base.className, className)}
+            >
+              {children}
+            </ListRoot>
+          </ArrowNavigation>
+        ) : (
           <ListRoot
             {...(rest as any)}
             ref={ref as any}
-            className={list}
-            as={component}
+            className={twMerge(base.className, className)}
           >
             {children}
           </ListRoot>
-        )}
-      </ListContextConsumer>
-    </ListContextProvider>
-  );
-});
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    //console.log("List Base itemStyle:", globalBase?.item);
+    return (
+      <ListContextProvider
+        value={{
+          item:
+            itemStyle && globalBase?.item
+              ? {
+                  ...itemStyle,
+                  className: twMerge(globalBase.className, itemStyle.className),
+                }
+              : (itemStyle ?? globalBase?.item),
+          className: className,
+          hover,
+          active,
+          select,
+          focus,
+          ripple,
+          divider,
+          gutters,
+          dense,
+          ul,
+          prefix,
+          suffix,
+        }}
+      >
+        <ListContextConsumer>
+          {({ list }: any) =>
+            navigate ? (
+              <ArrowNavigation selector={navigate} ref={ref as any}>
+                <ListRoot {...(rest as any)} className={list} as={component}>
+                  {children}
+                </ListRoot>
+              </ArrowNavigation>
+            ) : (
+              <ListRoot
+                {...(rest as any)}
+                ref={ref as any}
+                className={list}
+                as={component}
+              >
+                {children}
+              </ListRoot>
+            )
+          }
+        </ListContextConsumer>
+      </ListContextProvider>
+    );
+  },
+);
 
 List.displayName = "Mux.List";
 
@@ -174,7 +200,8 @@ export {
 const MList = Object.assign(React.memo(List), {
   Item: ListItem,
   ItemButton: ListItemButton,
-  ItemText,
+  Button: ListItemButton,
+  Text,
   Prefix: ListItemPrefix,
   ItemIcon: ListItemIcon,
   Suffix: ListItemSuffix,

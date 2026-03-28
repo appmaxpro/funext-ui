@@ -1,16 +1,15 @@
 import React from "react";
 import VirtualList, {
-  RawVirtualList,
-  createVirtualListItemRef,
+  createVirtualItemRef,
   type VirtualListItemProps,
-} from "~/components/other/virtual-list";
+} from "~/components/shared/virtual-list";
 import List from "@funext/ui/List";
-import { useViewContext } from "~/context";
+import { useViewDataContext } from "~/context";
 
 const Item = React.memo<VirtualListItemProps>(({ model, i, data }) => (
-  <List.Item ref={createVirtualListItemRef(model, i)} gutters={false}>
+  <List.Item ref={createVirtualItemRef(model, i)} gutters={false}>
     <List.ItemButton li={false}>
-      <List.ItemText primary={`row ${i}`} />
+      <List.Text primary={`row ${i}`} />
     </List.ItemButton>
   </List.Item>
 ));
@@ -18,12 +17,9 @@ const Item = React.memo<VirtualListItemProps>(({ model, i, data }) => (
 
 const TruckList = () => {
 
-  const { dataStore } = useViewContext();
+  const { dataStore } = useViewDataContext();
 
-  //React.useCallback(()=> )
-  
-
-  return <VirtualList Item={Item} itemData={[]} withLayoutScroller/>
+  //return <VirtualList Item={Item} itemData={[]} withLayoutScroller/>
 }
 
 export default TruckList;

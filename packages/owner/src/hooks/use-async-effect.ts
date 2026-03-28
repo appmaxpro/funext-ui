@@ -35,10 +35,10 @@ export function useAsyncEffect(
       result = await effect(signal);
     };
 
-    const timer = setTimeout(load);
+    queueMicrotask(load);
 
     return () => {
-      clearTimeout(timer);
+
       canceled = true;
       if (result) {
         result();

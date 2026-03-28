@@ -5,8 +5,8 @@ import Text from '@funext/ui/Text';
 import Tooltip from '@funext/ui/Tooltip';
 import {Flex} from '@funext/ui/Box';
 import IconButton, { type IconButtonProps } from '@funext/ui/IconButton';
-import MoreVertIcon from '@funext/icons/MoreVert';
 import { useSession } from '~/hooks/use-session';
+import { Icons } from '../shared';
 
 export type AccountPreviewVariant = 'condensed' | 'expanded';
 
@@ -118,7 +118,7 @@ function AccountPreview(props: AccountPreviewProps) {
               {...slotProps?.moreIconButton}
               sx={{ alignSelf: 'center', ...slotProps?.moreIconButton?.sx }}
             >
-              <MoreVertIcon size="sm" />
+              <Icons.MoreVert size="sm" />
             </IconButton>
           ))}
       </Flex>

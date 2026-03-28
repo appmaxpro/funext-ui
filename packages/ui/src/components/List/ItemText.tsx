@@ -20,6 +20,7 @@ import { Text, TextProps } from "../Text";
 import textClasses from "../Text/textClasses";
 import { useListContext } from "./ListContext";
 import { isReactComponent } from "../../utils";
+import { EMPTY_RECORD } from "../../lib/constants";
 
 export interface ListItemTextClasses {
   /** Styles applied to the root element. */
@@ -127,6 +128,8 @@ export interface ListItemTextProps<
    * The system prop that allows defining system overrides as well as additional CSS styles.
    */
   sx?: SxThemeProps;
+
+  dense?: boolean;
 }
 const useUtilityClasses = (ownerState:any) => {
   const { classes, inset, primary, secondary, dense } = ownerState;
@@ -192,13 +195,14 @@ export const ListItemText = React.forwardRef<HTMLDivElement, ListItemTextProps>(
     inset = false,
     primary: primaryProp,
     secondary: secondaryProp,
-    slots = {},
-    slotProps = {},
+    slots = EMPTY_RECORD,
+    slotProps = EMPTY_RECORD,
+    dense,
     ...other
   } = props;
 
 
-  const { dense } = useListContext()!;
+  //const { dense } = useListContext()!;
 
   let primary = primaryProp != null ? primaryProp : children;
   let secondary = secondaryProp;
@@ -220,6 +224,7 @@ export const ListItemText = React.forwardRef<HTMLDivElement, ListItemTextProps>(
       <Text
         variant={dense ? 'body2' : 'body1'}
         component='span'
+        className={listItemTextClasses.primary}
       >
         {primary}
       </Text>
@@ -228,7 +233,7 @@ export const ListItemText = React.forwardRef<HTMLDivElement, ListItemTextProps>(
 
   if (secondary != null && (!isReactComponent(secondary) || (secondary as any).type !== Text) && !disableText) {
     secondary = (
-      <Text variant="body2" color="textSecondary">
+      <Text variant="body2" color="textSecondary" className={listItemTextClasses.secondary}>
         {secondary}
       </Text>
     );

@@ -2,43 +2,33 @@
 import * as React from "react";
 
 import {
-  type SxComponentProps,
-  composeClasses,
-  useMuxDefaultProps,
-  memoTheme,
   clsx,
-  styled,
-  generateUtilityClasses,
+  composeClasses,
   generateUtilityClass,
+  generateUtilityClasses,
+  memoTheme,
+  styled,
   SxThemeProps,
+  useMuxDefaultProps,
   useRtl,
-  useTheme,
+  useTheme
 } from "../../styles";
 
 import rootShouldForwardProp from "../../styles/rootShouldForwardProp";
 
-import { capitalize, isElement } from "../../utils";
 import { StandardProps } from "../../theme/tw/props";
+import { capitalize, isElement } from "../../utils";
 
-import Panel, { PanelProps } from "../Panel";
-import { TransitionProps } from "react-transition-group/Transition";
 import {
-  OpenChangeReason,
-  useDismiss,
-  useInteractions,
+  OpenChangeReason
 } from "@floating-ui/react";
-import { useForwardedRef, usePrevious, useRefs } from "../../hooks";
-import Popper, { PopperProps } from "../Popper";
+import { TransitionProps } from "react-transition-group/Transition";
+import { useForwardedRef } from "../../hooks";
 import { Slide, SlideProps } from "../../lib/transitions/slide";
-import { LayerProvider, useLayer } from "../../lib/layer";
-import { usePopper } from "../Popper/PopperContext";
-import Overlay from "../Overlay";
-import { EMPTY_RECORD } from "../../lib/constants";
-import { getPlacementSides } from "../../lib/helpers/origin";
-import { ClickAwayListener } from "../../lib/click-away-listener";
-import Dialog, { DialogContainerRoot, DialogProps } from "../Dialog";
-import { height } from "@mui/system";
+import Dialog, { DialogProps, dialogClasses } from "../Dialog";
 import { getAnimationOrName } from "../internal/animation";
+import Panel, { PanelProps } from "../Panel";
+import { PopperProps } from "../Popper";
 
 export interface DrawerClasses {
   /** Styles applied to the root element. */
@@ -141,42 +131,18 @@ const DrawerContainer = styled('div', {
 })(
   memoTheme(({ theme }) => ({
     zIndex: (theme.vars || theme).zIndex.drawer,
-    overflow: "hidden",
+    height: '100%',
+    // We disable the focus ring for mouse, touch and keyboard users.
+    outline: 0,
     variants: [
       {
-        props: {
-          scroll: "panel",
-        },
-        style: {
-          display: "block",
-        },
-      },
-      {
-        props: {
-          scroll: "body",
-        },
-        style: {
-          overflowY: "auto",
-          overflowX: "hidden",
-          textAlign: "center",
-          "&::after": {
-            content: '""',
-            display: "inline-block",
-            verticalAlign: "middle",
-            height: "100%",
-            width: "0",
-          },
-        },
-      },
-      {
         style: ({ ownerState }: any) => ({
-          position: ownerState?.strategy,
+          position: ownerState.fullScreen ? 'relative' : ownerState?.strategy,
         }),
       },
       {
-        props: ({ ownerState, ...others }: any) => {
-          //console.log("DrawerContainer:ownerState:", ownerState, ", others:", others);
-          return ownerState.direction === "start";
+        props: {
+          direction: "start",
         },
         style: {
           left: 0,
@@ -202,8 +168,6 @@ const DrawerContainer = styled('div', {
           top: 0,
           left: 0,
           right: 0,
-          height: "auto",
-          maxHeight: "100%",
         },
       },
       {
@@ -214,8 +178,6 @@ const DrawerContainer = styled('div', {
           left: 0,
           bottom: 0,
           right: 0,
-          height: "auto",
-          maxHeight: "100%",
         },
       },
     ],
@@ -247,29 +209,47 @@ const DrawerPanel = styled(Panel, {
   },
 })(
   memoTheme(({ theme }) => ({
-    overflow: "hidden auto",
+    overflowY: "auto",
     display: "flex",
     flexDirection: "column",
     //height: "100%",
     flex: "1 0 auto",
     // Add iOS momentum scrolling for iOS < 13.0
     WebkitOverflowScrolling: "touch",
-    
+    position: "relative",
     // We disable the focus ring for mouse, touch and keyboard users.
     // At some point, it would be better to keep it for keyboard users.
     // :focus-ring CSS pseudo-class will help.
     outline: 0,
+    [`&:has(>.${dialogClasses.dialogBody})`]: {
+      overflow: "hidden",
+      maxWidth: '100%',
+      maxHeight: '100%'
+    },
     variants: [
       {
-        props: ({ ownerState }: any) =>
-          ownerState.direction === "start" ||
-          ownerState.direction === "end",
+        props: {
+          fullScreen: true,
+          variant: "temporary"
+        },
         style: {
+          width: '100%',
           height: '100%',
         },
       },
       {
         props: ({ ownerState }: any) =>
+          ownerState.fullScreen &&
+          ownerState.direction === "start" ||
+          ownerState.direction === "end",
+        style: {
+          height: '100%',
+          
+        },
+      },
+      {
+        props: ({ ownerState }: any) =>
+          ownerState.fullScreen &&
           ownerState.direction === "top" ||
           ownerState.direction === "bottom",
         style: {
@@ -539,7 +519,7 @@ export const Drawer = React.forwardRef<HTMLDivElement, DrawerProps>(
     // variant === temporary
     return (
       <DrawerRoot
-        
+        data-ui="Drawer"
         Container={DrawerContainer}
         containerProps={{ownerState , style}}
         PanelComponent={DrawerPanel}

@@ -4,15 +4,15 @@ import { Dialog, Fade, Portal } from "@funext/ui";
 
 import { type SessionInfo, session } from "~/utils/session";
 
-import { Loader } from "../loader";
+import { Loader } from "~/components";
 //import { LoginForm } from "../login-form";
 import { useHttpBlock } from "./use-block";
 import { useHttpWatch } from "./use-watch";
 import { i18n } from "~/utils/i18n";
 
 import styles from "./http-watch.module.scss";
-import { useLocation, useNavigate } from "react-router";
 import { useSession } from "~/hooks/use-session";
+import { useRouter } from "~/hooks/use-router";
 
 export function HttpWatch() {
   const { count, resume } = useHttpWatch();
@@ -120,8 +120,9 @@ function HttpBlock({ count, disabled }: { count: number; disabled?: boolean }) {
 }
 
 function HttpAuth({ resume }: { resume?: () => void }) {
-  const { state } = useLocation();
-  const navigate = useNavigate();
+  //const { state } = useLocation();
+  //const navigate = useNavigate();
+  const router = useRouter()
   const { data: info } = useSession();
   const prev = useRef(session.info?.user?.login).current;
 
@@ -130,9 +131,9 @@ function HttpAuth({ resume }: { resume?: () => void }) {
     if (prev !== curr) {
       console.error("-----------login-change-----------");
       window.location.reload();
-    } else if (resume) {
+    } else if (resume && router) {
       //navigate('/auth/login', { state: {...(state || {}), resume} });
-      navigate("/auth/login");
+      router.navigate("/auth/login");
     }
   }, [prev, info, resume]);
   return null;

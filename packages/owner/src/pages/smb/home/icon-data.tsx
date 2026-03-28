@@ -1,6 +1,6 @@
 import React from 'react'
 
-import {Icons, type IconComponent} from '~/components/other/icons';
+import {Icons, type IconComponent} from '~/components/shared/icons';
 
 const {
   AccessAlarm,

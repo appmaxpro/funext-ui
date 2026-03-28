@@ -1,5 +1,5 @@
-import { isDevelopment } from '@funext/ui';
 import * as React from 'react';
+import { isDevelopment } from '~/utils';
 
 
 type OnReset = () => void;
@@ -25,7 +25,7 @@ interface ErrorBoundaryState{
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   constructor(props:ErrorBoundaryProps) {
-    //console.log("ErrorBoundary:", props)
+    console.log("ErrorBoundary:", props)
     super(props);
     this.state = { hasError: false };
   }
@@ -77,6 +77,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     return this.props.children;
   }
 }
+
+(ErrorBoundary as any).displayName = "ErrorBoundary";
 
 export {
   ErrorBoundary

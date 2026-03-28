@@ -818,6 +818,7 @@ function parseComponent(node: Element, ctx: ParsingContext): AST | null {
 
   let slots: ASTComponent["slots"] | null = null;
   if (node.hasChildNodes()) {
+   
     const clone = <Element>node.cloneNode(true);
 
     // named slots
