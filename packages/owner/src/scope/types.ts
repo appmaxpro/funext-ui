@@ -1,4 +1,5 @@
 import type {
+  BaeFormViewBlock,
   Block,
   Container,
   DataContext,
@@ -27,7 +28,7 @@ import type { SetStateAction } from "react";
 import type { SxComponentProps } from "@funext/ui";
 
 import type { Identifier } from "~/utils";
-import type { ActionExecuter } from "./action";
+import type { ActionExecuter, ActionHandler } from "./action";
 import type { FilterTabs, FilterWidget } from "~/utils/filter";
 
 export type FilterParams = {
@@ -243,6 +244,12 @@ export type Tab = {
 
   goPrev?(): void;
 
+  filterTabs?: FilterTabs;
+
+  filterSidebar?: Container<FilterWidget>;
+
+  filterForm?: BaeFormViewBlock<FilterFormView>;
+
   /**
    * Options for the popup views.
    *
@@ -425,7 +432,7 @@ export interface BasicWidgetState<IState extends IWState = IWState> {
 
 export interface IWidgetState<IState extends IWState = IWState> extends BasicWidgetState<IState> {
 
-  trigger(ctx: object): void;
+  trigger(): void;
 
   unregister(): void;
   get name(): string | undefined;
@@ -480,7 +487,7 @@ export type FormState = IWState & {
 };
 
 export type IValidator = () => FieldErrors[] | null;
-export type ICommitter = () => void;
+export type ICommitter = () => Promise<void>;
 
 
 export interface IFormContext extends BasicWidgetState<FormState>{
@@ -507,6 +514,8 @@ export interface IFormContext extends BasicWidgetState<FormState>{
   readonly states: Readonly<Map<string, IWidgetState>>;
   readonly fields: Readonly<Map<string, IFieldState>>; 
   readonly parentForm?: IFormContext;
+  readonly actionHandler: ActionHandler;
+  readonly readOnly?:boolean;
 }
 
 export interface EditableFormState extends IFormContext {
@@ -544,7 +553,7 @@ export interface ViewData<T> extends Partial<MetaData> {
 }
 
 type ActionRef = {
-  readonly context?: DataContext;
+  getContext?(): DataContext;
   readonly evalContext?: DataContext;
   readonly fields?: Property[];
   search?(option?: SearchOptions): Promise<SearchResult>;
@@ -555,7 +564,7 @@ type SaveState = (props: TabProps, save?: boolean) => void;
 type ViewExtProps = {
   dataStore: DataStore;
   evalContext: DataContext;
-  context?: DataContext;
+  getContext(): DataContext;
   
   setProps(props: TabProps):void;
   getProps():TabProps; 
@@ -575,6 +584,7 @@ type ViewListExtProps = ViewExtProps &{
   setSideOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
   setFormOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
   filterDefaults?: any;
+  doSearch: (option?: SearchOptions | undefined) => Promise<SearchResult>
 }
 
 export type ViewProps<T extends ViewBlock> = T extends

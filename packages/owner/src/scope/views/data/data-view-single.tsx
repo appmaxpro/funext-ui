@@ -1,10 +1,9 @@
-import { useParams } from "react-router";
 import { RecordContext, useViewDataContext } from "~/context";
 import { useAsync } from "~/hooks/use-async";
-import { ErrorBox } from "../../../components/shared/error-box";
 import React from "react";
-import { EmptyData } from "../../../components/shared/empty-data";
-import { Container } from "../../../components/shared/container";
+
+import { Flex, Stack } from "@funext/ui";
+import { Container, EmptyData, ErrorBox, Skeleton } from "~/components";
 
 export function DataViewSingle({
   children,
@@ -12,7 +11,7 @@ export function DataViewSingle({
   ...rest
 }: { children: React.ReactNode; id: string } & Record<string, any>) {
   return (
-    <Container {...rest}>
+    <Container height="100%" {...rest}>
       <MemoDataView id={id}>{children}</MemoDataView>
     </Container>
   );
@@ -26,7 +25,7 @@ function DataView({ children, id }: { children: React.ReactNode; id: string }) {
   }, [id, dataStore]);
 
   if (state === "loading") {
-    return;
+    return (<Skeleton count={3} />);
   }
 
   if (state === "error") {

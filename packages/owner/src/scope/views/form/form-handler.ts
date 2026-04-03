@@ -38,8 +38,9 @@ export const getFieldErrors = (formState: IFormContext, fieldName?: string) => {
 
   const isHidden = function isHidden(s: IWidgetState): boolean {
     return Boolean(
-      s.state.hidden || (s.name && fields.get(s.name)?.state?.hidden),
-      //|| (s.parent && isHidden(store.get(s.parent))),
+      s.state.hidden ||
+        (s.name && fields.get(s.name)?.state?.hidden) ||
+        (s.parent && isHidden(s.parent as IWidgetState)),
     );
   };
 
@@ -74,18 +75,16 @@ export const getFieldErrors = (formState: IFormContext, fieldName?: string) => {
   return errors.length ? errors : null;
 };
 
-export const getFormErrors = async (
-  formState: IFormContext
-) => {
+export const getFormErrors = async (formState: IFormContext) => {
   const errors = getFieldErrors(formState);
-  if (errors || await formState.validate()) {
-    return errors || [];
+  if (errors) {
+    return errors;
   }
-  return;
+  await formState.validate();
+  return getFieldErrors(formState);
 };
 
-export const doValidate = async (
-  formState: IFormContext) => {
+export const doValidate = async (formState: IFormContext) => {
   const errors = await getFormErrors(formState);
   if (errors) {
     //showErrors(errors);
@@ -118,55 +117,6 @@ export const focusAndSelectInput = (input?: null | HTMLInputElement) => {
     input.select();
   }
 };
-
-/**
- * A hook to execute the callback after all the actions are executed.
- *
- * @param callback a stable callback (prefer using `useCallback`)
- * @returns a debounced callback that only executes after all the actions are completed
- */
-export function useAfterActions<Type, Args extends Array<unknown>>(
-  callback: (...args: Args) => Promise<Type>,
-) {
-  const { executer: actionExecutor } = useFormContext();
-
-  const waitRef = useRef<Promise<Type> | undefined>(undefined);
-  const argsRef = useRef<Args | undefined>(undefined);
-  const funcRef = useRef<((...args: Args) => Promise<Type>) | undefined>(
-    undefined,
-  );
-
-  const reset = useCallback(() => {
-    const func = funcRef.current!;
-    const args = argsRef.current!;
-    funcRef.current = undefined;
-    argsRef.current = undefined;
-    waitRef.current = undefined;
-    return () => func?.(...args);
-  }, []);
-
-  return useCallback(
-    async (...params: Args): Promise<Type> => {
-      funcRef.current = callback;
-      argsRef.current = params;
-      if (waitRef.current) return waitRef.current;
-      const promise = new Promise<Type>((resolve, reject) => {
-        actionExecutor.waitFor().then(() =>
-          actionExecutor
-            .wait()
-            .then(reset)
-            .then((func: Function) => func())
-            .then(resolve)
-            .catch(reject)
-            .finally(reset),
-        );
-      });
-      waitRef.current = promise;
-      return promise;
-    },
-    [actionExecutor, callback, reset],
-  );
-}
 
 type ActionOptions = {
   refresh?: () => void;

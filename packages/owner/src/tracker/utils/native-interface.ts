@@ -18,7 +18,7 @@ export const generateLoginToken = async () => {
   if (nativeEnvironment) {
     let token = '';
     try {
-      const expiration = dayjs().add(6, 'months').toISOString();
+      const expiration = dayjs().add(6, 'month').toISOString();
       const response = await fetch('/tracker/session/token', {
         method: 'POST',
         body: new URLSearchParams(`expiration=${expiration}`),

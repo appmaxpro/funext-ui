@@ -1,9 +1,7 @@
 import * as React from 'react';
-//import { useRenderElement } from '../utils/useRenderElement';
-//import { StateAttributesMapping } from '../utils/getStateAttributesProps';
 import type { ComponentRenderFn, HTMLProps } from '~/utils';
 import { useRenderElement } from './useRenderElement';
-import type { StateAttributesMapping } from './getStateAttributesProps';
+import type { StateAttributesMapping } from '../utils';
 
 /**
  * Renders a Base UI element.

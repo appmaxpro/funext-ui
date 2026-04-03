@@ -1,26 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Snackbar } from '@funext/ui';
-import alarm from './resources/alarm.mp3';
-import { useAttributePreference } from './utils/preferences';
-import { useTrackerSession } from './store/session';
-import { useDeviceStore, useDeviceStoreState } from './store/devices';
-import { i18n } from '~/utils/i18n';
-import { useAsyncEffect } from '~/hooks/use-async-effect';
-import { snackBarDurationLongMs } from '~/utils/constant';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { Snackbar } from "@funext/ui";
+import alarm from "./resources/alarm.mp3";
+import { useAttrPref } from "./utils/preferences";
+import { useTrackerSession } from "./store/session";
+import { useDeviceStore, useDeviceStoreState } from "./store/devices";
+import { i18n } from "~/utils/i18n";
+import { useAsyncEffect } from "~/hooks/use-async-effect";
+import { snackBarDurationLongMs } from "~/utils/constant";
+import { useSession } from "~/hooks/use-session";
 
 const logoutCode = 4000;
 
 const SocketController = () => {
   const navigate = useNavigate();
   const t = i18n.get;
-
-  const authenticated = useTrackerSession((state) => !!state.user);
+  const session = useSession();
+  const authenticated = !!session.data?.user;
   const devices = useDeviceStore((state) => state.items);
   const includeLogs = useTrackerSession((state) => state.includeLogs);
   const sessionActions = useTrackerSession((state) => state);
-
-  
+  const deviceIds = useTrackerSession((state) => state.deviceIds);
 
   const deviceActions = useDeviceStoreState();
 
@@ -29,34 +29,40 @@ const SocketController = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  const soundEvents = useAttributePreference('soundEvents', '');
-  const soundAlarms = useAttributePreference('soundAlarms', 'sos');
+  const soundEvents = useAttrPref("soundEvents", "");
+  const soundAlarms = useAttrPref("soundAlarms", "sos");
 
   //const features = useFeatures();
 
   const connectSocket = () => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const socket = new WebSocket(`${protocol}//${window.location.host}/tracker/socket`);
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const socket = new WebSocket(
+      `${protocol}//${window.location.host}/tracker/socket`,
+    );
     socketRef.current = socket;
 
     socket.onopen = () => {
-      sessionActions.updateSocket(socket)
+      sessionActions.updateSocket(socket);
     };
 
     socket.onclose = async (event) => {
       sessionActions.updateSocket(null);
       if (event.code !== logoutCode) {
         try {
-          const devicesResponse = await fetch('/tracker/devices');
+          const devicesResponse = await fetch("/tracker/devices");
           if (devicesResponse.ok) {
             deviceActions.update(await devicesResponse.json());
           }
-          const positionsResponse = await fetch('/tracker/positions');
+          const positionsResponse = await fetch("/tracker/positions");
           if (positionsResponse.ok) {
             sessionActions.updatePositions(await positionsResponse.json());
           }
-          if (devicesResponse.status === 401 || positionsResponse.status === 401) {
-            navigate('/auth/login');
+          if (
+            devicesResponse.status === 401 ||
+            positionsResponse.status === 401
+          ) {
+            //navigate('/auth/login');
+            navigate("/", { replace: true });
           }
         } catch (error) {
           // ignore errors
@@ -88,11 +94,14 @@ const SocketController = () => {
 
   useEffect(() => {
     socketRef.current?.send(JSON.stringify({ logs: includeLogs }));
-  }, [socketRef, includeLogs]);
+  }, [session, includeLogs]);
 
   useAsyncEffect(async () => {
-    if (authenticated) {
-      const response = await fetch('/tracker/devices');
+    if (session.data?.user && session.data?.features?.tracker) {
+      const tracker = session.data.features.tracker;
+      const response = await fetch(`${tracker.domain}/tracker/devices`, {
+        method: "POST",
+      });
       if (response.ok) {
         deviceActions.refresh(await response.json());
       } else {
@@ -110,16 +119,21 @@ const SocketController = () => {
   }, [authenticated]);
 
   useEffect(() => {
-    setNotifications(events.map((event) => ({
-      id: event.id,
-      message: event.attributes.message,
-      show: true,
-    })));
+    setNotifications(
+      events.map((event) => ({
+        id: event.id,
+        message: event.attributes.message,
+        show: true,
+      })),
+    );
   }, [events, devices, t]);
 
   useEffect(() => {
     events.forEach((event) => {
-      if (soundEvents.includes(event.type) || (event.type === 'alarm' && soundAlarms.includes(event.attributes.alarm))) {
+      if (
+        soundEvents.includes(event.type) ||
+        (event.type === "alarm" && soundAlarms.includes(event.attributes.alarm))
+      ) {
         new Audio(alarm).play();
       }
     });
@@ -133,12 +147,14 @@ const SocketController = () => {
           open={notification.show}
           message={notification.message}
           autoHideDuration={snackBarDurationLongMs}
-          onClose={() => setEvents(events.filter((e) => e.id !== notification.id))}
+          onClose={() =>
+            setEvents(events.filter((e) => e.id !== notification.id))
+          }
         />
       ))}
     </>
   );
 };
 
-export default SocketController
+export default SocketController;
 //export default connect()(SocketController);

@@ -15,12 +15,12 @@ import React, { useCallback } from "react";
 import { useRefs } from "@funext/ui";
 import MuxList, { type ListItemProps as MuxListProps } from "@funext/ui/List";
 import { LayoutContext } from "~/context";
-import { i18n } from "~/utils";
+import { EMPTY_OBJECT, i18n } from "~/utils";
 
 const EVENTS = [VirtualScrollerEvent.RANGE] as const;
 
 const VirtualScrollerList = React.forwardRef((props, forwardRef) => {
-  const { setScrollerRef } = React.useContext(LayoutContext);
+  const { setScrollerRef } = React.useContext(LayoutContext) ?? EMPTY_OBJECT;
   const ref = useRefs(forwardRef, setScrollerRef);
   return (
     <MuxList
@@ -41,7 +41,7 @@ interface VirtualListProps
   withLayoutScroller?: boolean;
   fetch: (offset: number) => Promise<any[]>;
   state?: "loading" | "error";
-  renderHeader?: (model: VirtualScroller) => React.ReactNode
+  renderHeader?: (model: VirtualScroller) => React.ReactNode;
 }
 
 export const VirtualList: React.FC<Omit<VirtualListProps, "itemProps">> = (
@@ -78,13 +78,14 @@ export const VirtualList: React.FC<Omit<VirtualListProps, "itemProps">> = (
     }, [model, state, itemCount]),
   );
 
-  const header = React.useMemo(() => renderHeader?.(model), [model, renderHeader])
-  
+  const header = React.useMemo(
+    () => renderHeader?.(model),
+    [model, renderHeader],
+  );
 
   return (
     <List
       data-ui="VirtualList"
-     
       footer={
         state === "loading" || state === "error" ? (
           <div
@@ -95,6 +96,39 @@ export const VirtualList: React.FC<Omit<VirtualListProps, "itemProps">> = (
           </div>
         ) : null
       }
+      component={ListComponent}
+      header={header as JSX.Element}
+      {...others}
+      model={model}
+    >
+      {Item}
+    </List>
+  );
+};
+
+export const FixedVirtualList: React.FC<
+  Omit<VirtualListProps, "fetch" | "state">
+> = (props) => {
+  const {
+    withLayoutScroller = true,
+    component: ListComponent = withLayoutScroller
+      ? VirtualScrollerList
+      : MuxList,
+    model: modelProps,
+    Item,
+    renderHeader,
+    ...others
+  } = props;
+
+  const model = useVirtual(modelProps);
+  const header = React.useMemo(
+    () => renderHeader?.(model),
+    [model, renderHeader],
+  );
+
+  return (
+    <List
+      data-ui="VirtualList"
       component={ListComponent}
       header={header as JSX.Element}
       {...others}

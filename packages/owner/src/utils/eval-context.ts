@@ -13,7 +13,7 @@ import {
 import { LoadingCache } from "~/utils/cache";
 
 import type { DataContext, DataRecord, Property } from "./data-types";
-import { EMPTY_OBJECT } from "./constant";
+import { EMPTY_IMAGE, EMPTY_OBJECT } from "./constant";
 import h from "./h";
 import type { BlockRenderProps } from "./block-types";
 import type React from "react";
@@ -62,22 +62,9 @@ export function createEvalContext(
     //...others
   } = (options ?? {}) as any;
 
-  //const noFields = !!options?.field;
-
-  const globalHelpers = {};
-
   const helpers = {
     _field(name: string) {
       return options?.field?.(name);
-    },
-    get _user() {
-      return session.info?.user?.login;
-    },
-    get _group() {
-      return session.info?.user?.group;
-    },
-    get _userId() {
-      return session.info?.user?.id;
     },
     get _readonly() {
       return options?.readonly === true;
@@ -102,89 +89,18 @@ export function createEvalContext(
     _extends(...sources: any[]) {
       return Object.assign({}, helpers, ...sources);
     },
-    _t(key: string, ...args: any[]) {
-      return i18n.t(key, ...args);
-    },
     _get(path: string) {
       const value = get(helpers._record, path);
-      if (value === undefined) {
-        const dotIndex = path.indexOf(".");
-        const key = path.substring(0, dotIndex);
-        if (isJsonField(key)) {
-          const subPath = path.substring(dotIndex + 1);
-          const jsonText = helpers._ctx[key];
-          const json = tryJson(jsonText);
-          if (json) {
-            return get(json, subPath);
-          }
-        }
-      }
       return value;
     },
-    _moment(date: any) {
-      return moment(date);
-    },
-    _number(value: any) {
-      return +value;
-    },
 
-    _contains(iter: any, item: any) {
-      return iter?.includes?.(item) ?? false;
-    },
-    _json(name: string) {
-      const value = helpers._get(name);
-      if (value) {
-        try {
-          return JSON.parse(value);
-        } catch (e) {
-          return {};
-        }
-      }
-    },
     _valid(name?: string) {
       return valid(name);
     },
     _invalid(name?: string) {
       return !valid(name);
     },
-    _sum(
-      items: DataRecord[],
-      field: string,
-      operation?: string,
-      field2?: string,
-    ) {
-      let total = 0;
-      if (items && items.length) {
-        items.forEach(function (item) {
-          let value = 0;
-          let value2 = 0;
-          if (field in item) {
-            value = +(item[field] || 0);
-          }
-          if (operation && field2 && field2 in item) {
-            value2 = +(item[field2] || 0);
-            switch (operation) {
-              case "*":
-                value = value * value2;
-                break;
-              case "/":
-                value = value2 ? value / value2 : value;
-                break;
-              case "+":
-                value = value + value2;
-                break;
-              case "-":
-                value = value - value2;
-                break;
-            }
-          }
-          if (value) {
-            total += value;
-          }
-        });
-      }
-      return total;
-    },
+
     _fmt(name: string, props?: any) {
       const value = helpers._get(name);
       return format(value, {
@@ -208,42 +124,36 @@ export function createEvalContext(
           : helpers._field(name),
       });
     },
-    _lower(value: any) {
-      return typeof value === "string" ? value.toLowerCase() : value;
-    },
-    _upper(value: any) {
-      return typeof value === "string" ? value.toUpperCase() : value;
-    },
-    _titleCase(value: any) {
-      return typeof value === "string" ? toTitleCase(value) : value;
-    },
-    _snakeCase(value: any) {
-      return typeof value === "string" ? toSnakeCase(value) : value;
-    },
-    _kebabCase(value: any) {
-      return typeof value === "string" ? toKebabCase(value) : value;
-    },
-    _camelCase(value: any) {
-      return typeof value === "string" ? toCamelCase(value) : value;
-    },
-    _image(fieldName: string, imageName: string) {
+    _media(fieldName: string, params: string) {
       let record = helpers._record;
-      let model = helpers._xtx._model;
-
+      let model = helpers._ctx._model;
+      const data = {model} as any; 
       if (fieldName) {
         const field = helpers._field(fieldName);
-        if (field && field.target) {
-          record = helpers._get(fieldName) || EMPTY_OBJECT;
-          model = field.target;
+        if (field) {
+          if(field.target) {
+            record = helpers._get(fieldName) || EMPTY_OBJECT;
+            model = field.target;
+            data.model = model;
+          } else {
+            const value = helpers._get(fieldName);
+            if(field.pType === 'string' || typeof value === 'string' ) {
+              return value || EMPTY_IMAGE;
+            }
+          }
+        } else {
+          data.field = fieldName;
         }
       }
 
       const id = record.id || 0;
       const version = record.version || record.$version || 0;
+      data.id = String(id);
+      const search = new URLSearchParams(data);
 
       return id
-        ? `rest/${model}/${id}/${imageName}/download?image=true&v=${version}&parentId=${id}&parentModel=${model}`
-        : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        ? `rest/media?${search.toString()}${params ? `&${params}` : ""}`
+        : EMPTY_IMAGE;
     },
     _execute(action: string, actionContext?: DataContext) {
       const ctx = isPlainObject(actionContext) ? actionContext : null;
@@ -266,41 +176,17 @@ export function createEvalContext(
     },
     _log: console.log,
     ...moreHelpers,
-    ...globalHelpers,
     ...components,
     //...others,
   };
 
-  function isJsonField(name: string) {
-    return !options?.field || ((options?.field?.(name) as any)?.json ?? false);
-  }
 
-  function isJsonValue(value: unknown): value is string {
-    if (typeof value === "string") {
-      const text = value.trim();
-      return text.startsWith("{") && text.endsWith("}");
-    }
-    return false;
-  }
-
-  function tryJson(value: unknown) {
-    if (isJsonValue(value)) {
-      try {
-        return JSON.parse(value);
-      } catch (e) {
-        // Ignore
-      }
-    }
-  }
-
-  return createProxy(context, helpers, isJsonField, tryJson, log);
+  return createProxy(context, helpers, log);
 }
 
 function createProxy(
   ref: Ref<DataContext> | DataContext,
   helpers: Record<string, any>,
-  isJsonField: (name: string) => boolean,
-  tryJson: (value: unknown) => any,
   log?: boolean,
 ) {
   type Context = DataContext & typeof helpers;
@@ -323,32 +209,25 @@ function createProxy(
 
       const record = helpers._record;
 
-      let value = Reflect.get(record, p, receiver) ?? get(record, p);
-      if (p === "id" && value && value === 0) {
-        return null;
-      }
+      let value =
+        Reflect.get(record, p, receiver) ??
+        get(record, p) ??
+        Reflect.get(ctx, p, receiver);
 
-      if (value === undefined && typeof p === "string") {
-        if (p.startsWith("$")) {
-          const key = p.substring(1);
-          if (isJsonField(key)) {
-            const jsonText = target[key];
-            const json = tryJson(jsonText);
-            if (json) {
-              value = json;
-            }
-          }
-        } else if (p === "_subContext") {
+      if (value != null) {
+        if (p === "id" && value && value === 0) {
+          value = null;
+        }
+      } else if (typeof p === "string") {
+        if (p === "_subContext") {
           return (sub: object) =>
             sub === target || sub === ref || sub === ctx || sub === receiver
               ? receiver
               : createSubEvalContext(receiver, sub);
+        } else if (p in helpers) {
+          if (log) console.log("Proxy get helper value:", p);
+          return helpers[p as keyof typeof helpers];
         }
-      }
-
-      if (p in helpers) {
-        if (log) console.log("Proxy get helper value:", p);
-        return helpers[p as keyof typeof helpers];
       }
 
       if (log) {
@@ -427,10 +306,6 @@ export function createSubEvalContext<Context extends object>(
       return Reflect.set(context, p, value, receiver);
     },
   });
-}
-
-function safeCode(code: string) {
-  return code.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
 }
 
 var cache = new LoadingCache<(ctx: DataContext) => any>();

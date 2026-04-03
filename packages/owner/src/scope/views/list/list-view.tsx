@@ -63,20 +63,12 @@ export function ListView(
 ) {
   const { children, ref, estimatedItemSize } = props;
   console.log("ListView::props:", props);
-  const { tab, dataStore, doSearch } = useResourceContext();
-  const action = tab.action;
-
-  const filterTabs = React.useMemo(() => {
-    let sidebar = tab.filter?.schema?.sidebar as Container<FilterWidget>;
-    const tabs = sidebar?.items?.find((w) => w.widget === "tabs") as FilterTabs;
-    const filterTabs =
-      tabs && tabs.options?.length && tabs.name ? tabs : undefined;
-    return filterTabs;
-  }, [tab.filter]);
+  const { dataStore, doSearch, view, evalContext } = useViewContext<ListViewBlock>();
+;
 
   const [itemBlock, setItemBlock] = React.useState<Block>(() => {
     return getBlockItems(
-      getBlockItems(tab.state.block!).find(
+      getBlockItems(view).find(
         (bloc) => isSchemaBlock(bloc) && bloc.type === "Block",
       ),
     )[0];
@@ -89,10 +81,10 @@ export function ListView(
       const rec = isPlainObject(record)
         ? record
         : (dataStore.records[record] ?? {});
-      const newContext = action.evalContext._subContext(rec);
+      const newContext = evalContext._subContext(rec);
       return newContext;
     },
-    [action],
+    [evalContext],
   );
 
   const showDetail = React.useCallback(
@@ -104,12 +96,6 @@ export function ListView(
   );
 
   const render = useRenderBlock();
-
-  const showDetailRef = useLazyRef(() =>
-    tab.action.views.some((view) => view.type === "form")
-      ? showDetail
-      : undefined,
-  );
 
   return (
     <ListViewContext.Provider
@@ -128,13 +114,11 @@ export function ListView(
           {itemBlock && (
             <VirtualListView
               getContext={getContext}
-              showDetail={showDetailRef.current}
               render={render}
               dataStore={dataStore}
               doSearch={doSearch}
               itemBlock={itemBlock}
               estimatedItemSize={estimatedItemSize}
-              filterTabs={filterTabs}
             />
           )}
         </ViewLayout>
@@ -162,7 +146,6 @@ type ViewProps = SxComponentProps & {
 
 function VirtualListView({
   getContext,
-  showDetail,
   itemBlock,
   render,
   dataStore,
@@ -258,11 +241,10 @@ function VirtualListView({
     return {
       records: dataStore.records,
       getContext,
-      showDetail,
       render,
       itemBlock,
     };
-  }, [records, getContext, showDetail, render, itemBlock, model]);
+  }, [records, getContext,  render, itemBlock, model]);
 
   React.useEffect(() => {
     const tm = setTimeout(() => (lastOffsetRef.current = -1), 3000);
@@ -402,12 +384,8 @@ const RootList = meta(ListView, {
   raw: true,
 });
 
-const Wrapper = ({ block }: { block: any }) => {
-  return <StateWidget block={block} />;
-};
-
-const listMeta: Readonly<BlockMeta> = Object.freeze({
-  wrap: Wrapper,
+const Wrapper = meta(StateWidget,  {
+  wrap: "prop",
   noProps: true,
 });
 
@@ -416,5 +394,5 @@ export const List = {
   list: RootList,
   Field: ListField,
   Block: ListBlock,
-  listMeta,
+  Wrapper
 };

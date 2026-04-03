@@ -15,26 +15,33 @@ export const RouteLayout = React.memo<{
   //const { route, params } = useRouter();
   console.log("RouteLayout:", route);
   const children = React.useMemo(() => {
-    const { layout, props, model, custom } = route?.props as any;
-    if (true) {
-      <div>gggggggggggggg</div>;
-    }
-    if (!custom) {
-      return "Not Custom";
-      //return <Outlet />;
+    let relRoute = route;
+    let layoutRoute = route;
+    while (layoutRoute) {
+      if (layoutRoute.props?.isLayout) {
+        relRoute = layoutRoute;
+        break;
+      }
+      layoutRoute = layoutRoute.parent as OutletRoute;
     }
 
+    const { layout, props, model, custom } = relRoute?.props as any;
+
     const Comp = (
-      route.Component && route.Component != RouteView
-        ? route.Component
-        : route?.CP && route.Component != RouteView
-          ? PAGES[route.CP as keyof typeof PAGES] || getNullView(route)
-          : getNullView(route)
+      relRoute.Component && relRoute.Component != RouteView
+        ? relRoute.Component
+        : relRoute?.CP && relRoute.Component != RouteView
+          ? PAGES[relRoute.CP as keyof typeof PAGES] || getNullView(relRoute)
+          : getNullView(relRoute)
     ) as React.ComponentType;
 
     return (
       <Layout {...layout}>
-        {model ? <DataViews Comp={Comp} {...props} /> : <Comp {...props} />}
+        {model ? (
+          <DataViews Comp={Comp} {...props} model={model} />
+        ) : (
+          <Comp {...props} />
+        )}
         <HttpWatch />
       </Layout>
     );

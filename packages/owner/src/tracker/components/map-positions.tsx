@@ -4,7 +4,7 @@ import { map } from "../map/MapView";
 import { formatTime, getStatusColor } from "../utils/formatter";
 import { useCatchCallback } from "~/hooks/use-catch";
 import { findFonts } from "../map/mapUtil";
-import { useAttributePreference } from "../utils/preferences";
+import { useAttrPref } from "../utils/preferences";
 import { useDeviceStore } from "../store/devices";
 import { mapIconKey } from "../map/preloadImages";
 import type { Position, TrackerDevices } from "~/tracker/utils/types";
@@ -32,13 +32,13 @@ const MapPositions = ({
 
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up("md"));
-  const iconScale = useAttributePreference("iconScale", desktop ? 0.75 : 1);
+  const iconScale = useAttrPref("iconScale", desktop ? 0.75 : 1);
 
   const devices = useDeviceStore((state) => state.items);
   const selectedDeviceId = useDeviceStore((state) => state.selectedId);
 
-  const mapCluster = useAttributePreference("mapCluster", true);
-  const directionType = useAttributePreference("mapDirection", "selected");
+  const mapCluster = useAttrPref("mapCluster", true);
+  const directionType = useAttrPref("mapDirection", "selected");
 
   const createFeature = (devices:TrackerDevices['items'], position:Position, selectedPositionId:Position['deviceId']) => {
     const device = devices[position.deviceId];

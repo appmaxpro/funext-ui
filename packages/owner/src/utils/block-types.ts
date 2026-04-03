@@ -246,7 +246,7 @@ export type BlockHandler<S extends Block = any> = {
     parent?: BlockHandler<S>,
   ) => Props;
   scopeContext?: (parentCtx?: object) => any;
-  wrap?: (block: Partial<S>, s: Schema) => void;
+  wrap?: (block: Partial<S>, s: Schema) => Partial<S>;
 };
 
 

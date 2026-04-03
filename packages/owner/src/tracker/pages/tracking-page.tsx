@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Divider,
   Text,
@@ -11,6 +11,8 @@ import {
   AutoSelect,
   styled,
   memoTheme,
+  Flex,
+  useScreenSize,
 } from "@funext/ui";
 
 import MapView from "../map/MapView";
@@ -20,7 +22,7 @@ import MapScale from "../components/map-scale";
 //import MapGeocoder from "../map/geocoder/MapGeocoder";
 
 import { useNavigate } from "react-router";
-import { Dimensions } from "~/utils/constant";
+import { Dimensions, EMPTY_ARRAY, EMPTY_OBJECT } from "~/utils/constant";
 import { i18n } from "~/utils/i18n";
 import {
   deviceEquals,
@@ -29,9 +31,36 @@ import {
   useDeviceStore,
 } from "../store/devices";
 import { useTrackerSession } from "../store/session";
-import { useCatch } from "~/hooks/use-catch";
+import { useCatch, useCatchCallback } from "~/hooks/use-catch";
 import { Toolbar } from "~/components/shared/toolbar";
-import { BackButton } from "~/components";
+import {
+  BackButton,
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  createVirtualItemRef,
+  FixedVirtualList,
+  Icons,
+  Items,
+  type VirtualListItemProps,
+} from "~/components";
+import DeviceItem from "../components/deivice-item";
+import { debounce } from "lodash";
+import type { TrackerDevice } from "../utils/types";
+
+const VirtualItem = React.memo(({ i, data, model }: VirtualListItemProps) => {
+  const { devices, ...rest } = data.items;
+  return (
+    <DeviceItem
+      {...rest}
+      devices={devices}
+      index={i}
+      ref={createVirtualItemRef(model, i)}
+    />
+  );
+});
 
 const PREFIX = "MapPage";
 
@@ -63,11 +92,8 @@ const MainRoot = styled("main")(
       zIndex: 1,
       [`& .${MapPageClasses.drawerPaper}`]: {
         position: "relative",
-        [theme.breakpoints.up("sm")]: {
-          width: Dimensions.drawerWidthDesktop,
-        },
         [theme.breakpoints.down("sm")]: {
-          height: Dimensions.drawerHeightPhone,
+          width: "100%",
         },
       },
     },
@@ -80,28 +106,49 @@ const MainRoot = styled("main")(
   })),
 );
 
-const EmulatorPage = () => {
-  const theme = useTheme();
+const TrackingPage = () => {
+  const {smDown} = useScreenSize();
   const navigate = useNavigate();
   const t = i18n.get;
 
-  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
+  const isPhone = smDown;
+;
 
   const devices = useDeviceStore((state) => state.items);
   const deviceId = useDeviceStore((state) => state.selectedId);
   const positionMap = useTrackerSession((state) => state.positions);
+  const [search, setSearch] = useState("");
 
-  const sortedDevices = useMemo(
-    () => Object.values(devices).sort((a, b) => a.name.localeCompare(b.name)),
-    [devices],
+  const doSearch = React.useCallback(
+    (term?: string) => {
+      debounce(() => setSearch(term ?? ""), 300);
+    },
+    [setSearch],
   );
 
-  const positions = useMemo(
-    () => Object.values(positionMap),
-    [positionMap],
-  );
+  const sortedDevices = useMemo(() => {
+    const term = search?.toLowerCase();
+    const match = (device: TrackerDevice) => {
+      const { payload, ...rest } = device;
+      return (
+        JSON.stringify(Object.values(rest)).toLowerCase().includes(term) ||
+        JSON.stringify(Object.values(payload ?? EMPTY_OBJECT))
+          .toLowerCase()
+          .includes(term)
+      );
+    };
+    const devs = Object.values(devices);
+    const filtered = search ? devs.filter(match) : devs;
+    return {
+      devices: Object.values(filtered).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      ),
+    };
+  }, [devices, search]);
 
-  const handleClick = useCatch(async (latitude, longitude) => {
+  const positions = useMemo(() => Object.values(positionMap), [positionMap]);
+
+  const handleClick = useCatchCallback(async (latitude, longitude) => {
     if (deviceId) {
       let response;
       if (window.location.protocol === "https:") {
@@ -133,7 +180,42 @@ const EmulatorPage = () => {
         throw Error(await response.text());
       }
     }
-  });
+  }, EMPTY_ARRAY);
+
+  const renderCommand = () => {
+    return (
+      <Command shouldFilter={false} className="flex flex-col h-full w-full">
+        <Toolbar>
+          <BackButton />
+          <CommandInput
+            placeholder={i18n.t("Search...")}
+            onValueChange={doSearch}
+            suffix={
+              <Flex shrink={true}>
+                <IconButton
+                  className={!search ? "visibility-hidden" : ""}
+                  onClick={() => setSearch("")}
+                >
+                  <Icons.Close />
+                </IconButton>
+              </Flex>
+            }
+          />
+        </Toolbar>
+
+        <FixedVirtualList
+          component={CommandList as any}
+          model={{
+            overscanCount: 5,
+            itemCount: sortedDevices.devices.length,
+            estimatedItemSize: 80,
+          }}
+          itemData={sortedDevices}
+          Item={VirtualItem}
+        />
+      </Command>
+    );
+  };
 
   return (
     <MainRoot className={MapPageClasses.root}>
@@ -143,23 +225,9 @@ const EmulatorPage = () => {
           direction={isPhone ? "top" : "start"}
           variant="permanent"
           classes={{ panel: MapPageClasses.drawerPaper }}
+          keep
         >
-          <Toolbar>
-            <BackButton/>
-            <Text variant="h6" className={MapPageClasses.title}>
-              {t("sharedEmulator")}
-            </Text>
-          </Toolbar>
-          <Divider />
-          <AutoSelect
-            fullWidth
-            open
-            options={sortedDevices}
-            value={deviceId ? devices[deviceId] : null}
-            getOptionLabel={getDeviceLabel}
-            getOptionKey={getDeviceKey}
-            optionEquals={deviceEquals as any}
-          />
+          {renderCommand()}
         </Drawer>
         <div className={MapPageClasses.mapContainer}>
           <MapView>
@@ -178,4 +246,4 @@ const EmulatorPage = () => {
   );
 };
 
-export default EmulatorPage;
+export default TrackingPage;

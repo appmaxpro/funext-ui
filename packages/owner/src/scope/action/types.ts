@@ -48,7 +48,16 @@ export type ActionListener = (data: ActionData) => void;
 
 export type Schedule = (id: string | number, cb: () => void) => void;
 
+export type OnSaveHandler = () => Promise<void>;
+
+
+
 export interface ActionHandler {
+  
+  get onSaveHandler(): OnSaveHandler|undefined;
+
+  set onSaveHandler(handler: OnSaveHandler|undefined);
+
   setFocus(target: string): void;
 
   setCloseHandler(handler: () => Promise<void>): void;

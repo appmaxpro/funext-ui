@@ -68,6 +68,7 @@ import type {
 } from "~/scope";
 import { useActionHandler } from "./form-handler";
 import type { FilterFormProps } from "./shared";
+import { runInThisContext } from "vm";
 
 export type Schedule = (id: string | number, cb: () => void) => void;
 
@@ -252,9 +253,9 @@ abstract class WidgetState extends Base implements IWidgetState {
     return this.form.context;
   }
 
-  trigger(ctx: object) {
+  trigger() {
     const block = this._block;
-
+    const ctx = this.context; 
     if (block.hideIf) {
       this.setState("hidden", block.hideIf(ctx));
     }
@@ -265,6 +266,11 @@ abstract class WidgetState extends Base implements IWidgetState {
 
     if (this.isField && this.field.requiredIf) {
       this.setState("required", this.field.requiredIf(ctx));
+    }
+
+    if(this.block.evalProps) {
+      const props = evalProps(this.block, this.form.context);
+      this.setState("props", props);
     }
   }
 
@@ -317,6 +323,7 @@ class ValueState extends Base {
 
 class FieldState extends WidgetState implements IFieldState {
   _value: ValueState;
+  _shouldValidate: boolean = false;
   constructor(
     form: IFormContext,
     widget: FieldBlock,
@@ -344,7 +351,7 @@ class FieldState extends WidgetState implements IFieldState {
 
   get readOnly() {
     return (
-      (!this.form.editing || this.form.readonly || this.state.readonly) === true
+      (!this.form.editing || this.form.readOnly || this.state.readonly) === true
     );
   }
 
@@ -405,11 +412,17 @@ class FieldState extends WidgetState implements IFieldState {
     return false;
   }
 
+  trigger() {
+    super.trigger();
+    this._shouldValidate = !this.readOnly ;
+  }
+
   async commit(force?: boolean) {
     if (
-      (force && this.state.dirty) ||
+      (force || this.state.dirty) ||
       (this.state.touched && this._form.isNew)
     ) {
+      this._shouldValidate ||= force === true;
       const result = await this.validate();
       if (!result || result.valid) {
         //this.setState("dirty", false);
@@ -419,10 +432,10 @@ class FieldState extends WidgetState implements IFieldState {
   }
 
   async validate() {
-    if (this.state.dirty || this._form.isNew) {
+    if (this._shouldValidate || this.state.dirty || this._form.isNew) {
       const props = this.field.schema;
       const context = this.context;
-
+      this._shouldValidate = false;
       if (this.block.validate) {
         const oldError = this.state.error;
         await this.block.validate(context);
@@ -469,14 +482,14 @@ class FieldState extends WidgetState implements IFieldState {
   }
 
   compute(ctx: object) {
-    if (this.isField && this.field.compute) {
+    if (this.field.compute) {
       return this.field.compute(ctx);
     }
   }
 
-  async onChange(ctx: object) {
-    if (this.isField && this.field.onChange) {
-      return await this.field.onChange(ctx);
+  async onChange() {
+    if (this.field.onChange) {
+      return await this.field.onChange(this.context);
     }
   }
 
@@ -500,6 +513,7 @@ class FieldState extends WidgetState implements IFieldState {
       dirty: false,
       valid: true,
     };
+    this._shouldValidate = false;
     if (!isEqual(removeEmpty(oldSate), removeEmpty(this._state)))
       this.form.toEmit(this);
   }
@@ -523,7 +537,7 @@ class FormContextObject extends Base implements EditableFormState {
   _fields: Map<string, FieldState> = new Map();
   _holds: Set<FieldState> = new Set();
   _depends: Map<string, Set<string>> = new Map();
-
+  _dependsAll: Set<WidgetState> = new Set();
   _pending: Pending = {};
   _result: ComputeResult = {};
   _state: FormState = {
@@ -642,6 +656,7 @@ class FormContextObject extends Base implements EditableFormState {
         }
         deps.add(block.uid);
       }
+      depends[0] === '*' && this._dependsAll.add(widget);
     }
 
     if (widget.isField && this.isNew) {
@@ -710,6 +725,7 @@ class FormContextObject extends Base implements EditableFormState {
         if (!deps.size) this._depends.delete(name);
       }
     }
+    this._dependsAll.delete(state);
   }
 
   addCommitter(fn: ICommitter) {
@@ -813,20 +829,16 @@ class FormContextObject extends Base implements EditableFormState {
   async enqueue(keys: string[], seq: number) {
     let changes: ComputeResult = this._result;
     for (const key of keys) {
-      const fields = this._fields.get(key);
+      const field = this._fields.get(key);
 
-      if (fields) {
-        const field = Array.isArray(fields)
-          ? fields.find((f) => f.field.onChange)
-          : fields;
-        if (field?.field?.onChange) {
-          const result = await field.onChange(this.context);
-          if (seq !== this._seq) {
-            return;
-          }
-          if (result) {
-            this._result = changes = merge(changes, result);
-          }
+      if (field) {
+        
+        const result = await field.onChange();
+        if (seq !== this._seq) {
+          return;
+        }
+        if (result) {
+          this._result = changes = merge(changes, result);
         }
       }
     }
@@ -839,7 +851,7 @@ class FormContextObject extends Base implements EditableFormState {
     const pending = (this._pending.keys = new Set([
       ...(this._pending.keys ?? EMPTY_ARRAY),
       ...keys,
-      ...(values ? Object.keys(values) : EMPTY_ARRAY),
+      ...newKeys,
     ]));
 
     this._pending.keys = pending;
@@ -874,6 +886,8 @@ class FormContextObject extends Base implements EditableFormState {
         }
       }
     }
+    this._dependsAll.forEach((trigger) =>  triggers.add(trigger));
+
     const isNew = this.isNew;
 
     for (const trigger of triggers) {
@@ -890,7 +904,7 @@ class FormContextObject extends Base implements EditableFormState {
     }
 
     for (const trigger of triggers) {
-      trigger.trigger(context);
+      trigger.trigger();
     }
 
     this._pending.states = new Set([
@@ -937,7 +951,7 @@ class FormContextObject extends Base implements EditableFormState {
     return this.state;
   }
 
-  async submit() {
+  async submit(commit?: boolean) {
     if (this.state.status !== "submit") await this.commit();
     if (this.dirty /*&& this.valid*/ && this.state.status !== "submit") {
       this.setState("status", "submit");
@@ -960,24 +974,29 @@ class FormContextObject extends Base implements EditableFormState {
   }
 
   async validate() {
-    if (this.dirty) {
-      return await this._executer.run(
-        async () =>
-          await Promise.all(this.list.map((field) => field.validate())),
-      );
-    }
+
+    await this._executer.run(
+      async () =>
+        await Promise.all(this.list.map((field) => field.validate())),
+    );
+    
   }
 
   async commit() {
-    const promos = Promise.all(this.list.map((field) => field.commit()));
-    return await this._executer.runNow(async () => await promos);
+    this.setState('valid', true);
+    this.setState('error', undefined);
+    await Promise.all(Array.from(this._committers));
+
+    const promos = Promise.all(this.list.map((field) => field.commit(true)));
+    await this._executer.runNow(() => promos);
   }
 
   get editing() {
     return this._editing;
   }
-  get readonly() {
-    return this._readonly;
+
+  get readOnly() {
+    return this._state.readonly;
   }
 
   get record() {
@@ -1035,6 +1054,10 @@ class FormContextObject extends Base implements EditableFormState {
     return this._parentForm;
   }
 
+  get actionHandler() {
+    return this._handler;
+  }
+
   checkDirty() {
     const dirty = this.list.some((field) => !!field.state.dirty);
     this.setState("dirty", dirty);
@@ -1065,6 +1088,7 @@ class FormContextObject extends Base implements EditableFormState {
     if (this.state[key] !== value) {
       const prev = this.state.change;
       this._state = { ...this._state, change: prev + 1, [key]: value };
+
     }
     if (trigger && this.state.change !== this.state.prev) {
       this.emit();
@@ -1093,17 +1117,22 @@ export const useCreateFormContext = (
   refreshRef: React.MutableRefObject<() => void>,
 ) => {
   //const { tab, dataStore } = useResourceContext();
-  const { view, dataStore, evalContext, bind, fields } =
+  const { view, dataStore, evalContext, getContext, bind, fields } =
     useViewContext<FormViewBlock>();
-  //const route = useTabRoute("form");
 
+  const parentForm = useFormContext();
+  const parentWidget = useWidgetState();
+
+  //const route = useTabRoute("form");
+  //const origContextRef = React.useRef<DataContext>(origContext ?? {});
   let formRef = React.useRef<IFormContext>();
+
 
   const context = useLazyRef(() => {
     const map = new Map(fields?.map((field) => [field.name, field]));
-
+    
     return createEvalContext(
-      {},
+      getContext(),
       {
         popup: evalContext._popup,
         get record(): DataRecord {
@@ -1160,27 +1189,33 @@ export const useCreateFormContext = (
   const handler = useActionHandler(options);
 
   const form = useLazyRef(() => {
-    return createFormContext({}, view, handler);
+    return new FormContextObject(
+      EMPTY_OBJECT,
+      view,
+      handler,
+      parentWidget ?? parentForm,
+    );
   }).current;
 
   formRef.current = form;
 
   React.useEffect(() => {
-    /*
+    
     bind({
-      fields,
-      get context() {
+      getContext() {
         return form.record;
       },
       get evalContext() {
-        return context;
+        return context.current;
       },
-    });*/
-    //form.re
-
+    });
     return () => {
       console.log("-----------Close Form-----------");
       form.close();
+      bind({
+        getContext,
+        evalContext,
+      });
     };
   }, [form]);
 
@@ -1255,9 +1290,10 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
 
   
 
-  const context = useLazyRef(() =>
-    createEvalContext(
-      {},
+  const context = useLazyRef(() =>{
+    const context = viewContextRef.current.getContext()
+    return createEvalContext(
+      context,
       {
         get record(): DataRecord {
           return formRef.current?.record ?? EMPTY_OBJECT;
@@ -1280,8 +1316,8 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
           }
         },
       },
-    ),
-  );
+    );
+});
 
   /** Imperatively run a function on the next layout effect cycle. */
   const schedule = useScheduleLayoutEffect();
@@ -1359,56 +1395,7 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
   return form;
 };
 
-export function usePagination(
-  dataStore: DataStore,
-  record: DataRecord,
-  readonly?: boolean,
-) {
-  const { offset = 0, limit = 0, total = 0 } = dataStore.page;
-  const index = dataStore.records.findIndex((x) => x.id === record.id);
 
-  const switchTo = useViewSwitch();
-
-  const onPrev = React.useCallback(async () => {
-    let prev = dataStore.records[index - 1];
-    if (prev === undefined) {
-      const { records = [] } = await dataStore.search({
-        offset: offset - limit,
-      });
-      prev = records[records.length - 1];
-    }
-    const id = String(prev.id);
-    const props = { readonly };
-    switchTo("form", { route: { id }, props });
-  }, [dataStore, index, limit, offset, readonly, switchTo]);
-
-  const onNext = React.useCallback(async () => {
-    let next = dataStore.records[index + 1];
-    if (next === undefined) {
-      const { records = [] } = await dataStore.search({
-        offset: offset + limit,
-      });
-      next = records[0];
-    }
-    const id = String(next.id);
-    const props = { readonly };
-    switchTo("form", { route: { id }, props });
-  }, [dataStore, index, limit, offset, readonly, switchTo]);
-
-  const canPrev = index > -1 && offset + index > 0;
-  const canNext = index > -1 && offset + index < total - 1;
-
-  const text =
-    index > -1 ? i18n.get("{0} of {1}", offset + index + 1, total) : "";
-
-  return {
-    canPrev,
-    canNext,
-    onPrev,
-    onNext,
-    text,
-  };
-}
 
 let emptyWidgetState: IWidgetState | undefined;
 
@@ -1437,7 +1424,7 @@ export function getEmptyWidgetState(): IWidgetState {
     }
     setState<K extends keyof State>(key: K, value?: State[K]): void {}
     emit(): void {}
-    trigger(ctx: object): void {}
+    trigger(): void {}
     unregister(): void {}
     get name(): string | undefined {
       return undefined;

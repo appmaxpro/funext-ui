@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCreateFormContext, useFormSate, usePagination } from "./form";
+import { useCreateFormContext, useFormSate } from "./form";
 import { Root, Field, Pane, FormTabs } from "./widget";
 
 import { IFormContext, useFormContext, useViewContext } from "~/context";
@@ -41,6 +41,8 @@ import {
 } from "@funext/ui";
 import { useAsyncFetch } from "~/hooks/use-async-fetch";
 import { isEqual, noop } from "lodash";
+import { usePagination } from "./hooks";
+import { Wrapper } from "./widget/pane";
 
 export function FormView() {
   const refreshRef = React.useRef<() => void>(noop);
@@ -101,9 +103,8 @@ export function FormView() {
 
   return (
     <IFormContext.Provider value={form}>
-      
       <Stack className="relative">
-        <FormAppBar form={form as EditableFormState}/>
+        <FormAppBar form={form as EditableFormState} />
 
         <Container>
           <Toolbar />
@@ -112,15 +113,20 @@ export function FormView() {
           {state === "loading" && <Loader />}
         </Container>
         <Pagination dataStore={dataStore} record={record} />
-        
       </Stack>
     </IFormContext.Provider>
   );
 }
 
-function FormAppBar({ name, form }: { name?: string; form: EditableFormState }) {
+function FormAppBar({
+  name,
+  form,
+}: {
+  name?: string;
+  form: EditableFormState;
+}) {
   const state = React.useSyncExternalStore(form.subscribe, form.snapshot);
-  const tab = useViewTab()
+  const tab = useViewTab();
   //const refresh = React.useCallback(()=> form.refresh
   return (
     <AppBar
@@ -131,8 +137,8 @@ function FormAppBar({ name, form }: { name?: string; form: EditableFormState }) 
     >
       <Toolbar>
         <Flex items="center" gap={1}>
-          <BackButton onClick={tab.goPrev}/>
-          <ViewTitle form={form as EditableFormState} name={name}/>
+          <BackButton onClick={tab.goPrev} />
+          <ViewTitle form={form as EditableFormState} name={name} />
         </Flex>
 
         <Flex items="center" ml="auto">
@@ -159,12 +165,7 @@ function ViewTitle({ name, form }: { name?: string; form: EditableFormState }) {
   );
   const title = React.useSyncExternalStore(form.subscribe, getTile);
   return (
-    <Text
-      variant="h5"
-      noWrap
-      component="div"
-      className="grow"
-    >
+    <Text variant="h5" noWrap component="div" className="grow">
       {title}
     </Text>
   );
@@ -191,11 +192,23 @@ function Pagination({
     <Stack className="fixed inset-x-0 bottom-0">
       <Container>
         <Toolbar className="flex no-wrap justify-between items-center">
-          <IconButton onClick={onNext} disabled={!canPrev} size="lg" color="default" variant="filled">
+          <IconButton
+            onClick={onPrev}
+            disabled={!canPrev}
+            size="lg"
+            color="default"
+            variant="filled"
+          >
             <PrevIcon />
           </IconButton>
 
-          <IconButton onClick={onNext} disabled={!canNext} size="lg" color="default" variant="filled">
+          <IconButton
+            onClick={onNext}
+            disabled={!canNext}
+            size="lg"
+            color="default"
+            variant="filled"
+          >
             <NextIcon />
           </IconButton>
         </Toolbar>
@@ -215,20 +228,11 @@ const FormRender = React.memo(({ form }: { form: EditableFormState }) => {
 });
 
 const MForm = meta(React.memo(FormView), { noProps: true });
-
-const Wrapper = ({ block }: { block: any }) => {
-  return <Pane block={block} defaults />;
-};
-
-const formMeta: Readonly<BlockMeta> = Object.freeze({
-  wrap: Wrapper,
-  noProps: true,
-});
-
+ 
 export const Form = {
   form: MForm,
   Field,
   Pane,
   Tabs: FormTabs,
-  formMeta,
+  Wrapper,
 };

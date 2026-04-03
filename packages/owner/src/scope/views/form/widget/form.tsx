@@ -4,9 +4,11 @@ import { useFormSate } from "../form";
 import { useFormContext } from "~/context";
 import { useSingleClickHandler } from "./hooks";
 import { composeRefs } from "~/utils/compose-ref";
-import { getFieldErrors, useAfterActions } from "../form-handler";
+import { getFieldErrors } from "../form-handler";
 import type { SxComponentProps } from "@funext/ui/src";
 import type { IFormContext } from "~/scope";
+import { useAfterActions } from "../hooks";
+import type { FormWithActionHandler } from "../shared";
 
 interface FormProps extends SxComponentProps {
   form: IFormContext;
@@ -35,8 +37,6 @@ export function Root({ children, ref, form }: FormProps) {
   );
 }
 
-
-
 export function RootForm({ children, ref, form }: FormProps) {
   const onSubmit = React.useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -51,9 +51,11 @@ export function RootForm({ children, ref, form }: FormProps) {
     [form],
   );
   return (
-    <form ref={ref} onSubmit={onSubmit}>
-      <SubForm form={form}>{children}</SubForm>
-    </form>
+    <SubForm form={form} ref={ref}>
+      <form  onSubmit={onSubmit}>
+        {children}
+      </form>
+    </SubForm>
   );
 }
 
@@ -189,14 +191,25 @@ function SubForm({ children, form, ref }: FormProps) {
           elem?.click?.();
         }
         await form.executer.waitFor();
-        return form.executer.wait().then(handleOnSave);
+        await form.executer.wait();
+        // XXX: Need to find a way to coordinate top save and grid commit.
+        form.executer.waitFor(300);
       },
       [form],
     ),
   );
 
+
+  React.useEffect(() => {
+    return form.addCommitter(handleSave)
+  }, [form, handleSave]);
+
   const containerRef = React.useRef<HTMLDivElement>(null);
-  return <div ref={composeRefs(containerRef, ref)}>{children}</div>;
+  return (
+    <div className="contents" ref={composeRefs(containerRef, ref)}>
+      {children}
+    </div>
+  );
 }
 
 function RootPanel({ children, form, ref }: FormProps) {

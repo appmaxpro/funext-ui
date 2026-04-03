@@ -120,45 +120,19 @@ function ViewPane({ tab, dataStore, modifiers, query }: { tab: Tab; dataStore?: 
         </Flex>
       );
     }
-    let extList:any;
-    if(type === 'list') {
-      let sidebar = tab.filter?.schema?.sidebar as Container<FilterWidget>;
-      const tabs = sidebar?.items?.find((w) => w.widget === "tabs") as FilterTabs;
-     
-      if (tabs) {
-        sidebar = {
-          ...sidebar,
-          items: sidebar!.items.filter((i) => i !== tabs),
-        };
-      }
 
-      extList = removeEmpty( {
-        filterTabs: tabs && tabs.items?.length && tabs.name ? tabs : undefined,
-        filterSidebar: isEmpty(sidebar) ? undefined : sidebar,
-        filterForm: tab.filter?.form,
-        listParams: query,
-        modifiers: modifiers,
-        filterDefaults: tab.filter?.schema?.defaults
-      })
+    if(block.$rend) {
+      return block.$rend;
     }
+    
     const vProps = {
-      dataStore: dataStore,
       view: block,
-      evalContext: tab.action.evalContext,
-      fields: tab.action.fields,
-      ...extList
     };
     let props: any;
-    if (true || type === 'list' || !(block as any).$props) {
-      props = evalProps(block, vProps.evalContext) ?? {};
-      const children = renderBlockItems(block, vProps.evalContext);
-      if (children) props.children = children;
-      block.props = props;
-      (block as any).$props = props;
-    } else {
-      props = (block as any).$props;
-      if (props.children) props.children = React.cloneElement(props.children);
-    }
+    props = evalProps(block, tab.action.evalContext) ?? {};
+    const children = renderBlockItems(block, tab.action.evalContext);
+    if (children) props.children = children;
+    block.props = props;
 
     const Comp = typeof block.tag === "function" ? block.tag : BlockView;
     const comp = (
@@ -178,7 +152,7 @@ function ViewPane({ tab, dataStore, modifiers, query }: { tab: Tab; dataStore?: 
         </ViewProvider>
       </ErrorBoundary>
     );
-
+    block.$rend = comp;
     return comp;
   }, [type, tab]);
 
@@ -361,6 +335,8 @@ const ResourceFilterProvider = ({
         options.order = sort;
       }
       console.log("ResourceFilterProvider:domain:", newDomain);
+      optionsRef.current = options;
+      (modifiers as any).commit()
       return options;
     });
 

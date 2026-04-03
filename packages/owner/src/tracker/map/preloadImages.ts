@@ -56,7 +56,7 @@ export const mapIconKey = (category?:string) => {
   switch (category) {
     case 'offroad':
     case 'pickup':
-      return 'car';
+      return 'trailer';
     case 'trolleybus':
       return 'bus';
     default:

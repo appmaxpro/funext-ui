@@ -8,15 +8,17 @@ export default [
     title: "Sales Regions",
     path: "states",
     icon: <Icons.ShoppingCart />,
+    showNav: true,
     childNav: false,
     props: {
-      custom: true
+      custom: true,
+
     },  
     children: [
       {
         CP: "SaleTargetStates",
         props: {
-          model: "states",
+          model: "odata/states",
           custom: true
         },
       },
@@ -24,7 +26,7 @@ export default [
         path: ":state_id",
         CP: "SaleTargetStates",
         props: {
-          model: "states",
+          model: "odata/states",
           custom: true
         },
         children: [],
@@ -37,7 +39,8 @@ export default [
     type: "tabs",
     Component: RouteTabs,
     props: {
-      custom: true
+      custom: true,
+      isLayout: true,
     },
     children: [
       {
@@ -47,7 +50,7 @@ export default [
         path: ':branch_id',
         Component: RouteView,
         props: {
-          model: `branches`,
+          model: `odata/branches`,
           custom: true
         },
       },
@@ -58,7 +61,7 @@ export default [
         path: ":branch_id/expense",
         Component: RouteView,
         props: {
-          model: `branches/expense`,
+          model: `odata/branches/expense`,
           custom: true
         },
       },

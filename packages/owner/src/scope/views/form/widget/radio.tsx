@@ -14,22 +14,26 @@ import { Button, cn, Menu, Radio } from "@funext/ui";
 import { Icons } from "~/components/shared/icons";
 import type { IFieldState, IFState } from "../../../types";
 import { Select } from "~/components/shared";
-import { FormControl, FormItem, FormLabel, FormMessage } from "./root";
+import {
+  FieldControl,
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./root";
+import { registerWidgets } from "./hooks";
+import type { FieldProps } from "./types";
 
 export const RadioField = ({
   state,
   field,
   id,
-}: {
-  state: IFState;
-  field: IFieldState;
-  id: string;
-}) => {
+}: FieldProps) => {
   const block = field.block;
   const schema = block.schema;
   const { options = EMPTY_ARRAY as Option[], multiple, noTitle } = schema;
   const { required, props, readonly } = state;
-  const { direction = "column", controlProps, ...rest } = props ?? EMPTY_OBJECT;
+  const { direction = "column", ...rest } = props ?? EMPTY_OBJECT;
   const isSelected = useCallback(
     (value: string, _current: string[]) => _current.includes(value),
     [],
@@ -61,39 +65,34 @@ export const RadioField = ({
   ) as string[];
 
   return (
-    <FormItem className="min-w-[150px] flex-grow p-1">
-      {!noTitle && (
-        <FormLabel className="text-base font-normal leading-6">
-          {i18n.t(schema.title ?? field.name)}
-          {required && <span className="text-destructive ms-1">*</span>}
-        </FormLabel>
+    <FieldControl
+      field={field}
+      state={state}
+      {...rest}
+      className={cn(
+        "flex",
+        direction === "row" ? "flex-row items-center gap-4" : "flex-col gape-2",
+        rest?.className,
       )}
-      <FormControl
-        className={cn(
-          "flex",
-          direction === "row"
-            ? "flex-row items-center gap-4"
-            : "flex-col gape-2",
-          controlProps?.className,
-        )}
-        {...controlProps}
-      >
-        {options.map((option) => (
-          <Radio
-            key={option.value}
-            name={field.name}
-            label={option.title}
-            value={option.value}
-            checked={isSelected(option.value!, selectedItems)}
-            onChange={() => handleSelect(option.value!, selectedItems)}
-            required={required}
-            readOnly={readonly}
-            disabled={readonly}
-            id={`${id}-${option.value}`}
-          />
-        ))}
-      </FormControl>
-      <FormMessage />
-    </FormItem>
+    >
+      {options.map((option) => (
+        <Radio
+          key={option.value}
+          name={field.name}
+          label={option.title}
+          value={option.value}
+          checked={isSelected(option.value!, selectedItems)}
+          onChange={() => handleSelect(option.value!, selectedItems)}
+          required={required}
+          readOnly={readonly}
+          disabled={readonly}
+          id={`${id}-${option.value}`}
+        />
+      ))}
+    </FieldControl>
   );
 };
+
+registerWidgets({
+ radio: RadioField,
+});

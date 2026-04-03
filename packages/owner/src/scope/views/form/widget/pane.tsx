@@ -47,8 +47,11 @@ function Button({ widget, ref, defaults }: { widget: IWidgetState; ref?: any; de
 
 type StatefulWidgetProps = { ref?: any, defaults?: boolean; };
 
+
+
+
 export const StatefulWidget = ({ ref, defaults}: StatefulWidgetProps) => {
-  const { state, widget } = useFormWidgetState();
+   const { state, widget } = useFormWidgetState();
   const { hidden } = state;
   if (hidden) {
     return null;
@@ -70,6 +73,15 @@ export const StatefulWidget = ({ ref, defaults}: StatefulWidgetProps) => {
 };
 
 type StatelessProps = { block: WidgetBlock; defaults?: boolean; ref?: any };
+
+const WrapWidget = React.memo<StatelessProps>(({ block, ref }) => {
+  return (
+    <WidgetStateProvider widget={block}>
+      <StatefulWidget ref={ref}  />
+    </WidgetStateProvider>
+  );
+})
+
 
 export const StatelessWidget = React.memo<StatelessProps>(({ block, defaults, ref }) => {
   const form = useFormContext();
@@ -129,3 +141,5 @@ export const StatefulChild = ({ ref }: StatefulWidgetProps) => {
 };
 
 export const Pane = meta(StateWidget, { wrap: "prop", noProps: true });
+
+export const Wrapper = meta(WrapWidget, { wrap: "prop", noProps: true });

@@ -23,7 +23,7 @@ export const usePreference = (key:string, defaultValue?:any) => useTrackerSessio
   return defaultValue;
 });
 
-export const useAttributePreference = (key:string, defaultValue?:any) => useTrackerSession((state) => {
+export const useAttrPref = (key:string, defaultValue?:any) => useTrackerSession((state) => {
   const server = state.server;
   const user = state.user;
   if (server.forceSettings) {

@@ -61,7 +61,10 @@ import Sync from '@funext/icons/Sync';
 import SyncProblem from '@funext/icons/SyncProblem';
 import ThumbUpAlt from "@funext/icons/ThumbUpAlt";
 import Tune from "@funext/icons/Tune";
-
+import Copy from "@funext/icons/ContentCopy";
+import Fullscreen from "@funext/icons/Fullscreen";
+import FullscreenExit from "@funext/icons/FullscreenExit";
+import MyLocation from "@funext/icons/MyLocation";
 import { isDevelopment, toCamelCase } from "~/utils";
 
 export type IconProps = SvgIconProps;
@@ -128,6 +131,10 @@ const Icons = {
   SyncProblem,
   Logout,
   Security,
+  Copy,
+  Fullscreen,
+  FullscreenExit,
+  MyLocation,
   ...SvgIcons,
 };
 
@@ -206,11 +213,11 @@ const Icon = ({ name, ...props }: SxComponentProps) =>{
 
 export { Icons, Icon };
 
-const all = {
+type All = Icons & {Icons: Icons, Icon: typeof Icon, iconIf: typeof iconIf, iconOr: typeof iconOr}
+const all:All = {
   ...Icons,
   Icons,
   Icon,
-  icon,
   iconIf,
   iconOr
 }

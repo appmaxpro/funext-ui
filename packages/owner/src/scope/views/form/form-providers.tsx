@@ -6,6 +6,8 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { IFormContext } from "~/context";
+import type { IFormContext as IFormContextType } from "~/scope";
 
 import { EMPTY_ARRAY, type DataRecord } from "~/utils";
 /*
@@ -73,3 +75,11 @@ export const FormWidgetProviders = forwardRef<
   );
 });
 */
+
+export const FormProvider = ({form, children}: {form: IFormContextType, children: ReactNode}) => {
+  return (
+    <IFormContext.Provider value={form}>
+      {children}
+    </IFormContext.Provider>
+  );
+}

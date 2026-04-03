@@ -21,6 +21,8 @@ const RouteView: React.ComponentType<{
   );
 };
 
+RouteView.displayName = "RouteView";
+
 const OutletView: React.ComponentType<{
   children?: JSX.Element;
   inTabs?: boolean;
@@ -53,6 +55,8 @@ const OutletView: React.ComponentType<{
     children || (Comp ? <Comp /> : children || `Null view path: ${nav?.path}`)
   );
 };
+
+OutletView.displayName = "OutletView";
 
 const nullViewsCache = new WeakMap<NavRoute, React.FunctionComponent>();
 

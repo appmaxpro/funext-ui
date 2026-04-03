@@ -2,28 +2,25 @@ import * as React from 'react';
 import SnackbarContent, { SnackbarContentProps } from './SnackbarContent';
 
 import {
-  clsx,
   composeClasses,
-  emphasize,
   generateUtilityClass,
   generateUtilityClasses,
   memoTheme,
   styled,
   SxThemeProps,
   useMuxDefaultProps,
-  useRtl,
   useSlot,
   useTheme
 } from "../../styles";
 import { StandardProps } from "../../theme/tw/props";
 
 
-import { capitalize } from '../../utils';
-import useSnackbar from './useSnackbar';
 import { ClickAwayListener, ClickAwayListenerProps } from '../../lib/click-away-listener';
 import { TransitionProps } from '../../lib/transitions';
-import { Slide } from '../../lib/transitions/slide';
 import { Grow } from '../../lib/transitions/grow';
+import { Slide } from '../../lib/transitions/slide';
+import { capitalize } from '../../utils';
+import useSnackbar from './useSnackbar';
 
 export interface SnackbarClasses {
   /** Styles applied to the root element. */

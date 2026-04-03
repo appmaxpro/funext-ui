@@ -21,19 +21,23 @@ export function FilterTabsBar({ tabs, ref }: { tabs: FilterTabs, ref?: any }) {
   const hasTabFilter = React.useRef(false);
 
   const onChange = React.useCallback(
-    (val?: any) => {
+    async (val?: any) => {
       
       if(prevFilterRef.current === val) {
         return
       }
       prevFilterRef.current = val;
       hasTabFilter.current = true;
-      modifiers!.updateFilters({ [tabs.name]: val }, false);
+      const work = await modifiers!.updateFilters({ [tabs.name]: val }) as any;
+      if(work === false) return;
+
+      const search = viewContext.search ?? doSearch
+      search();
       console.log("FilterTabsBar::onChange:", { [tabs.name]: val })
     },
     [modifiers],
   );
-
+  /*
   React.useEffect(() => {
     console.log("FilterTabsBar::filter:", params.filter)
     if (hasTabFilter.current) {
@@ -41,7 +45,7 @@ export function FilterTabsBar({ tabs, ref }: { tabs: FilterTabs, ref?: any }) {
       const search = viewContext.search ?? doSearch
       search();
     }
-  }, [params.filter]);
+  }, [params.filter]);*/
 
   console.log("FilterTabsBar::selected:", selected)
   if (selected) {

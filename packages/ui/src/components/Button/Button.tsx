@@ -28,7 +28,7 @@ import { mapThemeColor } from "../../hooks";
 
 
 const useUtilityClasses = (ownerState:any) => {
-  const { color, disableElevation, fullWidth, size, variant, classes, disable } = ownerState;
+  const { color, disableElevation, fullWidth, size, variant, classes, disable, selected } = ownerState;
 
   const slots = {
     root: [
@@ -38,7 +38,8 @@ const useUtilityClasses = (ownerState:any) => {
       `color${capitalize(color)}`,
       (disableElevation && variant === 'filled' && 'disableElevation'),
       fullWidth && 'fullWidth',
-      !disable && 'canHover'
+      !disable && 'canHover',
+      selected && 'selected'
     ],
     label: ['label'],
     startIcon: ['icon', 'startIcon', `iconSize${capitalize(size)}`],
@@ -114,6 +115,7 @@ export const ButtonRoot = styled(ButtonBase, {
       minWidth: 64,
       border: 0,
       borderRadius: theme.shape.borderRadius,
+      fontWeight: 500,
       outline: `2px solid transparent`,
       outlineOffset: 1,
       padding: '6px 16px',
@@ -201,9 +203,7 @@ export const ButtonRoot = styled(ButtonBase, {
             style: {
               '--button-text-color': theme.palette[color].main,
               '--button-outlined-color': theme.palette[color].main,
-              '--button-outlined-border': theme.vars
-                ? `rgba(${theme.vars.palette[color].mainChannel} / 0.5)`
-                : alpha(theme.palette[color].main, 0.5),
+              '--button-outlined-border': alpha(theme.palette[color].main, 0.5),
               '--button-filled-color': theme.palette[color].contrastText,
               '--button-filled-bg': theme.palette[color].main,
               '--button-ghost-color': theme.palette[color].dark,
@@ -211,13 +211,9 @@ export const ButtonRoot = styled(ButtonBase, {
               '@media (hover: hover)': {
                 [`&.${buttonClasses.canHover}:hover`]: {
                   '--button-filled-bg': theme.palette[color].dark,
-                  '--button-text-bg': theme.vars
-                    ? `rgba(${theme.vars.palette[color].mainChannel} / ${theme.vars.palette.action.hoverOpacity})`
-                    : alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
+                  '--button-text-bg': alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
                   '--button-outlined-border': theme.palette[color].main,
-                  '--button-outlined-bg': theme.vars
-                    ? `rgba(${theme.vars.palette[color].mainChannel} / ${theme.vars.palette.action.hoverOpacity})`
-                    : alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
+                  '--button-outlined-bg': alpha(theme.palette[color].main, theme.palette.action.hoverOpacity),
                   '--button-ghost-bg': lighten(theme.palette[color].light, 0.6),
                 },
               },
@@ -228,31 +224,18 @@ export const ButtonRoot = styled(ButtonBase, {
             color: 'inherit',
           },
           style: {
-            '--button-filled-color': theme.vars
-              ? // this is safe because grey does not change between default light/dark mode
-                theme.vars.palette.text.primary
-              : theme.palette.getContrastText?.(inheritFilledBackgroundColor),
-            '--button-filled-bg': theme.vars
-              ? theme.vars.palette.Button.inheritFilledBg
-              : inheritFilledBackgroundColor,
-            '--button-ghost-color': theme.vars
-                ? theme.vars.palette.text.primary
-                : theme.palette.getContrastText?.(inheritFilledBackgroundColor),
-            '--button-ghost-bg': theme.vars
-                ? theme.vars.palette.Button.inheritFilledBg
-                : inheritFilledBackgroundColor,  
+            '--button-filled-color': theme.palette.getContrastText?.(inheritFilledBackgroundColor),
+            '--button-filled-bg': inheritFilledBackgroundColor,
+            '--button-ghost-color': theme.palette.getContrastText?.(inheritFilledBackgroundColor),
+            '--button-ghost-bg': inheritFilledBackgroundColor,  
             '--button-outlined-border': inheritFilledHoverBackgroundColor,
             '@media (hover: hover)': {
               [`&.${buttonClasses.canHover}:hover`]: {
                 '--button-filled-bg': inheritFilledHoverBackgroundColor,
                 '--button-ghost-bg': inheritFilledHoverBackgroundColor,
-                '--button-text-bg': theme.vars
-                  ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
-                  : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
+                '--button-text-bg': alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
                 '--button-outlined-bg': inheritFilledBackgroundColor,
-                '--button-outlined-border': theme.vars
-                  ? `rgba(${theme.vars.palette.text.primaryChannel} / ${theme.vars.palette.action.hoverOpacity})`
-                  : alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
+                '--button-outlined-border': alpha(theme.palette.text.primary, theme.palette.action.hoverOpacity),
               },
             },
           },
@@ -275,6 +258,7 @@ export const ButtonRoot = styled(ButtonBase, {
           },
           style: {
             padding: '8px 22px',
+            fontWeight: '500',
             fontSize: theme.typography.pxToRem(16),
             borderRadius: theme.shape.borderRadius * 1.2,
           },
@@ -366,6 +350,33 @@ export const ButtonEndIcon = styled('span', {
   ],
 });
 
+const Toggle = styled('div', {
+  name: 'MuxButton',
+  slot: 'Toggle',
+  overridesResolver: (props, styles) => {
+    const { ownerState } = props;
+
+    return [styles.selected];
+  },
+})({
+  position: 'absolute',
+  inset: 0,
+  overflow: 'hidden',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'currentColor',
+    opacity: 0,
+    transform: 'scale(0.5)',
+    transition: 'opacity 250ms, transform 250ms',
+  },
+  [`&.${buttonClasses.selected}::after`]: {
+    opacity: .15,
+    transform: 'scale(1)',
+  },
+})
+
 export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button(inProps, ref) {
   // props priority: `inProps` > `contextProps` > `themeDefaultProps`
   const contextProps = React.useContext(ButtonGroupContext);
@@ -389,6 +400,8 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
     focusVisibleClassName = '',
     fullWidth = false,    
     type,
+    selected,
+    toggle,
     ...other
   } = props;
 
@@ -404,6 +417,7 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
     size,
     type,
     variant,
+    selected,
     button: 'button'
   };
 
@@ -439,13 +453,15 @@ export const Button = React.forwardRef<HTMLElement, ButtonProps>(function Button
       {...other}
       ownerState={ownerState}
       classes={classes}
+      selected={selected} 
     >
       {startIcon}
       {children}
       {endIcon}
+      {toggle && <Toggle className={selected ? classes.selected : undefined} ownerState={ownerState} />}
     </ButtonRoot>
   );
-});
+}); 
 
 Button.displayName = "Mux.Button";
 export * from './types';

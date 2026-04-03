@@ -46,13 +46,13 @@ const formatDuration: Formatter = (value, opts = {}) => {
   let m = "" + Math.floor((value % 3600) / 60);
   let s = "" + Math.floor((value % 3600) % 60);
 
-  h = _.padStart(h, props?.big ? 3 : 2, "0");
+  h = _.padStart(h, Math.min(2, h.length), "0");
   m = _.padStart(m, 2, "0");
   s = _.padStart(s, 2, "0");
 
   let text = h + ":" + m;
 
-  if (props?.seconds || props?.props?.seconds) {
+  if (props?.seconds) {
     text = text + ":" + s;
   }
 
@@ -110,8 +110,8 @@ const formatNumber: Formatter = (value, opts = {}) => {
   const { currencyText } = attrs ?? {};
 
   if (
-    (value === null || value === undefined) &&
-    props?.defaultValue === undefined
+    (value == null) &&
+    props?.defaultValue == undefined
   ) {
     return value;
   }

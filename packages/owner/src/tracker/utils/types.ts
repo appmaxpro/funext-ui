@@ -5,6 +5,15 @@ export interface TrackerDevice{
   category?: string;
   status: string;
   uniqueId: string;
+  payload?: {
+    currentTripId?: string|number;
+    tripNumber?: string;
+    driver?: object;
+    info?: string;
+    last?: number;
+    status?: object;
+    state?: string;
+  }
 }
 
 export interface TrackerDevices{

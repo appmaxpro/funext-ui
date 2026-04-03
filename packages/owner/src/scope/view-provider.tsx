@@ -1,5 +1,6 @@
 import {
   EMPTY_ARRAY,
+  EMPTY_OBJECT,
   type Container,
   type DataContext,
   type DataStore,
@@ -10,7 +11,7 @@ import {
 import type { ListModifiers, ListParams, Ref, TabProps } from "./types";
 import React from "react";
 import { useLazyRef } from "@funext/ui";
-import { useResourceContext, ViewContext } from "~/context";
+import { useResourceContext, useViewContext, ViewContext } from "~/context";
 import { useViewProps } from "./routes";
 import type { FilterTabs, FilterWidget } from "~/utils/filter";
 
@@ -31,7 +32,7 @@ type Props = {
 };
 
 type ActionRef = {
-  readonly context?: DataContext;
+  getContext?(): DataContext;
   readonly evalContext?: DataContext;
   readonly fields?: Property[];
 };
@@ -40,31 +41,25 @@ type SaveState = (props: TabProps, save?: boolean) => void;
 
 export function ViewProvider({ children, value }: Props) {
   const [props, setProps] = useViewProps();
+  const { doSearch, query, dataStore, modifiers, tab } = useResourceContext();
 
-  
-  const bind = React.useCallback(
-    (bindRef: ActionRef) => {
-      const ref = {
-        ...valueRef.current,
-        ...bindRef,
-      };
-      const newProps = {
-        ...ref,
-        get context() {
-          return ref.context;
-        },
-        get evalContext() {
-          return ref.evalContext;
-        },
-        get fields() {
-          return ref.fields;
-        },
-      };
+  const bind = React.useCallback((bindRef: ActionRef) => {
+    const ref = {
+      ...valueRef.current,
+      ...bindRef,
+    };
+    const newProps = {
+      ...ref,
+      get evalContext() {
+        return ref.evalContext ;
+      },
+      get fields() {
+        return ref.fields;
+      },
+    };
 
-      valueRef.current = newProps;
-    },
-    [value],
-  );
+    valueRef.current = newProps;
+  }, []);
 
   const propsRef = useLazyRef(() => props);
   const stateRef = useLazyRef(() => ({}) as any);
@@ -108,14 +103,12 @@ export function ViewProvider({ children, value }: Props) {
     }
   }, [props]);
 
+  const [sideOpen, setSideOpen] = React.useState<boolean | undefined>(false);
+  const [formOpen, setFormOpen] = React.useState<boolean | undefined>(false);
 
-
-  const [sideOpen, setSideOpen] = React.useState<boolean|undefined>(false);
-  const [formOpen, setFormOpen] = React.useState<boolean|undefined>(false);
-  
   React.useEffect(() => {
-     console.log("ViewProvider:: start");
-  }, [setSideOpen])
+    console.log("ViewProvider:: start");
+  }, [setSideOpen]);
 
   const valueRef = useLazyRef(() => ({
     ...value,
@@ -127,12 +120,24 @@ export function ViewProvider({ children, value }: Props) {
     setSideOpen,
     formOpen,
     setFormOpen,
+    doSearch,
+    filterTabs: tab.filterTabs,
+    filterSidebar: tab.filterSidebar,
+    filterForm: tab.filterForm,
+    query,
+    dataStore,
+    modifiers,
+    fields: tab.action.fields,
+    evalContext: tab.action.evalContext as DataContext,
+    getContext() {
+      return tab.action.context;
+    },
   }));
 
   const newValue = React.useMemo(() => {
     const newValue = {
-      ...valueRef.current,
       ...value,
+      ...valueRef.current,
       bind,
       getProps,
       setProps,
@@ -141,11 +146,29 @@ export function ViewProvider({ children, value }: Props) {
       setSideOpen,
       formOpen,
       setFormOpen,
+      doSearch,
+      query,
+      dataStore,
+      modifiers,
     };
     valueRef.current = newValue;
-    
+
     return newValue;
-  }, [value, bind, getProps, setProps, addSaveState, sideOpen, setSideOpen, formOpen, setFormOpen]);
+  }, [
+    value,
+    bind,
+    getProps,
+    setProps,
+    addSaveState,
+    sideOpen,
+    setSideOpen,
+    formOpen,
+    setFormOpen,
+    doSearch,
+    query,
+    dataStore,
+    modifiers,
+  ]);
 
   return (
     <ViewContext.Provider value={newValue}>{children}</ViewContext.Provider>

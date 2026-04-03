@@ -17,6 +17,7 @@ import {
   type ResourceView,
   type Schema,
   type Widget,
+  type DynamicField,
 } from "~/utils";
 import {
   EvalFlags,
@@ -269,7 +270,7 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
   let { ctx, handler } = scope;
 
   evalPropSates(block, res, ctx);
-
+  let wrapBlock = false;
   let owner: BlockHandler | undefined;
   if (handler && handler.id !== block.handler) {
     let current: BlockScope | undefined = scope;
@@ -282,7 +283,9 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
       block.handler = owner.id;
       owner.init?.(block, res);
     } else if (handler.wrap) {
-      handler.wrap(block, res);
+      wrapBlock = true;
+      owner = handler;
+      //handler.wrap(block, res);
     }
   }
 
@@ -314,7 +317,7 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
     if (count) block.slots = bSlots;
   }
 
-  if (widget.render) {
+  if ( widget.render && (owner?.id !== 'form' || block.sType !== 'Field')) {
     const scopeProps = handler?.doScope
       ? handler.doScope({ ctx, props: {} }, scope?.parent?.handler)
       : undefined;
@@ -331,6 +334,7 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
   }
 
   owner?.end?.(block);
+  block = owner?.wrap?.(block, res) ?? block;
 
   return block;
 }
@@ -433,7 +437,7 @@ const stateProps = [
   "title",
   "help",
   "noTitle",
-  "widget"
+  "widget",
 ];
 function evalPropSates(block: any, res: Schema, ctx: any) {
   for (let prop of Object.keys(res)) {
@@ -494,7 +498,7 @@ function processFilterForm(block: any, res: FormView) {
   });
 }
 
-function processFieldViews(block: any, res: RelationField, ctx: object) {
+function processFieldViews(block: any, res: DynamicField, ctx: object) {
   const views = res.views?.map((view) => processViewBlock(view, ctx));
   if (views && views.length) {
     block["views"] = views;

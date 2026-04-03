@@ -113,7 +113,7 @@ function trimOrEmpty(items, filter) {
   return items.filter(filter || Boolean);
 }
 
-function map({ attrs, items, props, slots, type }) {
+function map({ attrs, items, props, slots, type }, isSchema) {
   var schema = { type, ...attrs, uid: nextUid() };
   if ("type" in attrs) {
     schema.xType = type;
@@ -180,6 +180,7 @@ const SCHEMA = {
     sx: "object",
     handler: "string",
     props: "object",
+    
     title: "string",
     type: "string",
   },
@@ -189,6 +190,7 @@ const SCHEMA = {
     help: "string",
     handler: "string",
     props: "object",
+    attrs: "object",
     type: "string",
   },
   widget: {
@@ -199,6 +201,7 @@ const SCHEMA = {
       widget: "string",
       slots: "object",
       render: "string",
+      context: "default"
     },
     getAttr: (name) => {
       return SCHEMA.widget.attrs[name] ?? SCHEMA.schema[name];
@@ -237,7 +240,7 @@ const SCHEMA = {
       multiple: "boolean",
       domain: "default",
       filterDomain: 'default',
-      context: "object",
+      context: "default",
       readonly: "boolean",
       readonlyIf: "string",
       required: "boolean",
@@ -251,6 +254,7 @@ const SCHEMA = {
       max: "number",
       pattern: "string",
       views: "slot",
+      canMove: "boolean",
       parse: (value, target) =>
         value ? evalFn(value, 'value, ctx', "parse", target) : undefined,
       format: (value, target) =>
@@ -276,8 +280,8 @@ const SCHEMA = {
     },
     parseOptions: (items) => {
       var options = items.find((item) => item.type === "options");
-      if(options && options.items){
-        return Array.isArray(options.items) ? options.items : [options.items];
+      if(options){
+        return Array.isArray(options.items) ? options.items : options.items ? [options.items] : [];
       }
     }
   },
@@ -288,9 +292,17 @@ const SCHEMA = {
       return SCHEMA.property.getAttr(name) ?? SCHEMA.widget.getAttr(name);
     },
     map: ({ items, attrs, ...rest }) => {
+      if (!attrs.pType) {
+        attrs.pType = attrs.type || (attrs.name === "id" ? "int" : "string");
+      }
       items = trimOrEmpty(items, isPlainObject);
-      var options = SCHEMA.property.parseOptions(items);;
-      var views = items.filter((item) => item.type === "views" && item.items);
+      var options = SCHEMA.property.parseOptions(items);
+
+      var views = items.filter((item) => item.type === "views");
+      if(attrs.pType === "mto" || attrs.pType === "otm" || attrs.pType === "mtm") {
+        attrs.fields = items.filter((i) => i.type === "property")
+      }
+      
       return {
         ...rest,
         ...attrs,
@@ -326,8 +338,14 @@ const SCHEMA = {
     },
   },
   list: {
+    attrs: {
+      orderBy: "string",
+      limit: "number",
+      moveBy: "string",
+      virtual: "boolean",
+    },
     getAttr: (name) => {
-      return SCHEMA.form.getAttr(name);
+      return SCHEMA.form.getAttr(name) ?? SCHEMA.list.attrs[name];
     },
   },
   filter: {
@@ -1083,7 +1101,11 @@ HTMLtoJson.prototype = {
           }
           if (name === "props" && isPlainObject(val)) {
             widget.props = { ...widget.props, ...val };
-          } else {
+          } 
+          else if (sAttr && name === "attrs" && isPlainObject(val)){
+            widget.attrs = { ...widget.attrs, ...val };
+          }
+          else {
             widget.attrs[name] = val;
           }
         } else {

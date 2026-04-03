@@ -9,30 +9,29 @@ import { useVisibility } from "~/hooks/use-visibility";
 export const RouteTabView = memo(function ({
   route,
   inTabs,
+  visible
 }: {
   route: NavRoute;
+  visible?: boolean;
   inTabs?: boolean;
+
 }) {
-  const params = useParams();
 
-  const visible = useVisibility();
 
-  if (!visible) {
+  if (visible === false) {
     console.log("NavRouteView:: Not visible ...");
     return null;
   }
 
-  const props =
-    (typeof route.props === "function" ? route.props(params) : route.props) ||
-    {};
+  const props = route.props;
 
   let Comp = route.CP
     ? PAGES[route.CP as keyof typeof PAGES] || getNullView(route)
     : route.Component || getNullView(route);
 
-  if (Comp === RouteView) Comp = NavComp;
+  if ((Comp as any)?.displayName === 'RouteView') Comp = NavComp;
 
-  return <DataViews Comp={Comp} {...props} />;
+  return <DataViews Comp={Comp as any} {...props} />;
 });
 
 const NavComp = () => {

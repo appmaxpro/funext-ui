@@ -175,11 +175,12 @@ export function getRouteMode(
 
 export function getMediaUrl(
   targe:string,
-  targetId: Identifier,
   field:string,
+  targetId?: Identifier,
 ) {
   const search = new URLSearchParams({model: targe, id: String(targetId), field});
-  return `media/${search.toString()}`
+  return targetId ? `rest/media?${search.toString()}`
+        : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 }
 
 export function useSimpleSelectionList(schema: Field, value?: unknown) {

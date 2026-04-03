@@ -1,3 +1,4 @@
+
 export * from './icons';
 export * from './items';
 export * from './scroll-area';
@@ -17,3 +18,4 @@ export * from './select';
 export * from './popup';
 export * from './relation-input';
 export * from './relation-selector';
+export * from './skeleton';

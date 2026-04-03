@@ -5,6 +5,7 @@ import { fetch } from "./client";
 import {
   getWidgetItems,
   isContainer,
+  isDynamicField,
   isField,
   isRecordProps,
   isRelationField,
@@ -28,7 +29,7 @@ import { htmlToJson } from "./htmltojsx";
 import { l10n } from "./l10n";
 import { isPlainObject, pick } from "./objects";
 import { removeEmpty } from "./removeEmpty";
-import { isDevelopment } from "./constant";
+import { EMPTY_OBJECT, isDevelopment } from "./constant";
 
 export type ViewProcessor = (
   res: Partial<ResourceView>,
@@ -376,6 +377,9 @@ function processFilterSidebar(res: Container, ctx: ResourceContext) {
 export function processBaseWidget(schema: Widget, ctx: ResourceContext) {}
 
 export function processWidget(schema: Widget, ctx: ResourceContext) {
+  if(schema.context) {
+    schema.context = evalContext(schema.context, ctx);
+  }
   if (isField(schema)) {
     const property = ctx._field(schema.name);
     const field = (property ? merge(schema, property) : schema) as Field;
@@ -425,11 +429,11 @@ function processBase(res: BaseSchema, ctx: any) {
 }
 
 export function processRelField(schema: RelationField, ctx: ResourceContext) {
-   if(schema.views) {
+   if(isDynamicField(schema)) {
       
       const context = {
         _model: schema.target,
-        ...evalContext(schema.context, ctx),
+        ...schema.context,
         _field(name: string) {
 
         }
@@ -437,7 +441,7 @@ export function processRelField(schema: RelationField, ctx: ResourceContext) {
       const newEvalContext = ctx._subContext(context);
       
       const views = schema.views;
-      schema.views = views.map(view => processResourceView(view, newEvalContext)) 
+      (schema as any).views = views.map(view => processResourceView(view, newEvalContext)) 
    }
 
 }

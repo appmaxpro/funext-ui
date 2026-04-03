@@ -27,11 +27,16 @@ import {
 
 import { useParams } from "react-router";
 import { ViewDataContext } from "~/context";
-import { ErrorBoundary, type FallbackProps } from "../../../components/app/error-boundary";
+import {
+  ErrorBoundary,
+  type FallbackProps,
+} from "../../../components/app/error-boundary";
 //import { prepareAdvanceSearchQuery } from "../../../scope/utils";
 
-function ViewContainer({ Comp }: { Comp: React.ComponentType }) {
-  const { visible, node, ref } = useInViewport(Comp?.displayName);
+type CompType = React.FC<any> | React.ElementType;
+
+function ViewContainer({ Comp }: { Comp: CompType }) {
+  const { visible, node, ref } = useInViewport((Comp as any)?.displayName);
   const size = useResizeDetector(node, false);
 
   const [memoSize, setMemoSize] = useState(size);
@@ -43,9 +48,7 @@ function ViewContainer({ Comp }: { Comp: React.ComponentType }) {
         display="flex"
         flex={1}
         minWidth={0}
-        minHeight={0}
-        data-view-box={Comp.displayName}
-        //data-view-id={tab.id}
+        data-view-box={(Comp as any)?.displayName}
         data-bk-size={memoSize.current}
         data-bk-width={memoSize.width ? `${memoSize.width}` : undefined}
       >
@@ -81,11 +84,13 @@ function ViewError({ error, onReset }: FallbackProps) {
   );
 }
 
-function ViewPane({ Comp }: { Comp: React.ComponentType }) {
+function ViewPane({ Comp }: { Comp: CompType }) {
+  const [state, setState] = useState(0);
   return (
     <ErrorBoundary
+      key={`ss-${state}`} 
       fallback={ViewError}
-      onReset={() => {}}
+      onReset={() => setState((s) => s + 1 )}
       onError={(error, info) => {
         console.log("----------------error---------------");
         console.error(error);
@@ -106,7 +111,7 @@ export type DataViewsProps = {
   limit?: number;
   domain?: Domains;
   params?: any;
-  Comp: React.ComponentType;
+  Comp: CompType;
 };
 
 const XViews = function DataViews({
@@ -156,7 +161,7 @@ const XViews = function DataViews({
           ...fields,
         },
       };
-      return { ...state, /*...prepareAdvanceSearchQuery(state) */};
+      return { ...state /*...prepareAdvanceSearchQuery(state) */ };
     });
   }, [model, setSearch]);
 

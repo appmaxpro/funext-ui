@@ -484,7 +484,7 @@ export function RelationSelector<T>({
         </div>
       )}
 
-      <Popup
+      <Pop
         display={display as Display}
         renderContent={renderContent}
         slots={slots}
@@ -506,7 +506,7 @@ export function RelationSelector<T>({
               ? i18n.t("Change selection")
               : (selectorLabel ?? <Items.Tr>Select item</Items.Tr>)}
         </Button>
-      </Popup>
+      </Pop>
     </div>
   );
 }

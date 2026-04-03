@@ -118,12 +118,12 @@ export const formatCoordinate = (key, value, unit) => {
 export const getStatusColor = (status) => {
   switch (status) {
     case 'online':
-      return 'success';
+      return 'text-success';
     case 'offline':
-      return 'error';
+      return 'text-error';
     case 'unknown':
     default:
-      return 'neutral';
+      return 'text-neutral';
   }
 };
 

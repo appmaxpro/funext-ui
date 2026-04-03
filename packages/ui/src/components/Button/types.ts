@@ -44,19 +44,7 @@ export interface ButtonClasses {
   startIcon: string;
   /** Styles applied to the endIcon element if supplied. */
   endIcon: string;
-  /** Styles applied to the icon element if supplied and `size="small"`.
-   * @deprecated Combine the [.MuxButton-icon](/material-ui/api/button/#button-classes-icon) and [.MuxButtonSizeSm](/material-ui/api/button/#button-classes-sizeSm) classes instead. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  iconSizeSm: string;
-  /** Styles applied to the icon element if supplied and `size="medium"`.
-   * @deprecated Combine the [.MuxButton-icon](/material-ui/api/button/#button-classes-icon) and [.MuxButtonSizeMd](/material-ui/api/button/#button-classes-sizeMd) classes instead. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  iconSizeMd: string;
-  /** Styles applied to the icon element if supplied and `size="large"`.
-   * @deprecated Combine the [.MuxButton-icon](/material-ui/api/button/#button-classes-icon) and [.MuxButtonSizeLg](/material-ui/api/button/#button-classes-sizeLg) classes instead. See [Migrating from deprecated APIs](/material-ui/migration/migrating-from-deprecated-apis/) for more details.
-   */
-  iconSizeLg: string;
-  /** Styles applied to the root element if `color="inherit"`. */
+
   colorInherit: string;
   /** Styles applied to the root element if `color="primary"`. */
   colorPrimary: string;
@@ -71,6 +59,7 @@ export interface ButtonClasses {
   /** Styles applied to the root element if `color="warning"`. */
   colorWarning: string;
   canHover: string;
+  selected: string;
 }
 
 export type ButtonClassKey = keyof ButtonClasses;
@@ -104,10 +93,8 @@ export const buttonClasses: ButtonClasses = generateUtilityClasses(
     "startIcon",
     "endIcon",
     "icon",
-    "iconSizeSm",
-    "iconSizeMd",
-    "iconSizeLg",
     "canHover",
+    "selected"
   ],
 );
 
@@ -196,6 +183,9 @@ export interface ButtonOwnProps {
     "text" | "outlined" | "filled" | "ghost",
     ButtonPropsVariantOverrides
   >;
+  
+  toggle?: boolean;
+  selected?: boolean;
 }
 
 export type ButtonTypeMap<

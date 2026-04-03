@@ -1,10 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 
-import { EMPTY_ARRAY, EMPTY_OBJECT, type DataContext, type WidgetBlock } from "~/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  type DataContext,
+  type WidgetBlock,
+} from "~/utils";
 import { dialogs } from "~/hooks/use-dialogs";
 import { useEvalDataContext } from "~/context";
 import React from "react";
-import { evalProps, renderBlockItems, renderDefault } from "~/scope";
+import { evalProps, renderBlockItems, renderDefault, unSafeRenderBlock } from "~/scope";
 
 export function useClick(block: WidgetBlock, ctx: DataContext, inProps?: any) {
   const schema = block.schema;
@@ -54,41 +59,47 @@ export function useClick(block: WidgetBlock, ctx: DataContext, inProps?: any) {
     [ctx],
   );
 
-  return disabled ? {...props, disabled, onClick} : {...props, onClick};
+  return disabled ? { ...props, disabled, onClick } : { ...props, onClick };
 }
 
-function doEvalProps (block: WidgetBlock, ctx: DataContext, ref?: any, ){
+function doEvalProps(block: WidgetBlock, ctx: DataContext, ref?: any) {
   let props = evalProps(block, ctx);
-    if (block.hideIf) {
-      props.hidden = block.hideIf(ctx);
-    } else if (block.hidden != null) {
-      props.hidden = block.hidden;
+  if (block.hideIf) {
+    props.hidden = block.hideIf(ctx);
+  } else if (block.hidden != null) {
+    props.hidden = block.hidden;
+  }
+  if (!props.hidden && block.items) {
+    const children = renderBlockItems(block, ctx);
+    if (children) {
+      props.children = children;
     }
-    if (!props.hidden && block.items) {
-      const children = renderBlockItems(block, ctx);
-      if (children) {
-        props.children = children;
-      }
-    }
-    if (ref) {
-      props.ref = ref;
-    }
-
-    return props;
-}
-
-
-export const useEvalRenderBlock = (block: WidgetBlock, ref?: any) => {
-  const ctx = useEvalDataContext();
-  let { hidden, ...props } = React.useMemo<any>(() => doEvalProps(block, ctx, ref), [ctx, ref]);
-  
-  if(block.onClick) {
-     props = useClick(block, ctx, props)
-  } 
-
-  if(props.hidden){
-    return null
+  }
+  if (ref) {
+    props.ref = ref;
   }
 
-  return renderDefault(block, props, ctx);
+  return props;
+}
+
+export const useEvalRenderBlock = (block: WidgetBlock, ref?: any) => {
+  const originBlock = React.useMemo(() => {
+    return block.items as WidgetBlock;
+  }, [block]);
+
+  const ctx = useEvalDataContext();
+  let { hidden, ...props } = React.useMemo<any>(
+    () => doEvalProps(originBlock, ctx, ref),
+    [ctx, ref],
+  );
+
+  if (originBlock.onClick) {
+    props = useClick(originBlock, ctx, props);
+  }
+
+  if (props.hidden) {
+    return null;
+  }
+
+  return unSafeRenderBlock(originBlock, props, ctx);
 };

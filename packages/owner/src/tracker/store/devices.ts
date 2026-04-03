@@ -3,17 +3,21 @@ import { create } from 'zustand'
 import type { TrackerDevice, TrackerDevices } from '~/tracker/utils/types';
 
 export type DeviceReducer = TrackerDevices & {
+  readonly uIDs: string[];
   refresh(action:TrackerDevice[]): void;
   update(action:TrackerDevice[]): void;
   selectId(selectedId:number) : void;
   selectIds(selectedIds:number[]): void;
   remove(id:number): void;
+  setUIds(uids: string[]): void;
 };
 
 export const useDeviceStore = create<DeviceReducer>((set) => ({
   items: {},
   selectedId: null,
   selectedIds: [],
+  uIDs: [],
+  
   refresh(action:TrackerDevice[]) {
     set((state) => {
       const items = {};
@@ -59,6 +63,15 @@ export const useDeviceStore = create<DeviceReducer>((set) => ({
       selectedIds: state.selectedIds.filter((anId) => anId !== id)
     }))
   },
+  setUIds(uIDs: string[]) {
+    set((state) => ({
+      ...state, 
+      items: [], 
+      selectedId: undefined,
+      selectedIds: [],
+      uIDs
+    }))
+  }
 }))
 
 export const useDeviceStoreState = ()=> {

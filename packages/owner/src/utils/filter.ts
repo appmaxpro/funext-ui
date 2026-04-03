@@ -67,8 +67,9 @@ export interface FilterFormField extends Field {
 }
 
 export interface FilterField
-  extends Omit<Field, "widget">,
-    Omit<FilterWidget, "type" | "name"> {
+  extends Omit<Field, "widget" | "context">,
+    Omit<FilterWidget, "type" | "name" | "context"> {
+  context?: any; // explicitly define context to resolve conflict
   field?: string;
   pType: PropertyType;
   value?: string | number | boolean | Date | object | Array<any>;

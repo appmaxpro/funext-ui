@@ -7,7 +7,7 @@ import {
   Input,
   memoTheme,
   styled,
-  type InputProps
+  type InputProps,
 } from "@funext/ui";
 import React from "react";
 
@@ -26,7 +26,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandShortcut
+  CommandShortcut,
 } from "./command";
 import { Icons, Icon } from "./icons";
 import {
@@ -179,7 +179,7 @@ export function Select(props: Props) {
     display,
     onChange,
     renderPopup,
-    renderInput,
+    //renderInput,
     popupProps: iPopupProps,
     popupTitle,
     readOnly,
@@ -211,7 +211,6 @@ export function Select(props: Props) {
     };
   }, EMPTY_ARRAY);
 
-
   const { multi, single } = React.useMemo(() => {
     const multi = multiple ? getMultiValues(value) : undefined;
     const single = multiple ? undefined : value;
@@ -238,8 +237,12 @@ export function Select(props: Props) {
           if (!(disabled ?? readOnly)) {
             const oldValue = multiple ? getMultiValues(value) : value;
             const newValue = toggleFilterValue(newSelected, oldValue, multiple);
-            const finalValue = !newValue ? newValue : multiple ?  joinMultiValues(newValue) : newValue;
-            onChange(finalValue)
+            const finalValue = !newValue
+              ? newValue
+              : multiple
+                ? joinMultiValues(newValue)
+                : newValue;
+            onChange(finalValue);
           }
         }}
       />
@@ -254,12 +257,53 @@ export function Select(props: Props) {
       default:
         return (
           <>
-            <Dialog.Header onClose={options.close} className="p-2">{popupTitle}</Dialog.Header>
+            <Dialog.Header onClose={options.close} className="p-2">
+              {popupTitle}
+            </Dialog.Header>
             <Dialog.Body className="px-2">{renderCommand(options)}</Dialog.Body>
           </>
         );
     }
   };
+
+  const renderInput = () =>
+    typeof reference === "function" ? (
+      reference({ value, onChange })
+    ) : reference === "button" ? (
+      <Button variant="outlined" disabled={disabled} {...referenceProps}>
+        {renderInputValue(single, value)}
+      </Button>
+    ) : (
+      <Input
+        variant="outlined"
+        suffix={<Icons.ChevronDown size={size === "lg" ? "md" : "sm"} />}
+        readOnly
+        value={single ? renderInputValue(single, value) : ""}
+        disabled={disabled}
+        size={size}
+        prefix={
+          multi
+            ? renderTagInput(multi, size === "lg" ? "md" : "sm", disabled)
+            : undefined
+        }
+        placeholder={placeholder}
+        fullWidth
+        rootProps={{
+          className: clsx(
+            autocompleteClasses.inputRoot,
+            "max-w-inherit",
+            multiple ? "min-w-inherit" : "min-w-[30px]",
+          ),
+        }}
+        onClick={(event: any) => {
+          if (event.target === event.currentTarget) {
+            //handleInputMouseDown(event);
+          }
+        }}
+      />
+    );
+
+  if (readOnly) return renderInput();
 
   return (
     <div className="flex flex-col gap-4">
@@ -268,45 +312,7 @@ export function Select(props: Props) {
         renderContent={renderContent}
         {...popupProps}
       >
-        {typeof reference === "function" ? (
-          reference({ value, onChange })
-        ) : reference === "button" ? (
-          <Button
-            variant="outlined"
-            disabled={disabled}
-            {...referenceProps}
-          >
-            {renderInputValue(single, value)}
-          </Button>
-        ) : (
-          <Input
-            variant="outlined"
-            suffix={<Icons.ChevronDown size={size === "lg" ? "md" : "sm"}/>}
-            readOnly
-            value={single ? renderInputValue(single, value) : ""}
-            disabled={disabled}
-            size={size}
-            prefix={
-              multi
-                ? renderTagInput(multi, size === "lg" ? "md" : "sm", disabled)
-                : undefined
-            }
-            placeholder={placeholder}
-            fullWidth
-            rootProps={{
-              className: clsx(
-                autocompleteClasses.inputRoot,
-                "max-w-inherit",
-                multiple ? "min-w-inherit" : "min-w-[30px]",
-              ),
-            }}
-            onClick={(event: any) => {
-              if (event.target === event.currentTarget) {
-                //handleInputMouseDown(event);
-              }
-            }}
-          />
-        )}
+        {renderInput()}
       </Pop>
     </div>
   );

@@ -1,4 +1,4 @@
-import { isEqual, isNil, noop, omit, omitBy, pick } from "lodash";
+import { isEmpty, isEqual, isNil, noop, omit, omitBy, pick } from "lodash";
 import React, {
   startTransition,
   useCallback,
@@ -19,6 +19,7 @@ import {
   getResource,
   i18n,
   removeEmpty,
+  type Container,
   type FilterViewBlock,
   type FormView,
   type Resource,
@@ -39,6 +40,7 @@ import type {
   ViewStore,
 } from "../types";
 import { getRouteMode } from "../utils";
+import type { FilterTabs, FilterWidget } from "~/utils/filter";
 
 let rootStore: ViewStore;
 
@@ -508,6 +510,26 @@ export async function initTab(
           actionView.evalContext,
         ) as FilterViewBlock)
       : undefined;
+    
+    let extList:any;
+    if(filter) {
+      let sidebar = filter?.schema?.sidebar as Container<FilterWidget>;
+      const tabs = sidebar?.items?.find((w) => w.widget === "tabs") as FilterTabs;
+      
+      if (tabs) {
+        sidebar = {
+          ...sidebar,
+          items: sidebar!.items.filter((i) => i !== tabs),
+        };
+      }
+
+      extList = removeEmpty( {
+        filterTabs: tabs && tabs.items?.length && tabs.name ? tabs : undefined,
+        filterSidebar: isEmpty(sidebar) ? undefined : sidebar,
+        filterForm: filter?.form,
+        filterDefaults: filter?.schema?.defaults
+      })
+    }
     const tab: Tab = {
       id,
       title,
@@ -521,6 +543,7 @@ export async function initTab(
       getState() {
         return state;
       },
+      ...extList
     };
 
     return tab;

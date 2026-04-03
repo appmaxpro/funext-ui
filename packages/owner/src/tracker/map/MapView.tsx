@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-unresolved
 import mapboxglRtlTextUrl from "@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min?url";
-import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { googleProtocol } from "maplibre-google-maps";
-import React, { useRef, useLayoutEffect, useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SwitcherControl } from "../switcher/switcher";
-import { useAttributePreference, usePreference } from "../utils/preferences";
+import { useAttrPref, usePreference } from "../utils/preferences";
 
+import { useLocalStorage } from "~/hooks/use-local-storage";
 import { mapImages } from "./preloadImages";
 import useMapStyles from "./useMapStyles";
-import { useLocalStorage } from "~/hooks/use-local-storage";
 
 const element = document.createElement("div");
 element.style.width = "100%";
@@ -80,7 +80,7 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
   const [mapReady, setMapReady] = useState(false);
 
   const mapStyles = useMapStyles();
-  const activeMapStyles = useAttributePreference(
+  const activeMapStyles = useAttrPref(
     "activeMapStyles",
     "locationIqStreets,locationIqDark,openFreeMap",
   );
@@ -88,8 +88,8 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
     "selectedMapStyle",
     usePreference("map", "locationIqStreets"),
   );
-  const mapboxAccessToken = useAttributePreference("mapboxAccessToken");
-  const maxZoom = useAttributePreference("web.maxZoom");
+  const mapboxAccessToken = useAttrPref("mapboxAccessToken");
+  const maxZoom = useAttrPref("web.maxZoom");
 
   useEffect(() => {
     if (maxZoom) {
@@ -103,11 +103,11 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const filteredStyles = mapStyles.filter(
-      (s:any) => s.available && activeMapStyles.includes(s.id),
+      (s: any) => s.available && activeMapStyles.includes(s.id),
     );
     const styles = filteredStyles.length
       ? filteredStyles
-      : mapStyles.filter((s:any) => s.id === "osm");
+      : mapStyles.filter((s: any) => s.id === "osm");
     switcher.updateStyles(styles, defaultMapStyle);
   }, [mapStyles, defaultMapStyle]);
 
@@ -131,7 +131,10 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
   return (
     <div style={{ width: "100%", height: "100%" }} ref={containerEl as any}>
       {React.Children.map(children, (child) => {
-        if (React.isValidElement(child) && (child as any).type.handlesMapReady) {
+        if (
+          React.isValidElement(child) &&
+          (child as any).type.handlesMapReady
+        ) {
           return React.cloneElement(child as any, { mapReady });
         }
         return mapReady ? child : null;

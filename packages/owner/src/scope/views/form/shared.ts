@@ -1,4 +1,5 @@
 import type React from "react";
+import type { ActionHandler } from "~/scope/action";
 import type { ListModifiers, ListParams } from "~/scope/types";
 import type { Block, FieldErrors, SearchOptions, SearchResult } from "~/utils";
 
@@ -12,4 +13,8 @@ export type FilterFormProps = {
   updateFilters: (filter: any, delay?: boolean) => void;
   onSubmit?():void;
   onReset?():void;
+}
+
+export interface FormWithActionHandler {
+  readonly actionHandler: ActionHandler;
 }

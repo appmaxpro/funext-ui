@@ -120,8 +120,8 @@ export interface Property {
   aggregate?: string;
   sortable?: boolean;
   orderBy?: string;
+  moveBy?: string;
   limit?: number;
-  searchLimit?: number;
   optionsIn?: string;
   options?: Option[];
   multiple?: boolean;
@@ -162,7 +162,7 @@ export interface Widget extends Omit<Schema, 'props'>{
   cProps?: (ctx: any) => Record<string, any>;
   render?: React.FunctionComponent<BlockRenderProps> ;
   items?: Widget[];
-  context?: DataContext
+  context?: DataContext;
 }
 
 export interface Field extends Omit<Property & Widget, 'type'> {
@@ -187,6 +187,7 @@ export interface LayoutWidget extends Container {
 export interface ResourceMeta {
   fields: Property[];
   get: (name: string) => Property | undefined;
+  readonly views: ResourceView[];
 }
 
 export interface ResourceView extends Omit<Schema, 'name'>  {
@@ -243,7 +244,7 @@ export interface Resource extends Omit<Schema, 'name'>, ResourceMeta{
   readonly type: "resource";
   readonly name: string;
   readonly model?: string;
-  readonly views: ResourceView[];
+  
   readonly filter?: FilterView;
   readonly params?: Record<string, any>;
   
@@ -255,8 +256,31 @@ export interface Resource extends Omit<Schema, 'name'>, ResourceMeta{
 }
 
 export interface RelationField extends Field {
-  views?: ResourceView[];
+  pType: "mto" | "otm" | "mtm";
+  //views?: ResourceView[];
 }
+
+export interface ManyField extends RelationField {
+  pType: "mto" | "mtm";
+}
+
+export interface OtmField extends RelationField {
+  pType: "otm";
+}
+
+export interface DynamicField extends RelationField, ResourceMeta {
+  pType: "mto" | "otm" | "mtm";
+}
+
+export interface DynamicManyField extends DynamicField {
+  pType: "mto" | "mtm";
+}
+
+export interface DynamicOtmField extends DynamicField {
+  pType: "otm";
+}
+
+//ResourceMeta
 
 export interface Filter {
   operator?: FilterOp;
@@ -495,6 +519,11 @@ export function isField(widget: Widget|Schema): widget is Field {
 const relTypes = ['mtm', 'otm', 'mto']
 export function isRelationField(widget: Field): widget is RelationField {
   return relTypes.includes(widget.pType)
+}
+
+export function isDynamicField(widget: Field): widget is DynamicField {
+  return relTypes.includes(widget.pType) && 
+     'views' in widget && Array.isArray(widget.views)
 }
 
 export function isRecordProps(props: Schema["props"]): props is Record<string, any> {

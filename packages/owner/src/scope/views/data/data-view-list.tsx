@@ -1,7 +1,7 @@
 import {  RecordContext, useViewDataContext } from "~/context";
 import { useAsync } from "~/hooks/use-async";
-import { ErrorBox } from "../../../components/shared/error-box";
 import type React from "react";
+import { ErrorBox } from "~/components";
 
 export function DataViewList({ children }: { children: React.ReactNode }) {
   const { dataStore } = useViewDataContext();

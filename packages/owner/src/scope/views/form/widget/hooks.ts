@@ -9,6 +9,8 @@ import { EMPTY_ARRAY, EMPTY_OBJECT, type Schema } from "~/utils";
 import { dialogs } from "~/hooks/use-dialogs";
 import { useScheduleLayoutEffect } from "~/hooks/use-schedule-layout-effect";
 import { isEqual } from "lodash";
+import type { FieldProps } from "./types";
+import React from "react";
 
 export function useReadonly(widget: BasicWidgetState, checkRoot = false) {
   const readonlyAtom = useMemo(() => {
@@ -153,7 +155,6 @@ export function useInput<T>(
      * Convert the input text to target value.
      */
     parse?: (text: string) => T | null;
-
   },
 ) {
   const fSchema = field.block.schema;
@@ -180,7 +181,7 @@ export function useInput<T>(
     [],
   );
   const update = useCallback(
-    (text: string, fireOnChange: boolean, makeDirty: boolean=true) => {
+    (text: string, fireOnChange: boolean, makeDirty: boolean = true) => {
       if (validate(text)) {
         field.set(parse(text), fireOnChange, makeDirty);
       }
@@ -261,7 +262,6 @@ export function useInput<T>(
   } as const;
 }
 
-
 export function useSimpleInput<T>(
   field: IFieldState,
   options?: {
@@ -269,14 +269,13 @@ export function useSimpleInput<T>(
      * When to fire the onChange event.
      */
     triggerOn?: "blur" | "change";
-    onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => any;
-
-}) {
+    onChange?: (
+      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => any;
+  },
+) {
   const fSchema = field.block.schema;
-  const {
-    triggerOn = "blur",
-    onChange: onChangeHandler
-  } = options ?? {};
+  const { triggerOn = "blur", onChange: onChangeHandler } = options ?? {};
 
   //const [value = defaultValue] = field;
   const value = field.value;
@@ -286,7 +285,6 @@ export function useSimpleInput<T>(
 
   const dirtyRef = useRef<boolean | undefined>();
 
-
   const setValue = useCallback(
     (value: any, fireOnChange: boolean, makeDirty?: boolean) => {
       field.set(value, fireOnChange, makeDirty);
@@ -294,40 +292,36 @@ export function useSimpleInput<T>(
     [],
   );
 
-  const update = useCallback(
-    (value: any, makeDirty?: boolean) => {
-      dirtyRef.current = makeDirty != null ? makeDirty : !isEqual(valueRef.current, value)
-      valueRef.current = value;
-    },
-    EMPTY_ARRAY,
-  );
-  
-  const testChange = useCallback(()=> {
-    if(isEqual(valueRef.current, value)) {
-      setValue(valueRef.current, triggerOn === "change", triggerOn === "change")
-    }
-     
-  }, [value]);
+  const update = useCallback((value: any, makeDirty?: boolean) => {
+    dirtyRef.current =
+      makeDirty != null ? makeDirty : !isEqual(valueRef.current, value);
+    valueRef.current = value;
+  }, EMPTY_ARRAY);
 
+  const testChange = useCallback(() => {
+    if (isEqual(valueRef.current, value)) {
+      setValue(
+        valueRef.current,
+        triggerOn === "change",
+        triggerOn === "change",
+      );
+    }
+  }, [value]);
 
   const onChange = useCallback<
     React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
-  >(
-    (event) => {
-      if(onChangeHandler) {
-        const val = onChangeHandler(event);
-        if(val !== undefined)
-          valueRef.current = val;
-      } else {
-        try{
-          setValue(event.target.value, false, true)
-        } catch(e) {
-          console.error(e)
-        }
+  >((event) => {
+    if (onChangeHandler) {
+      const val = onChangeHandler(event);
+      if (val !== undefined) valueRef.current = val;
+    } else {
+      try {
+        setValue(event.target.value, false, true);
+      } catch (e) {
+        console.error(e);
       }
-    },
-    EMPTY_ARRAY,
-  );
+    }
+  }, EMPTY_ARRAY);
 
   const onFocus = useCallback<
     React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
@@ -340,7 +334,7 @@ export function useSimpleInput<T>(
   >(
     (event) => {
       field.setState("focused", false);
-      if(dirtyRef.current) {
+      if (dirtyRef.current) {
         setValue(valueRef.current, triggerOn === "blur", true);
       }
       dirtyRef.current = undefined;
@@ -350,17 +344,14 @@ export function useSimpleInput<T>(
 
   const onKeyDown = useCallback<
     React.KeyboardEventHandler<HTMLInputElement | HTMLTextAreaElement>
-  >(
-    (event) => {
-      if (event.key === "Enter") {
-        if(dirtyRef.current) {
-          setValue(valueRef.current, true, true);
-        }
-        dirtyRef.current = undefined;
+  >((event) => {
+    if (event.key === "Enter") {
+      if (dirtyRef.current) {
+        setValue(valueRef.current, true, true);
       }
-    },
-    EMPTY_ARRAY,
-  );
+      dirtyRef.current = undefined;
+    }
+  }, EMPTY_ARRAY);
 
   return {
     value,
@@ -371,4 +362,20 @@ export function useSimpleInput<T>(
     onBlur,
     onKeyDown,
   } as const;
+}
+
+const widgets: Record<string, React.FC<FieldProps>>[] = [];
+
+export function registerWidgets(record: Record<string, React.FC<FieldProps>>) {
+  widgets.push(record);
+}
+
+export function useWidget(type: string, widget?:string, readonly?: boolean) {
+  return React.useMemo(() => {
+    const W = widgets.find(
+      (w) =>  w[widget ?? type] ?? w[type]
+    );
+    const uType = W && widget && W[widget] ? widget : type;
+    return W ? [uType, (readonly && W.readonly) || W[uType]]  : EMPTY_ARRAY;
+  }, [type, widget, readonly]);
 }

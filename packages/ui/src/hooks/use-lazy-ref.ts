@@ -1,7 +1,6 @@
-import { useRef } from "react";
 import * as React from 'react';
-import { EMPTY_ARRAY } from "../lib/constants";
-//const UNINITIALIZED = {};
+
+const UNINITIALIZED = {};
 
 type FN<R> = (...args: any[]) => R;
 
@@ -9,9 +8,9 @@ export function useLazyRef<R = any>(
 	fn: FN<R>
 ): React.MutableRefObject<R> {
 
-	const ref = React.useRef<R>();
+	const ref = React.useRef<R>(UNINITIALIZED as R);
 
-  if (ref.current === undefined) {
+  if (ref.current === UNINITIALIZED) {
     ref.current = fn();
   }
 

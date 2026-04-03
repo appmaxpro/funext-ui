@@ -103,3 +103,8 @@ export const NODE_ENV = process.env.NODE_ENV;
 
 
 export const isDevelopment = NODE_ENV !== 'production'
+
+export const EMPTY_IMAGE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+
+export const ANIMATIONS_DISABLED = false;

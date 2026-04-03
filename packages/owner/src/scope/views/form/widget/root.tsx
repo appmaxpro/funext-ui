@@ -5,10 +5,11 @@ import { getEmptyWidgetState } from "../form";
 import { useFormContext, useWidgetState, WidgetStateContext } from "~/context";
 import { Root } from "./form";
 import type { IFieldState, IFState, IWidgetState } from "~/scope";
+import type { FieldControlProps, FieldProps } from "./types";
 
 export type Slot = React.ElementType | React.ComponentType;
 
-export function useFormWidgetState<T extends IWidgetState=IWidgetState>() {
+export function useFormWidgetState<T extends IWidgetState = IWidgetState>() {
   const widget = useWidgetState() ?? (getEmptyWidgetState() as T);
   const state = React.useSyncExternalStore(widget.subscribe, widget.snapshot);
 
@@ -43,10 +44,9 @@ export function WidgetStateProvider({
 const useFormField = () => {
   //const stateContext = React.useContext(WidgetStateContext)
   const { state, widget } = useFormWidgetState();
-  
 
   if (!widget.name) {
-    console.warn("useFormField has invalid field block:", widget)
+    console.warn("useFormField has invalid field block:", widget);
     throw new Error("useFormField should be used within block with valid name");
   }
 
@@ -63,24 +63,17 @@ const useFormField = () => {
   };
 };
 
-type FormItemContextValue = {
-  id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue,
-);
-
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const id = React.useId();
-
   return (
-    <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2", className)} {...props} />
-    </FormItemContext.Provider>
+    <div
+      data-ui="FormItem"
+      ref={ref}
+      className={cn("flex flex-col space-y-2", className)}
+      {...props}
+    />
   );
 });
 FormItem.displayName = "FormItem";
@@ -93,6 +86,7 @@ const FormLabel = React.forwardRef<
 
   return (
     <Slot
+      data-ui="FormLabel"
       ref={ref}
       className={cn(className, state.error && "text-error")}
       htmlFor={id}
@@ -111,6 +105,7 @@ const FormControl = React.forwardRef<
 
   return (
     <Slot
+      data-ui="FormControl"
       ref={ref}
       id={formItemId}
       aria-describedby={
@@ -133,6 +128,7 @@ const FormDescription = React.forwardRef<
 
   return (
     <p
+      data-ui="FormDescription"
       ref={ref}
       id={formDescriptionId}
       className={cn("text-sm text-muted-foreground", className)}
@@ -155,6 +151,7 @@ const FormMessage = React.forwardRef<
 
   return (
     <p
+      data-ui="FormMessage"
       ref={ref}
       id={formMessageId}
       className={cn("text-sm font-medium text-destructive", className)}
@@ -166,6 +163,35 @@ const FormMessage = React.forwardRef<
 });
 FormMessage.displayName = "FormMessage";
 
+const FieldControl = React.forwardRef<
+  HTMLDivElement,
+  FieldControlProps & React.ComponentProps<typeof FormControl>
+>(
+  (
+    { field, state, className, showLabel: showLabelProp, withControl = true, ...props },
+    ref,
+  ) => {
+    const schema = field.block.schema;
+
+    const { noTitle } = schema;
+    const showLabel = showLabelProp != null ? showLabelProp : !noTitle;
+
+    return (
+      <FormItem className={cn("min-w-[150px] p-1", className)} ref={ref}>
+        {showLabel && (
+          <FormLabel className="text-base font-normal leading-6">
+            {i18n.t(schema.title ?? field.name)}
+            {state.required && <span className="text-destructive ms-1">*</span>}
+          </FormLabel>
+        )}
+        {withControl ? <FormControl {...props} /> : props.children}
+        <FormMessage />
+      </FormItem>
+    );
+  },
+);
+FieldControl.displayName = "FieldControl";
+
 export {
   useFormField,
   FormItem,
@@ -173,5 +199,6 @@ export {
   FormControl,
   FormDescription,
   FormMessage,
+  FieldControl,
   Root,
 };

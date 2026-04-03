@@ -5,10 +5,7 @@ import type {
   ComponentRenderFn,
   HTMLProps,
 } from "~/utils";
-import {
-  getStateAttributesProps,
-  type StateAttributesMapping,
-} from "./getStateAttributesProps";
+
 //import { resolveClassName } from './resolveClassName';
 //import { resolveStyle } from './resolveStyle';
 import {
@@ -22,6 +19,7 @@ import { EMPTY_RECORD, getElementRef } from "~/utils";
 import { resolveClassName } from "~/utils/resolveClassName";
 import { resolveStyle } from "~/utils/resolveStyle";
 import { composeRefs } from "~/utils/compose-ref";
+import { getStateAttributesProps, type StateAttributesMapping } from "../utils";
 
 type IntrinsicTagName = keyof React.JSX.IntrinsicElements;
 

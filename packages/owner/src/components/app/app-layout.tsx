@@ -505,7 +505,7 @@ function AppLayout(props: AppLayoutProps) {
               minWidth={0}
               overflow={hasScrollerRef ? "hidden" : "hidden auto"}
               ref={!hasScrollerRef ? contentRef : undefined}
-              height="100vh"
+              minHeight="100vh"
               sx={{
                 perspective: 1200,
               }}

@@ -29,9 +29,9 @@ import queryReducer, {
   SET_PAGE_INFO,
 } from "./queryReducer";
 import { useLocalStorage } from "~/hooks/use-local-storage";
-import { useIsMounted } from "@funext/ui";
+import { useIsMounted, useLazyRef } from "@funext/ui";
 import { EMPTY_ARRAY, EMPTY_RECORD } from "~/utils";
-import { pick } from "lodash";
+import { noop, pick } from "lodash";
 import type { ListParams, ListModifiers, PageInfo } from "../types";
 
 /**
@@ -100,18 +100,32 @@ export const useListParams = (
   const [params, setParams] = useLocalStorage(resource, defaultParams);
   const tempParams = useRef<ListParams>();
   const isMounted = useIsMounted();
-  const toStringParams = !syncWithLocation ? localParams : params
-  const finalParams = useMemo(
-    () => {
-      console.warn("finalParams: ", toStringParams)
-      return JSON.stringify(toStringParams)
-    },
-    [toStringParams],
-  );
+  const commitRef = useLazyRef(() => {
+    let resolveFn: any;
+    const promise = new Promise((resolve) => {
+      resolveFn = resolve;
+    });
+    return {
+      promise,
+      commit: (val?: any) => {
+        if (typeof resolveFn === "function") {
+          resolveFn(val);
+        }
+        commitRef.current.onCommit();
+      },
+      onCommit: noop,
+    };
+  });
+
+  const toStringParams = !syncWithLocation ? localParams : params;
+  const finalParams = useMemo(() => {
+    console.warn("finalParams: ", toStringParams);
+    return JSON.stringify(toStringParams);
+  }, [toStringParams]);
 
   const signature = [
     resource,
-    (!syncWithLocation || !enabled) ? null : location.search,
+    !syncWithLocation || !enabled ? null : location.search,
     finalParams,
     enabled,
   ];
@@ -121,7 +135,7 @@ export const useListParams = (
       !syncWithLocation || !enabled
         ? EMPTY_RECORD
         : parseQueryFromLocation(location),
-    [!syncWithLocation || !enabled , location.search],
+    [!syncWithLocation || !enabled, location.search],
   );
 
   const query = useMemo(
@@ -134,17 +148,17 @@ export const useListParams = (
             sort,
             pageSize,
           })
-        : {
-          openedGroups: EMPTY_ARRAY,
-          page: 0,
-          pageSize,
-          total: 0,
-          offset: 0,
-          pages: 0
-        } as ListParams,
+        : ({
+            openedGroups: EMPTY_ARRAY,
+            page: 0,
+            pageSize,
+            total: 0,
+            offset: 0,
+            pages: 0,
+          } as ListParams),
     signature, // eslint-disable-line react-hooks/exhaustive-deps
   );
-
+  /*
   useEffect(() => {
     if (syncWithLocation && enabled) {
       const inQuery = {
@@ -155,7 +169,7 @@ export const useListParams = (
       }
       setSearchParams(`?${qs.stringify(inQuery)}`, {replace: true});
     }
-  }, [enabled]); // eslint-disable-line
+  }, [enabled]);*/ // eslint-disable-line
 
   // if the location includes params (for example from a link like
   // the categories products on the demo), we need to persist them in the
@@ -163,19 +177,19 @@ export const useListParams = (
   // to the list
   useEffect(() => {
     if (enabled) {
-      setParams( Object.keys(queryFromLocation).length > 0 ? query : null);
+      setParams(Object.keys(queryFromLocation).length > 0 ? query : null);
     }
-  }, [location.search, enabled]); // eslint-disable-line
+  }, [searchParams, enabled]); // eslint-disable-line
 
   const changeParams = useCallback((action: any) => {
     // do not change params if the component is already unmounted
     // this is necessary because changeParams can be debounced, and therefore
     // executed after the component is unmounted
     if (!isMounted.current) {
-      console.log("useListParams:: changeParams:: not  mounted")
-      return;
+      console.log("useListParams:: changeParams:: not  mounted");
+      return commitRef.current.promise;
     }
-    console.log("useListParams:: changeParams:: ", action)
+    console.log("useListParams:: changeParams:: ", action);
     if (!tempParams.current) {
       // no other changeParams action dispatched this tick
       tempParams.current = queryReducer(query, action);
@@ -203,10 +217,30 @@ export const useListParams = (
       // side effects already scheduled, just change the params
       tempParams.current = queryReducer(tempParams.current, action);
     }
+    return commitRef.current.promise;
   }, EMPTY_ARRAY); // eslint-disable-line react-hooks/exhaustive-deps
 
   const modifiers = useMemo(() => {
+    function doCommit() {
+      let resolveFn: any;
+      const promise = new Promise((resolve) => {
+        resolveFn = resolve;
+      });
+      commitRef.current = {
+        promise,
+        commit: (val?: any) => {
+          if (typeof resolveFn === "function") {
+            resolveFn(val);
+          }
+          commitRef.current.onCommit();
+        },
+        onCommit: doCommit,
+      };
+    }
+    commitRef.current.onCommit = doCommit;
+
     return {
+      commit: commitRef.current.commit,
       setSort: (sort?: string | null) =>
         changeParams({
           type: SET_SORT,
@@ -238,17 +272,17 @@ export const useListParams = (
         changeParams({
           type: SET_FILTER,
           payload: filter,
-        }),  
+        }),
       updateFilters: (filter: any, delay?: boolean) =>
         delay
           ? lodashDebounce(
-              (filter) =>
-                changeParams({
+              async (filter) =>
+                await changeParams({
                   type: UPDATE_FILTER,
                   payload: filter,
                 }),
               debounce,
-            )
+            )(filter)
           : changeParams({
               type: UPDATE_FILTER,
               payload: filter,
@@ -274,6 +308,12 @@ export const useListParams = (
     ],
   );
 
+  useEffect(() => {
+    return ()=> {
+      commitRef.current.onCommit = noop;
+      commitRef.current.commit(false)
+    }
+  }, EMPTY_ARRAY)
   return resultQuery;
 };
 

@@ -1,10 +1,10 @@
 import maplibregl from 'maplibre-gl';
 import { useEffect, useMemo } from 'react';
 import { map } from '../map/MapView';
-import { useAttributePreference } from '../utils/preferences';
+import { useAttrPref } from '../utils/preferences';
 
 const MapScale = () => {
-  const distanceUnit = useAttributePreference('distanceUnit');
+  const distanceUnit = useAttrPref('distanceUnit');
 
   const control = useMemo(() => new maplibregl.ScaleControl(), []);
 

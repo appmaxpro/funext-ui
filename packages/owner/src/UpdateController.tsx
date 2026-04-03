@@ -9,11 +9,13 @@ import { useTrackerSession } from './tracker/store/session';
 import { useTranslation } from './components/app/localization-provider';
 import { Icons } from './components';
 import { i18n } from './utils';
+import { session } from './utils/session';
 
 // Based on https://vite-pwa-org.netlify.app/frameworks/react.html
 const UpdateController = () => {
   const t = useTranslation();
-  const swUpdateInterval = useTrackerSession((state) => state.server.attributes.serviceWorkerUpdateInterval || 3600000);
+  
+  const swUpdateInterval = session.info?.application?.swUpdateInterval ?? 0;
 
   const {
     needRefresh: [needRefresh],
@@ -50,6 +52,7 @@ console.log("UpdateController: done")
     <Snackbar
       open={needRefresh}
       message={i18n.t('settingsUpdateAvailable')}
+      
       action={(
         <IconButton color="inherit" onClick={() => updateServiceWorker(true)}>
           <Icons.Refresh />

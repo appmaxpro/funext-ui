@@ -4,10 +4,20 @@ import type {
   ActionData,
   ActionHandler,
   ActionListener,
+  OnSaveHandler,
 } from "./types";
 
 export class DefaultActionHandler implements ActionHandler {
   #listeners = new Set<ActionListener>();
+  #onSaveHandler?: OnSaveHandler;
+  
+  get onSaveHandler(){
+    return this.#onSaveHandler;
+  }
+  
+  set onSaveHandler(handler: OnSaveHandler|undefined) {
+    this.#onSaveHandler = handler;
+  }
 
   setFocus(target: string) {}
 

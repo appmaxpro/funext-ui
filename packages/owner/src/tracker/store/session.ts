@@ -9,11 +9,13 @@ interface TrackerSession {
   history: Record<number,any[]>;
   includeLogs: boolean;
   logs: any[];
+  readonly deviceIds?: string[]|null;
   updateServer(server:any): void;
   updateUser(user:any): void;
   updateSocket(socket:any): void;
   updatePositions(positions: any[]) : void;
   updateLogs(logs: any[]): void; 
+  setDevices(deviceIds?: string[]|null): void; 
 }
 
 export const useTrackerSession = create<TrackerSession>((set) => ({
@@ -27,6 +29,7 @@ export const useTrackerSession = create<TrackerSession>((set) => ({
       
     }
   },
+  deviceIds: null,
   socket: null,
   includeLogs: false,
   logs: [],
@@ -79,4 +82,12 @@ export const useTrackerSession = create<TrackerSession>((set) => ({
       }
     });
   },
+  setDevices(deviceIds?: string[]|null){
+    set((state) => {
+      return {
+        ...state,
+        deviceIds
+      }
+    })
+  }
 }));

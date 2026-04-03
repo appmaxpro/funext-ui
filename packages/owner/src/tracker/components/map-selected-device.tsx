@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { map } from '../map/MapView';
 import { useDeviceStore } from '../store/devices';
 import { usePrevious } from '@funext/ui';
-import { useAttributePreference } from '../utils/preferences';
+import { useAttrPref } from '../utils/preferences';
 import { useTrackerSession } from '../store/session';
 import { Dimensions } from '~/utils/constant';
 
@@ -12,8 +12,8 @@ const MapSelectedDevice = ({ mapReady }: {mapReady: boolean}) => {
   const previousTime = usePrevious(currentTime);
   const previousId = usePrevious(currentId);
 
-  const selectZoom = useAttributePreference('web.selectZoom', 10);
-  const mapFollow = useAttributePreference('mapFollow', false);
+  const selectZoom = useAttrPref('web.selectZoom', 10);
+  const mapFollow = useAttrPref('mapFollow', false);
 
   const position = useTrackerSession((state) => state.positions[currentId as any]);
 

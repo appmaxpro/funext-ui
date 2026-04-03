@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTrackerSession } from '../store/session';
 import { i18n } from '~/utils/i18n';
-import { useAttributePreference } from '../utils/preferences';
+import { useAttrPref } from '../utils/preferences';
 
 const styleCustom = ({ tiles, minZoom, maxZoom, attribution }: any) => {
   const source = {
@@ -30,13 +30,13 @@ const styleCustom = ({ tiles, minZoom, maxZoom, attribution }: any) => {
 export default () => {
   const t = i18n.get;
 
-  const googleKey = useAttributePreference('googleKey');
-  const mapTilerKey = useAttributePreference('mapTilerKey');
-  const locationIqKey = useAttributePreference('locationIqKey') || 'pk.0f147952a41c555a5b70614039fd148b';
-  const bingMapsKey = useAttributePreference('bingMapsKey');
-  const tomTomKey = useAttributePreference('tomTomKey');
-  const hereKey = useAttributePreference('hereKey');
-  const mapboxAccessToken = useAttributePreference('mapboxAccessToken');
+  const googleKey = useAttrPref('googleKey');
+  const mapTilerKey = useAttrPref('mapTilerKey');
+  const locationIqKey = useAttrPref('locationIqKey') || 'pk.0f147952a41c555a5b70614039fd148b';
+  const bingMapsKey = useAttrPref('bingMapsKey');
+  const tomTomKey = useAttrPref('tomTomKey');
+  const hereKey = useAttrPref('hereKey');
+  const mapboxAccessToken = useAttrPref('mapboxAccessToken');
   const customMapUrl = useTrackerSession((state) => state.server.mapUrl);
 
   return useMemo(() => <any>[

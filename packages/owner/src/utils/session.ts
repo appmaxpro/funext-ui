@@ -31,6 +31,8 @@ export interface SessionInfo {
     openIdForce?: boolean;
     emailEnabled?: boolean;
     singlePage?: boolean;
+    swUpdateInterval?: number;
+    
   };
   authentication?: {
     callbackUrl?: string;
@@ -71,7 +73,10 @@ export interface SessionInfo {
   features?: {
     //by Nabil
     socket?: boolean;
-    tracking?: boolean;
+    tracker?: {
+      domain: string,
+      token: string,
+    }
   };
   route?: {
     path: string;
