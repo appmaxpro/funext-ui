@@ -1,0 +1,206 @@
+.container {
+  --ax-nav-tabs-icon-bg: var(--ax-theme-nav-tabs-icon-bg, transparent);
+  --ax-nav-tabs-icon-color: var(--ax-theme-nav-tabs-icon-color, inherit);
+  --ax-nav-tabs-icon-padding: var(--ax-theme-nav-tabs-icon-padding, 0.25rem);
+
+  --ax-nav-tabs-tab-padding: var(--ax-theme-nav-tabs-tab-padding, 0.5rem 1rem);
+  --ax-nav-tabs-tab-bg: var(--ax-theme-nav-tabs-tab-bg, inherit);
+  --ax-nav-tabs-tab-color: var(
+    --ax-theme-nav-tabs-tab-color,
+    var(--tw-body-color)
+  );
+  --ax-nav-tabs-tab-font-weight: var(--ax-theme-nav-tabs-tab-font-weight, 500);
+  --ax-nav-tabs-text-padding: var(--ax-theme-nav-tabs-text-padding, 0.25rem);
+  --ax-nav-tabs-tab-text-transform: var(
+    --ax-theme-nav-tabs-tab-text-transform,
+    uppercase
+  );
+
+  --ax-nav-tabs-tab-hover-bg: var(--ax-theme-nav-tabs-tab-hover-bg, var(--tw-primary-50));
+  --ax-nav-tabs-tab-hover-color: var(
+    --ax-theme-nav-tabs-tab-hover-color,
+    inherit
+  );
+  --ax-nav-tabs-tab-hover-font-weight: var(
+    --ax-theme-nav-tabs-tab-hover-font-weight,
+    var(--ax-nav-tabs-tab-font-weight)
+  );
+
+  --ax-nav-tabs-tab-active-bg: var(--ax-theme-nav-tabs-tab-active-bg, inherit);
+  --ax-nav-tabs-tab-active-color: var(
+    --ax-theme-nav-tabs-tab-active-color,
+    inherit
+  );
+  --ax-nav-tabs-tab-active-font-weight: var(
+    --ax-theme-nav-tabs-tab-active-font-weight,
+    600
+  );
+
+  --ax-nav-tabs-indicator-size: var(
+    --ax-theme-nav-tabs-indicator-size,
+    0.125rem
+  );
+  --ax-nav-tabs-indicator-color: var(
+    --ax-theme-nav-tabs-indicator-color,
+    var(--tw-primary)
+  );
+}
+
+.strip,
+.tabs {
+  display: flex;
+}
+
+.strip {
+  position: relative;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: var(--ax-nav-tabs-tab-padding);
+  color: var(--ax-nav-tabs-tab-color);
+  background-color: var(--ax-nav-tabs-tab-bg);
+  font-weight: var(--ax-nav-tabs-tab-font-weight);
+  text-transform: var(--ax-nav-tabs-tab-text-transform);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+}
+
+.button,
+.icon {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.arrow {
+  display: none;
+  cursor: pointer;
+  user-select: none;
+  z-index: 1;
+  height: 100%;
+  width: 56px;
+  min-height: 40px;
+  overflow: visible;
+  position: relative;
+  .arrow-icon {
+    z-index: 1;
+  }
+  & > *{
+    height: 100%;
+  }
+  &.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    &.left::after{
+      position: absolute;
+      left: 20px;
+      background: linear-gradient(to right, var(--tw-body-bg) 20%, rgba(33, 33, 33, 0) 80%);
+      height: 100%;
+      width: 50px;
+      min-width: 40px;
+      content: "";
+      pointer-events: none;
+      
+    }
+    &.right::before{
+      position: absolute;
+      left: -40px;
+      background: linear-gradient(to left, var(--tw-body-bg) 20%, rgba(33, 33, 33, 0) 80%);
+      height: 100%;
+      width: 50px;
+      min-width: 40px;
+      content: "";
+      pointer-events: none;
+      
+    }
+  }
+}
+
+
+.button:not(.active) {
+  width: 0;
+}
+
+.button.active {
+  visibility: visible;
+}
+
+.text {
+  padding: 0 var(--ax-nav-tabs-text-padding);
+}
+
+.icon {
+  color: var(--ax-theme-nav-tabs-icon-color, var(--ax-nav-tabs-icon-color));
+  background-color: var(
+    --ax-theme-nav-tabs-icon-bg,
+    var(--ax-nav-tabs-icon-bg)
+  );
+  padding: var(--ax-nav-tabs-icon-padding);
+  border-radius: 100%;
+}
+
+.indicator {
+  position: absolute;
+  bottom: 0;
+  height: var(--ax-nav-tabs-indicator-size);
+  background-color: var(--ax-nav-tabs-indicator-color);
+  transition: all 300ms ease-out 0ms;
+}
+
+.tab {
+  z-index: 0; // XXX: Chrome overlapped rendering
+  --ripple-background: var(--tw-secondary-bg-subtle);
+  opacity: .9;
+
+  & .title {
+    color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &.active {
+    opacity: 1;
+    color: var(
+        --ax-theme-nav-tabs-active-color,
+        var(--ax-nav-tabs-active-color)
+      );
+    
+    .icon {
+      color: var(
+        --ax-theme-nav-tabs-icon-active-color,
+        var(--ax-nav-tabs-icon-active-color)
+      );
+      background-color: var(
+        --ax-theme-nav-tabs-icon-active-bg,
+        var(--ax-nav-tabs-icon-active-bg)
+      );
+    }
+  }
+  &:hover {
+    opacity: 1;
+    .icon {
+      color: var(
+        --ax-theme-nav-tabs-icon-hover-color,
+        var(--ax-nav-tabs-icon-hover-color)
+      );
+      background-color: var(
+        --ax-theme-nav-tabs-icon-hover-bg,
+        var(--ax-nav-tabs-icon-hover-bg)
+      );
+    }
+  }
+}
+
+.ripple {
+  border-radius: 0!important;
+  background-color:  rgb(var(--tw-slate-950-rgb) / 40%);
+}

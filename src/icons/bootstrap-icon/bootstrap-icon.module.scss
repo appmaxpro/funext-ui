@@ -1,0 +1,12 @@
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
+@import "bootstrap-icons";
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: inherit;
+}
+
+.icon::before {
+  scale: .8;
+}

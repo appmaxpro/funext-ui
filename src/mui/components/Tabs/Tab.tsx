@@ -1,0 +1,93 @@
+import React from "react";
+
+// framer-motion
+import { m } from "framer-motion";
+
+// utils
+import classnames from "classnames";
+import { twMerge } from "tailwind-merge";
+import objectsToString from "../../utils/objectsToString";
+
+// context
+import { useTailwindTheme } from "../../theme";
+import { useTabs, setActive, setIsInitial } from "./TabsContext";
+
+// types
+import type { value, className, disabled, children } from "../../types/components/tabs";
+
+
+export interface TabProps extends React.ComponentProps<"li"> {
+  value: value;
+  className?: className;
+  activeClassName?: className;
+  disabled?: disabled;
+  children: children;
+}
+
+export const Tab = React.forwardRef<HTMLLIElement, TabProps>(
+  ({ value, className, activeClassName, disabled, children, ...rest }, ref) => {
+    // 1. init
+    const { tab: tabTheme } = useTailwindTheme();
+    const {
+      defaultProps,
+      styles: { base },
+    } = tabTheme;
+    const { state, dispatch } = useTabs();
+    const { id, active, indicatorProps } = state;
+
+    // 2. set default props
+    disabled = disabled ?? defaultProps.disabled;
+    className = twMerge(defaultProps.className || "", className);
+    activeClassName = twMerge(defaultProps.activeClassName || "", activeClassName);
+
+    // 3. set styles
+    const tabClasses = twMerge(
+      classnames(objectsToString(base.tab.initial), {
+        [objectsToString(base.tab.disabled)]: disabled,
+        [activeClassName]: active === value,
+      }),
+      className,
+    );
+    const indicatorClasses = twMerge(
+      classnames(objectsToString(base.indicator)),
+      indicatorProps?.className ?? "",
+    );
+
+    // 4. return
+    return (
+      <li
+        {...rest}
+        ref={ref}
+        role="tab"
+        className={tabClasses}
+        onClick={(e) => {
+          const onClick = rest?.onClick;
+
+          if (typeof onClick === "function") {
+            setActive(dispatch as any, value);
+            setIsInitial(dispatch as any, false);
+            onClick(e);
+          }
+
+          setIsInitial(dispatch as any, false);
+          setActive(dispatch as any, value);
+        }}
+        data-value={value}
+      >
+        <div className="z-20 text-inherit">{children}</div>
+        {active === value && (
+          <m.div
+            {...indicatorProps}
+            transition={{ duration: 0.5 }}
+            className={indicatorClasses}
+            layoutId={id}
+          />
+        )}
+      </li>
+    );
+  },
+);
+
+Tab.displayName = "Mux.Tab";
+
+export default Tab;

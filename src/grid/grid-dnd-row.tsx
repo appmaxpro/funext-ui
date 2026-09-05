@@ -1,0 +1,161 @@
+/**
+ * @title Row Reorder
+ */
+import React, { useEffect } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+
+import { Box, clsx } from "../mui";
+import { MaterialIcon } from "../icons/material-icon";
+
+import * as TYPES from "./types";
+
+import styles from "./grid.module.scss";
+import { fontSize, styled } from "@mui/system";
+
+const GridDNDRowContext = React.createContext<any>(null);
+
+export interface GridDNDBodyProps extends Pick<TYPES.GridState, "rows"> {
+  children: React.ReactNode;
+  style?: any;
+  className?: string;
+  onRowMove?: TYPES.GridRowProps["onMove"];
+  onRowMoveStart?: TYPES.GridRowProps["onMoveStart"];
+  as?: React.ElementType;
+}
+
+function getStyle(style: any) {
+  const { transform } = style;
+  if (transform) {
+    const [, X] = transform
+      .slice("translate(".length, transform.length - 1)
+      .split(",")
+      .map((x: string) => x.trim());
+    const axisLockX = `translate(0px, ${X})`;
+    return {
+      ...style,
+      transform: axisLockX,
+    };
+  }
+  return style;
+}
+
+export function GridDNDContainer(props: GridDNDBodyProps) {
+  const {
+    className,
+    style,
+    children,
+    rows,
+    as: Component = "div",
+    onRowMove,
+    onRowMoveStart,
+  } = props;
+
+  function handleDragEnd(result: any) {
+    const { source, destination } = result;
+    // serve as row move end
+    onRowMoveStart && onRowMoveStart(null);
+
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+    if (result.destination.index === result.source.index) {
+      return;
+    }
+    const dragIndex = source.index;
+    const hoverIndex = destination.index;
+
+    onRowMove && onRowMove(rows[dragIndex], rows[hoverIndex]);
+  }
+  return (
+    <DragDropContext onDragStart={onRowMoveStart} onDragEnd={handleDragEnd}>
+      <Droppable droppableId="GRID_ROWS" type="GRID_ROW" direction="vertical">
+        {(provided) => (
+          <Component
+            className={className}
+            data-drop
+            style={style}
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+          >
+            {children as any}
+            {provided.placeholder}
+          </Component>
+        )}
+      </Droppable>
+    </DragDropContext>
+  );
+}
+
+export function GridDNDRow(
+  props: TYPES.GridRowProps & { Component?: React.ElementType },
+) {
+  const {
+    index,
+    className,
+    children,
+    data,
+    onDoubleClick,
+    renderer,
+    Component = "div",
+    selected,
+    ...rest
+  } = props;
+  const rendererProps = renderer ? rest : ({} as any);
+  return (
+    <Draggable draggableId={`${data.key}`} index={index}>
+      {(provided, snapshot) => (
+        <GridDNDRowContext.Provider value={provided.dragHandleProps}>
+          <Component
+            {...provided.draggableProps}
+            ref={(ref: HTMLElement | null) => provided.innerRef(ref)}
+            style={getStyle(provided.draggableProps.style)}
+            className={clsx(
+              styles.row,
+              styles.dndRow,
+              className,
+              selected && styles.selected,
+            )}
+            data-dragging={snapshot.isDragging ? "true" : undefined}
+          >
+            {children}
+            <Box as="span" d="hidden" {...provided.dragHandleProps} />
+            {snapshot.isDragging && <DisableScrolling />}
+          </Component>
+        </GridDNDRowContext.Provider>
+      )}
+    </Draggable>
+  );
+}
+
+function DisableScrolling() {
+  useEffect(() => {
+    const cb = (e: WheelEvent) => e.preventDefault();
+
+    window.addEventListener("wheel", cb, { passive: false });
+    return () => {
+      window.removeEventListener("wheel", cb);
+    };
+  }, []);
+  return null;
+}
+
+export function GridDNDColumn({
+  className,
+  style,
+  onClick,
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const props = React.useContext(GridDNDRowContext);
+  return (
+    <Box
+      d="flex"
+      className={className}
+      onClick={onClick}
+      style={{ fontSize: "1.25em", ...props?.style, ...style }}
+      {...props}
+      tabIndex={-1}
+    >
+      <MaterialIcon icon="drag_indicator" />
+    </Box>
+  );
+}
