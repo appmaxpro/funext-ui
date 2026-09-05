@@ -1,6 +1,6 @@
-# Axelor-UI
+# Funext-UI
 
-React components by Axelor.
+React components by Funext.
 
 ## Prerequisite
 
@@ -27,13 +27,13 @@ $ corepack prepare pnpm@latest-8 --activate
 Install the library :
 
 ```bash
-$ pnpm add @axelor/ui
+$ pnpm add @funext/ui
 ```
 
 You can import from the main bundle:
 
 ```js
-import { Button } from '@axelor/ui';
+import { Button } from '@funext/ui';
 ```
 
 Only `core` components are available from the main bundle.
@@ -41,9 +41,9 @@ Only `core` components are available from the main bundle.
 For others components (`grid`, `kanban`, `gantt`, ...), you have to import the component directly :
 
 ```js
-import Grid from '@axelor/ui/grid';
+import Grid from '@funext/ui/grid';
 
-import Kanban from '@axelor/ui/kanban';
+import Kanban from '@funext/ui/kanban';
 ```
 
 ## Development
