@@ -1,4 +1,4 @@
-import { Box, IconButton, Tooltip, useRtl, useScreenSize } from "@funext/ui";
+import { Box, IconButton, Tooltip, useRtl, useScreenSize } from "~/ui";
 import { useMemo } from "react";
 import type { Navigation, NavRoute } from "~/utils";
 import { Icons } from "~/components/shared/icons";

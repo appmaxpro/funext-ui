@@ -1,0 +1,257 @@
+import { useId, useCallback, useEffect } from "react";
+import { useMediaQuery, useTheme } from "~/ui";
+import { map } from "../map/MapView";
+import { formatTime, getStatusColor } from "../utils/formatter";
+import { useCatchCallback } from "~/hooks/use-catch";
+import { findFonts } from "../map/mapUtil";
+import { useAttrPref } from "../utils/preferences";
+import { useDeviceStore } from "../store/devices";
+import { mapIconKey } from "../map/preloadImages";
+import maplibregl from "maplibre-gl";
+
+const MapPositionsNew = ({
+  positions,
+  onMapClick,
+  onMarkerClick,
+  showStatus,
+  selectedPosition,
+  titleField,
+}: any) => {
+  const id = useId();
+  const clusters = `${id}-clusters`;
+  const selected = `${id}-selected`;
+
+  const theme = useTheme();
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
+  const iconScale = useAttrPref("iconScale", desktop ? 0.75 : 1);
+
+  const devices = useDeviceStore((state) => state.items);
+  const selectedDeviceId = useDeviceStore((state) => state.selectedId);
+
+  const mapCluster = useAttrPref("mapCluster", true);
+  const directionType = useAttrPref("mapDirection", "selected");
+
+  const createFeature = (
+    devices: any,
+    position: any,
+    selectedPositionId: any,
+  ) => {
+    const device = devices[position.deviceId];
+    let showDirection;
+    switch (directionType) {
+      case "none":
+        showDirection = false;
+        break;
+      case "all":
+        showDirection = position.course > 0;
+        break;
+      default:
+        showDirection =
+          selectedPositionId === position.id && position.course > 0;
+        break;
+    }
+    return {
+      id: position.id,
+      deviceId: position.deviceId,
+      name: device.name,
+      fixTime: formatTime(position.fixTime, "seconds"),
+      category: mapIconKey(device.category),
+      color: showStatus
+        ? position.attributes.color || getStatusColor(device.status)
+        : "neutral",
+      rotation: position.course,
+      direction: showDirection,
+    };
+  };
+
+  const onMouseEnter = () => (map.getCanvas().style.cursor = "pointer");
+  const onMouseLeave = () => (map.getCanvas().style.cursor = "");
+
+  const onMapClickCallback = useCallback(
+    (event) => {
+      if (!event.defaultPrevented && onMapClick) {
+        onMapClick(event.lngLat.lat, event.lngLat.lng);
+      }
+    },
+    [onMapClick],
+  );
+
+  const onMarkerClickCallback = useCallback(
+    (event) => {
+      event.preventDefault();
+      const feature = event.features[0];
+      if (onMarkerClick) {
+        onMarkerClick(feature.properties.id, feature.properties.deviceId);
+      }
+    },
+    [onMarkerClick],
+  );
+
+  const onClusterClick = useCatchCallback(
+    async (event) => {
+      event.preventDefault();
+      const features = map.queryRenderedFeatures(event.point, {
+        layers: [clusters],
+      });
+      const clusterId = features[0].properties.cluster_id;
+      const zoom = await map.getSource(id).getClusterExpansionZoom(clusterId);
+      map.easeTo({
+        center: features[0].geometry.coordinates,
+        zoom,
+      });
+    },
+    [clusters],
+  );
+
+  useEffect(() => {
+    map.addSource(id, {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: [],
+      },
+      cluster: mapCluster,
+      clusterMaxZoom: 14,
+      clusterRadius: 50,
+    });
+    map.addSource(selected, {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: [],
+      },
+    });
+    [id, selected].forEach((source) => {
+      map.addLayer({
+        id: source,
+        type: "symbol",
+        source,
+        filter: ["!has", "point_count"],
+        layout: {
+          "icon-image": "{category}-{color}",
+          "icon-size": iconScale,
+          "icon-allow-overlap": true,
+          "text-field": `{${titleField || "name"}}`,
+          "text-allow-overlap": true,
+          "text-anchor": "bottom",
+          "text-offset": [0, -2 * iconScale],
+          "text-font": findFonts(map),
+          "text-size": 12,
+          "symbol-sort-key": ["get", "id"],
+        },
+        paint: {
+          "text-halo-color": "white",
+          "text-halo-width": 2,
+        },
+      });
+      map.addLayer({
+        id: `direction-${source}`,
+        type: "symbol",
+        source,
+        filter: ["all", ["!has", "point_count"], ["==", "direction", true]],
+        layout: {
+          "icon-image": "direction",
+          "icon-size": iconScale,
+          "icon-allow-overlap": true,
+          "icon-rotate": ["get", "rotation"],
+          "icon-rotation-alignment": "map",
+        },
+      });
+
+      map.on("mouseenter", source, onMouseEnter);
+      map.on("mouseleave", source, onMouseLeave);
+      map.on("click", source, onMarkerClickCallback);
+    });
+    map.addLayer({
+      id: clusters,
+      type: "symbol",
+      source: id,
+      filter: ["has", "point_count"],
+      layout: {
+        "icon-image": "background",
+        "icon-size": iconScale,
+        "text-field": "{point_count_abbreviated}",
+        "text-font": findFonts(map),
+        "text-size": 14,
+      },
+    });
+
+
+    const markers = positions.map((p) =>
+        new maplibregl.Marker().setLngLat([p.longitude, p.latitude]).addTo(map),
+      ) as maplibregl.Marker[]; // MUST include this
+
+    map.on("mouseenter", clusters, onMouseEnter);
+    map.on("mouseleave", clusters, onMouseLeave);
+    map.on("click", clusters, onClusterClick);
+    map.on("click", onMapClickCallback);
+
+    return () => {
+      map.off("mouseenter", clusters, onMouseEnter);
+      map.off("mouseleave", clusters, onMouseLeave);
+      map.off("click", clusters, onClusterClick);
+      map.off("click", onMapClickCallback);
+
+      markers.forEach(m => m.remove());
+
+      if (map.getLayer(clusters)) {
+        map.removeLayer(clusters);
+      }
+
+      [id, selected].forEach((source) => {
+        map.off("mouseenter", source, onMouseEnter);
+        map.off("mouseleave", source, onMouseLeave);
+        map.off("click", source, onMarkerClickCallback);
+
+        if (map.getLayer(source)) {
+          map.removeLayer(source);
+        }
+        if (map.getLayer(`direction-${source}`)) {
+          map.removeLayer(`direction-${source}`);
+        }
+        if (map.getSource(source)) {
+          map.removeSource(source);
+        }
+      });
+    };
+  }, [mapCluster, clusters, onMarkerClickCallback, onClusterClick]);
+
+  useEffect(() => {
+    [id, selected].forEach((source) => {
+      map.getSource(source)?.setData({
+        type: "FeatureCollection",
+        features: positions
+          .filter((it) => devices.hasOwnProperty(it.deviceId))
+          .filter((it) =>
+            source === id
+              ? it.deviceId !== selectedDeviceId
+              : it.deviceId === selectedDeviceId,
+          )
+          .map((position) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [position.longitude, position.latitude],
+            },
+            properties: createFeature(
+              devices,
+              position,
+              selectedPosition && selectedPosition.id,
+            ),
+          })),
+      });
+    });
+  }, [
+    mapCluster,
+    clusters,
+    onMarkerClick,
+    onClusterClick,
+    devices,
+    positions,
+    selectedPosition,
+  ]);
+
+  return null;
+};
+
+export default MapPositionsNew;

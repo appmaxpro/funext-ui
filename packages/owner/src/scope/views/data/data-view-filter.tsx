@@ -1,14 +1,15 @@
-import CalendarIcon from "@funext/icons/CalendarToday";
-import CheckIcon from "@funext/icons/Check";
-import CheckBoxOutlineBlankIcon from "@funext/icons/CheckBoxOutlineBlank";
-import { Button, Menu } from "@funext/ui";
+import { Button, Menu } from "~/ui";
 import React from "react";
+import { Icons } from "~/components";
 import {
   CalendarPopup,
-  formatRangeDates
+  formatRangeDates,
+  getCurrenSelection,
+  getPastSelection,
 } from "~/components/shared/calendar";
 import { Toolbar } from "~/components/shared/toolbar";
-import { DATE_RANGES } from "~/utils/constant";
+import { i18n, isPlainObject } from "~/utils";
+import { DATE_RANGES, EMPTY_DEPS } from "~/utils/constant";
 
 const menuProps = {
   style: {
@@ -44,10 +45,23 @@ const menuProps = {
   },
 };
 
-export function DateFilterFilter() {
-  const [value, setValue] = React.useState<
-    string | Date | number | [Date, Date] | null
-  >("this_month");
+export function DateFilterButton({
+  value,
+  onChange,
+}: {
+  value: any;
+  onChange: (value: any) => void;
+}) {
+  const options = React.useMemo(() => {
+    return [
+      ...getCurrenSelection(),
+      "sep",
+      ...getPastSelection(),
+      "sep",
+      { value: "range", title: i18n.get("Custom") },
+    ];
+  }, EMPTY_DEPS);
+
   const toolRef = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState<boolean>(false);
 
@@ -64,58 +78,66 @@ export function DateFilterFilter() {
 
   const setValues = React.useCallback(
     (values: any) => {
-      setValue(values);
       onVisibleFn();
+      onChange(values);
     },
-    [setValue, onVisibleFn],
+    [onChange, onVisibleFn],
   );
 
   const onClick = React.useCallback(
     (e: React.SyntheticEvent<HTMLButtonElement>) => {
-      const key = e.currentTarget.dataset["key"];
-      console.log("data key:", key);
-      if (key === "custom") {
+      const target = e.target as HTMLElement;
+      const currentTarget = (e.currentTarget as HTMLElement) ?? target;
+      const value = currentTarget.dataset["value"] ?? target.dataset["value"];
+
+      console.log("data key:", value);
+      if (value === "range") {
         setVisible(true);
-      } else if (key) {
-        setValue(key);
+      } else if (value) {
+        onChange(value);
       }
       //console.log(e.currentTarget)
     },
-    [setValue],
+    [onChange, setVisible],
   );
 
-  const dateKey =
-    typeof value === "string"
-      ? value
-      : value && Array.isArray(value)
-        ? "custom"
-        : "this_month";
+  const dateKey = React.useMemo(() => {
+    const kk = typeof value === "string" 
+    ? value 
+    : (value ?? "this_month");
+
+    if (typeof kk === "string" && kk in DATE_RANGES) {
+      return (
+        options.find(
+          (option) => isPlainObject(option) && option.value === kk,
+        ) as any
+      )?.title;
+    }
+    return formatRangeDates(value);
+  }, [value]);
 
   const menuItems = React.useMemo(
     () =>
-      Object.keys(DATE_RANGES).map((key) => (
-        <Menu.Item
-          key={key}
-          data-key={key}
-          onClick={onClick}
-          startIcon={
-            dateKey === key ? (
-              <CheckIcon className="text-primary" size="sm" />
-            ) : (
-              <CheckBoxOutlineBlankIcon
-                className="text-transparent"
-                size="sm"
-              />
-            )
-          }
-        >
-          {DATE_RANGES[key as keyof typeof DATE_RANGES]}
-        </Menu.Item>
-      )),
+      options.map((option, index) =>
+        typeof option === "string" ? (
+          <Menu.Divider key={index} />
+        ) : (
+          <Menu.Item key={index} data-value={option.value} onClick={onClick}>
+            <Menu.Prefix>
+              {dateKey === option.value ? (
+                <Icons.Check className="text-primary" size="sm" />
+              ) : (
+                <Icons.Blank className="text-transparent" size="sm" />
+              )}
+            </Menu.Prefix>
+            {option.title}
+          </Menu.Item>
+        ),
+      ),
     [dateKey, onClick],
   );
   return (
-    <Toolbar ref={toolRef}>
+    <Toolbar ref={toolRef} variant="dense">
       <Menu
         sticky="partial"
         listProps={menuProps.listProps}
@@ -126,16 +148,16 @@ export function DateFilterFilter() {
         constrainSize
         fallbackPlacements={["bottom"]}
         style={menuProps.style}
+        sideOffset={10}
         //</Toolbar>fallbackPlacements={["tob", "bottom"]}
       >
         <Menu.Trigger>
-          <Button variant="ghost" color="inherit" style={{ width: 252 }}>
-            <div className="flex gap-2 flex-nowrap grow">
-              <CalendarIcon />
-              <span className="grow" style={{ textAlign: "justify" }}>
-                {dateLabel}
-              </span>
-            </div>
+          <Button variant="ghost" className="gap-2 flex-nowrap" size="sm" color="inherit" style={{ maxWidth: 252, minWidth: 200 }}>
+            <Icons.AccessAlarm />
+            <span className="grow" style={{ textAlign: "justify" }}>
+              {dateLabel}
+            </span>
+            
           </Button>
         </Menu.Trigger>
 
@@ -149,12 +171,11 @@ export function DateFilterFilter() {
           present={present}
           setOpen={onVisibleFn}
           reference={toolRef.current}
-          dateLabel={dateLabel in DATE_RANGES ? undefined : dateLabel}
           mode="range"
           value={
             !visible ? undefined : Array.isArray(value) ? value : [new Date()]
           }
-        /> 
+        />
       )}
     </Toolbar>
   );

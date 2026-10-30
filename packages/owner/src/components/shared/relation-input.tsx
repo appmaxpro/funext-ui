@@ -1,5 +1,5 @@
 import { createRelationSelectorConfig, RelationSelector } from './relation-selector.js';
-import type { SxComponentProps } from '@funext/ui';
+import type { SxComponentProps } from '~/ui';
 
 /**
  * Single relation input component

@@ -4,7 +4,7 @@ import {
   Drawer,
   Popover,
   useScreenSize,
-} from "@funext/ui";
+} from "~/ui";
 import React from "react";
 import { EMPTY_OBJECT, getElementRef } from "~/utils";
 import { composeRefs } from "~/utils/compose-ref";
@@ -16,9 +16,12 @@ export const isItemDisabled = (comp: any) =>
   comp.props?.["area-hidden"];
 
 export type TriggerAction = {
-  ref: (ref: HTMLElement | null) => void;
   open: (open?: boolean) => void;
   toggle: () => void;
+};
+
+type TriggerActionCallback = TriggerAction & {
+  ref: (ref: HTMLElement | null) => void;
 };
 
 type PopoverProps = React.ComponentProps<typeof Popover>;
@@ -40,7 +43,7 @@ export type PopupSlots = {
   popoverProps?: Partial<PopoverProps>;
   dialogProps?: Partial<DialogProps>;
   drawerProps?: Partial<DrawerProps>;
-}
+};
 
 export type PopupProps = {
   display?: Display;
@@ -54,7 +57,7 @@ export type PopupProps = {
 
 export function Popup({
   display = "popover",
-  triggerRef: triggerRefProp,
+  triggerRef,
   renderContent,
   slots,
   children,
@@ -65,27 +68,34 @@ export function Popup({
   const [present, setPresent] = React.useState(false);
 
   const [reference, setReference] = React.useState<HTMLElement | null>(null);
+  //const mTriggerRef = React.useRef<TriggerAction>(null);
 
-  const mTriggerRef = React.useCallback(() => {
-    return {
-      ref: setReference,
+  const mTriggerAction = React.useMemo(() => {
+    const result = {
+      //ref: setReference,
       open: setOpen,
       toggle: () => setOpen((open) => !open),
     };
+    //mTriggerRef.current = result;
+    return () => result;
   }, [setReference, setOpen]);
 
-  React.useImperativeHandle(triggerRefProp, mTriggerRef);
+  React.useImperativeHandle(triggerRef, mTriggerAction, [mTriggerAction]);
 
   const renderPopup = () => {
-    const options = { display, close: ()=>  setOpen(false)}
-    return renderContent(options)
+    const options = { display, close: () => setOpen(false) };
+    return renderContent(options);
   };
-  
+
   if (display === "raw") {
     return renderPopup();
   }
 
-  const trigger = children && <Trigger ref={mTriggerRef}>{children}</Trigger>;
+  const trigger = children && (
+    <Trigger triggerCp={mTriggerAction} ref={setReference}>
+      {children}
+    </Trigger>
+  );
 
   if (!present && !open) {
     return trigger;
@@ -103,10 +113,9 @@ export function Popup({
           placement="bottom-end"
           onPresent={setPresent}
           reference={reference}
-          
           {...popoverProps}
         >
-          {renderPopup}
+          {renderPopup()}
         </Popover>
       </>
     );
@@ -125,7 +134,7 @@ export function Popup({
           strategy="fixed"
           {...dialogProps}
         >
-          {renderPopup}
+          {renderPopup()}
         </Dialog>
       </>
     );
@@ -145,7 +154,7 @@ export function Popup({
         strategy="fixed"
         {...drawerProps}
       >
-        {renderPopup}
+        {renderPopup()}
       </Drawer>
     </>
   );
@@ -170,24 +179,27 @@ export function DynamicPopup({
 }
 
 const Trigger = React.forwardRef<
-  () => TriggerAction,
-  React.ComponentPropsWithRef<any>
->(({ children }, forwardedRef) => {
-  const ref = (forwardedRef as any)?.() as  TriggerAction;
-  console.log("TriggerTrigger :: ref:", ref)
-  //React.useImperativeHandle
-  const mergedRef = composeRefs(ref?.ref, getElementRef(children));
+  HTMLElement,
+  React.ComponentPropsWithRef<any> & {
+    triggerCp: () => TriggerAction;
+  }
+>(({ children, triggerCp }, forwardedRef) => {
+  //const mTriggerRef = React.useRef<TriggerAction>(null);
+  //const triggerAction = React.useMemo<TriggerAction>(triggerCp, [triggerCp])
+  //React.useImperativeHandle(forwardedRef, triggerCp, [triggerCp]);
+  const mergedRef = composeRefs(forwardedRef, getElementRef(children));
 
   const onMyClick = React.useCallback(
-    (event: any) => {
+    (event: Event) => {
       event.stopPropagation();
-      if(isItemDisabled(children)){
+      event.preventDefault();
+      if (isItemDisabled(children)) {
         //return;
       }
-      console.log("TriggerTrigger :: toggle:", ref?.toggle)
-      ref?.toggle();
+      //console.log("TriggerTrigger :: toggle:", ref?.toggle)
+      triggerCp?.().toggle();
     },
-    [mergedRef],
+    [triggerCp],
   );
 
   const onClick = composeEventHandlers(children?.onClick, onMyClick);

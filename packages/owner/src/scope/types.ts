@@ -1,5 +1,5 @@
 import type {
-  BaeFormViewBlock,
+  BaseFormViewBlock,
   Block,
   Container,
   DataContext,
@@ -25,7 +25,7 @@ import type {
   WidgetBlock,
 } from "~/utils";
 import type { SetStateAction } from "react";
-import type { SxComponentProps } from "@funext/ui";
+import type { SxComponentProps } from "~/ui";
 
 import type { Identifier } from "~/utils";
 import type { ActionExecuter, ActionHandler } from "./action";
@@ -45,6 +45,7 @@ export type ListParams = FilterParams & {
   total: number;
   offset: number;
   pages: number;
+  ready: boolean;
 };
 
 export type PageInfo = {
@@ -70,11 +71,7 @@ export interface ListModifiers {
 
 export type ResourceContext = {
   tab: Tab;
-  dataStore: DataStore;
-  //setSearch:
-  doSearch: (option?: SearchOptions) => Promise<SearchResult>;
-  query?: ListParams;
-  modifiers?: ListModifiers;
+  dataStore?: DataStore;
 };
 
 
@@ -106,7 +103,7 @@ export type TabProps = {
   recordId?: boolean;
   showSingle?: boolean;
   dataStore?: DataStore;
-  listParams?: ListParams;
+  query?: ListParams;
   actions?: {
     state: any;
     binding?():any;
@@ -186,6 +183,11 @@ export type TabState = {
 
   view: ResourceView;
   block: ViewBlock;
+  pending?: boolean ;
+  pendingResult?: {
+    error: any;
+    retry: ()=> void;
+  };
 };
 
 export type TabListener = (state: TabState) => void;
@@ -248,8 +250,9 @@ export type Tab = {
 
   filterSidebar?: Container<FilterWidget>;
 
-  filterForm?: BaeFormViewBlock<FilterFormView>;
+  filterForm?: BaseFormViewBlock<FilterFormView>;
 
+  filterDefaults?: Record<string, any>;
   /**
    * Options for the popup views.
    *
@@ -290,9 +293,9 @@ export type Tab = {
       search?: Record<string, string>,
     ) => DataRecord[];
   };
-
-
 };
+
+
 
 export type TabOptions = {
   type?: string;
@@ -304,12 +307,15 @@ export type TabOptions = {
   context?: any;
   tab?: boolean;
   force?: boolean;
+  title?: string;
   onGridSearch?: (
     records: DataRecord[],
     page: SearchPage,
     search?: Record<string, string>,
   ) => DataRecord[];
 };
+
+
 
 /**
  * Open the given view with the optional view route and props.
@@ -369,18 +375,18 @@ export type PartialTabState = Omit<TabState, 'name' | 'title' | 'type' | 'mode' 
 
 }*/
 
-export interface ViewStore {
+export interface TabsStore {
   readonly pages: Tab[];
   readonly popups: Tab[];
-  setState(tabId: string, state: SetStateAction<Partial<TabState>>): void;
+  setState(tabId: string, state: SetStateAction<Partial<TabState>>, replace?: boolean): void;
   updateState(tabId: string, state: PartTabState, type?: string): void;
   setTabProps(tabId: string, props: TabProps, type?: string): void;
   find(tabId: string): Tab | undefined;
-  get active(): string;
+  replace(tab: Tab): void;
+  readonly active: string;
+  readonly current?: Tab;
   openTab: OpenTab;
   closeTab: CloseTab;
-  readonly current?: Tab;
-  //setTabState()
 }
 
 export interface WidgetBlockProps extends SxComponentProps {
@@ -556,6 +562,7 @@ type ActionRef = {
   getContext?(): DataContext;
   readonly evalContext?: DataContext;
   readonly fields?: Property[];
+  doSearch?(option?: SearchOptions):Promise<SearchResult>;
   search?(option?: SearchOptions): Promise<SearchResult>;
 };
 
@@ -563,27 +570,36 @@ type SaveState = (props: TabProps, save?: boolean) => void;
 
 type ViewExtProps = {
   dataStore: DataStore;
-  evalContext: DataContext;
-  getContext(): DataContext;
-  
+  evalContext: DataContext;  
+  getContext(): DataContext;  
   setProps(props: TabProps):void;
   getProps():TabProps; 
   addSaveState(saveState:SaveState): ()=> void;
-  bind(ref: ActionRef): void;
+  bind(ref: ActionRef): () => void;
+  originContext: {
+    context: DataContext;
+    evalContext: DataContext;
+    fields: Property[];
+  }
 }
 
 type ViewListExtProps = ViewExtProps &{
   search?(option?: SearchOptions): Promise<SearchResult>;
-  query?: ListParams;
-  modifiers?: ListModifiers;
-  filterTabs?: FilterTabs;
-  filterSidebar?: Container<FilterWidget>;
-  filterForm?: FormView;
-  sideOpen?: boolean;
-  formOpen?: boolean;
-  setSideOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
-  setFormOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
-  filterDefaults?: any;
+  filters: {
+    query?: ListParams;
+    modifiers?: ListModifiers;
+    filterTabs?: FilterTabs;
+    filterSidebar?: Container<FilterWidget>;
+    filterForm?: BaseFormViewBlock<FilterFormView>;
+    filterDefaults?: any;
+    formActive?: boolean;
+    sideActive?: boolean;
+    sideOpen?: boolean;
+    formOpen?: boolean;
+    setSideOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
+    setFormOpen: React.Dispatch<React.SetStateAction<boolean | undefined>>;
+  },
+  
   doSearch: (option?: SearchOptions | undefined) => Promise<SearchResult>
 }
 

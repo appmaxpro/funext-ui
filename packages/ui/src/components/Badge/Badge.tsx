@@ -90,6 +90,7 @@ const BadgeBadge = styled("span", {
     padding: "0 6px",
     height: RADIUS_STANDARD * 2,
     borderRadius: RADIUS_STANDARD,
+    
     zIndex: 1, // Render the badge on top of potential ripples.
     transition: theme.transitions.create("transform", {
       easing: theme.transitions.easing.easeInOut,
@@ -192,6 +193,7 @@ const BadgeBadge = styled("span", {
       {
         props: { invisible: true },
         style: {
+          visibility: 'hidden',
           transition: theme.transitions.create("transform", {
             easing: theme.transitions.easing.easeInOut,
             duration: theme.transitions.duration.leavingScreen,
@@ -220,7 +222,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       components = {},
       componentsProps = {},
       children,
-      shape: shapeProp = "square",
+      shape: shapeProp = "circle",
       color: colorProp = "default",
       invisible: invisibleProp = false,
       max: maxProp = 99,

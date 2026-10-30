@@ -1,13 +1,10 @@
 "use client";
 import * as React from "react";
-import Button, { type ButtonProps } from "@funext/ui/Button";
-import Menu, { type MenuProps } from "@funext/ui/Menu";
-import Divider from "@funext/ui/Divider";
-import Box, { type FlexProps, Flex } from "@funext/ui/Box";
 import { AccountPreview, type AccountPreviewProps } from "./account-preview";
 import { SignOutButton, type SignOutButtonProps } from "./sign-out-button";
 import { AccountPopupFooter } from "./account-popup-footer";
 import { useSession } from "~/hooks/use-session";
+import { Divider, Flex, Menu, type ButtonProps, type FlexProps, type MenuProps } from "~/ui";
 
 interface AccountLocaleText {
   accountSignInLabel: string;
@@ -80,6 +77,7 @@ export interface AccountProps {
 function Account(props: AccountProps) {
   const { slots, slotProps } = props;
   const { data } = useSession();
+
   if (!data?.user) {
     return null;
   }
@@ -91,34 +89,23 @@ function Account(props: AccountProps) {
     <AccountPreview variant="condensed" {...slotProps?.preview} />
   );
   accountContent = (
-    <React.Fragment>
-      {slots?.preview ? (
-        <slots.preview />
-      ) : (
-        <AccountPreview variant="condensed" {...slotProps?.preview} />
-      )}
-      {slots?.menu ? (
-        <slots.menu open={open} trigger={trigger} {...slotProps?.menu} />
-      ) : (
-        <Menu trigger={trigger} id="account-menu" {...slotProps?.menu}>
-          {slots?.menuContent ? (
-            <slots.menuContent {...slotProps?.menuContent} />
-          ) : (
-            <Flex direction="column" {...slotProps?.menuContent}>
-              <Flex direction={"column"}>
-                <AccountPreview variant="expanded" />
-              </Flex>
-              <Divider />
-              <AccountPopupFooter>
-                <SignOutButton {...slotProps?.signOutButton} />
-              </AccountPopupFooter>
-            </Flex>
-          )}
-        </Menu>
-      )}
-    </React.Fragment>
+    <Menu
+      trigger={<div className="relative">{trigger}</div>}
+      strategy="fixed"
+      id="account-menu"
+      hoverProps={{ enabled: false }}
+    >
+      <Flex direction="column" {...slotProps?.menuContent}>
+        <Flex direction={"column"}>
+          <AccountPreview variant="expanded" />
+        </Flex>
+        <Divider />
+        <AccountPopupFooter>
+          <SignOutButton {...slotProps?.signOutButton} />
+        </AccountPopupFooter>
+      </Flex>
+    </Menu>
   );
-
   return accountContent;
 }
 

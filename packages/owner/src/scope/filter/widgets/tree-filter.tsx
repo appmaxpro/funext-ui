@@ -13,7 +13,7 @@ import {
   List,
   Collapse,
   Text,
-} from "@funext/ui";
+} from "~/ui";
 
 
 import { ItemFilterHeader } from "./item-filter";

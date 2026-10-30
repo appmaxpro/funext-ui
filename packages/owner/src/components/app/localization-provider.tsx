@@ -1,20 +1,19 @@
 /* eslint-disable import/no-relative-packages */
-import * as React from "react";
 import dayjs from "dayjs";
+import * as React from "react";
 
-import ar from "../../assets/l10n/ar.json";
-import en from "../../assets/l10n/en.json";
 import "dayjs/locale/ar";
 import "dayjs/locale/en";
-import { i18n } from "~/utils/i18n";
-import { useLocalStorage } from "~/hooks/use-local-storage";
 import {
   LocalizationContext,
   useLocalization,
   type Languages,
   type Localization,
 } from "~/context";
-import { session } from "~/utils/session";
+import { useLocalStorage } from "~/hooks/use-local-storage";
+import { i18n } from "~/utils/i18n";
+import ar from "../../assets/l10n/ar.json";
+import en from "../../assets/l10n/en.json";
 
 export const languages = {
   ar: { data: ar, country: "SA", name: "العربية" },

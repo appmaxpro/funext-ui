@@ -127,6 +127,18 @@ export const getStatusColor = (status) => {
   }
 };
 
+export const getMarkerStatusColor = (status) => {
+  switch (status) {
+    case 'online':
+      return 'success';
+    case 'offline':
+      return 'error';
+    case 'unknown':
+    default:
+      return 'neutral';
+  }
+};
+
 export const getBatteryStatus = (batteryLevel) => {
   if (batteryLevel >= 70) {
     return 'success';

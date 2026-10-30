@@ -1,5 +1,5 @@
 
-import { Button as TogglePrimitive, cn, cva, type VariantProps } from "@funext/ui";
+import { Button as TogglePrimitive, cn, cva, type VariantProps } from "~/ui";
 
 import type React from "react";
 

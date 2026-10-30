@@ -1,4 +1,4 @@
-import { cn } from "@funext/ui";
+import { cn } from "~/ui";
 import * as React from "react";
 import { i18n, type WidgetBlock } from "~/utils";
 import { getEmptyWidgetState } from "../form";

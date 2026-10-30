@@ -1,0 +1,95 @@
+
+@keyframes slide-in-from-left {
+	from {
+		translate: -100vw 0;
+	}
+}
+@keyframes slide-in-from-right {
+	from {
+		translate: 100vw 0;
+	}
+}
+@keyframes slide-out-to-left {
+	to {
+		translate: -100vw 0;
+	}
+}
+@keyframes slide-out-to-right {
+	to {
+		translate: 100vw 0;
+	}
+}
+@keyframes scale-up {
+	from {
+		scale: 0;
+	}
+}
+@keyframes scale-down {
+	to {
+		scale: 0;
+	}
+}
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@layer content {
+	article {
+		font-style: normal;
+	}
+}
+
+::view-transition-group(*) {
+	animation-duration: 1s;
+}
+
+@view-transition {
+	navigation: auto;
+}
+
+html:active-view-transition-type(forwards, backwards) {
+	:root {
+		view-transition-name: none;
+	}
+	article {
+		view-transition-name: content;
+	}
+	.pagination {
+		view-transition-name: pagination;
+	}
+}
+
+html:active-view-transition-type(forwards) {
+	&::view-transition-old(content) {
+		animation-name: slide-out-to-left;
+	}
+	&::view-transition-new(content) {
+		animation-name: slide-in-from-right;
+	}
+}
+
+html:active-view-transition-type(backwards) {
+	&::view-transition-old(content) {
+		animation-name: slide-out-to-right;
+	}
+	&::view-transition-new(content) {
+		animation-name: slide-in-from-left;
+	}
+}
+
+html:active-view-transition-type(reload) {
+	&::view-transition-old(root) {
+		animation-name: fade-out, scale-down;
+	}
+	&::view-transition-new(root) {
+		animation-delay: 0.25s;
+		animation-name: fade-in, scale-up;
+	}
+}

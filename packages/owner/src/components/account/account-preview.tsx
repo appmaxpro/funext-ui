@@ -1,14 +1,9 @@
-import * as React from 'react';
-import Avatar, { type AvatarProps } from '@funext/ui/Avatar';
-import { type SxProps } from '@funext/ui/styles';
-import Text from '@funext/ui/Text';
-import Tooltip from '@funext/ui/Tooltip';
-import {Flex} from '@funext/ui/Box';
-import IconButton, { type IconButtonProps } from '@funext/ui/IconButton';
-import { useSession } from '~/hooks/use-session';
-import { Icons } from '../shared';
+import * as React from "react";
+import { useSession } from "~/hooks/use-session";
+import { Icons } from "../shared";
+import { Avatar, Flex, IconButton, Text, Tooltip, type AvatarProps, type IconButtonProps, type SxProps } from "~/ui";
 
-export type AccountPreviewVariant = 'condensed' | 'expanded';
+export type AccountPreviewVariant = "condensed" | "expanded";
 
 export interface AccountPreviewSlots {
   /**
@@ -61,6 +56,8 @@ export interface AccountPreviewProps {
    * The prop used to customize the styling of the preview
    */
   sx?: SxProps;
+
+  ref?: any;
 }
 
 /**
@@ -75,31 +72,53 @@ export interface AccountPreviewProps {
  * - [AccountPreview API](https://mui.com/toolpad/core/api/account-preview)
  */
 function AccountPreview(props: AccountPreviewProps) {
-  const { slots, variant = 'condensed', slotProps, open, handleClick, sx } = props;
-  const {data} = useSession()
-  if (!data?.user) {
-    return null;
-  }
+  const {
+    ref,
+    slots,
+    variant = "condensed",
+    slotProps,
+    open,
+    handleClick,
+    sx,
+  } = props;
+  const { data } = useSession();
 
-  const user = data.user;
+  const user = data?.user ?? ({} as any);
 
   const avatarContent = slots?.avatar ? (
     <slots.avatar />
   ) : (
     <Avatar
-      src={user.image || ''}
-      alt={user.name || user.login || ''}
-      sx={{ height: variant === 'expanded' ? 48 : 32, width: variant === 'expanded' ? 48 : 32 }}
+      src={user.image || ""}
+      alt={user.name || user.login || ""}
+      sx={{
+        height: variant === "expanded" ? 36 : 28,
+        width: variant === "expanded" ? 36 : 28,
+      }}
       {...slotProps?.avatar}
     />
   );
 
-  if (variant === 'expanded') {
+  if (variant === "expanded") {
     return (
-      <Flex direction="row" justifyContent="space-between" sx={{ py: 1, px: 2, gap: 2, ...sx }}>
-        <Flex direction="row" justifyContent="flex-start" spacing={2} overflow="hidden">
+      <Flex
+        ref={ref}
+        direction="row"
+        justifyContent="space-between"
+        sx={{ py: 1, px: 2, gap: 2, ...sx }}
+      >
+        <Flex
+          direction="row"
+          justifyContent="flex-start"
+          spacing={2}
+          overflow="hidden"
+        >
           {avatarContent}
-          <Flex direction="column" justifyContent="space-evenly" overflow="hidden">
+          <Flex
+            direction="column"
+            justifyContent="space-evenly"
+            overflow="hidden"
+          >
             <Text variant="body2" fontWeight="bolder" noWrap>
               {user.name}
             </Text>
@@ -116,7 +135,7 @@ function AccountPreview(props: AccountPreviewProps) {
               size="sm"
               onClick={handleClick}
               {...slotProps?.moreIconButton}
-              sx={{ alignSelf: 'center', ...slotProps?.moreIconButton?.sx }}
+              sx={{ alignSelf: "center", ...slotProps?.moreIconButton?.sx }}
             >
               <Icons.MoreVert size="sm" />
             </IconButton>
@@ -126,28 +145,34 @@ function AccountPreview(props: AccountPreviewProps) {
   }
 
   return (
-    <Tooltip content={user.name}>
-      {slots?.avatarIconButton ? (
-        <slots.avatarIconButton {...slotProps?.avatarIconButton} />
-      ) : (
-        <Flex sx={{ py: 0.5, ...sx }}>
-          <IconButton
-            onClick={handleClick}
-            //aria-label={localeText?.accountPreviewIconButtonLabel}
-            size="sm"
-            aria-controls={open ? 'account-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
-            {...slotProps?.avatarIconButton}
-            sx={{ width: 'fit-content', margin: '0 auto', ...slotProps?.avatarIconButton?.sx }}
-          >
-            {avatarContent}
-          </IconButton>
-        </Flex>
-      )}
-    </Tooltip>
+    <div className="contents" ref={ref}>
+      <Tooltip content={user.name ?? ""}>
+        {slots?.avatarIconButton ? (
+          <slots.avatarIconButton {...slotProps?.avatarIconButton} />
+        ) : (
+          <Flex sx={{ py: 0.5, ...sx }}>
+            <IconButton
+              ref={ref}
+              onClick={handleClick}
+              //aria-label={localeText?.accountPreviewIconButtonLabel}
+              size="sm"
+              aria-controls={open ? "account-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              {...slotProps?.avatarIconButton}
+              sx={{
+                width: "fit-content",
+                margin: "0 auto",
+                ...slotProps?.avatarIconButton?.sx,
+              }}
+            >
+              {avatarContent}
+            </IconButton>
+          </Flex>
+        )}
+      </Tooltip>
+    </div>
   );
 }
-
 
 export { AccountPreview };

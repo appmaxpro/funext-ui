@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import {Flex} from '@funext/ui/Box';
+import {Flex} from '~/ui';
 import { ThemeSwitcher } from './theme-switcher';
 
 /**

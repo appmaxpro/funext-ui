@@ -1,23 +1,17 @@
 import { get, isPlainObject } from "lodash";
 
-import { i18n } from "~/utils/i18n";
-import { moment } from "~/utils/l10n";
-import { session } from "~/utils/session";
-import format from "~/utils/format";
-import {
-  toCamelCase,
-  toKebabCase,
-  toSnakeCase,
-  toTitleCase,
-} from "~/utils/names";
 import { LoadingCache } from "~/utils/cache";
+import format from "~/utils/format";
 
-import type { DataContext, DataRecord, Property } from "./data-types";
-import { EMPTY_IMAGE, EMPTY_OBJECT } from "./constant";
-import h from "./h";
-import type { BlockRenderProps } from "./block-types";
 import type React from "react";
+import type { BlockRenderProps } from "./block-types";
+import { EMPTY_IMAGE, EMPTY_OBJECT } from "./constant";
+import type { DataContext, DataRecord, Property } from "./data-types";
 import { evalCode } from "./eval";
+import h from "./h";
+import app from "./app";
+import { LinkedList } from "./linked-list";
+import { createEvalHelpers } from "./eval-helpers";
 
 export type EvalContextOptions = {
   valid?: (name?: string) => boolean;
@@ -54,132 +48,11 @@ export function createEvalContext(
   options?: EvalContextOptions,
 ) {
   const {
-    execute = () => Promise.resolve(),
-    valid = () => true,
-    helpers: moreHelpers = {},
-    components,
     log,
     //...others
   } = (options ?? {}) as any;
-
-  const helpers = {
-    _field(name: string) {
-      return options?.field?.(name);
-    },
-    get _readonly() {
-      return options?.readonly === true;
-    },
-    get _required() {
-      return options?.required === true;
-    },
-    get _popup() {
-      return options?.popup === true;
-    },
-    get _record(): DataRecord {
-      return (options?.record ?? helpers._ctx._record)
-        ? helpers._ctx._record
-        : helpers._ctx;
-    },
-    get _ctx(): DataContext {
-      return isRef(context) ? context.current : (context as DataContext);
-    },
-    get _exec() {
-      return options?.execute ?? execute;
-    },
-    _extends(...sources: any[]) {
-      return Object.assign({}, helpers, ...sources);
-    },
-    _get(path: string) {
-      const value = get(helpers._record, path);
-      return value;
-    },
-
-    _valid(name?: string) {
-      return valid(name);
-    },
-    _invalid(name?: string) {
-      return !valid(name);
-    },
-
-    _fmt(name: string, props?: any) {
-      const value = helpers._get(name);
-      return format(value, {
-        context: helpers._record,
-        props: props
-          ? {
-              ...helpers._field(name),
-              ...props,
-            }
-          : helpers._field(name),
-      });
-    },
-    _format(value: any, name: string, props?: any) {
-      return format(value, {
-        context: helpers._record,
-        props: props
-          ? {
-              ...helpers._field(name),
-              ...props,
-            }
-          : helpers._field(name),
-      });
-    },
-    _media(fieldName: string, params: string) {
-      let record = helpers._record;
-      let model = helpers._ctx._model;
-      const data = {model} as any; 
-      if (fieldName) {
-        const field = helpers._field(fieldName);
-        if (field) {
-          if(field.target) {
-            record = helpers._get(fieldName) || EMPTY_OBJECT;
-            model = field.target;
-            data.model = model;
-          } else {
-            const value = helpers._get(fieldName);
-            if(field.pType === 'string' || typeof value === 'string' ) {
-              return value || EMPTY_IMAGE;
-            }
-          }
-        } else {
-          data.field = fieldName;
-        }
-      }
-
-      const id = record.id || 0;
-      const version = record.version || record.$version || 0;
-      data.id = String(id);
-      const search = new URLSearchParams(data);
-
-      return id
-        ? `rest/media?${search.toString()}${params ? `&${params}` : ""}`
-        : EMPTY_IMAGE;
-    },
-    _execute(action: string, actionContext?: DataContext) {
-      const ctx = isPlainObject(actionContext) ? actionContext : null;
-      const { _exact, ...otherCtx } = ctx ?? EMPTY_OBJECT;
-      return helpers._exec(action, {
-        context: ctx
-          ? { ...(!_exact && helpers._ctx), ...otherCtx }
-          : helpers._ctx,
-        exact: !!_exact,
-      });
-    },
-    _action(name: string) {
-      return (e: React.MouseEvent<HTMLElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        helpers._exec(name, {
-          context: helpers._ctx,
-        });
-      };
-    },
-    _log: console.log,
-    ...moreHelpers,
-    ...components,
-    //...others,
-  };
-
+    
+  const helpers = createEvalHelpers(context, options);
 
   return createProxy(context, helpers, log);
 }
@@ -191,15 +64,26 @@ function createProxy(
 ) {
   type Context = DataContext & typeof helpers;
 
-  let parentContext: unknown = undefined;
+  //let parentContext: unknown = undefined;
   const hasRef = isRef(ref);
+  const linked = new LinkedList<DataContext>();
+  linked.append(hasRef ? ref.current : ref);
 
-  return new Proxy<Context>((hasRef ? ref.current : ref) as Context, {
+  const extend = (data: DataRecord) => {
+    let current = { ...linked.head, ...data };
+    linked.append(current);
+
+    return () => {
+      linked.delete(current);
+    };
+  };
+
+  return new Proxy<Context>(linked.head as Context, {
     get(target, p, receiver) {
       if (log) {
         console.log("Proxy get:", p);
       }
-      const ctx = hasRef ? ref.current : ref;
+      const ctx = linked.head!;
       if (p === "_parent") {
         return (
           Reflect.get(ctx, "_parent", receiver) ??
@@ -209,10 +93,11 @@ function createProxy(
 
       const record = helpers._record;
 
-      let value =
-        Reflect.get(record, p, receiver) ??
-        get(record, p) ??
-        Reflect.get(ctx, p, receiver);
+      let value = record
+        ? (Reflect.get(record, p, receiver) ??
+          get(record, p) ??
+          Reflect.get(ctx, p, receiver))
+        : Reflect.get(ctx, p, receiver);
 
       if (value != null) {
         if (p === "id" && value && value === 0) {
@@ -226,7 +111,11 @@ function createProxy(
               : createSubEvalContext(receiver, sub);
         } else if (p in helpers) {
           if (log) console.log("Proxy get helper value:", p);
-          return helpers[p as keyof typeof helpers];
+          value = helpers[p as keyof typeof helpers];
+        } else if (p === "_app") {
+          value = app;
+        } else if (p === "_extends") {
+          value = extend;
         }
       }
 
@@ -255,29 +144,41 @@ export function createSubEvalContext<Context extends object>(
   const hasRef = isRef(sub);
   const ctx = hasRef ? sub.current : sub;
 
-  let hasRec = "_record" in ctx;
+  const list = new LinkedList<DataContext>();
+  list.append(ctx);
+
+  const extend = (data: DataRecord) => {
+    const current = { ...list.head, ...data };
+    list.append(current);
+    return () => {
+      list.delete(current);
+    };
+  };
+
+  let hasRec = !!(ctx as any)._record;
   let set: (prop: string | symbol, value?: any) => any | undefined;
 
   if (hasRec && "_set" in ctx && typeof ctx._set === "function") {
     set = ctx._set as (prop: string | symbol, value?: any) => any;
   }
 
-  return new Proxy<Context>(sub as Context, {
+  return new Proxy<Context>(ctx as Context, {
     get(target, p, receiver) {
       /*
       if (typeof p === "string" && p.startsWith("_") && Reflect.has(sub, p)) {
         return Reflect.get(sub, p, receiver);
       }
       */
-      const ctx = hasRef ? (target as Ref<Context>).current : target;
+      const ctx = list.head!;
       let value;
       try {
         if (hasRec) {
-          value =
-            Reflect.get((ctx as any)._record, p, receiver) ??
-            get((ctx as any)._record, p);
-        } else {
-          value = Reflect.get(ctx, p, receiver) ?? get(target, p);
+          const record = (ctx as any)._record;
+          value = Reflect.get(record, p, receiver) ?? get(record, p);
+        }
+
+        if (value === undefined) {
+          value = Reflect.get(ctx, p, receiver) ?? get(ctx, p);
         }
       } catch (e) {}
 
@@ -287,8 +188,11 @@ export function createSubEvalContext<Context extends object>(
             sub === target || sub === ctx || sub === receiver || sub === context
               ? receiver
               : createSubEvalContext(receiver, sub);
+        } else if (p === "_extends") {
+          value = extend;
+        } else {
+          value = Reflect.get(context, p, receiver);
         }
-        value = Reflect.get(ctx, p, receiver);
       }
       return value;
     },

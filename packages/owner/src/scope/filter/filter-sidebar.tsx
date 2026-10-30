@@ -1,29 +1,21 @@
+import { Collapse, Dialog, Drawer, Stack, Text, useLazyRef } from "~/ui";
 import React from "react";
+import { useViewContext } from "~/context";
 import {
   deepEqual,
   EMPTY_ARRAY,
-  EMPTY_OBJECT,
   EMPTY_RECORD,
   i18n,
-  type Container,
-  type ListViewBlock,
-  type Widget,
+  type ListViewBlock
 } from "~/utils";
 import {
-  convertValues,
-  getFilterForEvent,
-  getItemFieldType,
-  toggleFilterValue,
-} from "./widgets/utils";
-import {
-  getDefaults,
   type FilterField,
   type FilterFieldDateOptions,
   type FilterFieldOptions,
   type FilterFieldRelation,
   type FilterGroup,
   type FilterWidget,
-  type NodeSearchFilterField,
+  type NodeSearchFilterField
 } from "~/utils/filter";
 import type { FilterProps } from "./types";
 import {
@@ -33,30 +25,21 @@ import {
   SelectFilter,
   TreeFilter,
 } from "./widgets";
-import { Collapse, Dialog, Drawer, Stack, Text, useLazyRef } from "@funext/ui";
 import { FilterTag } from "./widgets/item-filter";
-import { useResourceContext, useViewContext } from "~/context";
+import {
+  convertValues,
+  getFilterForEvent,
+  getItemFieldType
+} from "./widgets/utils";
 const panelProps = {
   sx: {
     minWidth: 300,
   },
 };
 export function FilterSidebar({ mode }: { mode?: "list" | "drawer" | "tags" }) {
-  //const [filter, setFilter] = React.useState<Record<string, any>>({});
   const viewContext = useViewContext<ListViewBlock>();
-  const { modifiers, query } = useResourceContext();
-  const {
-    filterSidebar: container,
-    //query,
-    //modifiers,
-    dataStore,
-    sideOpen,
-    setSideOpen,
-    filterDefaults,
-    search,
-  } = viewContext;
-
-  const hasRef = React.useRef(false);
+  const { filters, search } = viewContext;
+  const { filterSidebar: container, filterDefaults, modifiers, query, sideOpen, setSideOpen } = filters;
 
   const items = React.useMemo(
     () =>
@@ -77,23 +60,21 @@ export function FilterSidebar({ mode }: { mode?: "list" | "drawer" | "tags" }) {
   );
 
   const setFilter = React.useCallback(
-    (data?: any) => {
-      hasRef.current = true;
-      modifiers?.updateFilters?.(data);
+   async (data?: any) => {
+      
+      const promise = modifiers?.updateFilters?.(data) as any;
+      console.log("FilterTabsBar FilterSidebar promise:", promise)
+      const work = await promise as any;
+      console.log("FilterTabsBar FilterSidebar await:", work)
+      if(work === false) {
+        return;
+      }
+
+      search?.();
     },
-    [modifiers?.updateFilters],
+    [modifiers, search],
   );
 
-  React.useEffect(() => {
-    if (hasRef.current) {
-      const tm = setTimeout(() => {
-        hasRef.current = false;
-        console.log("FilterSidebar: filter:", query?.filter);
-        search?.();
-      }, 1000);
-      return () => clearTimeout(tm);
-    }
-  }, [query?.filter, search]);
 
   if (!items) {
     return null;
@@ -103,9 +84,14 @@ export function FilterSidebar({ mode }: { mode?: "list" | "drawer" | "tags" }) {
     return (
       <Drawer
         open={sideOpen}
-        onOpenChange={(open: boolean, event:Event, reasons:any) => {
+        onOpenChange={(open: boolean, event: Event, reasons: any) => {
           setSideOpen(open);
-          console.log("DialogContent onOpenChange: event:", event,", reasons:", reasons )
+          console.log(
+            "DialogContent onOpenChange: event:",
+            event,
+            ", reasons:",
+            reasons,
+          );
         }}
         direction="end"
         strategy="fixed"
@@ -132,7 +118,7 @@ export function FilterSidebar({ mode }: { mode?: "list" | "drawer" | "tags" }) {
 
   if (mode === "list") {
     return (
-      <Stack className="overflow-auto gap-2 ">
+      <Stack className="overflow-auto gap-2">
         <Sidebar
           mode="list"
           items={items}
@@ -335,9 +321,10 @@ const FilterComponent = React.memo(function FilterComponent(
   return null;
 });
 
-const TagComponent = React.memo(function TagComponent(
-  {divider, ...props}: FilterProps<FilterGroup | FilterField>,
-) {
+const TagComponent = React.memo(function TagComponent({
+  divider,
+  ...props
+}: FilterProps<FilterGroup | FilterField>) {
   return (
     <FilterTag
       {...props}

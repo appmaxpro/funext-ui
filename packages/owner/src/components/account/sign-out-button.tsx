@@ -1,10 +1,9 @@
 import * as React from "react";
-import Button, { type ButtonProps } from "@funext/ui/Button";
 import { i18n } from "~/utils/i18n";
 import { ConfirmSignOut } from "./confirm-sign-out";
-import { session } from "~/utils/session";
 import { useSession } from "~/hooks/use-session";
 import { Icons } from "../shared";
+import { Button, type ButtonProps } from "~/ui";
 
 export type SignOutButtonProps = ButtonProps & {
   text?: React.ReactNode;

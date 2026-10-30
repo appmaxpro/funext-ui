@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCallback } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "~/utils";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 
 type FetchReturn<F extends (...args :Parameters<F>) => ReturnType<F>> = {
     state?: "loading" | "error";
     isLoading: boolean;
     error?: any;
-    signal: AbortSignal;
+    signal?: AbortSignal;
     fetch: F;
 }
 
@@ -19,11 +19,13 @@ export function useAsyncFetch<F extends (...args :Parameters<F>) => ReturnType<F
     error?: any;
   }>(EMPTY_OBJECT);
 
-  const abortRef = useLazyRef(()=> new AbortController());
+  const abortRef = useLazyRef<AbortController|null>(()=> new AbortController());
   
   useEffect(() => {
     return () => {
-      abortRef.current?.abort();
+      const ctr = abortRef.current;
+      abortRef.current = null;
+      ctr?.abort();
     };
   }, EMPTY_ARRAY);
 
@@ -45,11 +47,11 @@ export function useAsyncFetch<F extends (...args :Parameters<F>) => ReturnType<F
       });
       try {
         const data = await search(...arg);
+        if (!abortRef.current) return;
 
         setState(()=> EMPTY_OBJECT);
 
         return data;
-
       } catch (error) {
         setState((prev) => ({ ...prev, error, state: "error" }));
         throw error
@@ -64,6 +66,6 @@ export function useAsyncFetch<F extends (...args :Parameters<F>) => ReturnType<F
     state,
     isLoading: state === 'loading',
     error,
-    signal: abortRef.current.signal
+    signal: abortRef.current?.signal
   }
 }

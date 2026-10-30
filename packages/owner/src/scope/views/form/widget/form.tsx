@@ -1,14 +1,11 @@
+import type { SxComponentProps } from "~/ui";
 import * as React from "react";
+import type { IFormContext } from "~/scope";
 import { EMPTY_ARRAY } from "~/utils";
-import { useFormSate } from "../form";
-import { useFormContext } from "~/context";
-import { useSingleClickHandler } from "./hooks";
 import { composeRefs } from "~/utils/compose-ref";
 import { getFieldErrors } from "../form-handler";
-import type { SxComponentProps } from "@funext/ui/src";
-import type { IFormContext } from "~/scope";
 import { useAfterActions } from "../hooks";
-import type { FormWithActionHandler } from "../shared";
+import { useSingleClickHandler } from "./hooks";
 
 interface FormProps extends SxComponentProps {
   form: IFormContext;

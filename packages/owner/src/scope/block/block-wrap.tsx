@@ -22,6 +22,7 @@ export function wrapBlock(
   meta?: BlockMeta,
   ctx?: any
 ) {
+  console.log("Handler wrapBlock block: ", {block, meta})
   if (meta) {
     if (isPlainObject(meta)) {
       const wrap = meta.wrap;

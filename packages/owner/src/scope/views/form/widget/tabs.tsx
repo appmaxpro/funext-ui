@@ -9,7 +9,7 @@ import {
 } from "~/utils";
 import { Pane, StatelessWidget } from "./pane";
 import { useFormWidgetState, WidgetStateProvider } from "./root";
-import { Box, Flex, InViewProvider, useLazyRef, clsx } from "@funext/ui";
+import { Box, Flex, InViewProvider, useLazyRef, clsx } from "~/ui";
 import { isEqual } from "lodash";
 import { Tabs } from "~/components/shared";
 import { getBlockItems, meta, type IFieldState } from "~/scope";

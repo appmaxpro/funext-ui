@@ -1,30 +1,35 @@
-// eslint-disable-next-line import/no-unresolved
-import mapboxglRtlTextUrl from "@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min?url";
-import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import maplibregl from "maplibre-gl";
 import { googleProtocol } from "maplibre-google-maps";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useRef,
+  useLayoutEffect,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
+import { useTheme } from "~/ui";
 import { SwitcherControl } from "../switcher/switcher";
-import { useAttrPref, usePreference } from "../utils/preferences";
-
-import { useLocalStorage } from "~/hooks/use-local-storage";
 import { mapImages } from "./preloadImages";
 import useMapStyles from "./useMapStyles";
+import { useAsyncEffect } from "~/hooks/use-async-effect";
+import { useAttrPref, usePreference } from "../utils/preferences";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 
 const element = document.createElement("div");
 element.style.width = "100%";
 element.style.height = "100%";
 element.style.boxSizing = "initial";
 
-(maplibregl as any).setRTLTextPlugin(mapboxglRtlTextUrl);
 maplibregl.addProtocol("google", googleProtocol);
 
 export const map = new maplibregl.Map({
   container: element,
+  attributionControl: false,
 });
 
-type Listener = (ready: boolean) => void;
 let ready = false;
+type Listener = (ready: boolean) => void;
 const readyListeners = new Set<Listener>();
 
 const addReadyListener = (listener: Listener) => {
@@ -45,36 +50,17 @@ const initMap = async () => {
   if (ready) return;
   if (!map.hasImage("background")) {
     Object.entries(mapImages).forEach(([key, value]) => {
-      map.addImage(key, value as HTMLImageElement, {
+      console.log("addImage:", [key, value]);
+      map.addImage(key, value as any, {
         pixelRatio: window.devicePixelRatio,
       });
     });
   }
 };
 
-map.addControl(new maplibregl.NavigationControl());
-
-const switcher = new SwitcherControl(
-  () => updateReadyValue(false),
-  (styleId: any) => useLocalStorage("selectedMapStyle", styleId),
-  () => {
-    map.once("styledata", () => {
-      const waiting = () => {
-        if (!map.loaded()) {
-          setTimeout(waiting, 33);
-        } else {
-          initMap();
-          updateReadyValue(true);
-        }
-      };
-      waiting();
-    });
-  },
-);
-
-map.addControl(switcher as maplibregl.IControl);
-
 const MapView = ({ children }: { children: React.ReactNode }) => {
+  const theme = useTheme();
+
   const containerEl = useRef<HTMLElement>(null);
 
   const [mapReady, setMapReady] = useState(false);
@@ -84,12 +70,62 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
     "activeMapStyles",
     "locationIqStreets,locationIqDark,openFreeMap",
   );
-  const [defaultMapStyle] = useLocalStorage(
+  const [defaultMapStyle, setMapStyle] = useLocalStorage(
     "selectedMapStyle",
     usePreference("map", "locationIqStreets"),
   );
   const mapboxAccessToken = useAttrPref("mapboxAccessToken");
   const maxZoom = useAttrPref("web.maxZoom");
+
+  const switcher = useMemo(
+    () =>
+      new SwitcherControl(
+        () => updateReadyValue(false),
+        (styleId: any) => setMapStyle(styleId),
+        () => {
+          map.once("styledata", () => {
+            const waiting = () => {
+              if (!map.loaded()) {
+                setTimeout(waiting, 33);
+              } else {
+                initMap();
+                updateReadyValue(true);
+              }
+            };
+            waiting();
+          });
+        },
+      ),
+    [],
+  );
+
+  useAsyncEffect(async () => {
+    if (theme.direction === "rtl") {
+      (maplibregl as any).setRTLTextPlugin("/mapbox-gl-rtl-text.js");
+    }
+  }, [theme.direction]);
+
+  useEffect(() => {
+    const attribution = new maplibregl.AttributionControl({ compact: true });
+    const navigation = new maplibregl.NavigationControl();
+    map.addControl(
+      attribution,
+      theme.direction === "rtl" ? "bottom-left" : "bottom-right",
+    );
+    map.addControl(
+      navigation,
+      theme.direction === "rtl" ? "top-left" : "top-right",
+    );
+    map.addControl(
+      switcher as any,
+      theme.direction === "rtl" ? "top-left" : "top-right",
+    );
+    return () => {
+      map.removeControl(switcher as any);
+      map.removeControl(navigation);
+      map.removeControl(attribution);
+    };
+  }, [theme.direction, switcher]);
 
   useEffect(() => {
     if (maxZoom) {
@@ -109,7 +145,7 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
       ? filteredStyles
       : mapStyles.filter((s: any) => s.id === "osm");
     switcher.updateStyles(styles, defaultMapStyle);
-  }, [mapStyles, defaultMapStyle]);
+  }, [mapStyles, defaultMapStyle, activeMapStyles, switcher]);
 
   useEffect(() => {
     const listener = (ready: boolean) => setMapReady(ready);
@@ -130,12 +166,12 @@ const MapView = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div style={{ width: "100%", height: "100%" }} ref={containerEl as any}>
-      {React.Children.map(children, (child) => {
+      {React.Children.map(children, (child: any) => {
         if (
           React.isValidElement(child) &&
-          (child as any).type.handlesMapReady
+          (child.type as any).handlesMapReady
         ) {
-          return React.cloneElement(child as any, { mapReady });
+          return React.cloneElement(child, { mapReady } as any);
         }
         return mapReady ? child : null;
       })}

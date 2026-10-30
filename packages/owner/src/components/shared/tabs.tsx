@@ -12,7 +12,7 @@ import {
   ButtonBase,
   type SxComponentProps,
   type ButtonBaseProps,
-} from "@funext/ui";
+} from "~/ui";
 
 interface TabProps extends ButtonBaseProps {
   children: React.ReactNode;

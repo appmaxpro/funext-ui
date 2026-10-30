@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { map } from '../map/MapView';
 import { useDeviceStore } from '../store/devices';
-import { usePrevious } from '@funext/ui';
+import { usePrevious } from '~/ui';
 import { useAttrPref } from '../utils/preferences';
 import { useTrackerSession } from '../store/session';
 import { Dimensions } from '~/utils/constant';
 
-const MapSelectedDevice = ({ mapReady }: {mapReady: boolean}) => {
+const MapSelectedDevice = ({ mapReady }: {mapReady?: boolean}) => {
   const currentTime = useDeviceStore((state) => state.selectTime);
   const currentId = useDeviceStore((state) => state.selectedId);
   const previousTime = usePrevious(currentTime);

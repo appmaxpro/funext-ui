@@ -4,7 +4,7 @@ import { getWidgetStateForm } from "~/scope/utils";
 import format from "~/utils/format";
 import type { Field } from "~/utils/data-types";
 import { FieldControl } from "./root";
-import { Input } from "@funext/ui";
+import { Input } from "~/ui";
 import { registerWidgets } from "./hooks";
 
 const DateField = ({ state, field, id, type }: FieldProps) => {

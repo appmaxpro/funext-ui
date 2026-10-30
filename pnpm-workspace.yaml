@@ -3,7 +3,3 @@ packages:
 ignoredOptionalDependencies:
   - '@mui\material'
   - '@mui\x-charts'
-fetchRetryMintimeout:
-  - 2000
-fetchRetryMaxtimeout:
-  - 10000

@@ -1,4 +1,4 @@
-import { Box, Flex, type ButtonBaseProps } from "@funext/ui";
+import { Box, Flex, type ButtonBaseProps } from "~/ui";
 import React, {
   useCallback,
   useEffect,
@@ -17,7 +17,7 @@ import Tabs from "../../../components/shared/tabs";
 
 function useViewTabRoute() {
   const outletRoute = useActivePageRoute() || {};
-  const outletRouteRef = useRef<NavRoute>();
+  //const outletRouteRef = useRef<NavRoute>();
   return useMemo(() => {
     if (outletRoute) {
       let rootTabs: NavRoute = outletRoute;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { type FC, createElement, type ReactNode } from 'react';
-import { Card, Box, Text, Divider } from '@funext/ui';
+import { Card, Box, Text, Divider } from '~/ui';
 import { Link, type To } from 'react-router';
 
 interface Props {

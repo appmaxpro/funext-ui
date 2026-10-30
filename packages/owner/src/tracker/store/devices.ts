@@ -17,19 +17,18 @@ export const useDeviceStore = create<DeviceReducer>((set) => ({
   selectedId: null,
   selectedIds: [],
   uIDs: [],
-  
+  count: 0,
   refresh(action:TrackerDevice[]) {
-    set((state) => {
-      const items = {};
-      action.forEach((item) => state.items[item.id] = item);
-      return {items};
-    })
+    const items = {} as Record<number, TrackerDevice>;
+    action.forEach((item) => items[item.id] = item); 
+    set({selectedId: null, selectedIds: [], items, count: action.length})
+    
   },
   update(action:TrackerDevice[]) {
     set((state) => {
       const items = {...state.items};
       action.forEach((item) => items[item.id] = item);
-      return {items};
+      return {...state, items};
     })
   },
   
@@ -52,13 +51,14 @@ export const useDeviceStore = create<DeviceReducer>((set) => ({
   },
   remove(id:number) {
     function remove(state:TrackerDevices){
-      delete state.items[id];
+      const items = {...state.items};
+      delete items[id];
 
-      return state.items;
+      return {items, count: Object.keys(items).length}
     }
     set((state) => ({
       ...state, 
-      items: remove(state), 
+      ...remove(state), 
       selectedId: state.selectedId === id ? null : state.selectedId,
       selectedIds: state.selectedIds.filter((anId) => anId !== id)
     }))

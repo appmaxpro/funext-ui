@@ -1,16 +1,16 @@
 import { NavTabs, SingleTab } from "./nav-tabs";
 
 // import global utils for external apps
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { Box, Stack, useScreenSize } from "~/ui";
 import React from "react";
-import { useTabs } from "./use-tabs";
 import { useDialogs } from "~/hooks/use-dialogs";
+import { Outlet, useRouter } from "~/hooks/use-router";
 import { EMPTY_ARRAY } from "~/utils";
-import { Box, Flex, Stack, useScreenSize } from "@funext/ui";
-import type { CloseTab, Tab } from "../types";
-import { useRouter, Outlet } from "~/hooks/use-router";
 import { session } from "~/utils/session";
+import type { CloseTab, Tab } from "../types";
+import { useTabs } from "./use-tabs";
 
 export function TabLayout() {
   const { mdDown: isMobile } = useScreenSize();
@@ -22,7 +22,7 @@ export function TabLayout() {
   const tabsPortal =
     isMobile ||
     !tabbable ||
-    session.info?.application?.singlePage !== false ||
+    !session.info?.application?.singlePage ||
     router?.route.props?.custom === true
       ? null
       : tabContainer;
@@ -111,8 +111,8 @@ function PopupsProvider() {
   useEffect(() => {
     const newOpened = popups.filter((tab) => !map.has(tab.id));
 
-    const closedIds = map
-      .keys()
+    const closedIds = Array.from(map
+      .keys())
       .filter((key) => !popups.some((tab) => tab.id === key));
 
     closedIds.forEach((key) => {

@@ -15,7 +15,7 @@ export const useErrorStore = create<Errors>((set, get) => ({
     if(get().errors.length) {
       const errors = get().errors.slice(0);
       const error = errors.shift();
-      set((state) => ({errors}))
+      set({errors})
       return error;
     }
   }

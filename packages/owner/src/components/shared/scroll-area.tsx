@@ -1,4 +1,4 @@
-import { cn } from '@funext/ui';
+import { cn } from '~/ui';
 import * as ScrollAreaPrimitive from './react-scroll-area';
 import * as React from 'react';
 

@@ -1,32 +1,32 @@
 "use client";
 import * as React from "react";
 import {
-  useTheme,
-  type SxProps,
   Box,
-  Flex,
   Drawer,
   drawerClasses,
-  useScreenSize,
+  Flex,
   Panel,
+  useScreenSize,
+  useTheme,
   type BottomNavigationProps,
-} from "@funext/ui";
+  type SxProps,
+} from "~/ui";
 
+import { Account, type AccountProps } from "~/components/account/account";
+import { AppTitle, type AppTitleProps } from "~/components/app/app-title";
+import { HideOnScroll } from "~/components/shared/hide-on-scroll";
+import { NavigationSidebar } from "~/components/sidebar/navigation-sidebar";
+import { LayoutContext, useNavContext } from "~/context";
+import { Dimensions } from "~/utils/constant";
+import { isOutletRoute } from "~/utils/navigation";
+import type { Navigation, NavRoute, OutletRoute } from "~/utils/types";
 import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
 } from "../../utils/ui";
 import { AppBar, Toolbar } from "../shared/toolbar";
-import { HideOnScroll } from "~/components/shared/hide-on-scroll";
-import { LayoutContext, useNavContext } from "~/context";
-import { NavigationSidebar } from "~/components/sidebar/navigation-sidebar";
-import type { OutletRoute, Navigation, NavRoute } from "~/utils/types";
-import { Account, type AccountProps } from "~/components/account/account";
-import { AppTitle, type AppTitleProps } from "~/components/app/app-title";
-import { Dimensions } from "~/utils/constant";
-import { isOutletRoute } from "~/utils/navigation";
-import { MenuIon } from "./menu-icon";
 import { MemoAppBottomNavigation } from "./app-bottom-navigation";
+import { MenuIon } from "./menu-icon";
 
 export interface SidebarFooterProps {
   mini: boolean;
@@ -205,7 +205,7 @@ function AppLayout(props: AppLayoutProps) {
   const navigationContext = useNavContext();
   const navigation = React.useMemo(
     () => filterNavigation(routes ?? navigationContext),
-    [routes],
+    [routes, navigationContext],
   );
 
   const hideNavigation = hideNavigationProps || !navigation;
@@ -294,7 +294,7 @@ function AppLayout(props: AppLayoutProps) {
 
   const hasDrawerTransitions = smUp && (!miniSidebar || !mdDown);
   const AppBarExt = slots?.appBar;
-  const ToolbarActionsSlot = slots?.toolbarActions; //?? ToolbarActions;
+  const ToolbarActionsSlot = slots?.toolbarActions ;// ?? ToolbarActions;
   const ToolbarAccountSlot = slots?.toolbarAccount ?? Account;
   const SidebarFooterSlot = slots?.sidebarFooter ?? null;
   const BottomNavigationSlot =

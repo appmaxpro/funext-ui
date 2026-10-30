@@ -192,8 +192,8 @@ const SnackbarRoot = styled('div', {
     return [
       styles.root,
       styles[
-        `anchorOrigin${capitalize(ownerState.anchorOrigin.vertical)}${capitalize(
-          ownerState.anchorOrigin.horizontal,
+        `anchorOrigin${capitalize(ownerState.vertical)}${capitalize(
+          ownerState.horizontal,
         )}`
       ],
     ];
@@ -207,15 +207,24 @@ const SnackbarRoot = styled('div', {
     alignItems: 'center',
     variants: [
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.vertical === 'top',
-        style: { top: 8, [theme.breakpoints.up('sm')]: { top: 24 } },
+        props: {
+          vertical:  'top'
+        },
+        style: { 
+          top: 8, 
+          [theme.breakpoints.up('sm')]: { top: 24 } 
+        },
       },
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.vertical !== 'bottom',
+        props: {
+          vertical:  'bottom'
+        },
         style: { bottom: 8, [theme.breakpoints.up('sm')]: { bottom: 24 } },
       },
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.horizontal === 'start',
+        props: {
+          horizontal:  'start'
+        },
         style: {
           justifyContent: 'flex-start',
           left: 8,
@@ -225,7 +234,9 @@ const SnackbarRoot = styled('div', {
         },
       },
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.horizontal === 'end',
+        props: {
+          horizontal:  'end'
+        },
         style: {
           justifyContent: 'flex-end',
           right: 8,
@@ -235,7 +246,9 @@ const SnackbarRoot = styled('div', {
         },
       },
       {
-        props: ({ ownerState }:any) => ownerState.anchorOrigin.horizontal === 'center',
+        props: {
+          horizontal:  'center'
+        },
         style: {
           [theme.breakpoints.up('sm')]: {
             left: '50%',
@@ -283,7 +296,8 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
   const ownerState = {
     ...props,
     anchorOrigin: { vertical, horizontal },
-    
+    vertical,
+    horizontal,
     autoHideDuration,
     disableWindowBlurListener,
     TransitionComponent,
@@ -330,7 +344,10 @@ export const Snackbar = React.forwardRef<HTMLElement, SnackbarProps>(function Sn
   
   return (
     <ClickAwayListener onClickAway={onClickAway} {...ClickAwayListenerProps}>
-      <SnackbarRoot {...rootProps}>
+      <SnackbarRoot {...rootProps} 
+        data-horizontal={horizontal}
+        data-vertical={vertical}
+        >
         <TransitionComponent
           appear
           in={open}

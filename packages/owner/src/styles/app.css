@@ -5,6 +5,7 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @import "./theme.css";
+@import "./transition.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -54,12 +55,15 @@ body, html {
   font-variant-ligatures: contextual;
   -webkit-font-kerning: normal;
   font-kerning: normal;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0
 }
 
 @layer theme {
   body {
     @apply bg-bg text-fg;
-    height: 100%;
   }
 }
 
@@ -145,6 +149,12 @@ div[data-floating-ui-portal]{
 
 @keyframes moveFromRight {
 	from { transform: translateX(100%); }
+}
+
+.maplibregl-marker {
+    width: 25px;
+    height: 25px;
+    background-color: red; /* Temporary test color */
 }
 
 @source "../../../ui/src";

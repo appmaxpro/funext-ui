@@ -13,16 +13,16 @@ export const useCatchCallback = (method:(...args:any[])=> Promise<any>, deps:Rea
 };
 
 export const useShowNextError = ()=> {
-  const pop = useErrorStore((state) => state.pop);
+  const errorStore = useErrorStore();
+  const errors = useErrorStore((state) => state.errors);
   const [error, setError] = React.useState<any>();
   const onClose = React.useCallback((e: any) => {
       setError(null)
   }, [setError])
-
+  
   React.useEffect(()=> {
-    if (!error)
-        setError(pop())
-  }, [error, pop])
+    setError((prev:any) => !prev ? errorStore.pop() : prev)
+  }, [error, errors])
 
   return [
     error,

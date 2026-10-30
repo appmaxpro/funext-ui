@@ -98,7 +98,7 @@ export const ListItem = React.forwardRef<HTMLElement, ListItemProps>(
       <ListItemRoot
         
         {...(rest as any)}
-        as={component ?? li ? 'li' : 'div'}
+        as={li ? 'li' : component ?? 'div'}
         disabled={typeof as === "string" && disabled ? `true` : undefined}
         area-disabled={disabled ? "true" : undefined}
         active={typeof active === "boolean" ? undefined : active}

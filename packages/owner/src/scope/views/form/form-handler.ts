@@ -1,3 +1,4 @@
+import { useCallback, useMemo, type RefObject } from "react";
 import {
   EMPTY_ARRAY,
   i18n,
@@ -5,10 +6,8 @@ import {
   type DataRecord,
   type FieldErrors,
 } from "~/utils";
-import type { IFormContext, IWidgetState, Ref } from "../../types";
-import { useCallback, useMemo, useRef, type RefObject } from "react";
 import { DefaultActionHandler, type Schedule } from "../../action";
-import { useFormContext } from "~/context";
+import type { IFormContext, IWidgetState, Ref } from "../../types";
 
 export const getErrorsAsString = (errors: FieldErrors[]) => {
   const titles = new Set(
@@ -17,9 +16,7 @@ export const getErrorsAsString = (errors: FieldErrors[]) => {
         .filter(Boolean)
         .flatMap((v) => (typeof v === "object" ? Object.values(v) : v)),
     ),
-  )
-    .entries()
-    .toArray();
+  ).entries();
   /*
   titles.length &&
     alerts.error({
@@ -34,21 +31,23 @@ export const getErrorsAsString = (errors: FieldErrors[]) => {
 };
 
 export const getFieldErrors = (formState: IFormContext, fieldName?: string) => {
-  const { states, fields } = formState;
+  const { states, fields:iFields } = formState;
 
   const isHidden = function isHidden(s: IWidgetState): boolean {
     return Boolean(
       s.state.hidden ||
-        (s.name && fields.get(s.name)?.state?.hidden) ||
+        (s.name && iFields.get(s.name)?.state?.hidden) ||
         (s.parent && isHidden(s.parent as IWidgetState)),
     );
   };
+  
+  const widgets = Array.from(states.values());
+  const fields = Array.from(iFields.values());
 
   const serverErrors = fields
-    .values()
     .filter((k) => k.state.error?.error)
-    .filter((v) => states.values().some((w) => w.name === v.name))
-    .map((o) => states.values().find((w) => w.name === o.name))
+    .filter((v) => widgets.some((w) => w.name === v.name))
+    .map((o) => widgets.find((w) => w.name === o.name))
     .filter((s) => !isHidden(s!))
     .map((w) => {
       const error = i18n.get(
@@ -56,11 +55,9 @@ export const getFieldErrors = (formState: IFormContext, fieldName?: string) => {
         w?.block?.schema?.title || w?.name,
       );
       return { error } as FieldErrors;
-    })
-    .toArray();
+    });
 
   const errors = fields
-    .values()
     .filter((s) => fieldName === undefined || s.name === fieldName)
     .filter((s) => !isHidden(s))
     .filter(
@@ -69,7 +66,6 @@ export const getFieldErrors = (formState: IFormContext, fieldName?: string) => {
     )
     .map((s) => s.state.error?.error)
     .filter(Boolean)
-    .toArray()
     .concat(serverErrors as string[]);
 
   return errors.length ? errors : null;
@@ -155,13 +151,13 @@ class FromActionHandler extends DefaultActionHandler {
     return await this.options!.submit();
   }
 
-  async edit(record?: DataRecord | null) {}
+  async edit(_record?: DataRecord | null) {}
 
   async validate() {
     return await this.options!.validate?.();
   }
 
-  async refresh(target?: string) {
+  async refresh() {
     return await this.options!.refresh?.();
   }
 
@@ -172,4 +168,6 @@ export function useActionHandler(options: Ref<ActionOptions>) {
   return useMemo(() => new FromActionHandler(options), EMPTY_ARRAY);
 }
 
-function useFormHandler() {}
+export const createActionHandler = (options: Ref<ActionOptions>) => 
+  new FromActionHandler(options);
+

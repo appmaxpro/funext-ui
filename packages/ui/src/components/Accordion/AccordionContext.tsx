@@ -2,10 +2,11 @@ import React from "react";
 import type { ReactNode } from "react";
 import { AnimationProps } from "../../types/generic";
 export interface AccordionContextType {
-  open: boolean;
-  icon?: ReactNode;
+  open?: boolean|string;
   disabled?: boolean;
-  setOpen: (open: boolean) => void;
+  icon?: ReactNode;
+  
+  setOpen: React.Dispatch<React.SetStateAction<boolean|string|undefined>>;
 }
 
 export const AccordionContext = React.createContext<AccordionContextType | null>(null);

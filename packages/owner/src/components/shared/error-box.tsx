@@ -1,52 +1,52 @@
 import { i18n } from "~/utils/i18n";
-import { Box, Text, Button } from "@funext/ui";
+import { Box, Text, Button } from "~/ui";
 import { useCallback, useEffect, useRef } from "react";
 import { useDialogs } from "~/hooks/use-dialogs";
 
 export type ErrorProxProps = {
-  status: number;
+  status?: number;
   statusText?: string;
   error?: Error;
   detailsTitle?: string;
   resetTitle?: string;
+  onRetry?: () => void;
   onReset?: () => void;
 };
 
 export function ErrorBox({
-  status,
+  status=500,
   statusText,
   error,
   detailsTitle = i18n.get("Details"),
   resetTitle = i18n.get("Reset"),
   onReset,
+  onRetry = onReset,
 }: ErrorProxProps) {
   const message =
     (statusText ?? status === 404)
       ? i18n.get("Page not found")
       : i18n.get("Unexpected error occurred");
 
-  const isPrinted = useRef(false);
-
-  const { confirm, alert } = useDialogs();
+  const { alert } = useDialogs();
 
   useEffect(() => {
     console.error("Got error:", error)
     //console.error(error?.stack);
   }, [error]);
 
-  const handleDetails = useCallback(() => {
+  const showDetails = useCallback(() => {
     
     alert(
-      <Box as="pre" flex={1} py={3} px={2}>
+      <Box as="pre" flex={1} px={2}>
         {error?.stack ?? i18n.get("Something wont wrong.")}
       </Box>,
+      {title: " "}
     );
   }, [error?.stack]);
 
   return (
-    <Box d="flex" flex={1} alignItems="center" justifyContent="center" height="100%">
-      <Box textAlign="center">
-        <Box as="h1" fontWeight="bold">
+    <Box d="flex" flexDirection='column' flex={1} alignItems="center" justifyContent="center" height="100%" gap={2}>
+        <Box as="h2" fontWeight="bold" textAlign="center">
           {status}
         </Box>
         <Box as="p" fontSize={12}>
@@ -58,22 +58,20 @@ export function ErrorBox({
         <Box
           d="flex"
           g={2}
-          flex={1}
           alignItems="center"
           justifyContent="center"
         >
           {error && (
-            <Button color="secondary" onClick={handleDetails}>
+            <Button color="secondary" onClick={showDetails}>
               {detailsTitle}
             </Button>
           )}
-          {onReset && (
-            <Button color="primary" onClick={onReset}>
+          {onRetry && (
+            <Button color="primary" onClick={onRetry}>
               {resetTitle}
             </Button>
           )}
         </Box>
-      </Box>
     </Box>
   );
 }

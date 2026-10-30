@@ -1,3 +1,12 @@
-export {default as LoginPage} from'./login-page';
-export {default as ResetPasswordPage} from'./reset-password-page';
-export {default as AuthLayout} from'./auth-layout';
+import React from 'react';
+
+const AuthLayout = React.lazy(() => import("./auth-layout"));
+const LoginPage = React.lazy(() => import("./login-page"));
+const ResetPasswordPage = React.lazy(() => import("./reset-password-page"));
+
+export {
+  AuthLayout,
+  LoginPage,
+  ResetPasswordPage
+}
+

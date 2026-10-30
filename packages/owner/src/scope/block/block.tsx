@@ -1,18 +1,22 @@
 import * as React from "react";
-import {
-  useEvalDataContext,
-  useViewBlock
-} from "~/context";
+import { useEvalDataContext, useViewBlock } from "~/context";
 import {
   EMPTY_ARRAY,
   EMPTY_RECORD,
   isPlainObject,
+  isReactType,
   type Block,
-  type SxProps
+  type SxProps,
 } from "~/utils";
 
-import { defaultEvalContext, renderDefault, checkFrame } from "./block-defaults";
+import {
+  defaultEvalContext,
+  renderDefault,
+  checkFrame,
+  getMeta,
+} from "./block-defaults";
 import { evalFnProps, getHandlerRender } from "./block-processor";
+import { wrapBlock } from "./block-wrap";
 
 export type EvalProps = (block: Block, ctx: any) => SxProps;
 export type BlockFilter = (block: Block) => boolean;
@@ -23,8 +27,6 @@ export const RenderBlock = ({ block, ctx }: { block: Block; ctx: object }) => {
 
 RenderBlock.displayName = "RenderBlock";
 
-
-
 export function evalProps(block: Block, ctx: object) {
   if (!block || !isPlainObject(block)) {
     return undefined;
@@ -34,10 +36,8 @@ export function evalProps(block: Block, ctx: object) {
 }
 
 function evalPropsAndSlots(block: Block, ctx: object) {
-  
   let props = evalFnProps((block as any).evalProps ?? block.props, ctx);
   props = evalSlots(block, ctx, props);
-
 
   return props;
 }
@@ -57,15 +57,14 @@ export function getBlockItem(block: Block, index: number) {
   return items[index];
 }
 
-export function blockToArray(block?: Block|Block[]) {
-   if (!block) return EMPTY_ARRAY as Block[];
-   return Array.isArray(block) ? block : [block]
+export function blockToArray(block?: Block | Block[]) {
+  if (!block) return EMPTY_ARRAY as Block[];
+  return Array.isArray(block) ? block : [block];
 }
-
 
 export function getBlockItems(block?: Block) {
   if (!block) return EMPTY_ARRAY as Block[];
-  
+
   const items = Array.isArray(block.items)
     ? block.items.filter(Boolean)
     : block.items
@@ -87,7 +86,7 @@ export function renderBlockItems(
   }
 
   if (items.length === 1) {
-    return renderBlock(items[0], ctx)
+    return renderBlock(items[0], ctx);
     //return <RenderBlock block={items[0]} ctx={ctx} />;
   }
 
@@ -116,7 +115,11 @@ function evalAllProps(block: Partial<Block>, ctx: object, ref?: any): any {
   return children ? { ...inProps, children } : inProps;
 }
 
-function renderBlock(block: Block, ctx: object, ref?: any, handle?: boolean): React.ReactNode {
+function renderBlock(
+  block: Block,
+  ctx: object,
+  ref?: any,
+): React.ReactNode {
   if (!block || !isPlainObject(block)) {
     return block as React.ReactNode;
   }
@@ -125,19 +128,21 @@ function renderBlock(block: Block, ctx: object, ref?: any, handle?: boolean): Re
     return (block as any).text;
   }
 
-  checkFrame(block)
+  checkFrame(block);
 
-  if ('$rend' in block) {
+  if ("$rend" in block) {
     const rend = block.$rend;
     console.log("renderBlock has rend block:", block);
     if (ref) {
-      if (React.isValidElement(rend)) return React.cloneElement(rend, { ref });
+      if (React.isValidElement(rend)) 
+        return React.cloneElement(rend as any, { ref });
     }
     return rend;
   }
 
   if (block.render) {
-    return block.render({
+    const Render = block.render;
+    return React.createElement(Render, {
       ctx,
       ref,
       get props() {
@@ -145,7 +150,19 @@ function renderBlock(block: Block, ctx: object, ref?: any, handle?: boolean): Re
       },
     });
   }
-
+  const CP = block.tag;
+  const meta = isReactType(CP) ? getMeta(CP) : undefined;
+  if(meta) {
+    return wrapBlock(
+              block,
+              CP as React.ElementType,
+              () => evalAllProps(block, ctx, ref),
+              ref,
+              meta,
+              ctx
+            );
+  }
+  /*
   const handler = getHandlerRender(block);
   if (handler) {
     try {
@@ -155,16 +172,14 @@ function renderBlock(block: Block, ctx: object, ref?: any, handle?: boolean): Re
         params: {
           ctx,
           render: (props) => {
-            
             return renderDefault(block, props, ctx, false);
           },
         },
-        
       });
     } finally {
       ref = undefined;
     }
-  }
+  }*/
 
   //const { tag = "other", type, ...rest } = block;
   let props = evalAllProps(block, ctx, ref);
@@ -203,19 +218,21 @@ export const BlockComponent = ({
 
 BlockComponent.displayName = "BlockComponent";
 
-export const BlockView = React.memo(
-  ({ ref }: { ref?: any }) => {
-    const block = useViewBlock();
-    const ctx = useEvalDataContext();
+export const BlockView = React.memo(({ ref }: { ref?: any }) => {
+  const block = useViewBlock();
+  const ctx = useEvalDataContext();
 
-    return React.useMemo(() => renderBlock(block, ctx, ref), [block]);
-  },
-);
+  return React.useMemo(() => renderBlock(block, ctx, ref), [block]);
+});
 
 BlockView.displayName = "BlockView";
 
-
-export const WrapRenderBlock = ({ block, ctx }: { block: Block; ctx: object }) => {
-  
+export const WrapRenderBlock = ({
+  block,
+  ctx,
+}: {
+  block: Block;
+  ctx: object;
+}) => {
   return renderBlock(block, ctx);
 };

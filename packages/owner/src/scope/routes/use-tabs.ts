@@ -8,16 +8,15 @@ import React, {
 } from "react";
 import { create, type StoreApi } from "zustand";
 
-import { useLazyRef } from "@funext/ui";
-import { useNavigate } from "react-router";
+import { useLazyRef } from "~/ui";
 import { useResourceContext } from "~/context";
-import { dialogs } from "~/hooks/use-dialogs";
 import {
-  deepClone,
   EMPTY_ARRAY,
+  EMPTY_OBJECT,
   EMPTY_RECORD,
   getResource,
   i18n,
+  processResource,
   removeEmpty,
   type Container,
   type FilterViewBlock,
@@ -27,7 +26,6 @@ import {
   type ViewBlock,
 } from "~/utils";
 import { device } from "~/utils/device";
-import { session } from "~/utils/session";
 import { nullResourceView, processViewBlock } from "../block/block-processor";
 import type {
   PartTabState,
@@ -37,12 +35,13 @@ import type {
   TabProps,
   TabRoute,
   TabState,
-  ViewStore,
+  TabsStore,
 } from "../types";
 import { getRouteMode } from "../utils";
 import type { FilterTabs, FilterWidget } from "~/utils/filter";
+import app from "~/utils/app";
 
-let rootStore: ViewStore;
+let rootStore: TabsStore;
 
 class TabObject implements Tab {
   #listeners = new Set<TabListener>();
@@ -81,7 +80,11 @@ class TabObject implements Tab {
     const prevType = this.state.prevType;
     const prevRoute = prevType ? this.state.routes?.[prevType] : undefined;
     prevType
-      ? rootStore.updateState(this.id, { route: {...prevRoute, replace: true} }, prevType)
+      ? rootStore.updateState(
+          this.id,
+          { route: { ...prevRoute, replace: true } },
+          prevType,
+        )
       : closeTab_internal(this.id);
   }
 
@@ -121,25 +124,14 @@ class TabObject implements Tab {
     console.log("TabObject emit counter:", this._counter);
     fn && fn();
   }
+  dispose() {
+    this.#listeners.clear()
+  }
 }
 //type SetViewStore = ((store: ViewStore) => ViewStore);
 
 const viewName = (view: Resource | string) =>
   typeof view === "string" ? view : view.name;
-
-const getViewMode = (type?: string, id?: string, mode?: string) => {
-  if (mode && (type === "form" || type?.startsWith("form"))) {
-    return mode === "edit" || mode === "new" ? ["form", mode] : ["form"];
-  }
-  if (!type && id) {
-    return ["form", "show"];
-  }
-  if (!type && (mode === "form" || mode === "list" || mode === "table")) {
-    return [mode];
-  }
-
-  return type ? [type] : ["list"];
-};
 
 const getViewType = (mode?: string) => {
   if (mode === "show") return "form";
@@ -150,7 +142,7 @@ const getViewType = (mode?: string) => {
 
 const getDefaultViewType = (action: Resource) => {
   const type = action.viewType;
-  const isPopup = !!action.params?.["popup"];
+  const isPopup = !!action.params?.popup;
   if (isPopup) return type!;
   // on mobile try to use cards view by default
   if (
@@ -171,7 +163,7 @@ const getDefaultViewType = (action: Resource) => {
 
 function adjustRoute(route: TabRoute, type: string) {
   const { id, mode, ...rest } = route;
-  if (type === "form") {
+  if (type === "form" || (type === "custom" && id != null)) {
     if (!id) return { mode: "new", id, ...rest };
     if (mode === "edit") route;
     return { id, ...rest };
@@ -179,7 +171,7 @@ function adjustRoute(route: TabRoute, type: string) {
   return rest;
 }
 
-const isFormViewType = (type: string) => type.startsWith("form");
+//const isFormViewType = (type: string) => type.startsWith("form");
 
 function updateTabStateView(
   action: Resource,
@@ -203,11 +195,12 @@ function updateTabStateView(
     block = processViewBlock(view, action.evalContext);
   }
   if (block !== state.block || view !== state.view) {
-    const { type: prevType, mode: prevMode } = state;
+    //const { type: prevType, mode: prevMode } = state;
     const newState = {
       ...state,
       block,
       view,
+      type: view?.type,
       //...omitBy({ prevType, prevMode, type: type ?? view?.type, mode }, isNil),
     } as TabState;
     return newState;
@@ -238,9 +231,11 @@ const updateTabState = (
     route?: Partial<TabRoute>;
     props?: Record<string, any>;
     force?: boolean;
+    pending?: boolean;
+    isNew?: boolean;
   },
 ): TabState => {
-  const { route, props, force } = options;
+  const { route, props, force, pending, isNew } = options;
 
   //const type = options.type ?? route?.mode ?? state.type ?? 'list';
   /*
@@ -248,16 +243,18 @@ const updateTabState = (
       options.mode ?? route?.mode
     ) ?? options.type ?? state.type ?? 'list';*/
 
-  const {
+  let {
     type,
     mode,
     id: newId,
-  } = getRouteMode(
-    options.type,
-    route?.mode,
-    route?.id,
-    !force ? { type: state.type, mode: state.mode } : undefined,
-  );
+  } = pending
+    ? { type: action.views[0].type }
+    : getRouteMode(
+        options.type,
+        route?.mode,
+        route?.id,
+        !force && !isNew ? { type: state.type, mode: state.mode } : undefined,
+      );
 
   console.log("Try updateTabState: route:", route, ", ", {
     type,
@@ -268,7 +265,10 @@ const updateTabState = (
   const { id = newId, qs = EMPTY_RECORD } =
     route ?? state.routes?.[type] ?? EMPTY_RECORD;
 
-  const prevRoute = omit(omitBy(state.routes?.[type], isNil), 'replace') as TabRoute;
+  const prevRoute = omit(
+    omitBy(state.routes?.[type], isNil),
+    "replace",
+  ) as TabRoute;
 
   const nextRoute = adjustRoute(
     omitBy({ action: action.name, mode, id, qs }, isNil) as TabRoute,
@@ -284,8 +284,13 @@ const updateTabState = (
       ? omitBy({ ...prevProps, ...props }, isNil)
       : prevProps;
 
+  const prevStateType = state.type;
+  const prevStateMode = state.mode;
   state = updateTabStateView(action, state, type, mode) as TabState;
-
+  if (type && state.view && state.view.type !== type) {
+    type = state.view.type;
+    mode = (state.view as any).mode;
+  }
   const routeSame = isEqual(prevRoute, nextRoute);
   const propsSame =
     (typeProps && prevProps === nextProps) || isEqual(prevProps, nextProps);
@@ -293,25 +298,32 @@ const updateTabState = (
   if (
     routeSame &&
     propsSame &&
-    type === state.type &&
-    state.type &&
-    mode === state.mode
+    type === prevStateType &&
+    prevStateType &&
+    mode === prevStateMode
   ) {
     console.log("updateTabState: no change");
     return state as TabState;
   }
 
-  const prevType = type !== state.type ? state.type : state.prevType;
-  const prevMode = mode !== state.mode ? state.mode : state.prevMode;
+  const prevType = isNew
+    ? undefined
+    : type !== prevStateType
+      ? prevStateType
+      : state.prevType;
+  const prevMode = isNew
+    ? undefined
+    : mode !== prevStateMode
+      ? state.mode
+      : state.prevMode;
 
   const newState = { ...state, type, mode, prevType, prevMode };
 
   if (!routeSame) {
-    if(route && route.replace)
-      nextRoute.replace = true;
-    
+    if (route && route.replace) nextRoute.replace = true;
     newState.routes = { ...newState.routes, [type]: nextRoute };
   }
+
   if (!propsSame)
     newState.props = { ...newState.props, [type]: nextProps ?? {} };
 
@@ -360,8 +372,10 @@ function getResourceView(
     mode,
   }: { name?: string; type?: string; mode?: string },
 ) {
-  if (name || !action.views.length) {
-    return action.views.find((v) => v.name === name);
+  if (name && action.views.length) {
+    const result = action.views.find((v) => v.name === name);
+    if (result) return result;
+
   }
 
   const isPopup = !!action.params?.["popup"];
@@ -382,7 +396,7 @@ function getResourceView(
   }
 
   if ((mode || type === "form") && (!type || type === "form")) {
-    const forms = action.views.filter((v) => "form");
+    const forms = action.views.filter((v) =>v.type === "form");
     let view = forms.find((v) => (v as FormView).mode === mode);
     if (view) return view;
     if (type === "form" && forms.length) {
@@ -393,19 +407,67 @@ function getResourceView(
   if (type && action.views.some((x) => x.type === type)) {
     return action.views.find((x) => x.type === type);
   }
-  if (!type) {
-    let viewList = action.views.find((v) => v.type === "list");
-    let viewGrid = action.views.find((v) => v.type === "grid");
-    let firstView = action.views[0];
-    return (
-      (device.isMobile ? (viewList ?? viewGrid) : (viewGrid ?? viewList)) ??
-      firstView
-    );
-  }
+  
+  let viewList = action.views.find((v) => v.type === "list");
+  let viewGrid = action.views.find((v) => v.type === "grid");
+  let firstView = action.views[0];
+  return (
+    (device.isMobile ? (viewList ?? viewGrid) : (viewGrid ?? viewList)) ??
+    firstView
+  );
+  
 
   //return null;
 }
+const loadingWidget = {
+  type: "any",
+  items: [
+    {
+      type: "Container",
+      props: {height: '100%'},
+      items: [
+        {
+          type: "Loader",
+          hideIf: "ctx.error",
+        },
+        {
+          type: "ErrorBox",
+          hideIf: "!ctx.error",
+          props: (ctx:any) => ({
+            error: ctx.error,
+            onRetry: ctx.onRetry,
+            status: 500,
+          }),
+        },
+      ],
+    },
+  ],
+};
 
+const loadingResource = {
+  name: "",
+  views: [loadingWidget],
+  fields: EMPTY_ARRAY,
+};
+type InitRes = Omit<
+  Resource,
+  "type" | "get" | "evalContext" | "processWidget" | "get"
+>;
+
+function initResource(name: string, options?: TabOptions) {
+  const { params, context = EMPTY_OBJECT } = options ?? EMPTY_OBJECT;
+
+  const pendingRes = processResource(
+    {
+      ...loadingResource,
+      name,
+      context,
+    } as unknown as InitRes,
+    params,
+  );
+  console.error("pendingRes:", pendingRes)
+  return pendingRes;
+}
 /**
  * Initialize a view tab for the given action-view.
  *
@@ -416,7 +478,7 @@ function getResourceView(
 export async function initTab(
   view: Resource | string,
   options?: TabOptions,
-  viewStore: ViewStore = rootStore,
+  viewStore: TabsStore = rootStore,
 ) {
   const {
     route: initRoute,
@@ -424,18 +486,26 @@ export async function initTab(
     tab: initAsTab,
     onGridSearch,
     mode: inMode,
-    params,
+    //params,
     custom,
+    title: optTitle = i18n.t("Loading ..."),
   } = options ?? {};
 
+  let pending = false;
+  let pendingRes;
   const actionName = viewName(view);
-  const actionView =
-    typeof view === "object" && view.views?.length
-      ? view
-      : await loadResource(actionName, options);
+  if (
+    typeof view === "string" ||
+    (typeof view === "object" && !view.views?.length)
+  ) {
+    pending = true;
+    pendingRes = initResource(actionName, options);
+  }
+
+  const actionView = pendingRes ? pendingRes : (view as Resource);
 
   if (actionView) {
-    const { name: id, title = "", context, params } = actionView;
+    const { name: id, title = optTitle, context, params } = actionView;
     let view = actionView.params?.view ?? params?.view;
     let openSide = actionView.params?.side;
     let mode = initRoute?.mode;
@@ -444,7 +514,6 @@ export async function initTab(
     let name = typeof view === "string" ? view : undefined;
     if (!view) {
       type = getViewType(type ?? getDefaultViewType(actionView) ?? "")!;
-      let openSide = actionView.params?.side;
 
       const [mainType, mainMode] = type.split("-");
 
@@ -476,8 +545,8 @@ export async function initTab(
 
     const initState = updateTabState(
       actionView,
-      { type: view?.type ?? type, view, title, ...(name && { name }) },
-      { route, props },
+      { type: view?.type ?? type, view, title, pending, ...(name && { name }) },
+      { route, props, isNew: true },
     );
     console.log("Open tab:", { route, initState });
     const state = { ...initState } as TabState;
@@ -510,12 +579,14 @@ export async function initTab(
           actionView.evalContext,
         ) as FilterViewBlock)
       : undefined;
-    
-    let extList:any;
-    if(filter) {
+
+    let extList: any;
+    if (filter) {
       let sidebar = filter?.schema?.sidebar as Container<FilterWidget>;
-      const tabs = sidebar?.items?.find((w) => w.widget === "tabs") as FilterTabs;
-      
+      const tabs = sidebar?.items?.find(
+        (w) => w.widget === "tabs",
+      ) as FilterTabs;
+
       if (tabs) {
         sidebar = {
           ...sidebar,
@@ -523,16 +594,16 @@ export async function initTab(
         };
       }
 
-      extList = removeEmpty( {
-        filterTabs: tabs && tabs.items?.length && tabs.name ? tabs : undefined,
+      extList = removeEmpty({
+        filterTabs: tabs && tabs.options?.length && tabs.name ? tabs : undefined,
         filterSidebar: isEmpty(sidebar) ? undefined : sidebar,
         filterForm: filter?.form,
-        filterDefaults: filter?.schema?.defaults
-      })
+        filterDefaults: filter?.schema?.defaults,
+      });
     }
     const tab: Tab = {
       id,
-      title,
+      title: pendingRes ? title : actionView.title ?? title,
       action: actionView,
       state: state,
       popup,
@@ -543,7 +614,7 @@ export async function initTab(
       getState() {
         return state;
       },
-      ...extList
+      ...extList,
     };
 
     return tab;
@@ -553,7 +624,7 @@ export async function initTab(
 }
 
 function isSingleTab() {
-  const info = session.info;
+  //const info = session.info;
   return device.isMobile /*(
     device.isMobile ||
     info?.view?.singleTab ||
@@ -563,9 +634,9 @@ function isSingleTab() {
   )*/;
 }
 
-type GetViewStore = () => ViewStore;
+type GetViewStore = () => TabsStore;
 
-export const useViewStore = create<ViewStore>((set, get) => ({
+export const useTabsStore = create<TabsStore>((set, get) => ({
   pages: [],
   popups: [],
   current: undefined,
@@ -579,10 +650,40 @@ export const useViewStore = create<ViewStore>((set, get) => ({
     if (found) return found;
     return pages.find((item) => item.id === tabId);
   },
-  setState(tabId: string, state) {
+  replace(tab: Tab) {    
+    set((store) => {
+        const targetKey = tab.popup ? 'popups' : 'pages';
+        const target = [...store[targetKey]]
+        let index = target.findIndex((item) => item.id === tab.id);
+        if(index > -1) {
+          const prev = target[index];
+          target[index] = tab;
+          if (prev instanceof TabObject) {
+            prev.dispose();
+          }
+        } else {
+          target.push(tab)
+        }
+        return {...store, [targetKey]: target}
+    })
+
+  },
+  setState(tabId: string, state, replace) {
     set((store) => {
       let found = store.find(tabId);
       if (found) {
+        if (replace) {
+          const targetKey = found.popup ? "popups" : "pages";
+          const target = [...store[targetKey]];
+          target[target.indexOf(found)] = found;
+          setTimeout(() => {
+            if (found instanceof TabObject) {
+              found.update(state as TabState);
+              return store;
+            }
+          });
+          return { ...store, [targetKey]: target };
+        }
         const prev = found.state;
         const next = typeof state === "function" ? state(prev) : state;
         if (prev === next) {
@@ -719,9 +820,25 @@ export const useViewStore = create<ViewStore>((set, get) => ({
   closeTab: (view) => closeTabAtom(set, view),
 }));
 
+function openHtml(tab: Tab) {
+  // html view with target="_blank"
+  if (
+    tab.action.viewType === "html" &&
+    tab.action.params?.target === "_blank"
+  ) {
+    const html = tab.action.views?.find((x) => x.type === "html") as any;
+    const url = html?.name || html?.resource;
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    return true;
+  }
+}
+
 const openTabAtom = async (
   get: GetViewStore,
-  set: StoreApi<ViewStore>["setState"],
+  set: StoreApi<TabsStore>["setState"],
   view: Resource | string,
   options: TabOptions = EMPTY_RECORD,
 ): Promise<Tab | null> => {
@@ -748,32 +865,33 @@ const openTabAtom = async (
     tabs.find((x) => x.id === name) ?? popups.find((x) => x.id === name);
 
   if (found) {
-    //if (options)
-    store.updateState(
-      name,
-      pick(
-        options,
-        "type",
-        "mode",
-        "props",
-        "route",
-        "force",
-      ) as Partial<TabState>,
-    );
+    if (!found.state.pending) {
+      store.updateState(
+        name,
+        pick(
+          options,
+          "type",
+          "mode",
+          "props",
+          "route",
+          "force",
+        ) as Partial<TabState>,
+      );
 
-    if (found.id === active) return null;
+      if (found.id === active) return null;
 
-    if (tabs.includes(found)) {
-      set((prev) => ({ ...prev, current: found }));
+      if (tabs.includes(found)) {
+        set((prev) => ({ ...prev, current: found }));
+      }
+      return found;
     }
-    return found;
   }
 
   if (singleTab && activeTab) {
     // close current one
     const canConfirm = activeTab.action.params?.["show-confirm"] !== false;
     if (canConfirm && activeTab.state.dirty) {
-      const closed = await dialogs.confirm(
+      const closed = await app.dialogs!.confirm(
         i18n.get("The data change confirm leave?"),
         {
           severity: "warning",
@@ -783,20 +901,58 @@ const openTabAtom = async (
     }
   }
 
-  const tab = await initTab(view, options);
+  const tab = await initTab(view, options, store);
 
   if (tab) {
-    // html view with target="_blank"
-    if (
-      tab.action.viewType === "html" &&
-      tab.action.params?.target === "_blank"
-    ) {
-      const html = tab.action.views?.find((x) => x.type === "html") as any;
-      const url = html?.name || html?.resource;
-      if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
+    if (tab?.state.pending) {
+      const pendId = tab.id;
+      async function load() {
+        try {
+          const loadingView = await loadResource(
+            pendId,
+            options,
+          );
+          const tab = await initTab(loadingView, options, store);
+          if (tab) {
+            if (openHtml(tab)) {
+              const found = get().find(pendId);
+              if (found) {
+                get().closeTab(pendId);
+              }
+              return tab;
+            }
+            
+            get().replace(new TabObject(tab));
+          }
+        } catch (error) {
+          const found = get().find(pendId);
+          if (found) {
+            get().setState(pendId, {
+              ...found.state,
+              pendingResult: {
+                error,
+                retry: ()=> {
+                  get().setState(pendId, {...found.state, pendingResult: undefined}, true);
+                  setTimeout(()=> {
+                    if(get().find(pendId))
+                      load()
+                  }, 1000)
+                  
+                },
+              },
+            }, true);
+          }
+        }
       }
-
+      load();
+      //return tab;
+    }
+    // html view with target="_blank"
+    if (openHtml(tab)) {
+      const found = get().find(tab.action.name);
+      if (found) {
+        get().closeTab(tab.action.name);
+      }
       return tab;
     }
 
@@ -804,6 +960,7 @@ const openTabAtom = async (
 
     set((state) => {
       const { pages: tabs, popups } = state;
+
       const found =
         tabs.find((x) => x.id === name) ?? popups.find((x) => x.id === name);
       if (found) {
@@ -829,7 +986,7 @@ const openTabAtom = async (
 };
 
 const closeTabAtom = async (
-  set: StoreApi<ViewStore>["setState"],
+  set: StoreApi<TabsStore>["setState"],
   view: Resource | string,
 ) => {
   set((prev) => {
@@ -872,12 +1029,11 @@ const closeTabAtom = async (
  *          methods to open new views or close a view.
  */
 export function useTabs() {
-  const tabs = useViewStore((state) => state.pages);
-  const popups = useViewStore((state) => state.popups);
-  const open = useViewStore((state) => state.openTab);
-  const close = useViewStore((state) => state.closeTab);
+  const tabs = useTabsStore((state) => state.pages);
+  const popups = useTabsStore((state) => state.popups);
+  const { openTab: open, closeTab: close } = useTabsStore();
 
-  const active = useViewStore((state) => state.current);
+  const active = useTabsStore((state) => state.current);
   //const navigate = useNavigate();
   const changeRef = React.useRef(0);
   /*
@@ -895,7 +1051,7 @@ export function useTabs() {
       close,
       change: (changeRef.current += 1),
     }),
-    [tabs, active, popups, open, close],
+    [tabs, active, popups],
   );
 }
 
@@ -921,17 +1077,20 @@ export function closeTab_internal(view: string | Resource) {
 }
 
 export function useActiveTab_internal() {
-  const active = rootStore.current;
-  const update = useViewStore((state) => state.setState);
-  const find = useViewStore((state) => state.find);
+  const active = useTabsStore((state) => state.current);
+  const { setState: update } = useTabsStore();
+  const find = useTabsStore((state) => state.find);
 
   const state = active?.state;
-  const setState = (state: Partial<TabState>) => {
-    const tab = active ? find(active.id) : undefined;
-    if (tab) {
-      update(tab.id, state);
-    }
-  };
+  const setState = useCallback(
+    (state: Partial<TabState>) => {
+      const tab = active ? find(active.id) : undefined;
+      if (tab) {
+        update(tab.id, state);
+      }
+    },
+    [EMPTY_ARRAY],
+  );
   return [state, setState] as const;
 }
 
@@ -942,17 +1101,18 @@ export function useViewTab() {
 
 export function useViewState(): [TabState, (state: PartTabState) => void] {
   const tab = useViewTab();
-  const storeSetState = useViewStore((state) => state.updateState);
+  const storeSetState = useTabsStore((state) => state.updateState);
+  ///const state = useTabsStore((state) => state
   const [state, setState] = useState(tab.state);
   useEffect(() => {
     return tab.subscribe(() => setState(tab.state));
-  });
+  }, [tab]);
 
   const updateState = useCallback(
     (state: PartTabState) => {
       storeSetState(tab.id, state);
     },
-    [storeSetState],
+    [storeSetState, tab],
   );
 
   return [state, updateState] as const;
@@ -966,8 +1126,8 @@ export function useViewTypeState(
   type?: string,
 ): [PartTabState, (state: PartTabState) => void] {
   const tab = useViewTab();
-
-  const storeSetState = useViewStore((state) => state.updateState);
+  const updateState = useTabsStore((state) => state.updateState);
+  //const store = useTabsStore();
   const tabState = tab.state;
   const [state, setState] = useState<PartTabState>(
     () =>
@@ -1011,17 +1171,17 @@ export function useViewTypeState(
     });
   });
 
-  const updateState = useCallback(
+  const setTabState = useCallback(
     (state: PartTabState) => {
       const viewType = type ?? tab.state.type;
-      storeSetState(tab.id, state, viewType);
+      updateState(tab.id, state, viewType);
     },
-    [storeSetState, type],
+    [type],
   );
 
   //const selector = useCallback((k: keyof PartTabState) => state[k], [state]);
 
-  return [state, updateState /*, selector as Selector*/];
+  return [state, setTabState /*, selector as Selector*/];
 }
 
 export function useViewStateValue<K extends keyof PartTabState>(
@@ -1047,8 +1207,8 @@ export function useViewDirtyState() {
 
 export function useViewSwitch(): (type: string, parts?: PartTabState) => void {
   const tab = useViewTab();
-  //const storeUpdate = useViewStore((state) => state.update);
-  const storeSetState = useViewStore((state) => state.updateState);
+  const storeSetState = useTabsStore((state) => state.updateState);
+  //const { updateState: storeSetState } = useTabsStore();
 
   const setViewType = useCallback(
     (type: string, parts?: PartTabState): void => {
@@ -1072,10 +1232,6 @@ export function useTabRoute(type?: string): TabRoute | undefined {
   return route;
 }
 
-function useReadPropsType(tab: Tab, type: string) {
-  return React.useCallback(() => tab.state.props?.[type], EMPTY_ARRAY);
-}
-
 /**
  * This hook can be used to keep track of view specific state in tab.
  *
@@ -1087,15 +1243,12 @@ export function useViewProps(type?: string) {
     () => tab.state.props?.[typeRef.current],
     EMPTY_ARRAY,
   );
-  const setTabProps = useViewStore((state) => state.setTabProps);
+  const updateState = useTabsStore((state) => state.updateState);
   const props = React.useSyncExternalStore(tab.subscribe, cp);
 
-  const setProps = useCallback(
-    (props: TabProps) => {
-      setTabProps(tab.id, props, typeRef.current);
-    },
-    [setTabProps],
-  );
+  const setProps = useCallback((props: TabProps) => {
+    updateState(tab.id, props, typeRef.current);
+  }, EMPTY_ARRAY);
 
   return [props, setProps] as const;
 }

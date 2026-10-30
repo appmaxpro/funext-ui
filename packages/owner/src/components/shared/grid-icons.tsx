@@ -1,14 +1,15 @@
+import { Button, Grid, IconButton, Stack, Text, type SxProps } from "~/ui";
 import React from "react";
-import { Box, Text, Grid, Panel, IconButton, Flex, Card, Button, Stack, type SxProps } from "@funext/ui";
-import type { IconComponent, IconProps } from "./icons";
-import { iconOr, Icons } from "./icons";
 import { i18n } from "~/utils";
+import type { IconComponent, IconProps } from "./icons";
+import { iconOr } from "./icons";
 
 type GridIconProps = {
   icon: string | IconComponent;
   title: string;
   to?: any;
   id?: any;
+  
 };
 
 interface GridIconsProps
@@ -88,7 +89,7 @@ export function GridIcons({
               {...(typeof to === 'string' ? {to} : to)}
             >
               {/*React.createElement(iconOr(icon), iconProp)*/}
-              {React.createElement(iconOr(icon), {size: 'lg'})}
+              {React.createElement(iconOr(icon), {size: 'lg', ...iconProp})}
             </Button>
             <Text
               variant="subtitle1"

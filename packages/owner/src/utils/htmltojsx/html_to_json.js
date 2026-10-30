@@ -128,20 +128,6 @@ function map({ attrs, items, props, slots, type }, isSchema) {
   return schema;
 }
 
-function evalMulti(code, input) {
-  var fn;
-  try {
-    fn = eval(code);
-  } catch (e) {
-    console.error("Try eval multi line code: " + code);
-  }
-  if (typeof fn !== "function") {
-    fn = eval(`function (${input || ""}){
-          ${code} 
-      }`);
-  }
-  return fn;
-}
 
 function evalFn(code, input, name, target) {
   var fn;
@@ -183,6 +169,7 @@ const SCHEMA = {
     
     title: "string",
     type: "string",
+    onClick: "default",
   },
   schema: {
     name: "string",
@@ -255,6 +242,7 @@ const SCHEMA = {
       pattern: "string",
       views: "slot",
       canMove: "boolean",
+      opts: 'object',
       parse: (value, target) =>
         value ? evalFn(value, 'value, ctx', "parse", target) : undefined,
       format: (value, target) =>
@@ -293,7 +281,7 @@ const SCHEMA = {
     },
     map: ({ items, attrs, ...rest }) => {
       if (!attrs.pType) {
-        attrs.pType = attrs.type || (attrs.name === "id" ? "int" : "string");
+        attrs.pType = attrs.type || (attrs.name === "id" ? "int" : undefined);
       }
       items = trimOrEmpty(items, isPlainObject);
       var options = SCHEMA.property.parseOptions(items);

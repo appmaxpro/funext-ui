@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Dialog, Fade, Portal } from "@funext/ui";
+import { Fade, Portal } from "~/ui";
 
-import { type SessionInfo, session } from "~/utils/session";
+import { session } from "~/utils/session";
 
 import { Loader } from "~/components";
 //import { LoginForm } from "../login-form";
+import { i18n } from "~/utils/i18n";
 import { useHttpBlock } from "./use-block";
 import { useHttpWatch } from "./use-watch";
-import { i18n } from "~/utils/i18n";
 
-import styles from "./http-watch.module.scss";
-import { useSession } from "~/hooks/use-session";
 import { useRouter } from "~/hooks/use-router";
+import { useSession } from "~/hooks/use-session";
+import styles from "./http-watch.module.scss";
 
 export function HttpWatch() {
   const { count, resume } = useHttpWatch();
@@ -28,7 +28,7 @@ export function HttpWatch() {
 function HttpIndicator({ count }: { count: number }) {
   const [show, setShow] = useState(count > 0);
 
-  const timerRef = useRef<number>();
+  const timerRef = useRef<number>(undefined);
   const mountRef = useRef(false);
   const countRef = useRef(count);
 
@@ -128,10 +128,9 @@ function HttpAuth({ resume }: { resume?: () => void }) {
 
   useEffect(() => {
     const curr = info?.user?.login;
-    if (prev !== curr) {
-      console.error("-----------login-change-----------");
-      window.location.reload();
-    } else if (resume && router) {
+    if (prev !== curr && curr) {
+      //window.location.reload();
+    } else if (!curr && prev && resume && router) {
       //navigate('/auth/login', { state: {...(state || {}), resume} });
       router.navigate("/auth/login");
     }

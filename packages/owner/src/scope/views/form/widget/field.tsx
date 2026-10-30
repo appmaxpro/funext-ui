@@ -1,39 +1,22 @@
-import React, { useCallback } from "react";
+import React from "react";
 
-import { Checkbox, Input } from "@funext/ui";
+import { useFormField, WidgetStateProvider } from "./root";
 
-import {
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  useFormField,
-  WidgetStateProvider,
-} from "./root";
-
-import { SelectField } from "./select";
-import {
-  EMPTY_ARRAY,
-  EMPTY_OBJECT,
-  getBoolean,
-  i18n,
-  type FieldBlock,
-} from "~/utils";
-import type { IFieldState, IFState } from "../../../types";
-import { meta } from "../../../block";
-import format from "~/utils/format";
-import { useFormContext } from "~/context";
-import { useInput, useSimpleInput, useWidget } from "./hooks";
 import { getWidgetStateForm } from "~/scope/utils";
+import { type FieldBlock } from "~/utils";
+import { meta } from "../../../block";
+import type { IFieldState, IFState } from "../../../types";
+import { useInput, useWidget } from "./hooks";
+import { Spinner } from "~/ui";
 
-export const FieldComponent = () => {
+export const FieldComponent = React.memo(() => {
   const { state, field, id } = useFormField();
   const { hidden } = state;
   if (hidden) {
     return null;
   }
   return <RenderField state={state} field={field} id={id} />;
-};
+});
 
 const RenderField = ({
   state,
@@ -48,7 +31,11 @@ const RenderField = ({
   const schema = block.schema;
   const { widget, pType } = schema;
 
-  const [type, FC] = useWidget(pType, widget, getWidgetStateForm(field)?.readOnly);
+  const [type, FC] = useWidget(
+    pType,
+    widget,
+    getWidgetStateForm(field)?.readOnly,
+  );
 
   return FC ? (
     <FC state={state} field={field} id={id} type={type} />
@@ -59,7 +46,7 @@ const RenderField = ({
   );
 };
 
-function RenderFieldBlock(): React.ReactNode {
+const RenderFieldBlock = React.memo(()=> {
   const { state, field, id } = useFormField();
   const inputs = useInput(field);
   const { hidden } = state;
@@ -68,7 +55,7 @@ function RenderFieldBlock(): React.ReactNode {
   }
 
   return <DoRenderFieldBlock state={state} field={field} id={id} />;
-}
+})
 
 function DoRenderFieldBlock({
   state,
@@ -91,14 +78,42 @@ function DoRenderFieldBlock({
   }
 }
 
+
+let initd = false;
+
+async function init() {
+  await import('./inputs');
+  await import('./media');
+  await import('./select');
+  await import('./relation');
+  await import('./boolean');
+  await import('./date');
+  await import('./radio');
+  initd = true;
+  return true;
+}
+
+const initPromo = init();
+
 export const Field = meta<{ block: FieldBlock }>(
-  ({ block }) =>
-    !!block.schema.name ? (
+  ({ block }) => {
+
+    if (!initd) {
+        const hasInitd = React.use(initPromo);
+        if(hasInitd !== true)
+          return <Spinner/>
+    }
+    return !!block.schema.name ? (
       <WidgetStateProvider widget={block}>
-        {React.createElement(
-          block?.render ? RenderFieldBlock : FieldComponent,
-        )}
+        {React.createElement(block?.render ? RenderFieldBlock : FieldComponent)}
       </WidgetStateProvider>
-    ) : null,
+    ) : null
+  },
   { wrap: "prop", noProps: true },
 );
+
+
+
+
+
+

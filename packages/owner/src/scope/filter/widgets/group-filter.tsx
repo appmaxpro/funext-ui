@@ -1,4 +1,4 @@
-import { List } from "@funext/ui";
+import { List } from "~/ui";
 
 import { ItemFilter, ItemFilterHeader } from "./item-filter";
 import {

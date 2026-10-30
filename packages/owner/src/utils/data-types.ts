@@ -141,7 +141,7 @@ export interface Property {
   scale?: number;
   parse?: (value:any, ctx: object)=> any;
   format?: (value:any, ctx: object)=> string|null;
-
+  opts?: Record<string, any>;
 }
 
 export interface WidgetRenderer {
@@ -159,7 +159,6 @@ export interface Widget extends Omit<Schema, 'props'>{
   widget?: string;
   slots?: Record<string, Widget> | ((ctx: any) => Record<string, Widget>);
   props?: Record<string, any>;
-  cProps?: (ctx: any) => Record<string, any>;
   render?: React.FunctionComponent<BlockRenderProps> ;
   items?: Widget[];
   context?: DataContext;
@@ -194,6 +193,7 @@ export interface ResourceView extends Omit<Schema, 'name'>  {
   name: string;
   items: Widget[];
   model?: string;
+  fields?: string[];
 }
 
 export interface BaseFormView extends ResourceView {
@@ -531,11 +531,11 @@ export function isRecordProps(props: Schema["props"]): props is Record<string, a
 }
 
 export function isContainer(widget: Widget): widget is Container {
-  return "items" in widget && Array.isArray(widget.items);
+  return !!widget && !!widget.items && Array.isArray(widget.items);
 }
 
 export function getWidgetItems(widget: Widget) {
-  if( "items" in widget && widget.items)
+  if( widget && !!widget.items)
      return Array.isArray(widget.items) ? widget.items : [widget.items]  ;
   return EMPTY_ARRAY as Widget[]
 }

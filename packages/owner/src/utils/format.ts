@@ -78,6 +78,7 @@ const formatTime: Formatter = (value, opts = {}) => {
 
 const formatDateTime: Formatter = (value, opts = {}) => {
   const format = getDateTimeFormat(opts);
+  console.log("formatDateTime: format:", format)
   return value ? moment(value).format(format) : "";
 };
 
@@ -271,7 +272,7 @@ const format: Formatter = (value, opts = {}) => {
 
   let val = value;
   
-  const func = Formatters[value as keyof typeof Formatters];
+  const func = Formatters[type as keyof typeof Formatters];
   if (func) {
     return func(val, opts);
   }

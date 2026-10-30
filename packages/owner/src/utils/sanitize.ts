@@ -1,6 +1,3 @@
-
-
-
 export function sanitize(value: any): string {
   if (value == null ) return "";
   let s: string;

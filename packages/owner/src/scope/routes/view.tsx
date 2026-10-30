@@ -3,30 +3,16 @@ import { useTabs } from "./use-tabs";
 import { TaskQueue } from "~/utils/queue";
 import { useRouter, generatePath } from "~/hooks/use-router";
 import { EMPTY_OBJECT, omit } from "~/utils";
-import { getRouteParams } from "../utils/view-utils";
-import { useLazyRef } from "@funext/ui";
+import { getRouteParams, getRouteUrl } from "../utils/view-utils";
+import { useLazyRef } from "~/ui";
 
-const getURL = (
-  action: string | null = null,
-  mode: string | null = null,
-  id: string | null = null,
-) => {
-  if (!action || action.startsWith("$")) return null;
-  const params = getRouteParams(action, mode, id);
-  if (!params) return undefined;
-  const url = Object.keys(params).reduce(
-    (prev, key) => `${prev}/:${key}`,
-    "/res",
-  );
-  return generatePath(url, params);
-};
 
 const queue = new TaskQueue();
 
 export function View() {
   const router = useRouter();
   //const tabs = useTabs();
-  const { active, open: openTab, items, close: closeTap } = useTabs();
+  const { active, open: openTab, items } = useTabs();
 
   const [tabState, setTabState] = useState(active?.state);
 
@@ -36,25 +22,26 @@ export function View() {
     id?: any;
     path?: string | null;
     replace?: boolean;
-  }>();
+    pending?: boolean;
+  }>(undefined);
 
   const routerParamsRef = useLazyRef<{
     action?: string;
     mode?: string;
     id?: any;
     path?: string | null;
-    binding?: boolean;
-  }|undefined>(() => ({binding: true}));
+    pending?: boolean;
+  }|undefined>(() => ({pending: true}));
 
   const homeAction = ""; //session.info?.user?.action;
   
   useEffect(() => {
-    if(!active && routerParamsRef.current && !routerParamsRef.current.binding) {
+    if(!active && routerParamsRef.current && !routerParamsRef.current.pending) {
         routerParamsRef.current = undefined;
         tabParamsRef.current = undefined;
         router?.navigate('/', {replace: true});
     }
-  }, [active]);
+  }, [active, items]);
 
   const tabParams = useMemo(() => {
     //console.log("View: route tabParams:", tabState?.routes?.[tabState.type]);
@@ -66,7 +53,7 @@ export function View() {
       prevParams.mode !== mode ||
       prevParams.id !== id
     ) {
-      const tabPath = getURL(action, mode, id);
+      const tabPath = getRouteUrl(action, mode, id);
       console.log("View: tabParams: path:", tabPath);
       if (prevParams.path !== tabPath) {
         tabParamsRef.current = { action, mode, id, path: tabPath, replace };
@@ -101,11 +88,11 @@ export function View() {
       prevParams.mode !== mode ||
       prevParams.id !== id
     ) {
-      const path = getURL(action, mode, id);
+      const path = getRouteUrl(action, mode, id);
       console.log("View: routerParams: path:", path);
 
       if (prevParams.path !== path) {
-        routerParamsRef.current = path ? { action, mode, id, path, binding: true } : undefined;
+        routerParamsRef.current = path ? { action, mode, id, path, pending: true } : undefined;
       }
     }
     return routerParamsRef.current;
@@ -150,7 +137,7 @@ export function View() {
       const tParams = routerParams!;
       async function wait() {
         await queue.wait();
-        tParams.binding = false;
+        tParams.pending = false;
       }
       wait()
       
@@ -169,11 +156,6 @@ export function View() {
       delete tabParams.replace;
     } 
   }, [tabParams]);
-
-
-  
-
-
 
   return null;
 }

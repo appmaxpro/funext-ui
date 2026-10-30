@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 // utils
 import { twMerge } from "tailwind-merge";
@@ -30,12 +30,14 @@ export interface AccordionHeaderProps extends React.ComponentProps<"button"> {
   sx?: SxThemeProps;
   showIcon?: boolean;
   iconClass?: string;
+  value?: string;
 }
 
 export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHeaderProps>(
-  ({ className, showIcon, iconClass, children, ...rest }, ref) => {
+  ({ className, showIcon, iconClass, children, value, ...rest }, ref) => {
     // 1. init
-    const { open, icon, disabled, setOpen } = useAccordion();
+    const id = useId()
+    const { open:openValue, icon, disabled, setOpen } = useAccordion();
     const { accordion } = useTailwindTheme();
     const {
       styles: { base },
@@ -43,7 +45,7 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
 
     // 2. set default props
     className = className ?? "";
-
+    const open = (openValue === true || openValue === value)
     // 3. set styles
     const buttonStyles = twMerge(
       clsx(
@@ -55,7 +57,7 @@ export const AccordionHeader = React.forwardRef<HTMLButtonElement, AccordionHead
     const iconClasses = clsx(values(base.header.icon), iconClass);
     // 4. return
     return (
-      <ButtonRoot {...rest} onClick={composeEventHandlers(()=> setOpen(!open), rest.onClick)}  ref={ref} type="button" disabled={disabled} className={buttonStyles}>
+      <ButtonRoot {...rest} onClick={composeEventHandlers((()=> setOpen(!open)), rest.onClick)}  ref={ref} type="button" disabled={disabled} className={buttonStyles}>
         {children}
         <span className={iconClasses}>
           {(showIcon ?? !icon) 

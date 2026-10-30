@@ -8,7 +8,7 @@ import {
   Panel,
   type BottomNavigationProps,
   Stack,
-} from "@funext/ui";
+} from "~/ui";
 
 import { AppBar, Toolbar } from "../shared/toolbar";
 import { HideOnScroll } from "~/components/shared/hide-on-scroll";
@@ -97,7 +97,7 @@ function RawAppLayout(props: RawAppLayoutProps) {
     slots,
     slotProps,
     sx,
-    hideTopOnScroll,
+    hideTopOnScroll = true,
     hideBottomOnScroll,
     showBackIcon = true,
     showBottomNav,
@@ -105,11 +105,13 @@ function RawAppLayout(props: RawAppLayoutProps) {
   } = props;
 
   const contentRef = React.useRef<Node | null>(null);
-  const [hasScrollerRef, setHasScrollerRef] = React.useState(false);
+
+  const [hasScrollerRef, setHasScrollerRef] =
+    React.useState<HTMLElement | null>(null);
   const setScrollerRef = React.useCallback(
     (ref: HTMLElement | null) => {
       contentRef.current = ref;
-      setHasScrollerRef(!!ref);
+      setHasScrollerRef(ref);
     },
     [setHasScrollerRef],
   );
@@ -141,38 +143,40 @@ function RawAppLayout(props: RawAppLayoutProps) {
       >
         <Box data-ui="AppBarRoot">
           <HideOnScroll
-            target={contentRef.current}
+            target={hasScrollerRef}
             direction="down"
             enabled={hideTopOnScroll}
+            key={hasScrollerRef ? "hasScrollerRef" : undefined}
           >
-            {AppBarExt ? (
-              <AppBarExt />
-            ) : (
-              <AppBar className="item-enter" color="primary" position="fixed">
-                <Toolbar
-                  sx={{ mx: { xs: -0.75, sm: -1.5 } }}
-                  className="justify-between nowrap w-full"
-                >
-                  <Flex>
-                    {slots?.appTitle ? (
-                      <slots.appTitle {...slotProps?.appTitle} />
-                    ) : (
-                      /* Hierarchy of application of `branding`
-                       * 1. Branding prop passed in the `slotProps.appTitle`
-                       * 2. Branding prop passed to the `AppLayout`
-                       * 3. Branding prop passed to the `AppProvider`
-                       */
-                      <AppTitle {...slotProps?.appTitle} />
-                    )}
-                  </Flex>
-                  <Flex items="center" ml="auto">
-                    {ToolbarActionsSlot && (
-                      <ToolbarActionsSlot {...slotProps?.toolbarActions} />
-                    )}
-                  </Flex>
-                </Toolbar>
-              </AppBar>
-            )}
+            
+              {AppBarExt ? (
+                <AppBarExt />
+              ) : (
+                <AppBar className="item-enter" color="primary" position="fixed">
+                  <Toolbar
+                    sx={{ mx: { xs: -0.75, sm: -1.5 } }}
+                    className="justify-between nowrap w-full"
+                  >
+                    <Flex>
+                      {slots?.appTitle ? (
+                        <slots.appTitle {...slotProps?.appTitle} />
+                      ) : (
+                        /* Hierarchy of application of `branding`
+                         * 1. Branding prop passed in the `slotProps.appTitle`
+                         * 2. Branding prop passed to the `AppLayout`
+                         * 3. Branding prop passed to the `AppProvider`
+                         */
+                        <AppTitle {...slotProps?.appTitle} />
+                      )}
+                    </Flex>
+                    <Flex items="center" ml="auto">
+                      {ToolbarActionsSlot && (
+                        <ToolbarActionsSlot {...slotProps?.toolbarActions} />
+                      )}
+                    </Flex>
+                  </Toolbar>
+                </AppBar>
+              )}
           </HideOnScroll>
         </Box>
 
@@ -187,7 +191,7 @@ function RawAppLayout(props: RawAppLayoutProps) {
             perspective: 1200,
           }}
         >
-          <Toolbar />
+          {!hasScrollerRef && <Toolbar />}
           {children}
         </Stack>
         {BottomNavigationSlot && (

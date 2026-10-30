@@ -3,7 +3,7 @@ import { useCreateFilterForm, type FilterFormProps } from "../views/form";
 import { Root } from "../views/form/widget";
 
 import { IFormContext, useFormContext } from "~/context";
-import { Button, Dialog } from "@funext/ui";
+import { Button, Dialog } from "~/ui";
 import { EMPTY_OBJECT, i18n, type FormViewBlock } from "~/utils";
 import type { EditableFormState } from "../types";
 import { meta, renderBlockItems } from "../block";

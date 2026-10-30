@@ -1,4 +1,4 @@
-import { IconButton, styled, Tooltip, type IconButtonProps } from "@funext/ui";
+import { IconButton, styled, Tooltip, type IconButtonProps } from "~/ui";
 import React from "react";
 import { Toolbar, type ToolbarProps } from "~/components";
 import { TIP_HOVER_PROPS } from "~/utils";

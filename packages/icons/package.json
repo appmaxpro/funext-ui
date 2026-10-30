@@ -39,7 +39,7 @@
     "@funext/internal-waterfall": "workspace:^",
     "@funext/ui": "../ui",
     "@types/chai": "^4.3.20",
-    "@types/react": "^19.0.8",
+    "@types/react": "^19.2.14",
     "chai": "^4.5.0",
     "chalk": "^5.4.1",
     "cross-fetch": "^4.1.0",

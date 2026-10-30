@@ -1,10 +1,4 @@
 import type { VirtualScrollerInitialParams } from "@af-utils/virtual-core";
-import {
-  Stack,
-  useLazyRef,
-  useScreenSize,
-  type SxComponentProps,
-} from "@funext/ui";
 import * as React from "react";
 import { ViewLayout } from "~/components/layout/view-layout";
 import {
@@ -20,11 +14,13 @@ import {
   useEvalDataContext,
   useListView,
   useRecord,
-  useResourceContext,
   useViewContext,
   type ListViewValue,
 } from "~/context";
+import { useScheduleLayoutEffect } from "~/hooks/use-schedule-layout-effect";
+import { FilterSidebar, FilterTabsBar } from "~/scope/filter";
 import { useViewSwitch } from "~/scope/routes/use-tabs";
+import { Box, Stack, useLazyRef, useScreenSize, type SxComponentProps } from "~/ui";
 import {
   DataStore,
   EMPTY_ARRAY,
@@ -32,7 +28,6 @@ import {
   isPlainObject,
   isSchemaBlock,
   type Block,
-  type Container,
   type DataContext,
   type DataRecord,
   type Identifier,
@@ -40,6 +35,7 @@ import {
   type SearchOptions,
   type WidgetBlock,
 } from "~/utils";
+import type { FilterTabs } from "~/utils/filter";
 import format from "~/utils/format";
 import {
   getBlockItems,
@@ -47,25 +43,22 @@ import {
   useRenderBlock,
   WidgetBlockProvider,
 } from "../../block";
-import type {
-  BlockMeta,
-  IndexRecord,
-  ResourceContext,
-  WidgetBlockProps,
-} from "../../types";
+import type { IndexRecord, WidgetBlockProps } from "../../types";
 import { StateWidget } from "./widgets";
-import { useScheduleLayoutEffect } from "~/hooks/use-schedule-layout-effect";
-import type { FilterTabs, FilterWidget } from "~/utils/filter";
-import { FilterSidebar, FilterTabsBar } from "~/scope/filter";
+import { Toolbar } from "~/components";
+import { Root } from "./list";
 
 export function ListView(
-  props: SxComponentProps & { virtual?: boolean; estimatedItemSize?: number },
+  props: SxComponentProps & { 
+    virtual?: boolean; 
+    estimatedItemSize?: number;
+    withFields?: boolean;
+  },
 ) {
-  const { children, ref, estimatedItemSize } = props;
-  console.log("ListView::props:", props);
-  const { dataStore, doSearch, view, evalContext } = useViewContext<ListViewBlock>();
-;
+  const { children, ref, virtual, estimatedItemSize, withFields=true } = props;
 
+  const {filters, dataStore, view, evalContext, bind } = useViewContext<ListViewBlock>();
+  const {filterTabs, filterSidebar } = filters;
   const [itemBlock, setItemBlock] = React.useState<Block>(() => {
     return getBlockItems(
       getBlockItems(view).find(
@@ -74,7 +67,9 @@ export function ListView(
     )[0];
   });
 
-  const switchTo = useViewSwitch();
+  console.log("ListView:: ", { props, dataStore, itemBlock, evalContext });
+
+  //const switchTo = useViewSwitch();
 
   const getContext = React.useCallback(
     (record: IndexRecord) => {
@@ -87,42 +82,37 @@ export function ListView(
     [evalContext],
   );
 
-  const showDetail = React.useCallback(
-    async (record: DataRecord | Identifier) => {
-      const identifier = isPlainObject(record) ? record.id : record;
-      switchTo("form", { route: { id: String(identifier ?? "") } });
-    },
-    [switchTo],
-  );
-
   const render = useRenderBlock();
 
   return (
     <ListViewContext.Provider
       value={React.useMemo(() => {
-        //const canShow = tab.action.views.some((view) => view.type === "form");
-
         return {
           itemBlock,
           setItemBlock,
         } as unknown as ListViewValue;
       }, [itemBlock])}
     >
-      <Stack className="parent-view" ref={ref} data-ui="ListView" width="100%">
+      <Box className="parent-view" ref={ref} data-ui="ListView" width="100%">
         <span className="hidden">{children}</span>
         <ViewLayout>
-          {itemBlock && (
-            <VirtualListView
+          {itemBlock && dataStore && (
+            <Root
               getContext={getContext}
               render={render}
-              dataStore={dataStore}
-              doSearch={doSearch}
               itemBlock={itemBlock}
               estimatedItemSize={estimatedItemSize}
+              withFields={withFields}
+              dataStore={dataStore}
+              filterTabs={filterTabs}
+              filterSidebar={filterSidebar} 
+              virtual={virtual}
+              primary={true}
+              bind={bind}
             />
           )}
         </ViewLayout>
-      </Stack>
+      </Box>
     </ListViewContext.Provider>
   );
 }
@@ -139,165 +129,181 @@ type ViewProps = SxComponentProps & {
     ref?: React.Ref<any>,
   ) => React.ReactNode;
   dataStore: DataStore;
-  doSearch: ResourceContext["doSearch"];
   estimatedItemSize?: number;
   filterTabs?: FilterTabs;
+  withFields: boolean
 };
 
 function VirtualListView({
   getContext,
   itemBlock,
   render,
-  dataStore,
-  doSearch,
   estimatedItemSize,
+  withFields,
   ...props
 }: ViewProps) {
   const { mdDown, smDown } = useScreenSize();
   const context = useViewContext<ListViewBlock>();
-  const { filterTabs, filterSidebar } = context;
+  const { filters = EMPTY_OBJECT, dataStore, view } = context;
+  const { filterTabs, filterSidebar } = filters;
 
-  const isLoadingRef = React.useRef(false);
-  const [model, setModel] = React.useState<VirtualScrollerInitialParams>(
-    () => ({
-      itemCount: undefined,
-      estimatedItemSize,
-    }),
+  const [listState, setListState] = React.useState<{
+    scroller: VirtualScrollerInitialParams,
+    records: DataRecord[],
+    page: number,
+    status?: "loading" | unknown | undefined
+  }>(() => ({
+      scroller: {
+        itemCount: undefined,
+        estimatedItemSize,
+        overscanCount: 5,
+      },
+      records: EMPTY_ARRAY as DataRecord[],
+      page: 0,
+    })
   );
 
-  const lastOffsetRef = React.useRef(-1);
-  const pageRef = React.useRef(dataStore.page);
-  const [state, setState] = React.useState<"loading" | unknown | undefined>();
-  const [counter, setCounter] = React.useState(0);
-  const [records, setRecords] = React.useState([]);
+  const pageRef = useLazyRef(()=> ({
+    page: dataStore.page,
+    lastOffset: dataStore.records.length || -1,
+    isLoading: false,
+  }))
+ 
 
   const search = React.useCallback(
     async (option?: SearchOptions) => {
       try {
-        setState("loading");
-        isLoadingRef.current = true;
-        const result = await doSearch(option);
+        pageRef.current.isLoading = true;
+        console.warn("VirtualListView::search: option:", option);
+        setListState((prev) => ({...prev, status: "loading"}));
+        const result = await context.doSearch({
+          ...option,
+          fields: withFields ? view.schema.fields : undefined,
+          infinite: true,
+        });
         console.log("VirtualListView::search:", result);
-        setState(undefined);
-        setCounter((prev) => prev + 1);
-        setRecords(dataStore.records);
-
+        setListState((prev) => ({...prev, status: undefined}));
+        
         return result;
       } catch (e) {
+        pageRef.current.lastOffset = dataStore.records.length;
         console.error(e);
-        setState(e);
+        setListState((prev) => ({...prev, status: e}));
+        return Promise.resolve({
+          page: context.dataStore.page,
+          records: context.dataStore.records,
+        });
       } finally {
-        isLoadingRef.current = false;
+        pageRef.current.isLoading = false;
       }
     },
-    [doSearch],
+    [context.doSearch],
   );
 
-  const schedule = useScheduleLayoutEffect();
+  React.useEffect(() => {
+    return context.bind({ search });
+  }, [context.bind, search]);
+
+
 
   const fetch = React.useCallback(
     async (offset: number) => {
-      if (lastOffsetRef.current === offset || isLoadingRef.current) {
+      const {page, lastOffset, isLoading} = pageRef.current;
+      if (
+        lastOffset === offset ||
+        isLoading ||
+        offset < dataStore.records.length ||
+        ( page.total != null &&
+          page.limit != null &&
+          (page.limit + offset) >=  page.total
+        )
+      ) {
         return Promise.resolve();
       }
-      lastOffsetRef.current = offset;
-      setState("loading");
-      schedule(1, () => search({ offset }));
-      console.log("VirtualView::fetch:offset:", offset);
-      return Promise.resolve();
+      pageRef.current.lastOffset = offset;
+      pageRef.current.isLoading = true;
+
+      console.log("VirtualListView::fetch:offset:", { offset, lastOffset });
+      return await search({ offset });
     },
     [search],
   );
 
   React.useEffect(() => {
+    pageRef.current.page = dataStore.page;
+    setListState((prev) => ({
+      ...prev,
+      scroller: {
+        ...prev.scroller,
+        itemCount: dataStore.records.length
+      },
+      records: dataStore.records,
+      page: dataStore.page.page ?? 0
+    }));
+
     return dataStore.subscribe(() => {
-      let page = pageRef.current ?? EMPTY_OBJECT;
-      let nPage = dataStore.page;
-      pageRef.current = nPage;
-
-      setModel((prevModel) => {
-        if (prevModel.itemCount === nPage.total || nPage.total === undefined) {
-          return prevModel;
-        }
-        console.log("VirtualView::change::model");
-        return {
-          ...prevModel,
-          itemCount: nPage.total,
-          overscanCount: nPage.offset ?? 0,
-        };
+      let page = dataStore.page;
+      let records = dataStore.records;
+      pageRef.current.page = page;
+      console.log("VirtualListView::change: dataStore:", {
+        ...page,
+        recordCount: records.length,
       });
-
-      setState(undefined);
+      setListState((prev) => ({
+        ...prev,
+        scroller: prev.scroller.itemCount === records.length
+         ? prev.scroller
+         : {
+          ...prev.scroller,
+          itemCount: records.length
+        },
+        records,
+        page: page.page ?? 0
+      }));
     });
   }, [dataStore]);
 
-  React.useEffect(() => {
-    context.bind({ search });
-    //search()
-  }, [context, search]);
+  
+  const {records, scroller, status} = listState;
 
-  //const records = dataStore.records;
   const modelData = React.useMemo(() => {
     return {
-      records: dataStore.records,
+      records: records,
       getContext,
       render,
       itemBlock,
     };
-  }, [records, getContext,  render, itemBlock, model]);
+  }, [records, getContext, render, itemBlock]);
 
-  React.useEffect(() => {
-    const tm = setTimeout(() => (lastOffsetRef.current = -1), 3000);
-    return () => {
-      clearTimeout(tm);
-    };
-  }, [records]);
-
-  console.log("VirtualView::records:", records);
-
+  console.log("VirtualListView::records:", records);
+  
   const renderHeader = React.useCallback(
     (model?: VirtualScroller) => {
-      if (smDown && filterSidebar && filterTabs) {
-        return (
-          <Stack
-            width="100%"
-            height={50}
-            ref={(el: any) => model?.setStickyHeader(el)}
-          >
-            <FilterSidebar mode="tags" />
-            <FilterTabsBar tabs={filterTabs} />
-          </Stack>
-        );
-      }
-      if (smDown && filterSidebar)
-         return <FilterSidebar mode="tags" />
-      
-      return (
-        filterTabs && (
-          <FilterTabsBar
-            tabs={filterTabs}
-            ref={(el: any) => model?.setStickyHeader(el)}
-          />
-        )
-      );
+      return (((filterSidebar && smDown) || filterTabs) && (
+            <Stack
+              className="sticky top-0 bg-card"
+              width="100%"
+              ref={(el: any) => model?.setStickyHeader(el)}
+            >
+              {filterSidebar && smDown && <FilterSidebar mode="tags" />}
+              {filterTabs && <FilterTabsBar tabs={filterTabs} />}
+            </Stack>
+          ));
     },
     [smDown, filterTabs, filterSidebar],
   );
-  
+
   return (
-    <>
-    {renderHeader()}
-    <VirtualList
-      {...props}
-      Item={VirtualItem}
-      model={model}
-      itemData={modelData}
-      fetch={fetch}
-      state={state ? (state === "loading" ? state : "error") : undefined}
-      className="h-full "
-      //renderHeader={renderHeader}
-    />
-    </>
+      <VirtualList
+        {...props}
+        Item={VirtualItem}
+        model={scroller}
+        itemData={modelData}
+        fetch={fetch}
+        state={status ? (status === "loading" ? status : "error") : undefined}
+        className="h-full"
+        renderHeader={renderHeader}
+      />
   );
 }
 
@@ -313,7 +319,6 @@ type ViewModelData = {
     ref?: React.Ref<any>,
   ) => React.ReactNode;
   records: DataRecord[];
-  doSearch: ResourceContext["doSearch"];
 };
 
 const VirtualItem = React.memo(({ i, data, model }: VirtualListItemProps) => {
@@ -321,8 +326,12 @@ const VirtualItem = React.memo(({ i, data, model }: VirtualListItemProps) => {
     data as unknown as ViewModelData;
 
   const record = records[i];
-  const context = React.useMemo(() => getContext(record), [getContext, record]);
+  const context = React.useMemo(() => record ? getContext(record) : EMPTY_OBJECT, [getContext, record]);
   console.log("VirtualItem render: ", { record, itemBlock });
+  delete (itemBlock as any).$frame;
+
+  if (!record) return null;
+
   return (
     <RecordContext.Provider value={record}>
       <EvalDataContext.Provider value={context}>
@@ -347,6 +356,7 @@ const ListField = meta<WidgetBlockProps>(
         </WidgetBlockProvider>
       );
     }
+    //console.log("ListField: format:", {record, value: record[block.schema.name!], props: block.schema})
     return (
       <span {...props} ref={ref}>
         {format(record[block.schema.name!], {
@@ -367,6 +377,7 @@ const ListBlock = meta(
   ({ block }: { block: WidgetBlock }) => {
     const { setItemBlock } = useListView();
     React.useEffect(() => {
+      console.log("ListBlock block:", block);
       console.log("ListBlock first child: ", getBlockItems(block)[0]);
       setItemBlock(getBlockItems(block)[0]);
     }, EMPTY_ARRAY);
@@ -384,7 +395,7 @@ const RootList = meta(ListView, {
   raw: true,
 });
 
-const Wrapper = meta(StateWidget,  {
+const Wrapper = meta(StateWidget, {
   wrap: "prop",
   noProps: true,
 });
@@ -394,5 +405,5 @@ export const List = {
   list: RootList,
   Field: ListField,
   Block: ListBlock,
-  Wrapper
+  Wrapper,
 };

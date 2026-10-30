@@ -1,5 +1,5 @@
 //import { getComputedStyle, isHTMLElement } from "@floating-ui/utils/dom";
-import { isElement } from "@funext/ui";
+import { isElement } from "~/ui";
 
 export type ScrollAxis = "horizontal" | "vertical";
 

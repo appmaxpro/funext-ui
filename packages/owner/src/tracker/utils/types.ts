@@ -5,6 +5,17 @@ export interface TrackerDevice{
   category?: string;
   status: string;
   uniqueId: string;
+  attributes: any;
+  lastUpdate?: string;
+  positionId?: number;
+  phone?: string;
+  model?: string;
+  contact?: string;
+  disabled?: boolean;
+  expirationTime?: string;
+  driverId: null;
+  currentOrderId: null;
+  workingStatus?: string;
   payload?: {
     currentTripId?: string|number;
     tripNumber?: string;
@@ -21,6 +32,7 @@ export interface TrackerDevices{
   selectedId?: number|null;
   selectedIds: number[];
   selectTime?: number;
+  count: number;
 }
 
 export type Position = {

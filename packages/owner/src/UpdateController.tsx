@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { Snackbar, IconButton } from '@funext/ui';
+import { Snackbar, IconButton } from '~/ui';
 //import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 

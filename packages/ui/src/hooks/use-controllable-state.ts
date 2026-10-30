@@ -46,7 +46,7 @@ export function useControllableState<T>({
   }
   /* eslint-enable react-hooks/rules-of-hooks */
 
-  const setValue = React.useCallback<SetStateFn<T>>(
+  const setValue = React.useCallback<React.Dispatch<React.SetStateAction<T>>>(
     (nextValue) => {
       if (isControlled) {
         const value = isFunction(nextValue) ? nextValue(prop) : nextValue;

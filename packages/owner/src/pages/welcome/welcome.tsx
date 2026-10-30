@@ -1,11 +1,5 @@
 import React from "react";
-import logoDark from "./logo-dark.svg";
-import logoLight from "./logo-light.svg";
-
-import SvgIcon, { createSvgIcon } from "@funext/ui/SvgIcon";
-
-import Menu from "@funext/icons/Menu";
-import { Accordion, Button, IconButton } from "@funext/ui";
+import { Button } from "~/ui";
 
 export function Welcome() {
   const [input, setInput] = React.useState("");
@@ -17,30 +11,6 @@ export function Welcome() {
       <div className="flex-1 flex flex-col items-center gap-5 min-h-0 w-full p-6">
         <a href="/owl">OwlApp</a>
         
-
-        <Accordion>
-          <Accordion.Header>Input</Accordion.Header>
-          <Accordion.Body>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              rows={10}
-              className="grow border-1 border-gray-300 p-4"
-            />
-          </Accordion.Body>
-        </Accordion>
-
-        <Accordion>
-          <Accordion.Header>Output</Accordion.Header>
-          <Accordion.Body>
-            <textarea
-              value={output}
-              readOnly
-              rows={10}
-              className="grow border-1 border-gray-300 p-4"
-            />
-          </Accordion.Body>
-        </Accordion>
 
         <div className="w-full p-5">
           <Button onClick={onCompile}>Compile</Button>

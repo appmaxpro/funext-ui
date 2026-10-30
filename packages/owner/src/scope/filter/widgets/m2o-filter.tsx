@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ItemFilter, ItemFilterHeader, LoadMoreFilter } from "./item-filter";
 import {
   List, useLazyRef
-} from "@funext/ui";
+} from "~/ui";
 import { DataStore, EMPTY_ARRAY, getWidgetProp, useOptionLabel, type Identifier } from "~/utils";
 import type { FilterFieldRelation } from "~/utils/filter";
 import type { FilterProps } from "../types";

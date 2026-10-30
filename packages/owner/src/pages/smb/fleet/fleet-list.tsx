@@ -3,7 +3,7 @@ import VirtualList, {
   createVirtualItemRef,
   type VirtualListItemProps,
 } from "~/components/shared/virtual-list";
-import List from "@funext/ui/List";
+import List from "~/ui/List";
 import { useViewDataContext } from "~/context";
 
 const Item = React.memo<VirtualListItemProps>(({ model, i, data }) => (

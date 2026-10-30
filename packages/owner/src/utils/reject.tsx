@@ -1,10 +1,9 @@
-import { dialogs } from "~/hooks/use-dialogs";
 
-//import { alerts } from "@/components/alerts";
-import { Box } from "@funext/ui";
+import { Box } from "~/ui";
 import { i18n } from "./i18n";
 import { session } from "./session";
 import type { ErrorReport } from "./data-types";
+import app from "./app";
 
 
 
@@ -54,11 +53,11 @@ const showDialog = ({
   message?: string;
   stacktrace?: string;
 }) => {
-  dialogs.confirm(message, {
+  app.dialogs.confirm(message, {
     title,
     onClose: async (result) => {
       if (result) {
-        await dialogs.confirm(
+        await app.dialogs.confirm(
           <Box as="pre" p={2} m={0}>
             {stacktrace}
           </Box>,
@@ -74,5 +73,5 @@ const showDialog = ({
 };
 
 const showAlert = ({ title, message }: { title: string; message?: string }) => {
-  dialogs.alert(message, { title });
+  app.dialogs.alert(message, { title });
 };

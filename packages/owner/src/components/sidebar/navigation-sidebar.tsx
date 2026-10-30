@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
-import Divider from "@funext/ui/Divider";
-import List from "@funext/ui/List";
+import {Divider, List} from "~/ui";
 import type {
   Navigation,
   OutletRoute,
@@ -211,6 +210,7 @@ function NavigationSidebar({
         width: isMini ? Dimensions.sidebarMiniWidth : "auto",
       }}
       component='div'
+      data-ui="NavList"
       isolate
     >
       {subNavigation
@@ -243,7 +243,7 @@ function NavigationSidebar({
             const nextItem = subNavigation[navigationItemIndex + 1];
 
             return (
-              <li key={`divider-${depth}-${navigationItemIndex}`}>
+              <span key={`divider-${depth}-${navigationItemIndex}`}>
                 <Divider
                   sx={{
                     borderBottomWidth: 2,
@@ -255,7 +255,7 @@ function NavigationSidebar({
                       : {}),
                   }}
                 />
-              </li>
+              </span>
             );
           }
 

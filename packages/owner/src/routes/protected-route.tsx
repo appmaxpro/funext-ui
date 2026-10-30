@@ -14,14 +14,14 @@ import { Cache } from "~/utils/cache";
 import * as PAGES from "../pages";
 import { HttpWatch } from "~/components/http-watch";
 import RouteView, {getNullView} from "./route-view";
-import { Box, Presence, useRefs } from "@funext/ui";
+import { Box, Presence, useRefs } from "~/ui";
 import type { OutletRoute } from "~/utils/types";
 import { getItemPath } from "~/utils/navigation";
 import { useNavContext } from "~/context";
 import { Toolbar } from "~/components/shared/toolbar";
 import { useRouter } from "~/hooks/use-router";
 import { useActivePageRoute } from "~/hooks";
-//import { useIsAnimating } from "@funext/ui/lib/presence/presence";
+//import { useIsAnimating } from "~/ui/lib/presence/presence";
 
 
 function ViewRef({

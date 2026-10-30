@@ -1,11 +1,8 @@
 import React from "react";
-import { DataViews } from "~/scope/views/data/data-views";
-import { Layout } from "~/components/layout/layout";
-import * as PAGES from "../pages";
 import { HttpWatch } from "~/components/http-watch";
-import RouteView, { getNullView } from "./route-view";
-import type { OutletRoute } from "~/utils";
-import { Outlet, useRouter } from "~/hooks/use-router";
+import { Layout } from "~/components/layout/layout";
+import { EMPTY_OBJECT, type OutletRoute } from "~/utils";
+import RouteView from "./route-view";
 import type { Params } from "./types";
 
 export const RouteLayout = React.memo<{
@@ -17,31 +14,21 @@ export const RouteLayout = React.memo<{
   const children = React.useMemo(() => {
     let relRoute = route;
     let layoutRoute = route;
+    let isLayout = false;
     while (layoutRoute) {
       if (layoutRoute.props?.isLayout) {
         relRoute = layoutRoute;
+        isLayout = true;
         break;
       }
       layoutRoute = layoutRoute.parent as OutletRoute;
     }
 
-    const { layout, props, model, custom } = relRoute?.props as any;
-
-    const Comp = (
-      relRoute.Component && relRoute.Component != RouteView
-        ? relRoute.Component
-        : relRoute?.CP && relRoute.Component != RouteView
-          ? PAGES[relRoute.CP as keyof typeof PAGES] || getNullView(relRoute)
-          : getNullView(relRoute)
-    ) as React.ComponentType;
+    const { layout } = relRoute?.props as any ?? EMPTY_OBJECT;
 
     return (
       <Layout {...layout}>
-        {model ? (
-          <DataViews Comp={Comp} {...props} model={model} />
-        ) : (
-          <Comp {...props} />
-        )}
+        <RouteView route={relRoute} />
         <HttpWatch />
       </Layout>
     );

@@ -1,34 +1,35 @@
 import { useEffect, useState } from "react";
 import {
-  useMediaQuery,
-  MenuItem,
-  Menu,
+  Alert,
+  Box,
   Button,
+  IconButton,
   Input,
   Link,
+  Menu,
   Snackbar,
-  IconButton, Box,
-  Spinner
-} from "@funext/ui";
+  Spinner,
+  SvgIcons,
+  useMediaQuery,
+  useTheme,
+} from "~/ui";
 // ReactCountryFlag from "react-country-flag";
-import { useTheme } from "@funext/ui/styles";
 import { useNavigate } from "react-router";
 
-import AuthLayout from "./auth-layout";
+import { Icons } from "~/components";
+import { useLocalization } from "~/context";
+import { useCatch } from "~/hooks/use-catch";
+import { useLocalStorage } from "~/hooks/use-local-storage";
+import { useErrorStore } from "~/store/errors";
+import { useTrackerSession } from "~/tracker/store/session";
+import { fetch } from "~/utils/client";
+import { i18n } from "~/utils/i18n";
+import { session } from "~/utils/session";
 import {
   handleLoginTokenListeners,
-  nativePostMessage
+  nativePostMessage,
 } from "../../tracker/utils/native-interface";
 import LogoImage from "./LogoImage";
-import { i18n } from "~/utils/i18n";
-import { useTrackerSession } from "~/tracker/store/session";
-import { SvgIcons } from "@funext/ui/components";
-import { useCatch } from "~/hooks/use-catch";
-import { useLocalization } from "~/context";
-import { useLocalStorage } from "~/hooks/use-local-storage";
-import { fetch } from "~/utils/client";
-import { session } from "~/utils/session";
-import { Icons } from "~/components";
 
 const optionSx = {
   position: "fixed",
@@ -41,6 +42,7 @@ const optionSx = {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const errorPush = useErrorStore((state) => state.push);
   const theme = useTheme();
   const t = i18n.get;
 
@@ -51,13 +53,12 @@ const LoginPage = () => {
     name: values[1].name,
   }));
 
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
 
   const [email = "", setEmail] = useLocalStorage("loginEmail");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
 
-  const registrationEnabled = false;
   const application = session.info?.application;
   const languageEnabled = application?.disableLoginLanguage !== true;
 
@@ -74,7 +75,7 @@ const LoginPage = () => {
 
   const handlePasswordLogin = async (event: any) => {
     event.preventDefault();
-    setFailed(false);
+    setFailed(null);
     try {
       const query = `email=${encodeURIComponent(email!)}&password=${encodeURIComponent(password)}`;
       const response = await session
@@ -83,22 +84,40 @@ const LoginPage = () => {
           password: password!,
           code,
         })
-        .catch(async (response:Response) => {
+        .catch(async (response: Response) => {
+          
+         
           if (
             response.status === 401 &&
             response.headers.get("WWW-Authenticate") === "TOTP"
           ) {
             setCodeEnabled(true);
           } else {
-            throw Error(await response.text());
+            let message = '';
+            try{
+              const result = await response.json() as any;
+              if(result && result.error) {
+                message = result.error.message ?? String(result.error);
+              } 
+            } catch(e) {
+              message = await response.text() as any;
+            }
+
+            setFailed(message);
+            errorPush(message);
+            throw Error(message);
           }
         });
 
       if (response?.user) {
-        navigate("/");
+        //navigate("/");
       }
+
+      console.log("Response:", response)
+
     } catch (error) {
-      setFailed(true);
+      console.error("Error:", error)
+      setFailed(String(error));
       setPassword("");
     }
   };
@@ -136,7 +155,7 @@ const LoginPage = () => {
   }
 
   return (
-    <AuthLayout>
+    <>
       <Box sx={optionSx}></Box>
       <div className="flex flex-col gap-4">
         {useMediaQuery(theme.breakpoints.down("lg")) && (
@@ -192,7 +211,7 @@ const LoginPage = () => {
               </Button>
             </Menu.Trigger>
             {languageList.map((it) => (
-              <MenuItem
+              <Menu.Item
                 className="py-2 px-3"
                 key={it.code}
                 title={it.name}
@@ -202,7 +221,7 @@ const LoginPage = () => {
                   {/*<ReactCountryFlag countryCode={it.country} svg />*/}
                 </Box>
                 {it.name}
-              </MenuItem>
+              </Menu.Item>
             ))}
           </Menu>
         )}
@@ -215,7 +234,7 @@ const LoginPage = () => {
         >
           {t("loginLogin")}
         </Button>
-        {(application?.openIdForce) && (
+        {application?.openIdForce && (
           <Button
             onClick={() => handleOpenIdLogin()}
             variant="filled"
@@ -225,7 +244,7 @@ const LoginPage = () => {
           </Button>
         )}
         <div className="flex justify-center gap-4 mt-4">
-          {(application?.resetPasswordEnabled) && (
+          {application?.resetPasswordEnabled && (
             <Link
               //onClick={() => navigate("/auth/reset-password")}
               //className={classes.link}
@@ -237,6 +256,11 @@ const LoginPage = () => {
             </Link>
           )}
         </div>
+        {failed && (
+          <Alert color="error" variant="ghost">
+            {failed}
+          </Alert>
+        )}
       </div>
       <Snackbar
         open={!!announcement && !announcementShown}
@@ -251,7 +275,7 @@ const LoginPage = () => {
           </IconButton>
         }
       />
-    </AuthLayout>
+    </>
   );
 };
 

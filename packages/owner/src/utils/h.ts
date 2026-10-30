@@ -2,7 +2,7 @@ import isPropValid from "@emotion/is-prop-valid";
 import styled from "@emotion/styled";
 import React from "react";
 import { EMPTY_OBJECT, EMPTY_RECORD } from "./constant";
-import { cn } from "@funext/ui";
+import { cn } from "~/ui";
 import * as ReactIs from "react-is";
 import get from "lodash/get";
 // Creates an array of React.createElement arguments in a performant way

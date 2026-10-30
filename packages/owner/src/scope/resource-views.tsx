@@ -1,51 +1,34 @@
 import React, {
   memo,
-  useCallback,
   useMemo,
   useRef,
-  useState,
-  useSyncExternalStore,
+  useSyncExternalStore
 } from "react";
 
 import {
   Box,
   Flex,
   Spinner,
-  useFloatingContext,
-  useInViewport,
-} from "@funext/ui";
+  useInViewport
+} from "~/ui";
 
 import { ErrorBox } from "~/components/shared/error-box";
 import { useSession } from "~/hooks/use-session";
 import { DataStore } from "~/utils/data-store";
-import {
-  isRecordProps,
-  type Domains,
-  type FilterView,
-  type ResourceView,
-  type Schema,
-  type SearchOptions,
-} from "~/utils/data-types";
 
-import { isEmpty, isEqual } from "lodash";
-import { ResourceContext } from "~/context";
-import { removeEmpty, type Container, type ViewBlock } from "~/utils";
-import { EMPTY_ARRAY, EMPTY_OBJECT, EMPTY_RECORD } from "~/utils/constant";
-import { buildDomain, type FilterTabs, type FilterWidget } from "~/utils/filter";
+import { isEqual } from "lodash";
+import { Layout } from "~/components/layout/layout";
+import { EvalDataContext, ResourceContext, ViewContext } from "~/context";
+import { type ViewBlock } from "~/utils";
+import { EMPTY_OBJECT } from "~/utils/constant";
 import {
   ErrorBoundary,
   type FallbackProps,
 } from "../components/app/error-boundary";
-import { BlockView, evalProps, renderBlockItems } from "./block/block";
-import type { ListModifiers, ListParams, Tab } from "./types";
-import { useListParams } from "./utils/useListParams";
+import { getMeta } from "./block";
+import { evalProps, renderBlockItems, unSafeRenderBlock } from "./block/block";
+import type { Tab } from "./types";
 import { ViewProvider } from "./view-provider";
-
-type ViewContainerProps = {
-  type: ResourceView["type"];
-  tab: Tab;
-  view: ViewBlock<ResourceView>;
-};
 
 function ViewContainer({
   tab,
@@ -53,12 +36,14 @@ function ViewContainer({
 }: {
   tab: Tab;
   children: React.ReactNode;
+  hasError?: boolean;
 }) {
-  const { visible, node, ref } = useInViewport(tab.state.block?.type);
+  const { ref } = useInViewport(tab.state.block?.type);
   //const size = useResizeDetector(node, false);
 
   if (children) {
     //let child =
+
     return (
       <Box
         ref={ref}
@@ -83,36 +68,61 @@ function ViewError({ error, onReset }: FallbackProps) {
     <ErrorBox
       status={500}
       error={session.data?.user?.technical ? error : undefined}
-      onReset={onReset}
+      onRetry={onReset}
     />
   );
 }
-
-function ViewPane({ tab, dataStore, modifiers, query }: { tab: Tab; dataStore?: DataStore; 
-  modifiers?: ListModifiers ;
-  query?: ListParams;
-}) {
+function ChildView({ children }: any) {
+  return children;
+}
+function ViewPane({ tab, dataStore }: { tab: Tab; dataStore?: DataStore }) {
   //const [type, setType] = useState(() => tab.state.type);
   console.log("ViewPane tab state:", tab.state);
-  const getType = useCallback(() => tab.state.type, [tab]);
-  const type = useSyncExternalStore(tab.subscribe, getType);
-  const prevBlockRef = useRef<ViewBlock>();
-  console.log("Change view type:", type);
+  const getType = useMemo(() => {
+    function update() {
+      return {
+        type: tab.state.type,
+        pending: tab.state.pending,
+        error: tab.state.pendingResult?.error,
+        onRetry: tab.state.pendingResult?.retry,
+      };
+    }
+    let result = update();
+    let prevSate = tab.state;
+    return () => {
+      if (prevSate === tab.state) {
+        return result;
+      }
+      prevSate = tab.state;
+      const newResult = update();
+      console.log("ViewPane: changed:", !isEqual(result, newResult))
+      result = isEqual(result, newResult) ? result : newResult;
+      
+      return result;
+    };
+  }, [tab]);
+  const { type, pending, error, onRetry } = useSyncExternalStore(
+    tab.subscribe,
+    getType,
+  );
+  const prevBlockRef = useRef<ViewBlock>(null);
+  console.log("ViewPane:: Change view type:", type);
 
   const children = useMemo(() => {
+    console.log("Change Render children:", type);
     if (tab.state.prevType !== type && tab.state.prevType) {
       const prevProp = tab.state.props?.[tab.state.prevType];
       if (prevProp?.actions?.saveState) {
         prevProp.actions.saveState(prevProp);
       }
     }
-    if(prevBlockRef.current) {
+    if (prevBlockRef.current) {
       prevBlockRef.current.open = false;
     }
     const block = tab.state.block;
     block.open = true;
     prevBlockRef.current = block;
-    console.log("Change view block type: ", block);
+
     if (!block) {
       return (
         <Flex items="center" justify="center" height="100%">
@@ -120,21 +130,38 @@ function ViewPane({ tab, dataStore, modifiers, query }: { tab: Tab; dataStore?: 
         </Flex>
       );
     }
-
-    if(block.$rend) {
+    /*
+    if (block.$rend) {
       return block.$rend;
-    }
-    
+    }*/
+
     const vProps = {
       view: block,
     };
     let props: any;
-    props = evalProps(block, tab.action.evalContext) ?? {};
-    const children = renderBlockItems(block, tab.action.evalContext);
-    if (children) props.children = children;
-    block.props = props;
+    const ctx = pending
+      ? tab.action.evalContext._subContext({ onRetry, error, pending })
+      : tab.action.evalContext;
 
-    const Comp = typeof block.tag === "function" ? block.tag : BlockView;
+    console.log("ViewPane:: Change view block: ", block);
+
+    props = !getMeta(block.tag) ? (evalProps(block, ctx) ?? {}) : undefined;
+    const children = props ? renderBlockItems(block, ctx) : undefined;
+    if (children) props.children = children;
+    if (props) block.props = props;
+    const Comp = typeof block.tag === "function" ? block.tag : ChildView;
+    
+    
+    if (pending) {
+      return (
+        <EvalDataContext value={ctx}>
+          <ViewContext.Provider value={vProps}>
+            <Comp {...props} />
+          </ViewContext.Provider>
+        </EvalDataContext>
+      );
+    }
+
     const comp = (
       <ErrorBoundary
         //key={uniqueId("rend_")}
@@ -148,24 +175,29 @@ function ViewPane({ tab, dataStore, modifiers, query }: { tab: Tab; dataStore?: 
         }}
       >
         <ViewProvider value={vProps}>
-          <Comp {...props} />
+          {unSafeRenderBlock(block, ctx)}
         </ViewProvider>
       </ErrorBoundary>
     );
-    block.$rend = comp;
+    //block.$rend = comp;
     return comp;
-  }, [type, tab]);
+  }, [tab, type, pending, error, dataStore]);
 
-  return (
-    <ViewContainer tab={tab}>
-      {children}
-    </ViewContainer>
-  );
+  let container = <ViewContainer tab={tab}>{children}</ViewContainer>;
+  if (!!error) {
+    container = (
+      <Layout props={EMPTY_OBJECT} type={undefined} enable>
+        {container}
+      </Layout>
+    );
+  }
+  return container;
 }
 
 export type ViewsProps = {
   model?: string;
   tab: Tab;
+  pending?: boolean;
 };
 
 const ResourceViews = function DataViews({
@@ -196,243 +228,28 @@ const ResourceViews = function DataViews({
     [model, limit, domain],
   );
 
-  const hasFilter =
-    !!tab.filter && (tab.filter.form || tab.filter.schema.sidebar);
-
-  return hasFilter ? (
-    <ResourceFilterProvider tab={tab} dataStore={dataStore} />
-  ) : (
-    <ResourceProvider tab={tab} dataStore={dataStore} />
-  );
-};
-
-const ResourceProvider = ({
-  tab,
-  dataStore,
-}: {
-  tab: Tab;
-  dataStore: DataStore;
-}) => {
-  console.log("DataViews:: new DataStore");
-
-  const doSearch = useCallback(
-    async (newOption?: SearchOptions) => {
-      if (true) throw Error("Invalid search call");
-      return await dataStore.search(newOption ?? EMPTY_OBJECT);
-    },
-    [dataStore],
-  );
-
   return (
     <ResourceContext.Provider
       value={useMemo(
         () => ({
           dataStore,
           tab,
-          doSearch,
         }),
-        [dataStore, doSearch],
+        [dataStore, tab],
       )}
     >
-      <ViewPane tab={tab} dataStore={dataStore} />
+      <ViewPane tab={tab} />
     </ResourceContext.Provider>
   );
 };
 
-const ResourceFilterProvider = ({
-  tab,
-  dataStore,
-}: {
-  tab: Tab;
-  dataStore: DataStore;
-}) => {
-  const resource = tab.action;
-  const popup = !!useFloatingContext() || !!tab.dashlet || !!tab.popup;
-
-  const blocks = useMemo(() => {
-    return {
-      resource: tab.id,
-      syncWithLocation: !popup && tab.locationSync,
-      defaults: resource?.filter?.defaults,
-      sort: dataStore.options.order,
-      pageSize: dataStore.page.limit,
-    };
-  }, [tab, dataStore]);
-
-  const [query, modifiers] = useListParams(blocks, !popup);
-
-  const { signature, page, pageSize, filter, sort } = query;
-
-  const queryRef = useRef(query);
-  
-  // advanced search
-  const [options, setOptions] = useState<SearchOptions>({});
-
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
-
-  React.useEffect(() => {
-    const prevQuery = queryRef.current
-    const prevFilter = prevQuery.filter;
-    queryRef.current = query
-    const { page, pageSize, filter, sort } = query;
-
-    console.log("ResourceFilterProvider:filter:", filter, ", prevFilter:", prevFilter)
-
-    const isChanged = (options: SearchOptions) => {
-      const limit = Math.max(1, pageSize ?? options.limit ?? 1);
-      const offset = (Math.max(page, 1) - 1) * limit;
-      const newPage = Math.floor(offset / limit) + 1;
-
-      return options.order !== sort || limit !== pageSize || newPage !== page;
-    };
-    const context = resource.context;
-   
-    setOptions((options) => {
-
-      let newDomain = options.domain;
-      if(!isEqual(prevFilter, filter)) {
-        newDomain = evalFilter(resource.filter!, filter, resource.evalContext, resource.props)[1] as Domains
-        
-      }
-
-      newDomain = isEqual(options.domain, newDomain)
-        ? options?.domain
-        : newDomain;
-      
-      
-
-      if (newDomain === options.domain && !isChanged(options)) {
-        return options;
-      }
-
-      const limit = Math.max(1, pageSize ?? options.limit ?? 1);
-
-      const dsPage = dataStore.page;
-      if (dsPage.pages && page > 1 && page > dsPage.pages) {
-        const pp = dsPage.page;
-        modifiers.setPageInfo({
-          page: dsPage.page ?? 1,
-          pages: dsPage.pages ?? 0,
-          offset: dsPage.offset ?? 0,
-          total: dsPage.total ?? 0,
-        });
-        
-        //return options;
-      }
-
-      const offset = (Math.max(page, 1) - 1) * limit;
-
-      options = {
-        ...options,
-        domain: newDomain as Domains,
-        offset,
-        limit,
-        context,
-      };
-
-      if (sort != null) {
-        options.order = sort;
-      }
-      console.log("ResourceFilterProvider:domain:", newDomain);
-      optionsRef.current = options;
-      (modifiers as any).commit()
-      return options;
-    });
-
-  }, [setOptions, query]);
-
-
-  const doxSearch = useCallback(
-    async (newOption?: SearchOptions) => {
-      return await dataStore.search(newOption ?? EMPTY_OBJECT);
-    },
-    [dataStore],
-  )
-  const doSearch = useCallback(
-    async (newOption?: SearchOptions) => {
-      const options = optionsRef.current;
-      //if (true) throw Error("Invalid search call");
-      const domain = [
-        ...(options.domain ?? EMPTY_ARRAY),
-        ...(newOption?.domain ?? EMPTY_ARRAY),
-      ];
-
-      const data = await dataStore.search({
-        ...options,
-        ...newOption,
-        domain: domain.length ? domain : undefined,
-        context: {},
-      });
-      const page = dataStore.page;
-      const ls = queryRef.current;
-      if (
-        page.limit !== ls.pageSize ||
-        page.offset !== ls.offset ||
-        page.page !== ls.page ||
-        page.total !== ls.total ||
-        page.pages !== ls.pages
-      ) {
-        modifiers.setPageInfo({
-          page: page.page ?? 1,
-          pages: page.pages ?? 0,
-          offset: page.offset ?? 0,
-          total: page.total ?? 0,
-        });
-      }
-      if (page.limit !== ls.pageSize) {
-        modifiers.setPageSize(page.limit ?? ls.pageSize);
-      }
-
-      return data;
-    },
-    [dataStore],
-  );
-
+const NullDataStoreViews = memo(function Views({ tab }: { tab: Tab }) {
   return (
-    <ResourceContext.Provider
-      value={useMemo(
-        () => ({
-          query,
-          modifiers,
-          dataStore,
-          tab,
-          doSearch,
-        }),
-        [dataStore, blocks, signature, doSearch],
-      )}
-    >
-      <ViewPane tab={tab} dataStore={dataStore} query={query} modifiers={modifiers}/>
+    <ResourceContext.Provider value={{ tab }}>
+      <ViewPane tab={tab} />
     </ResourceContext.Provider>
   );
-};
-
-function evalFilter(
-  res: FilterView,
-  filter: any,
-  context: any,
-  props: Schema["props"],
-): [values: any, Domains[] | undefined] {
-  const ctx = context._subContext({
-    ...(isRecordProps(props) ? props : EMPTY_RECORD),
-    ...filter,
-  });
-
-  const newValues = {};
-
-  const domains = buildDomain(
-    {
-      widget: "group",
-      items: [res.form, res.sidebar].filter(Boolean),
-    } as any,
-    newValues,
-    ctx,
-  );
-
-  console.log("evalFilter::domains:", domains)
-
-  return [newValues, Array.isArray(domains) ? domains : undefined];
-}
+});
 
 export const ResViews = memo(function Views(props: ViewsProps) {
   const { tab, model = tab.action.model } = props;
@@ -441,6 +258,6 @@ export const ResViews = memo(function Views(props: ViewsProps) {
   return model ? (
     <ResourceViews model={model} tab={tab} />
   ) : (
-    <ViewPane tab={tab} />
+    <NullDataStoreViews tab={tab} />
   );
 });

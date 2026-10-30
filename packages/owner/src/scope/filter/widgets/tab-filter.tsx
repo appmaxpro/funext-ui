@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { i18n } from "~/utils";
 import type { FilterTabs } from "~/utils/filter";
 import type { FilterProps } from "../types";
 import Tabs from "~/components/shared/tabs";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 
 export function TabFilter({
   item,
@@ -34,20 +34,21 @@ export function TabFilter({
     return tabs;
   });
 
-  const [activeTab, setActiveTab] = useState<number>(0);
-
+  //const [activeTab, setActiveTab] = useState<number>(0);
+  const activeTab = useMemo(() => {
+    return Math.max(
+      0,
+      options.findIndex((tab) => tab.value === value),
+    );
+  }, [value, options]);
+  
   const onTabClick = useCallback(
     (e: React.BaseSyntheticEvent<object, any, any>, index: number) => {
       e.preventDefault();
-      //if(index === activeTab)
-      setActiveTab(index);
+      onChange(options[index].value);
     },
-    [setActiveTab],
+    [onChange, options],
   );
-
-  useEffect(() => {
-    onChange(options[activeTab].value);
-  }, [activeTab, onChange]);
 
   if (!tabs.current.length) return null;
 

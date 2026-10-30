@@ -10,7 +10,7 @@ import { useNavContext, RouterContext } from "~/context";
 import { matchPath } from "~/utils/navigation";
 import qs from "query-string";
 import { EMPTY_OBJECT, type OutletRoute } from "~/utils";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 import { RouteLayout } from "./route-layout";
 import type { RouterState } from "./types";
 
@@ -129,10 +129,10 @@ export function RouterProvider() {
   if (!router || !router.route) {
     return "Empty RouterContext.Provider";
   }
-
+  const custom = !location.pathname.startsWith("/res/");
   return (
     <RouterContext.Provider value={router}>
-      {router.route.props?.custom ? (
+      {custom ? (
         <RouteLayout route={router.route} params={router.params} />
       ) : (
         <Outlet />

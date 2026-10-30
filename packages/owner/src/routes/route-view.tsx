@@ -1,62 +1,42 @@
-import { useIsMounted } from "@funext/ui";
 import React from "react";
-import { NavRouteTabs } from "~/scope/views/data/data-view-tabs";
 import { useNavContext } from "~/context";
-import { useActivePageRoute } from "~/hooks";
+import { DataViews } from "~/scope/views";
 import { getItemPath } from "~/utils/navigation";
 import type { NavRoute, OutletRoute } from "~/utils/types";
 import * as PAGES from "../pages";
-import { useTabsContext, type NavTabsNode } from "./types";
-import { ViewTabs } from "./view-tabs";
+import { Loader } from "~/components";
+import { EMPTY_OBJECT } from "~/utils";
+import { Outlet } from "react-router";
 
-const RouteView: React.ComponentType<{
-  children?: JSX.Element;
-  inTabs?: boolean;
-}> = ({ children, inTabs }) => {
-  const nav = useActivePageRoute();
-  return (
-    <OutletView inTabs={inTabs} route={nav}>
-      {children}
-    </OutletView>
-  );
-};
+function RouteView({ route }: { route: OutletRoute }) {
+  console.log("RouteView:", route);
 
-RouteView.displayName = "RouteView";
+  const children = React.useMemo(() => {
 
-const OutletView: React.ComponentType<{
-  children?: JSX.Element;
-  inTabs?: boolean;
-  route?: OutletRoute;
-}> = ({ children, inTabs, route }) => {
-  const nav = route;
-  console.log("View::activePage:", nav);
+    if(route.Component && !route.CP) {
+       //return <Outlet/>
+    }
 
-  const Comp = React.useMemo(
-    () =>
-      (nav?.CP &&
-        (PAGES[nav.CP as keyof typeof PAGES] as React.ComponentType)) ||
-      (RouteView !== nav?.Component ? nav?.Component : null),
-    [nav],
-  );
+    const Comp = ((route.CP
+      ? PAGES[route.CP as keyof typeof PAGES]
+      : route.Component) ?? getNullView(route)) as React.FunctionComponent;
 
-  if (!inTabs && nav?.parent?.type === "tabs") {
-    return (
-      <ViewTabs Comp={Comp} nav={nav.parent} childNav={nav}>
-        {children}
-      </ViewTabs>
-    );
-  }
+    const { props, model, lazy } = route.props as any ?? EMPTY_OBJECT;
+    if (model) {
+      return <DataViews Comp={Comp as any} {...props} model={model} />;
+    }
+    if (lazy) {
+      return (
+        <React.Suspense fallback={<Loader />}>
+          <Comp {...props}/>
+        </React.Suspense>
+      );
+    }
+    return <Comp {...props}/>
+  }, [route]);
 
-  if (nav?.type === "tabs") {
-    return <ViewTabs nav={nav}>{children}</ViewTabs>;
-  }
-
-  return (
-    children || (Comp ? <Comp /> : children || `Null view path: ${nav?.path}`)
-  );
-};
-
-OutletView.displayName = "OutletView";
+  return children;
+}
 
 const nullViewsCache = new WeakMap<NavRoute, React.FunctionComponent>();
 

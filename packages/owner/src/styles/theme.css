@@ -130,6 +130,10 @@
 }
 
 
+[cmdk-list-sizer] > div{
+  z-index: unset !important;
+}
+
 
 
 

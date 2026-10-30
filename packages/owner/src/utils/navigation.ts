@@ -148,13 +148,19 @@ export function matchPath(
 export function getItemPath(routes: Navigation, item: OutletRoute): string {
 
   const map = getItemToPathMap(routes);
-  const path = map.get(item);
+  let path = map.get(item);
   
   if(!path) {
-    if(item.parent) {
-      return getItemPath(routes, item.parent)
+    let parent = item.parent;
+    while(parent) {
+      path = map.get(parent);
+      if(path) {
+        return path
+      }
+      parent = parent.parent;
     }
-    console.warn(`Item (${item.title}) not found in routes: `, routes)
+    console.warn(`Item (${item.title}) not found in routes: `, routes);
+    return "/";
   }
 
   invariant(path, `Item (${item.title}) not found in routes: ${routes}`);

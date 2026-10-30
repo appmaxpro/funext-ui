@@ -1,4 +1,4 @@
-import { Box, IconButton, Tooltip, useRtl, useScreenSize } from "@funext/ui";
+import { Box, IconButton, Tooltip, useRtl, useScreenSize } from "~/ui";
 import { Icons } from "~/components/shared/icons";
 
 import { useActivePageRoute, useRouter } from "~/hooks";

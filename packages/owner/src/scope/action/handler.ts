@@ -38,7 +38,7 @@ export class DefaultActionHandler implements ActionHandler {
 
   async validate() {}
 
-  async refresh(target?: string) {}
+  async refresh() {}
 
   async close() {}
 

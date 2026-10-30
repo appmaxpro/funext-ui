@@ -1,9 +1,10 @@
-import { Box, clsx, cn } from "@funext/ui";
+import { Box, clsx, cn } from "~/ui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Input, Button, type InputProps, Link, noop } from "@funext/ui";
+import { Input, Button, type InputProps, Link } from "~/ui";
 import styles from "./string.module.scss";
 import repeat from "lodash/repeat";
 import { useAfterActions } from "../hooks";
+import { noop } from "lodash";
 
 function DottedViewerInput({ value: val, ...inputProps }: InputProps) {
   const [value, setVal] = useState(val);

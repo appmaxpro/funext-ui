@@ -1,4 +1,4 @@
-import { Button, clsx, Dialog, IconButton, List, Spinner, Text } from "@funext/ui";
+import { Button, clsx, Dialog, IconButton, List, Spinner, Text } from "~/ui";
 import React, { useMemo } from "react";
 import { i18n } from "~/utils";
 import type { FilterProps, FilterPropsType } from "../types";
@@ -134,10 +134,9 @@ export const LoadMoreFilter = React.forwardRef<
         "py-1 px-1 hover:bg-primary hover:text-white text-primary rounded text-center",
         className,
       )}
-      endIcon={<Icons.ArrowDown size={24} />}
       onClick={onClick}
     >
-      {i18n.get("Load More")}
+      <List.Text primary={i18n.get("Load More")}/>
       <List.Suffix className="text-2xl">
         <Icons.ArrowDown size={24} />
       </List.Suffix>
@@ -198,7 +197,7 @@ export function FilterTag<P extends FilterPropsType>(props: FilterTagProps<P>) {
         variant={value ? "ghost" : "outlined"}
         color="inherit"
       >
-        {i18n.t(item.title ?? item.name)} <Icons.ChevronDown size="sm" />
+        {i18n.t(item.title ?? item.name)} <Icons.ChevronDown size={16} />
       </Button>
     </Popup>
   );

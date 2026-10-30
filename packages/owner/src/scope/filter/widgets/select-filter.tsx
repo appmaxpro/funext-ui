@@ -1,4 +1,4 @@
-import { List } from "@funext/ui";
+import { List } from "~/ui";
 import { useEffect, useMemo } from "react";
 
 import { getFilterValue, toggleFilterValue } from "./utils";

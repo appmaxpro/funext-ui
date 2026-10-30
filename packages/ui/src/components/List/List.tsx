@@ -75,7 +75,7 @@ const List: React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>(
       divider,
       gutters,
       dense,
-      as,
+      as = 'div',
       component = as,
       isolate = false,
       prefix,
@@ -84,7 +84,7 @@ const List: React.FC<ListProps> = React.forwardRef<HTMLElement, ListProps>(
       ...rest
     } = props;
 
-    const ul = !component || component === "ul";
+    const ul = component === "ul";
     let globalBase: ListContextValues | null = null;
     try {
       const { base } = useListContext(false)!;

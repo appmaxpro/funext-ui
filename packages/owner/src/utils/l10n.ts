@@ -11,6 +11,8 @@ import weekOfYear from "dayjs/plugin/weekOfYear";
 //import { toKebabCase } from "@/utils/names";
 import { session } from "./session";
 import { limitScale } from "./constant";
+import { toKebabCase } from "./names";
+
 
 dayjs.extend(localizedFormat);
 dayjs.extend(customParseFormat);
@@ -19,6 +21,8 @@ dayjs.extend(weekOfYear);
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+
+
 
 const DEFAULT_LANGUAGE = "en";
 const DEFAULT_DATE_FORMAT = "DD/MM/YYYY";
@@ -39,15 +43,17 @@ const SUPPORTED_CURRENCY_CODES: Record<string, string> = {
   "ru": "RUB",
   "zh": "CNY",
   "sa": "SAR",
+  "sa-ar": "SAR",
 };
 
-const getNormalizedLocale = (locale: string) => locale;
-const getShortLocale = (locale: string) => locale.split("-")[0];
-const getCountry = (locale: string) => locale.split("-")[1];
+const getNormalizedLocale = (locale: string) => toKebabCase(locale);
+const getShortLocale = (locale: string) => toKebabCase(locale).split("-")[0];
+const getCountry = (locale: string) => toKebabCase(locale).split("-")[1];
 
 let locale = "";
 let dateFormat = "";
 let currency = "";
+let defaultLocale = "";
 
 /*
   en -> EUR, DD/MM/YYYY (defaults)
@@ -56,46 +62,36 @@ let currency = "";
   fr -> EUR, DD/MM/YYYY
   fr-FR -> EUR, DD/MM/YYYY
 */
-async function init(given_locale?: string) {
+async function init() {
   locale = findLocale();
   currency = findCurrencyCode();
-
+  
   const dayjsLocale = await initDayjs();
-  if(dayjsLocale)
   dateFormat = findDateFormat(dayjsLocale);
-  //dayjs.locale
 }
 
 async function initDayjs() {
-  //const data = await findDayjsLocale();
-  //dayjs.locale(data);
-  //return data;
-  dateFormat = findDateFormat(dayjs);
-  return dayjs.locale
+  const data = await findDayjsLocale();
+  dayjs.locale(data);
+  return data;
 }
 
 async function findDayjsLocale() {
   const supportedLocales = dayjsLocale.map((locale) => locale.key);
   const found = _findLocale(supportedLocales, locale);
   if (found) {
-    /*
     const { default: data } = await import(
-      `./node_modules/dayjs/esm/locale/${found}.js`
+      `../../../node_modules/dayjs/esm/locale/${found}.js`
     );
     return data;
-    */
   }
   return null;
 }
 
-function findSupportedLocale(given_locale?: string) {
-
-}
-
-//await init();
+await init();
 
 // listen for session change
-//session.subscribe(init);
+session.subscribe(init);
 
 export function _findLocale(
   locales: readonly string[],
@@ -137,15 +133,15 @@ function findDateFormat(data: any) {
   return dateFormat || DEFAULT_DATE_FORMAT;
 }
 
-function findLocale(given_locale?: string) {
-  const userLang = given_locale ?? session.info?.user?.lang;
+function findLocale() {
+  const userLang = session.info?.user?.lang;
   if (userLang?.includes("-")) {
     return userLang;
   }
 
   const found =
     userLang && _findLocale(navigator.languages, userLang, getShortLocale);
-  return found || userLang || navigator.language || DEFAULT_LANGUAGE;
+  return found || userLang || defaultLocale || navigator.language || DEFAULT_LANGUAGE;
 }
 
 export const moment = dayjs;
@@ -155,7 +151,14 @@ export type Moment = Dayjs;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace l10n {
   export function getLocale() {
-    return locale ?? 'en-US';
+    return locale;
+  }
+
+  export function setLocal(uiLocale: string) {
+    if (defaultLocale !== uiLocale){
+      defaultLocale = locale = uiLocale;
+      init();
+    }
   }
 
   export function findLocale(locales: string[], locale: string) {

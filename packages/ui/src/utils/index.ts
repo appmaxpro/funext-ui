@@ -1,11 +1,16 @@
 import Color from 'color';
 import * as React from 'react'
-export {default as isDevelopment}  from '#is-development';
-export {default as isBrowser}  from '#is-browser';
+//export {default as isDevelopment}  from '#is-development';
+//export {default as isBrowser}  from '#is-browser';
 export {default as withMT} from '../theme/tw/withMT';
 export * from './cn';
 export * from './cva';
 export {default as debounce} from "@mui/utils/debounce";
+
+export const NODE_ENV = process.env.NODE_ENV;
+
+export const isDevelopment = NODE_ENV !== 'production';
+export const isBrowser = NODE_ENV !== 'browser';
 
 export function intcomma(x: number): string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -81,7 +86,7 @@ export function escapeDoubleQuotes(str: string) {
 
 
 export const IS_ACCEPTANCE_TEST = !!process.env.IS_ACCEPTANCE_TEST;
-export const NODE_ENV = process.env.NODE_ENV;
+//export const NODE_ENV = process.env.NODE_ENV;
 
 export function remToPx(value:number) {
   if (typeof document === 'undefined') {

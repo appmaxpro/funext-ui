@@ -82,8 +82,9 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
         trigger = <span>{children}</span>;
       } else {
         const actChildren = React.Children.toArray(children);
-        trigger = actChildren[0];
-        children = actChildren.slice(1);
+        trigger = React.cloneElement(actChildren[0] as any);
+        children = React.cloneElement(actChildren.slice(1) as any);      trigger = React.cloneElement(actChildren[0] as any);
+
       }
     }
 
@@ -104,6 +105,7 @@ const PopoverFc: React.FC<PopoverProps> = React.forwardRef<
         //animation={rest.animate ?  "fadeScale" : undefined}
         {...rest}
         ref={ref}
+        hoverProps={{enabled: false}}
       >
         {children}
       </Popper>

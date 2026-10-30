@@ -1,16 +1,31 @@
 import * as React from "react";
 import { useCreateFormContext, useFormSate } from "./form";
-import { Root, Field, Pane, FormTabs } from "./widget";
+import { Field, FormTabs, Pane, Root } from "./widget";
 
-import { IFormContext, useFormContext, useViewContext } from "~/context";
+import {
+  Flex,
+  IconButton,
+  Stack,
+  Text,
+  useRtl
+} from "~/ui";
+import { isEqual, noop } from "lodash";
+import {
+  AppBar,
+  BackButton,
+  Container,
+  Icons,
+  Loader,
+  Toolbar,
+} from "~/components/shared";
+import { IFormContext, useViewContext } from "~/context";
+import { useAsyncFetch } from "~/hooks/use-async-fetch";
 import {
   meta,
   renderBlockItems,
-  useGetViewState,
   useTabRoute,
   useViewTab,
-  type BlockMeta,
-  type EditableFormState,
+  type EditableFormState
 } from "~/scope";
 import {
   DataStore,
@@ -21,26 +36,6 @@ import {
   type FormViewBlock,
   type Identifier,
 } from "~/utils";
-import {
-  AppBar,
-  BackButton,
-  Container,
-  Icons,
-  Loader,
-  Toolbar,
-} from "~/components/shared";
-import {
-  cn,
-  Divider,
-  Flex,
-  IconButton,
-  Stack,
-  Text,
-  useLazyRef,
-  useRtl,
-} from "@funext/ui";
-import { useAsyncFetch } from "~/hooks/use-async-fetch";
-import { isEqual, noop } from "lodash";
 import { usePagination } from "./hooks";
 import { Wrapper } from "./widget/pane";
 
@@ -48,21 +43,23 @@ export function FormView() {
   const refreshRef = React.useRef<() => void>(noop);
 
   const form = useCreateFormContext(refreshRef);
-  console.log("FormView::::", form);
+  
   const route = useTabRoute("form");
 
   const { dataStore } = useViewContext<FormViewBlock>();
 
+  console.log("FormView::::", {form, dataStore});
+
   const [record, setRec] = React.useState(EMPTY_OBJECT);
   const recordRef = React.useRef(record);
-  const signalRef = React.useRef<AbortSignal>();
+  const signalRef = React.useRef<AbortSignal>(null);
   const refresh = React.useCallback(
     async (id?: Identifier) => {
       const lodId = id ?? recordRef.current?.id;
       if (lodId) {
         const record = await dataStore.read(lodId, {
-          signal: signalRef.current,
-        });
+          signal: signalRef.current!,
+        }) ?? {};
         if (!isEqual(record, recordRef.current)) {
           recordRef.current = record;
           setRec(record);
@@ -74,9 +71,9 @@ export function FormView() {
     [dataStore],
   );
 
-  const { state, fetch, isLoading, signal } = useAsyncFetch(refresh);
+  const { state, fetch, signal } = useAsyncFetch(refresh);
 
-  signalRef.current = signal;
+  signalRef.current = signal!;
   refreshRef.current = fetch;
 
   React.useEffect(() => {
@@ -103,12 +100,14 @@ export function FormView() {
 
   return (
     <IFormContext.Provider value={form}>
-      <Stack className="relative">
+      <Stack className="relative h-full overflow-hidden">
         <FormAppBar form={form as EditableFormState} />
-
-        <Container>
-          <Toolbar />
-          <FormRender form={form as EditableFormState} />
+        
+        <Container className="h-full overflow-x-hidden overflow-y-auto">
+          <Toolbar /> 
+          <div className="flex-1 w-full min-h-0">
+             <FormRender form={form as EditableFormState} />
+          </div>
           <Toolbar />
           {state === "loading" && <Loader />}
         </Container>
@@ -228,7 +227,7 @@ const FormRender = React.memo(({ form }: { form: EditableFormState }) => {
 });
 
 const MForm = meta(React.memo(FormView), { noProps: true });
- 
+
 export const Form = {
   form: MForm,
   Field,

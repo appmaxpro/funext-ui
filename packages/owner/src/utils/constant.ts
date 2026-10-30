@@ -24,6 +24,7 @@ export const Dimensions = {
 };
 
 export const EMPTY_ARRAY: readonly any[] = Object.freeze([]);
+export const EMPTY_DEPS: readonly any[] = Object.freeze([1]);
 
 export const EMPTY_RECORD = Object.freeze({}) as Record<string | symbol, any>;
 export const EMPTY_OBJECT = EMPTY_RECORD as Record<string, any>;

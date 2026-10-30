@@ -5,7 +5,7 @@ import type {
   CardBodyProps,
   CardFooterProps,
   CardHeaderProps,
-} from "@funext/ui";
+} from "~/ui";
 import { noop } from "lodash";
 import * as React from "react";
 import {
@@ -140,8 +140,6 @@ export interface WidgetBlock<S extends Widget = Widget> extends SchemaBlock<S> {
   readonlyIf?: (ctx: object) => boolean;
   onClick?: (ctx: object) => void;
   evalProps?:(ctx: object) => any;
-  
-
   uid: string;
 }
 
@@ -163,14 +161,14 @@ export interface ViewBlock<R extends ResourceView = ResourceView>
   open?: boolean;
 }
 
-export type BaeFormViewBlock<R extends BaseFormView = BaseFormView> = ViewBlock<R> & {
+export type BaseFormViewBlock<R extends BaseFormView = BaseFormView> = ViewBlock<R> & {
    onSubmit?: (context: DataContext) => Promise<any>;
    validate?: (context: DataContext) => Promise<any>;
    readonly?: boolean;
    editable?: boolean;
 }
 
-export type FormViewBlock = BaeFormViewBlock<FormView> & {
+export type FormViewBlock = BaseFormViewBlock<FormView> & {
   readonly?: boolean;
   editable?: boolean;
   delete?: boolean;
@@ -182,11 +180,11 @@ export type FormViewBlock = BaeFormViewBlock<FormView> & {
 };
 
 export type FilterViewBlock = ViewBlock<FilterView> & {
-  form?: BaeFormViewBlock<FilterFormView>;
+  form?: BaseFormViewBlock<FilterFormView>;
 }
 
 
-export type ListViewBlock = BaeFormViewBlock<ListView> & {
+export type ListViewBlock = BaseFormViewBlock<ListView> & {
   test?: string;
 };
 //FilterView
@@ -228,8 +226,6 @@ type BlockScope = {
   scope: string;
   ctx: any;
 };
-
-
 
 export type BlockHandler<S extends Block = any> = {
   id: string;

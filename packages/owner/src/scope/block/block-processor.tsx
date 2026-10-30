@@ -2,22 +2,20 @@ import { isNumber } from "lodash";
 import React from "react";
 import {
   EMPTY_ARRAY,
-  EMPTY_RECORD,
+  isDevelopment,
   isField,
   isPlainObject,
   processWidget,
   toTitleCase,
-  isDevelopment,
   type Block,
   type BlockHandler,
   type Container,
+  type DynamicField,
   type FilterView,
   type FormView,
-  type RelationField,
   type ResourceView,
   type Schema,
   type Widget,
-  type DynamicField,
 } from "~/utils";
 import {
   EvalFlags,
@@ -51,7 +49,7 @@ type RenderOptions<S extends Block = any> = {
 export class BaseBlockHandler<S extends Block = any>
   implements BlockHandler<S>
 {
-  id = "";
+  id = "basic";
   scope = "";
   init(block: any, s: Schema) {}
   render(block: S, options: RenderOptions<S>) {
@@ -80,16 +78,33 @@ export function registerBlockHandlers<S extends Block = any>(
   }
 
   function HandlerFn() {}
-  const handlerProto = (HandlerFn.prototype = new BaseBlockHandler<S>());
-
-  Object.assign(handlerProto, handle);
-
-  handlers.set(id, handlerProto);
+  let handlerProto = (HandlerFn.prototype = new BaseBlockHandler<S>());
+  class H extends BaseBlockHandler {
+  }
+  Object.assign(H.prototype, handle);
+  
+  handlers.set(id, new H());
 }
 
 export const nullResourceView: ResourceView = {
   type: "custom",
   items: EMPTY_ARRAY as any,
+  name: "null",
+  uid: "0",
+} as const;
+
+export const loadingResourceView: ResourceView = {
+  type: "pending",
+  items: [
+    {
+      type: "Container",
+      items: [
+        {
+          type: "Loader",
+        },
+      ],
+    },
+  ],
   name: "null",
   uid: "0",
 } as const;
@@ -132,8 +147,8 @@ function processView(
   handler?: BlockHandler,
 ): SchemaBlock {
   let others: any;
-  handler ??= handlers.get(res.handler ?? res.type)!;
-
+  handler ??= handlers.get(res.handler ?? res.type) ?? handlers.get("any")!;
+  
   let newCtx = handler?.scopeContext ? (handler.scopeContext(ctx) ?? ctx) : ctx;
 
   if (newCtx !== ctx) {
@@ -160,7 +175,7 @@ function processView(
     const { form } = res as FilterView;
     others = {
       form: {
-        ...processView(form!, ctx),
+        ...processView(form!, ctx, handlers.get('filter-form')),
         readonly: false,
         edit: true,
         create: true,
@@ -182,7 +197,7 @@ function processView(
 
   handler?.init?.(viewBlock, res);
 
-  return processProps(viewBlock, res, ctx);
+  return processProps(viewBlock, res, scope);
 }
 
 function handleSchema(res: Schema, scope: BlockScope) {
@@ -211,6 +226,7 @@ function mapWidget(
   }
 
   const result = scope.handler?.map?.(res, scope!);
+  //console.log("mapWidget: handler:", scope.handler, ", ");
 
   if (result) {
     return result;
@@ -256,7 +272,8 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
         if (typeof content === "string") {
           content = evalExpr(content);
         }
-        const Tag = (res as any).tag ?? ("div" as keyof JSX.IntrinsicElements);
+        const Tag =
+          (res as any).tag ?? ("div" as keyof React.JSX.IntrinsicElements);
         block.tag = Tag;
         block.content = content;
         block.render = ({ ctx }: { ctx: object }) => (
@@ -270,23 +287,22 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
   let { ctx, handler } = scope;
 
   evalPropSates(block, res, ctx);
-  let wrapBlock = false;
-  let owner: BlockHandler | undefined;
-  if (handler && handler.id !== block.handler) {
+  let owner = handler;
+  if (handler && block.handler && handler.id !== block.handler) {
     let current: BlockScope | undefined = scope;
     while (current && !current.handler?.canRender(block, res)) {
       current = current.parent;
     }
-    let processor;
     if (current?.handler) {
       owner = current.handler;
       block.handler = owner.id;
       owner.init?.(block, res);
-    } else if (handler.wrap) {
-      wrapBlock = true;
-      owner = handler;
-      //handler.wrap(block, res);
-    }
+    } 
+  }
+
+  if (owner) {
+    block.handler = owner.id;
+    owner.init?.(block, res);
   }
 
   if (block.items) {
@@ -317,7 +333,7 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
     if (count) block.slots = bSlots;
   }
 
-  if ( widget.render && (owner?.id !== 'form' || block.sType !== 'Field')) {
+  if (widget.render && (owner?.id !== "form" || block.sType !== "Field")) {
     const scopeProps = handler?.doScope
       ? handler.doScope({ ctx, props: {} }, scope?.parent?.handler)
       : undefined;
@@ -335,7 +351,7 @@ function processProps(block: any, res: Schema, scope: BlockScope): any {
 
   owner?.end?.(block);
   block = owner?.wrap?.(block, res) ?? block;
-
+  
   return block;
 }
 
@@ -347,7 +363,7 @@ function evalProps(props: Props, ctx: any): SxProps {
   if (!props) return null;
 
   if (typeof props === "string") {
-    props = evalExpr(props)(ctx ?? EMPTY_RECORD);
+    props = evalExpr(props);
   }
 
   return isPlainObject(props) ? props : (props as SxProps);
@@ -408,6 +424,9 @@ function setComputeProps(block: any, props: Props, ctx: any) {
       return result;
     };
     block.props = { ...fixed };
+  } else if (typeof props === "function") {
+    block.evalProps = props;
+    block.props = {};
   }
 }
 
@@ -418,7 +437,7 @@ function isContainer(widget: Widget): widget is Container {
 }
 
 const stateFnProps = [
-  "hiddenIf",
+  "hideIf",
   "requiredIf",
   "readonlyIf",
   "canSelect",

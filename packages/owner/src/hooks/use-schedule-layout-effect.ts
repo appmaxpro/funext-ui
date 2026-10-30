@@ -1,6 +1,6 @@
 import React from "react";
 import { useLayoutEffect } from "./use-layout-effect";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 
 /** Imperatively run a function on the next layout effect cycle. */
 export const useScheduleLayoutEffect = () => {

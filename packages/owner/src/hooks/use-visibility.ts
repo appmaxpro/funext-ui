@@ -1,4 +1,4 @@
-import { useInViewContext } from "@funext/ui";
+import { useInViewContext } from "~/ui";
 import React from "react";
 
 

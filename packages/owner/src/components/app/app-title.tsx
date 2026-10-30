@@ -1,11 +1,6 @@
 import * as React from "react";
-import Text from "@funext/ui/Text";
-import Link from "@funext/ui/Link";
-import { Flex } from "@funext/ui/Box";
-import { styled, useTheme } from "@funext/ui/styles";
+import {Flex, Link, styled, Text, useScreenSize, useTheme, type SizeContextValue} from "~/ui";
 import { AppLogo } from "./app-logo";
-import { useScreenSize, type SizeContextValue } from "@funext/ui";
-import { useActivePage } from "~/hooks/use-active-page";
 import { useActivePageRoute } from "~/hooks";
 
 const LogoContainer = styled("div")({

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import {
   Button, Input, Text, Snackbar, IconButton, styled, memoTheme
-} from '@funext/ui';
+} from '~/ui';
 
 import { useNavigate } from 'react-router';
 
 import ArrowBackIcon from '@funext/icons/ArrowBack';
-import AuthLayout from './auth-layout';
 import useQuery from '../../hooks/use-query';
 import { useCatch } from '../../hooks/use-catch';
 import { snackBarDurationShortMs } from '~/utils/constant';

@@ -1,8 +1,10 @@
-import { Dialog, Drawer, Text } from "@funext/ui";
+import { Dialog, Drawer, Text } from "~/ui";
 import React from "react";
 import { useResourceContext, useViewContext, ViewContext } from "~/context";
 import { i18n, type ListViewBlock, type SearchOptions } from "~/utils";
 import { FilterForm } from "./filter-form";
+import { ErrorBoundary } from "~/components/app/error-boundary";
+import { ErrorBox } from "~/components";
 
 const panelProps = {
   sx: {
@@ -13,36 +15,32 @@ const panelProps = {
 
 export function FilterFormDrawer({ smDown }: { smDown?: boolean }) {
   const viewContext = useViewContext<ListViewBlock>();
-  const {modifiers, query} = useResourceContext() 
-  const {
-    filterForm,
-    //query,
-    //modifiers,
-    dataStore,
-    formOpen,
-    setFormOpen,
-    fields,
-    evalContext,
-    search,
-  } = viewContext;
+  const { filters, dataStore, fields, search, getContext } = viewContext;
 
-  console.warn("FilterFormDrawer:: query", query)
+  const { modifiers, query, filterForm, formOpen, setFormOpen } = filters!;
+
+  //console.warn("FilterFormDrawer:: filterForm", filterForm)
 
   const value = React.useMemo(() => {
     return {
       dataStore: dataStore,
       view: filterForm,
       fields: fields,
-      evalContext: evalContext,
-
-      search(option?: SearchOptions) {
-        return viewContext.search!(option);
+      get evalContext() {
+        return viewContext.evalContext;
       },
+      getContext,
+      search,
     };
   }, [filterForm, viewContext]);
+  
+  const updateFilters = React.useCallback((filter: any) => {
+    setFormOpen(false);
+    return modifiers!.updateFilters(filter);
+  }, [modifiers])
 
   if (!modifiers) return null;
-
+  
   return (
     <Drawer
       open={formOpen}
@@ -57,15 +55,17 @@ export function FilterFormDrawer({ smDown }: { smDown?: boolean }) {
       <Dialog.Header onClose={() => setFormOpen(false)} className="p-2">
         <Text variant="h6">{i18n.t("Search Form")}</Text>
       </Dialog.Header>
-      <ViewContext.Provider value={value}>
-        <FilterForm.Form
-          filter={query?.filter!}
-          updateFilters={modifiers!.updateFilters}
-          search={search!}
-          onSubmit={()=> setFormOpen(false)}
-          onReset={()=> setFormOpen(false)}
-        />
-      </ViewContext.Provider>
+      <ErrorBoundary fallback={ErrorBox}>
+        <ViewContext.Provider value={value}>
+          <FilterForm.Form
+            filter={query?.filter!}
+            updateFilters={updateFilters}
+            search={search!}
+            onSubmit={() => setFormOpen(false)}
+            onReset={() => setFormOpen(false)}
+          />
+        </ViewContext.Provider>
+      </ErrorBoundary>
     </Drawer>
   );
 }

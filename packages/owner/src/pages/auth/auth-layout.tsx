@@ -1,14 +1,16 @@
-import React from "react";
 import {
-  useMediaQuery,
-  Panel,
-  useTheme,
   memoTheme,
+  Panel,
   styled,
   type Theme,
   useScreenSize,
-} from "@funext/ui";
+  useTheme,
+} from "~/ui";
+import ActiveRoute from "~/routes/active-route";
 import LogoImage from "./LogoImage";
+import { useSession } from "~/hooks/use-session";
+import { useEffect } from "react";
+import { Loader } from "~/components";
 
 const PREFIX = "LoginLayout";
 
@@ -59,19 +61,27 @@ const MainRoot = styled("main")(
   })),
 );
 
-const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+const AuthLayout = () => {
   const theme = useTheme();
-  const {lgUp} = useScreenSize()
+  const { lgUp } = useScreenSize();
+  const { state, data } = useSession();
+
+  useEffect(() => {
+    if (data?.user) {
+      location.href = "/";
+      console.error("Redirect to root...")
+    }
+  }, [state, data]);
 
   return (
     <MainRoot className={LoginLayoutClasses.root}>
       <div className={LoginLayoutClasses.sidebar}>
-        {lgUp && (
-          <LogoImage color={theme.palette.secondary.contrastText} />
-        )}
+        {lgUp && <LogoImage color={theme.palette.secondary.contrastText} />}
       </div>
       <Panel className={LoginLayoutClasses.panel}>
-        <form className={LoginLayoutClasses.form}>{children}</form>
+        <form className={LoginLayoutClasses.form}>
+          {state === "loading" ? <Loader /> : <ActiveRoute />}
+        </form>
       </Panel>
     </MainRoot>
   );

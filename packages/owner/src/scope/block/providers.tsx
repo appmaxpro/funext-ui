@@ -11,8 +11,7 @@ export function WidgetBlockProvider({block, children}: WidgetBlockProps) {
        {children}
     </WidgetBlockContext.Provider>
   }
-  return <>{children}</>
-}
+  return children
 
 function WidgetBlockState({block, children}: WidgetBlockProps) {
   

@@ -1,24 +1,19 @@
-import { Input } from "@funext/ui";
+import { Input } from "~/ui";
 
 import {
-  FieldControl,
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  FieldControl
 } from "./root";
 
-import { DEFAULT_SCALE, EMPTY_ARRAY, i18n, type Field } from "~/utils";
-import format from "~/utils/format";
-import type { IFieldState, IFState } from "../../../types";
-import { registerWidgets, useInput } from "./hooks";
-import { getWidgetStateForm } from "~/scope/utils";
 import get from "lodash/get";
 import React from "react";
+import { getWidgetStateForm } from "~/scope/utils";
+import { DEFAULT_SCALE, EMPTY_ARRAY, type Field } from "~/utils";
+import format from "~/utils/format";
+import type { IFieldState } from "../../../types";
+import { registerWidgets, useInput } from "./hooks";
 
 import convert from "~/utils/convert";
 import type { FieldProps } from "./types";
-import { duration } from "dayjs";
 const NUM_PATTERN = /^(-)?\d*(\.(\d+)?)?$/;
 
 const isNumberLike = (text: string) => NUM_PATTERN.test(text);
@@ -91,7 +86,7 @@ const useNumber = (field: IFieldState, pType: string) => {
 const useTextInput = (field: IFieldState, pType: string, type?: string) =>
   type === "number" ? useNumber(field, pType) : useInput(field);
 
-const InputField = ({ state, field, id, type: typeProp }: FieldProps) => {
+export const InputField = ({ state, field, id, type: typeProp }: FieldProps) => {
   const block = field.block;
   const schema = block.schema;
 

@@ -187,12 +187,10 @@ export class DataStore extends DataSource {
   #prepareOption(options: SearchOptions): SearchOptions {
     const opts = this.#options;
     const { offset, limit } = this.#page;
-    const { context, domain: newDomain } = options ?? EMPTY_RECORD;
+    const { context, domain = opts.domain } = options ?? EMPTY_RECORD;
 
-    let domain: Domains | undefined = ifDiffVal(
-      opts.domain,
-      newDomain,
-    ) as Domains;
+    //let domain: Domains | undefined =  as Domains;
+
     const newContext = mergeIfDiffVal(opts.context, context);
 
     return removeEmpty({
@@ -281,8 +279,8 @@ export class DataStore extends DataSource {
 
   }
 
-  async search(options: SearchOptions, reset?: boolean): Promise<SearchResult> {
-    const opts = this.#prepareOption(options);
+  async search(options?: SearchOptions, reset?: boolean): Promise<SearchResult> {
+    const opts = options ? this.#prepareOption(options ) : this.options;
     const { page, records = [] } = await this._search(opts);
     
     if (reset !== false) {

@@ -26,7 +26,7 @@ export const F = meta<{ block: Block }>(
     const ctx = useEvalDataContext();
     return <>{renderBlockItems(block, ctx)}</>;
   },
-  { noProps: true, wrap: "prop", raw: true },
+  { noProps: true, wrap: "prop" },
 );
 
 const Icon = meta(Items.Icon, { raw: true });
@@ -67,7 +67,7 @@ export default function registerDefaultHandlers() {
 
   const formMemo = memos((tag) => get(formAndItems, tag));
   const FormCPS = Object.values(Form);
-  const noWraps = [Items.Tr, F, Items.Icon];
+  const noWraps = [Items.Tr, Items.Icon];
 
   registerBlockHandlers<SchemaBlock>("form", {
     id: "form",
@@ -145,15 +145,15 @@ export default function registerDefaultHandlers() {
   registerBlockHandlers<SchemaBlock>("list", {
     id: "list",
     scope: "list",
-    init: (block) => {
+    init: (block, s) => {
       block.tag ??= listMemo(block.type!, block.sType);
+      console.log("ListHandler init: ", block)
     },
     wrap: (block) => {
       if (
         block.tag &&
         !listItems.includes(block.tag as any) &&
         !noWraps.includes(block.tag as any) &&
-        isStatefulBlock(block as WidgetBlock) &&
         !getMeta(block.tag)?.raw
       ) {
         return {
@@ -163,6 +163,7 @@ export default function registerDefaultHandlers() {
           schema: block.schema,
           type: block.type,
           sType: block.sType,
+          $rend: React.createElement(List.Wrapper, { block } as any),
           $$warped: true,
         };
       }
@@ -170,17 +171,19 @@ export default function registerDefaultHandlers() {
     },
     render: function (block, { props, ref, params }) {
       const CP = block.tag;
+      
       if (CP === List.list) {
-        //console.log("Try set list props: ", props())
+        //
       }
       const meta = isReactType(CP) ? getMeta(CP) : undefined;
-      if (meta && !meta.raw) {
+      if (meta) {
         return wrapBlock(
           block,
           CP as React.ElementType,
           props,
           ref,
           meta as BlockMeta,
+          params.ctx
         );
       }
 
@@ -201,7 +204,11 @@ export default function registerDefaultHandlers() {
       .constructor as typeof BaseBlockHandler<SchemaBlock>;
 
     class F extends FormHandler {
+      id = 'filter-form';
+      scope = 'form'; 
       init(block: any, s: Schema) {
+
+        console.log("FilterFormHandler init: ", super.init)
         if (block.tag) return;
         if (block.sType === "form") {
           block.tag = FilterForm.Form;
@@ -212,5 +219,24 @@ export default function registerDefaultHandlers() {
     }
 
     return new F() as BlockHandler;
+  });
+
+  registerBlockHandlers<SchemaBlock>("any", (get) => {
+    const ListHandler = get("list")!
+      .constructor as typeof BaseBlockHandler<SchemaBlock>;
+
+    class A extends ListHandler {
+      id = 'any';
+      scope = 'any'; 
+      init(block: any, s: Schema){
+        super.init(block, s);
+        if(block.tag && block.sType === 'any') {
+          block.tag = F;
+        }
+        //console.log("AnyHandler init: ", super.init)
+      }
+    }
+
+    return new A() as BlockHandler;
   });
 }

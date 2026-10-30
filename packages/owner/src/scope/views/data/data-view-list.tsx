@@ -16,7 +16,7 @@ export function DataViewList({ children }: { children: React.ReactNode }) {
   }
 
   if (state == "error") {
-    return <ErrorBox status={500} error={error} onReset={retryFn} />;
+    return <ErrorBox status={500} error={error} onRetry={retryFn} />;
   }
 
   return <RecordContext.Provider value={data as any}>{children}</RecordContext.Provider>;

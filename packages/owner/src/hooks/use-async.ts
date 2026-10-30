@@ -2,13 +2,10 @@ import {
   type DependencyList,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
-  useTransition,
 } from "react";
-import { useAsyncEffect } from "./use-async-effect";
-import { EMPTY_ARRAY } from "~/utils/constant";
+import { EMPTY_ARRAY, EMPTY_DEPS } from "~/utils/constant";
 
 export function useAsync<T>(
   func: (abort?: AbortSignal) => Promise<T>,
@@ -19,15 +16,15 @@ export function useAsync<T>(
   error?: any;
   retryFn: () => void;
 } {
-  const [isPending, startTransition] = useTransition();
-  const abortRef = useRef<AbortController>();
+  const [isLoading, setLoading] = useState(true);
+  const abortRef = useRef<AbortController>(undefined);
 
   useEffect(() => {
     abortRef.current = new AbortController();
     return () => {
       abortRef.current?.abort();
     };
-  }, EMPTY_ARRAY);
+  }, EMPTY_DEPS);
 
   const [{ state, data, error }, setState] = useState<{
     state?: "loading" | "error";
@@ -38,46 +35,48 @@ export function useAsync<T>(
   const [retry, setRetry] = useState(0);
 
   const retryFn = useCallback(() => {
-    if (!isPending) setRetry((retry) => retry + 1);
-  }, [setRetry, isPending]);
+    if (!isLoading) setRetry((retry) => retry + 1);
+  }, [setRetry, isLoading]);
 
   useEffect(() => {
     if (!abortRef.current) return;
 
-    if(abortRef.current!.signal.aborted) {
-       abortRef.current = new AbortController();
+    if (abortRef.current!.signal.aborted) {
+      abortRef.current = new AbortController();
     }
 
     let canceled = false;
     let loading = false;
     const signal = abortRef.current!.signal;
     //@ts-ignore
-    startTransition(async () => {
+    setLoading(true);
+    async function load() {
       loading = true;
       try {
         const data = await func(signal);
         if (canceled || signal.aborted) {
           return;
         }
-        startTransition(() => setState({ state: undefined, data }));
+        setState({ state: undefined, data });
       } catch (e) {
-        startTransition(() =>
-          setState((draft) => ({ ...draft, state: "error", error: e })),
-        );
+        setState((draft) => ({ ...draft, state: "error", error: e }));
       } finally {
         loading = false;
+        setLoading(false);
       }
-    });
+    }
+    load();
+
     return () => {
       canceled = true;
-      if(loading && !signal.aborted) {
-        abortRef.current?.abort()
+      if (loading && !signal.aborted) {
+        abortRef.current?.abort();
       }
     };
   }, [...deps, retry]);
 
   return {
-    state: isPending ? "loading" : state,
+    state: isLoading ? "loading" : state,
     data,
     error,
     retryFn,

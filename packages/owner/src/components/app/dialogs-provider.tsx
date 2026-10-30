@@ -1,9 +1,10 @@
 'use client';
 import invariant from 'invariant';
 import * as React from 'react';
-import useEventCallback from '@mui/utils/useEventCallback';
-import { setGlobalDialog, useDialogs, type DialogComponent, type OpenDialog, type OpenDialogOptions } from '~/hooks/use-dialogs';
-import { DialogsContext } from '~/context/DialogsContext';
+import { useDialogs } from '~/hooks/use-dialogs';
+import { DialogsContext, type DialogComponent, type OpenDialog, type OpenDialogOptions } from '~/context/dialog';
+import { useEvent } from '~/ui';
+import app from '~/utils/app';
 
 interface DialogStackEntry<P, R> {
   key: string;
@@ -33,12 +34,12 @@ export interface DialogProviderProps {
  * - [DialogsProvider API](https://mui.com/toolpad/core/api/dialogs-provider)
  */
 function DialogsProvider(props: DialogProviderProps) {
-  const { children, unmountAfter = 2000 } = props;
+  const { children } = props;
   const [stack, setStack] = React.useState<DialogStackEntry<any, any>[]>([]);
   const keyPrefix = React.useId();
   const nextId = React.useRef(0);
 
-  const requestDialog = useEventCallback<OpenDialog>(function open<P, R>(
+  const requestDialog = useEvent<OpenDialog>(function open<P, R>(
     Component: DialogComponent<P, R>,
     payload: P,
     options: OpenDialogOptions<R> = {},
@@ -70,7 +71,7 @@ function DialogsProvider(props: DialogProviderProps) {
     return promise;
   });
 
-  const closeDialogUi = useEventCallback(function closeDialogUi<R>(dialog: Promise<R>) {
+  const closeDialogUi = useEvent(function closeDialogUi<R>(dialog: Promise<R>) {
     const onPercent = (percent: boolean)=> {
       if(!percent)
          setStack((prevStack) => prevStack.filter((entry) => entry.promise !== dialog));
@@ -85,14 +86,14 @@ function DialogsProvider(props: DialogProviderProps) {
     }, unmountAfter);*/
   });
 
-  const closeDialog = useEventCallback(async function closeDialog<R>(
+  const closeDialog = useEvent(async function closeDialog<R>(
     dialog: Promise<R>,
     result: R,
   ) {
     const entryToClose = stack.find((entry) => entry.promise === dialog);
     invariant(entryToClose, 'dialog not found');
-    await entryToClose.onClose(result);
-    entryToClose.resolve(result);
+    await entryToClose?.onClose(result);
+    entryToClose?.resolve(result);
     closeDialogUi(dialog);
     return dialog;
   });
@@ -124,7 +125,7 @@ function DialogsProvider(props: DialogProviderProps) {
 }
 
 const DialogsConsumer = () => {
-  setGlobalDialog(useDialogs());
+  app.dialogs = useDialogs();
   return null;
 }
 

@@ -1,7 +1,5 @@
-import React from "react";
-import { useTheme, useMediaQuery, styled, SvgIcon } from "@funext/ui";
+import { styled, useTheme } from "~/ui";
 
-import { useTrackerSession } from "~/tracker/store/session";
 import { AppLogo } from "~/components/app/app-logo";
 
 const imgSx = {

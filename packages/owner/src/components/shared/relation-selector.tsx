@@ -6,10 +6,10 @@ import {
   CommandList,
 } from "./command";
 
-import { Button, Checkbox, cn, debounce, Dialog } from "@funext/ui";
+import { Button, Checkbox, cn, debounce, Dialog, IconButton } from "~/ui";
 
 import React, { useEffect, useState } from "react";
-import { i18n, type DataStore } from "~/utils";
+import { EMPTY_ARRAY, i18n, type DataStore, type Identifier } from "~/utils";
 import { useDataStore } from "~/hooks/use-data-store";
 import { useAsyncFetch } from "~/hooks/use-async-fetch";
 import {
@@ -101,51 +101,16 @@ export function RelationSelectorItem<T>({
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         />
       )}
-      { !showCheckbox ? isSelected ? <Icons.Check className="h-4 w-4" /> : <Icons.Blank className="h-4 w-4" /> : null}
+      {!showCheckbox ? (
+        isSelected ? (
+          <Icons.Check className="h-4 w-4" />
+        ) : (
+          <Icons.Blank className="h-4 w-4" />
+        )
+      ) : null}
       <span className="flex-1">{label}</span>
     </CommandItem>
   );
-}
-
-/**
- * Hook for managing relation selector state and queries
- */
-export function useRelationSelector<T>(config: RelationSelectorConfig<T>) {
-  const { dataStore: dataSource, targetName, targetSearch } = config;
-
-  const dataSearch = useDataStore({
-    dataStore: dataSource,
-    targetName,
-    targetSearch,
-  });
-
-  const { fetch, error, state } = useAsyncFetch(dataSearch);
-
-  const fetcher = fetch;
-
-  // Function to fetch items by IDs
-  const fetchItemsByIds = React.useCallback(
-    async (ids: string[]): Promise<T[]> => {
-      if (ids.length === 0) return [];
-
-      const data = await fetcher("", {
-        offset: 0,
-        domain: [["id", "in", ids]],
-        limit: ids.length,
-        reset: false,
-      });
-
-      return data.records as T[];
-    },
-    [],
-  );
-
-  return {
-    isLoading: state === "loading",
-    fetcher,
-    error,
-    fetchItemsByIds,
-  };
 }
 
 /**
@@ -162,14 +127,20 @@ export function RelationSelector<T>({
   const [selectedItemsCache, setSelectedItemsCache] = useState<T[]>([]);
   const fetchedIdsRef = React.useRef<Set<string>>(new Set());
   const fetchingIdsRef = React.useRef<Set<string>>(new Set());
-  const searchDebounceRef = React.useRef(debounce);
+  const searchDebounceRef = React.useMemo(() => debounce, EMPTY_ARRAY);
 
-  const dataStore = config.dataStore;
+  const { dataStore, targetName, targetSearch } = config;
+
+  const dataSearch = useDataStore({
+    dataStore,
+    targetName,
+    targetSearch,
+  });
+
+  const { fetch: fetcher, error, isLoading } = useAsyncFetch(dataSearch);
 
   const isMultiple = config.multiple ?? false;
   const [searchTerm, setSearchTerm] = useState("");
-
-  const { isLoading, fetcher, fetchItemsByIds } = useRelationSelector(config);
 
   const [counter, setCounter] = useState(0);
 
@@ -182,14 +153,10 @@ export function RelationSelector<T>({
   const search = React.useCallback(
     (term: string) => {
       setSearchTerm(term);
-      searchDebounceRef.current(() => fetcher(term), 300);
+      searchDebounceRef(() => fetcher(term), 300);
     },
     [fetcher],
   );
-
-  // Store a stable reference to fetchItemsByIds
-  const fetchItemsByIdsRef = React.useRef(fetchItemsByIds);
-  fetchItemsByIdsRef.current = fetchItemsByIds;
 
   const [items, pager, hasNextPage] = React.useMemo(() => {
     const pager = dataStore.page;
@@ -203,6 +170,7 @@ export function RelationSelector<T>({
   const fetchNextPage = React.useCallback(async () => {
     fetcher(searchTerm, {
       offset: dataStore.nextOffset,
+      infinite: true,
     });
   }, [fetcher, pager, searchTerm]);
 
@@ -216,10 +184,25 @@ export function RelationSelector<T>({
     return singleValue ? [String(singleValue)] : [];
   }, [value, isMultiple]);
 
-  const isFetchingNextPage = items?.length && isLoading;
+  const isFetchingNextPage = items.length && isLoading;
 
   // Fetch selected items by IDs on mount and when selectedIds change
   React.useEffect(() => {
+    const fetchItemsByIds = async (ids: Identifier[]): Promise<T[]> => {
+      if (ids.length === 0) return [];
+
+      const data = await dataStore.search(
+        {
+          offset: 0,
+          domain: [["id", "in", ids]],
+          limit: ids.length,
+        },
+        false,
+      );
+
+      return data.records as T[];
+    };
+
     const fetchSelectedItems = async () => {
       if (selectedIds.length === 0) {
         setSelectedItemsCache([]);
@@ -239,7 +222,7 @@ export function RelationSelector<T>({
         missingIds.forEach((id) => fetchingIdsRef.current.add(id));
 
         try {
-          const fetchedItems = await fetchItemsByIdsRef.current(missingIds);
+          const fetchedItems = await fetchItemsByIds(missingIds);
 
           // Mark these IDs as fetched and remove from fetching
           missingIds.forEach((id) => {
@@ -292,50 +275,6 @@ export function RelationSelector<T>({
     fetchSelectedItems();
   }, [selectedIds, config.idKey, isMultiple]);
 
-  const handleSelect = (item: T, close: RenderOptions['close']) => {
-    const itemId = String(item[config.idKey]);
-
-    if (isMultiple) {
-      const isCurrentlySelected = selectedIds.includes(itemId);
-      const newSelectedIds = isCurrentlySelected
-        ? selectedIds.filter((id) => id !== itemId)
-        : [...selectedIds, itemId];
-
-      // Update cache: add item if selecting, remove if deselecting
-      setSelectedItemsCache((prev) => {
-        if (isCurrentlySelected) {
-          return prev.filter(
-            (prevItem) => String(prevItem[config.idKey]) !== itemId,
-          );
-        } else {
-          // Only add if not already in cache
-          const alreadyInCache = prev.some(
-            (prevItem) => String(prevItem[config.idKey]) === itemId,
-          );
-          return alreadyInCache ? prev : [...prev, item];
-        }
-      });
-
-      // Mark the item as fetched to prevent duplicate fetching
-      if (!isCurrentlySelected) {
-        fetchedIdsRef.current.add(itemId);
-      } else {
-        fetchedIdsRef.current.delete(itemId);
-      }
-
-      onChange(newSelectedIds);
-    } else {
-      // For single select, update cache with the new item
-      setSelectedItemsCache([item]);
-      // Mark as fetched for single select too
-      fetchedIdsRef.current.clear();
-      fetchedIdsRef.current.add(itemId);
-      onChange(itemId);
-      close();
-      setSearchTerm("");
-    }
-  };
-
   const handleRemove = (itemId: string) => {
     if (isMultiple) {
       const newSelectedIds = selectedIds.filter((id) => id !== itemId);
@@ -379,7 +318,50 @@ export function RelationSelector<T>({
   const isStatic = !display || typeof display === "string";
   const Pop = isStatic ? Popup : DynamicPopup;
 
-  const renderCommand = (close: RenderOptions['close']) => {
+  const renderCommand = (close: RenderOptions["close"]) => {
+    const handleSelect = (item: T) => {
+      const itemId = String(item[config.idKey]);
+
+      if (isMultiple) {
+        const isCurrentlySelected = selectedIds.includes(itemId);
+        const newSelectedIds = isCurrentlySelected
+          ? selectedIds.filter((id) => id !== itemId)
+          : [...selectedIds, itemId];
+
+        // Update cache: add item if selecting, remove if deselecting
+        setSelectedItemsCache((prev) => {
+          if (isCurrentlySelected) {
+            return prev.filter(
+              (prevItem) => String(prevItem[config.idKey]) !== itemId,
+            );
+          } else {
+            // Only add if not already in cache
+            const alreadyInCache = prev.some(
+              (prevItem) => String(prevItem[config.idKey]) === itemId,
+            );
+            return alreadyInCache ? prev : [...prev, item];
+          }
+        });
+
+        // Mark the item as fetched to prevent duplicate fetching
+        if (!isCurrentlySelected) {
+          fetchedIdsRef.current.add(itemId);
+        } else {
+          fetchedIdsRef.current.delete(itemId);
+        }
+
+        onChange(newSelectedIds);
+      } else {
+        // For single select, update cache with the new item
+        setSelectedItemsCache([item]);
+        // Mark as fetched for single select too
+        fetchedIdsRef.current.clear();
+        fetchedIdsRef.current.add(itemId);
+        onChange(itemId);
+        close();
+        setSearchTerm("");
+      }
+    };
     return (
       <Command shouldFilter={false}>
         <CommandInput
@@ -393,7 +375,7 @@ export function RelationSelector<T>({
           onScroll={handleScroll}
         >
           <CommandEmpty>
-            {(isLoading && !isFetchingNextPage) ? (
+            {isLoading && !isFetchingNextPage ? (
               <div className="flex items-center justify-center py-6">
                 <Icons.Sync className="h-4 w-4 animate-spin mr-2" />
                 <Items.Tr>Loading...</Items.Tr>
@@ -413,13 +395,13 @@ export function RelationSelector<T>({
                 item={item}
                 config={config}
                 isSelected={isSelected}
-                onSelect={() => handleSelect(item, close)}
+                onSelect={() => handleSelect(item)}
                 showCheckbox={isMultiple}
               />
             );
           })}
 
-          {(isFetchingNextPage) && (
+          {isFetchingNextPage && (
             <div className="flex items-center justify-center py-2">
               <Icons.Sync className="h-4 w-4 animate-spin" />
             </div>
@@ -450,7 +432,6 @@ export function RelationSelector<T>({
           </>
         );
     }
-    return "";
   };
 
   return (
@@ -466,17 +447,17 @@ export function RelationSelector<T>({
             return (
               <div
                 key={itemId}
-                className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm max-w-full min-w-0"
+                className="inline-flex items-center gap-1 bg-secondary text-secondary-fg px-2 py-1 rounded-md text-sm max-w-full min-w-0"
               >
                 <div className="min-w-0 flex-1">{label}</div>
                 {!disabled && (
-                  <button
+                  <IconButton
                     type="button"
+                    size="sm"
                     onClick={() => handleRemove(itemId)}
-                    className="text-secondary-foreground/70 hover:text-secondary-foreground"
                   >
                     <Icons.Close className="h-3 w-3" />
-                  </button>
+                  </IconButton>
                 )}
               </div>
             );
@@ -489,12 +470,13 @@ export function RelationSelector<T>({
         renderContent={renderContent}
         slots={slots}
       >
+        
         <Button
           variant="outlined"
           size="sm"
           type="button"
           disabled={disabled}
-          className="gap-2"
+          className="gap-2 justify-between"
           //ref={triggerRef.current?.ref}
         >
           <Icons.Add className="h-4 w-4" />

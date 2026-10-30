@@ -1,14 +1,17 @@
-import { createTheme, ThemeProvider, type Theme } from "@funext/ui/styles";
-import { useMediaQuery } from "@funext/ui/hooks";
-import { CoreThemeProvider } from "@funext/ui/mui";
-import { Link as LinkComponent } from "~/components/app/link";
-import { useLocalStorage } from "~/hooks/use-local-storage";
 import React from "react";
-import { GlobalStyles } from "@funext/ui/GlobalStyles";
-import type { ThemeMode } from "~/utils/types";
+import { Link as LinkComponent } from "~/components/app/link";
 import { PaletteModeContext, useLocalization } from "~/context";
-import { ListContextProvider } from "@funext/ui";
+import { useLocalStorage } from "~/hooks/use-local-storage";
+import {
+  CoreThemeProvider,
+  createTheme,
+  GlobalStyles,
+  ListContextProvider,
+  useMediaQuery,
+  type Theme,
+} from "~/ui";
 import { APP_THEME_MODE } from "~/utils/constant";
+import type { ThemeMode } from "~/utils/types";
 
 const COLOR_SCHEME_STORAGE_KEY = "owner-app-color-scheme";
 
@@ -35,7 +38,7 @@ interface AppThemeProviderProps {
   theme?: AppTheme;
   window?: Window;
 }
-const _EMPTY = {}
+const _EMPTY = {};
 /**
  * Compatibility layer for classic v5 themes. It will handle state management for the theme switcher.
  * In the v6 theme, this state management is handled by `useColorScheme`. But this hook will crash if
@@ -73,7 +76,7 @@ function AppThemeProvider(props: AppThemeProviderProps) {
     [isDualTheme, themeMode, setUserMode],
   );
 
-  const {direction} = useLocalization()
+  const { direction } = useLocalization();
 
   return (
     <CoreThemeProvider
@@ -98,29 +101,25 @@ function AppThemeProvider(props: AppThemeProviderProps) {
     >
       <PaletteModeContext.Provider value={themeModeContextValue}>
         <>
-        <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
-        <ListContextProvider 
-        value={{
-           item: {
-            hover: "bg-header-med-hover hover:text-item hover:text-opacity-90",
-            disabled: "",
-            className: "px-3 py-3",
-          },
-          ul: false,
-          global: true
-        }}>
-
-        
-          {children}
-        </ListContextProvider>
+          <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
+          <ListContextProvider
+            value={{
+              item: {
+                hover:
+                  "bg-header-med-hover hover:text-item hover:text-opacity-90",
+                disabled: "",
+                className: "px-3 py-3",
+              },
+              ul: false,
+              global: true,
+            }}
+          >
+            {children}
+          </ListContextProvider>
         </>
-        
       </PaletteModeContext.Provider>
     </CoreThemeProvider>
   );
 }
 
-
-export {
-  AppThemeProvider
-}
+export { AppThemeProvider };

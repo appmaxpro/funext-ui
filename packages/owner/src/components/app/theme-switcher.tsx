@@ -1,8 +1,6 @@
 'use client';
 import * as React from 'react';
-import { useTheme } from '@funext/ui';
-import IconButton from '@funext/ui/IconButton';
-import Tooltip from '@funext/ui/Tooltip';
+import { useTheme, IconButton, Tooltip } from '~/ui';
 import DarkModeIcon from '@funext/icons/DarkMode';
 import LightModeIcon from '@funext/icons/LightMode';
 //import useSsr from '@toolpad/utils/hooks/useSsr';

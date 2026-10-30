@@ -1,14 +1,13 @@
 import { i18n } from "~/utils/i18n";
 import { $request, $use } from "~/utils/http";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCatchCallback } from "~/hooks/use-catch";
 import { useErrorStore } from "~/store/errors";
 
 type Pending = () => Promise<any>;
 
 function isLogin(input: RequestInfo | URL) {
   const url = input instanceof Request ? input.url : input.toString();
-  return url.startsWith("/auth");
+  return url.includes("/auth/");
 }
 
 export function useHttpWatch() {
@@ -49,6 +48,7 @@ export function useHttpWatch() {
         return res;
       } 
       catch(e){
+          console.error("useHttpWatch error:", e)
           pushError(e);
           throw e;
       }

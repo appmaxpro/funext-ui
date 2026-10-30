@@ -1,47 +1,20 @@
 import React from "react";
-import {
-  renderBlockItems,
-  unSafeRenderBlock,
-  useGetViewState,
-  useViewTab,
-} from "~/scope";
+import { useGetViewState } from "~/scope";
 import { Button, Toolbar, Tooltip } from "./view-tools";
 
 import {
-  Collapse,
-  Dialog,
-  Drawer,
-  Stack,
+  Badge,
   Text,
+  useLazyRef,
   useScreenSize,
   type SxPProps,
-} from "@funext/ui";
-import { isEmpty } from "lodash";
+} from "~/ui";
 import { AppBar, BackButton, Icons } from "~/components";
-import {
-  useFormContext,
-  useResourceContext,
-  useViewBlock,
-  useViewContext,
-  ViewContext,
-} from "~/context";
-import {
-  DataStore,
-  getBoolean,
-  i18n,
-  pick,
-  type Block,
-  type Container,
-  type FormViewBlock,
-  type ListViewBlock,
-  type Widget,
-} from "~/utils";
-import type { FilterTabs, FilterWidget } from "~/utils/filter";
-import { FilterSidebar } from "../../scope/filter";
-import { TabFilter } from "../../scope/filter/widgets/tab-filter";
-import { FilterTabsBar } from "~/scope/filter/filter-tabs-bar";
-import { FilterFormDrawer } from "~/scope/filter/filter-form-drawer";
+import { useViewBlock, useViewContext } from "~/context";
 import { useRouter } from "~/hooks";
+import { FilterFormDrawer } from "~/scope/filter/filter-form-drawer";
+import { getBoolean, i18n, pick, type ListViewBlock } from "~/utils";
+import { FilterSidebar } from "../../scope/filter";
 
 const toolbarSx: SxPProps = {
   mx: { xs: -0.75, sm: -1.5 },
@@ -64,22 +37,14 @@ function ViewToolbar({ children }: React.ComponentProps<typeof Toolbar>) {
   );
 }
 
-export function ViewAppBar() {
-  const {
-    view,
-    filterForm,
-    filterSidebar,
-    query,
-    dataStore,
-    sideOpen,
-    setSideOpen,
-    formOpen,
-    setFormOpen,
-    evalContext,
-  } = useViewContext<ListViewBlock>();
 
+export function ViewAppBar(props?:any) {
+  const { view, filters, evalContext } = useViewContext<ListViewBlock>();
+
+  const { filterForm, filterSidebar, formActive, sideActive, setSideOpen, setFormOpen } =
+    filters;
   const { mdDown, smDown } = useScreenSize();
-
+  const popup = useLazyRef(() => evalContext._popup);
   const appBarProps = React.useMemo(() => {
     const props = view.props?.appBar;
     const appBarProps = pick(props, [
@@ -92,52 +57,55 @@ export function ViewAppBar() {
     return appBarProps;
   }, [view]);
 
-  const router = useRouter()
+  const router = useRouter();
 
   if (evalContext._popup) {
-    return null;
+    console.log("ViewAppBar: evalContext:", evalContext);
+    //return <span>popup</span>;
   }
 
   return (
-    <Stack width="100%">
-      <AppBar
-        className="item-enter"
-        color="default"
-        position="fixed"
-        {...appBarProps}
-      >
-        <ViewToolbar>
-          <BackButton onClick={()=> router.navigate("/")}/>
-          <ViewTitle />
-          {filterForm && (
-            <Tooltip content={i18n.t("Search")}>
-              <Button
-                aria-label="search"
-                onClick={() => setFormOpen((open) => !open)}
-              >
+    <AppBar
+      className="item-enter"
+      color="default"
+      position="fixed"
+      {...appBarProps}
+      {...props}
+    >
+      <ViewToolbar>
+        <BackButton onClick={() => router.navigate("/")} />
+        <ViewTitle />
+        {filterForm && (
+          <Tooltip content={i18n.t("Search")}>
+            <Button
+              aria-label="search"
+              onClick={() => setFormOpen((open) => !open)}
+            >
+              <Badge color="success" variant="dot" invisible={!formActive}>
                 <Icons.Search />
-              </Button>
-            </Tooltip>
-          )}
-          {filterSidebar && (
-            <Tooltip content={i18n.t("Filter")}>
-              <Button
-                aria-label="display more actions"
-                onClick={() => setSideOpen((open) => !open)}
-              >
+              </Badge>
+              
+            </Button>
+          </Tooltip>
+        )}
+        {filterSidebar && (
+          <Tooltip content={i18n.t("Filter")}>
+            <Button
+              aria-label="display more actions"
+              onClick={() => setSideOpen((open) => !open)}
+            >
+              <Badge color="success" variant="dot" invisible={!sideActive}>
                 <Icons.Tune />
-              </Button>
-            </Tooltip>
-          )}
-        </ViewToolbar>
-      </AppBar>
-
-      {filterSidebar && (!smDown) && (
-        <FilterSidebar mode={"drawer"} />
-      )}
+              </Badge>
+              
+            </Button>
+          </Tooltip>
+        )}
+      </ViewToolbar>
+      {filterSidebar && !smDown && <FilterSidebar mode={"drawer"} />}
       {/*filterTabs && <FilterTabsBar tabs={filterTabs} />*/}
       {filterForm && <FilterFormDrawer smDown={smDown} />}
-    </Stack>
+    </AppBar>
   );
 }
 
@@ -145,12 +113,7 @@ function ViewTitle() {
   const state = useGetViewState();
   const title = React.useMemo(() => state.title, [state]);
   return (
-    <Text
-      variant="h5"
-      noWrap
-      component="div"
-      sx={{ flexGrow: 1, alignSelf: "flex-end" }}
-    >
+    <Text variant="h5" noWrap component="div" className="grow">
       {title}
     </Text>
   );

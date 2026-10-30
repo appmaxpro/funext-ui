@@ -1,4 +1,4 @@
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 import React, { useEffect } from "react";
 import { useEvalDataContext } from "~/context";
 import { EMPTY_ARRAY, type Domains } from "~/utils";

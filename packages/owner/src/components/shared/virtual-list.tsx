@@ -12,29 +12,35 @@ import {
 } from "@af-utils/virtual-react";
 import React, { useCallback } from "react";
 
-import { useRefs } from "@funext/ui";
-import MuxList, { type ListItemProps as MuxListProps } from "@funext/ui/List";
+import { Box, useRefs, List as MuxList} from "~/ui";
 import { LayoutContext } from "~/context";
 import { EMPTY_OBJECT, i18n } from "~/utils";
+import { Toolbar } from "./toolbar";
 
 const EVENTS = [VirtualScrollerEvent.RANGE] as const;
 
-const VirtualScrollerList = React.forwardRef((props, forwardRef) => {
-  const { setScrollerRef } = React.useContext(LayoutContext) ?? EMPTY_OBJECT;
-  const ref = useRefs(forwardRef, setScrollerRef);
-  return (
-    <MuxList
-      data-ui="VirtualScrollerList"
-      {...props}
-      ref={ref}
-      component="div"
-    />
-  );
-});
+const VirtualScrollerList = React.forwardRef<HTMLElement, any>(
+  ({ children, ...props }, forwardRef) => {
+    const { setScrollerRef } = React.useContext(LayoutContext) ?? EMPTY_OBJECT;
+    const ref = useRefs(forwardRef, setScrollerRef);
+    //console.error("-----VirtualScrollerList---------props:", props)
+    return (
+      <Box
+        data-ui="VirtualScrollerList"
+        {...props}
+        ref={ref}
+        component="div"
+      >
+        <Toolbar/>
+        {children}
+      </Box>
+    );
+  },
+);
 
 interface VirtualListProps
   extends Omit<ListProps<"div">, "model" | "children">,
-    Omit<MuxListProps, "children" | "component"> {
+    Omit<React.ComponentProps<typeof MuxList>, "children" | "component"> {
   model: VirtualScrollerInitialParams;
   Item: React.ComponentType<ListItemProps>;
   itemProps?: any;
@@ -49,9 +55,7 @@ export const VirtualList: React.FC<Omit<VirtualListProps, "itemProps">> = (
 ) => {
   const {
     withLayoutScroller = true,
-    component: ListComponent = withLayoutScroller
-      ? VirtualScrollerList
-      : MuxList,
+    component: ListComponent = withLayoutScroller ? VirtualScrollerList : Box,
     model: modelProps,
     Item,
     fetch,
@@ -97,7 +101,7 @@ export const VirtualList: React.FC<Omit<VirtualListProps, "itemProps">> = (
         ) : null
       }
       component={ListComponent}
-      header={header as JSX.Element}
+      header={header as React.JSX.Element}
       {...others}
       model={model}
     >
@@ -110,7 +114,7 @@ export const FixedVirtualList: React.FC<
   Omit<VirtualListProps, "fetch" | "state">
 > = (props) => {
   const {
-    withLayoutScroller = true,
+    withLayoutScroller = false,
     component: ListComponent = withLayoutScroller
       ? VirtualScrollerList
       : MuxList,
@@ -130,7 +134,7 @@ export const FixedVirtualList: React.FC<
     <List
       data-ui="VirtualList"
       component={ListComponent}
-      header={header as JSX.Element}
+      header={header as React.JSX.Element}
       {...others}
       model={model}
     >

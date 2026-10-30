@@ -431,7 +431,7 @@ export function IfSize<T extends IfSizeResult>({
 
   React.useEffect(() => {
     const val = result.value;
-    if (val !== undefined && val !== null) {
+    if (val != null) {
       const output =
         typeof val === "function" ? call(val, result, merge(params, suggest.all)) : val;
             

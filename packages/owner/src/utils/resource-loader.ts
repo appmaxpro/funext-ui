@@ -17,6 +17,7 @@ import {
   type FilterFormView,
   type FilterView,
   type FormView,
+  type Property,
   type RelationField,
   type Resource,
   type ResourceContext,
@@ -62,14 +63,14 @@ interface GetResourceParams {
 export async function getResource(
   name: string,
   { loader, ...params }: GetResourceParams,
-) {
+): Promise<Resource> {
   let isNew = false;
   const search = qs.stringify({
     ...params.params,
     context: JSON.stringify(params.context),
   });
 
-  const res = cache.get(getLoadKey(name, params), async () => {
+  const res = await cache.get(getLoadKey(name, params), async () => {
     isNew = true;
 
     if (loader) {
@@ -78,7 +79,7 @@ export async function getResource(
       if (typeof result === "string") {
         if (loader.type === "xml") {
           const widgets = htmlToJson.convert(result);
-          const resource = await processResource(
+          const resource = await doProcessResource(
             widgets as unknown as InitResource,
             params,
           );
@@ -89,107 +90,131 @@ export async function getResource(
         }
       }
       if (isPlainObject(result)) {
-        const resource = await processResource(result as InitResource, params);
+        const resource = await doProcessResource(
+          result as InitResource,
+          params,
+        );
         return resource;
       }
       return Promise.reject("Unable to detect the loader result type");
     }
 
     const response = await fetch({
-      url: `resources/${name}${search.length ? "?" + search : ""}`,
+      url: `${name}/view${search.length ? "?" + search : ""}`,
       method: "GET",
     });
     if (!response.ok) return Promise.reject(response.text);
 
     if (response.headers.get("Content-Type")?.includes("xml")) {
       const widgets = htmlToJson.convert(await response.text());
-      const resource = await processResource(
+      const resource = await doProcessResource(
         widgets as unknown as InitResource,
         params,
       );
       return resource;
     }
-    const resource = await processResource(await response.json(), params);
+    const resource = doProcessResource(await response.json(), params);
     return resource;
   });
 
   if (!isNew) {
-    let resource = await res;
-    if (params.params?.popup !== resource.params?.popup) {
-      resource = Object.create({
-        ...res,
-        params: { ...resource.params, ...params.params },
-      });
-      const get = Object.getOwnPropertyDescriptor(resource, "get")!;
+    if (params.params?.popup !== res.params?.popup) {
+      const newParams = { ...res.params, ...params.params };
+
       const context = {
-        ...resource.context,
+        ...res.context,
         ...params.context,
-        _model: resource.model,
+        ...newParams,
       };
-      const evalContext = resource.evalContext._subContext(context);
-      Object.defineProperties(resource, {
-        get,
-        context: {
-          value: context,
-          writable: false,
-          configurable: false,
+      const evalContext = res.evalContext._subContext(context);
+
+      const resource = Object.create(
+        {
+          ...res,
         },
-        evalContext: {
-          value: evalContext,
-          writable: false,
-          configurable: false,
+        {
+          ...Object.getOwnPropertyDescriptors(res),
+          params: {
+            value: newParams,
+          },
+          context: {
+            value: context,
+          },
+          evalContext: {
+            value: evalContext,
+          },
         },
-      });
+      );
+
       return resource;
     }
   }
-
+  console.error("isDevelopment?:", isDevelopment);
   if (isDevelopment) {
-    const realResource = await res;
-    cache.delete(name);
-    return realResource;
+    cache.delete(getLoadKey(name, params));
   }
 
   return res;
 }
 
 interface InitResource
-  extends Omit<Resource, "type" | "filter" | "get" | "evalContext"> {}
+  extends Omit<
+    Resource,
+    "type" | "get" | "evalContext" | "processWidget" | "get"
+  > {}
 
-export async function processResource(
-  res: InitResource,
-  { context: ctx, params: initParams }: GetResourceParams,
-): Promise<Resource> {
+export function processResource(res: InitResource, params?: any) {
   res = { ...res };
+  return doProcessResource(res, { context: EMPTY_OBJECT, params });
+}
+
+export function doProcessResource(
+  res: InitResource,
+  { context: ctx, params: initParams }: Omit<GetResourceParams, "loader">,
+): Resource {
+  //res = { ...res };
 
   const resource = res as Resource;
 
-  const context = processContext({
+  const context = {
     ...ctx,
     ...resource.context,
     _model: res.model ?? ctx._model,
-  });
+  };
 
   const params = { ...initParams, ...resource.params };
 
-  const fields = res.fields || [];
+  let fields = res.fields || [];
   const map = new Map(res.fields!.map((f) => [f.name, f]));
   const field = map.get.bind(map);
 
   ctx = createEvalContext(context, {
+    field,
     helpers: {
-      field,
       processWidget: (widget: Widget) => processWidget(widget, ctx),
     },
   });
 
   processSchema(resource, ctx);
-  await finishProcess(resource, ctx);
-  const { filter, views, fields: ignore, ...rest } = resource;
+  finishProcess(resource, ctx);
+  const {
+    fields: ignore,
+    ...rest
+  } = Object.getOwnPropertyDescriptors(resource);
 
-  return Object.defineProperties(
-    { ...rest },
+  return Object.create(
     {
+      add(...field: Property[]) {
+        field.forEach((f) => map.set(f.name, { ...map.get(f.name), ...f }));
+        fields = Array.from(map.values());
+      },
+      remove(...field: string[]) {
+        field.forEach((f) => map.delete(f));
+        fields = Array.from(map.values());
+      },
+    },
+    {
+      ...rest,
       type: {
         value: "resource",
         writable: false,
@@ -217,31 +242,16 @@ export async function processResource(
         writable: false,
         configurable: false,
       },
-      filter: {
-        value: filter,
-        writable: false,
-      },
-      views: {
-        value: views,
-        writable: false,
-      },
     },
   ) as Resource;
 
   //return resource as Resource;
 }
 
-async function finishProcess(
-  resource: Partial<Resource>,
-  ctx: ResourceContext,
-) {
-  const viewPromise = (resource.views || []).map((view) =>
-    processResourceView(view, ctx!),
-  );
-
-  const views = (await Promise.all(viewPromise)).filter(
-    Boolean,
-  ) as ResourceView[];
+function finishProcess(resource: Partial<Resource>, ctx: ResourceContext) {
+  const views = (resource.views || [])
+    .map((view) => processResourceView(view, ctx!))
+    .filter(Boolean) as ResourceView[];
 
   views.forEach((view) => (view.model ??= resource.model));
 
@@ -261,14 +271,6 @@ async function finishProcess(
   return resource as Resource;
 }
 
-function createProxyContext<Context extends object>(context: Context) {
-  return new Proxy<Context>(context, {
-    get: Reflect.get,
-    set: Reflect.set,
-    has: Reflect.has,
-  });
-}
-
 function processResourceView(res: Partial<ResourceView>, ctx: ResourceContext) {
   const stack: ViewProcessor[] = [
     processView,
@@ -286,7 +288,8 @@ function processResourceView(res: Partial<ResourceView>, ctx: ResourceContext) {
   };
 
   const view = next() ?? ctx.processWidget(res);
-
+  if(view)
+    processViewFields(view as ResourceView);
   return view as ResourceView;
 }
 
@@ -377,23 +380,38 @@ function processFilterSidebar(res: Container, ctx: ResourceContext) {
 export function processBaseWidget(schema: Widget, ctx: ResourceContext) {}
 
 export function processWidget(schema: Widget, ctx: ResourceContext) {
-  if(schema.context) {
+  if (schema.context) {
     schema.context = evalContext(schema.context, ctx);
   }
+  let isRel = false;
   if (isField(schema)) {
-    const property = ctx._field(schema.name);
-    const field = (property ? merge(schema, property) : schema) as Field;
-    property && !field.pType && (field.pType = property.pType);
-    schema = field;
+    const {uid: _, ...property} = ctx._field(schema.name) ?? EMPTY_OBJECT;
+    
+    const field = (property ? merge({...schema,...property}, schema) : schema) as Field;
+  
+    console.log("processWidget: field: ", schema.name, ", property:", field)
     if (!field.pType) {
       field.pType = field.name === "id" ? "int" : "string";
     }
+    
+    processSlots(field, ctx);
+
     if (isRelationField(field)) {
+      isRel = true;
       processRelField(field, ctx);
     }
+    Object.assign(schema, field);
+  } else {
+    const items = getWidgetItems(schema);
+    if(items.length) {
+      schema.items = items.map((widget) => processWidget(widget, ctx));
+    }
+    processSlots(schema, ctx);
   }
-  getWidgetItems(schema).map((widget) => processWidget(widget, ctx));
+  return processSchema(schema as Schema, ctx) as Widget;
+}
 
+function processSlots(schema: Widget, ctx: ResourceContext) {
   if (schema.slots) {
     if (typeof schema.slots === "function") {
       schema.slots = schema.slots(ctx);
@@ -412,8 +430,6 @@ export function processWidget(schema: Widget, ctx: ResourceContext) {
 
     schema.slots = slots;
   }
-
-  return processSchema(schema as Schema, ctx) as Widget;
 }
 
 export function processSchema<S extends Schema>(res: S, ctx: any) {
@@ -429,21 +445,19 @@ function processBase(res: BaseSchema, ctx: any) {
 }
 
 export function processRelField(schema: RelationField, ctx: ResourceContext) {
-   if(isDynamicField(schema)) {
-      
-      const context = {
-        _model: schema.target,
-        ...schema.context,
-        _field(name: string) {
+  if (isDynamicField(schema)) {
+    const context = {
+      _model: schema.target,
+      ...schema.context,
+      _field(name: string) {},
+    };
+    const newEvalContext = ctx._subContext(context);
 
-        }
-      }
-      const newEvalContext = ctx._subContext(context);
-      
-      const views = schema.views;
-      (schema as any).views = views.map(view => processResourceView(view, newEvalContext)) 
-   }
-
+    const views = schema.views;
+    (schema as any).views = views.map((view) =>
+      processResourceView(view, newEvalContext),
+    );
+  }
 }
 function evalDomain(domain: any, ctx: ResourceContext): Domains | undefined {
   if (typeof domain === "string") {
@@ -455,8 +469,11 @@ function evalDomain(domain: any, ctx: ResourceContext): Domains | undefined {
   return domain;
 }
 
-function evalContext(context: any, ctx: ResourceContext): ResourceContext | undefined {
-   if (typeof context === "string") {
+function evalContext(
+  context: any,
+  ctx: ResourceContext,
+): ResourceContext | undefined {
+  if (typeof context === "string") {
     return evalExpr(context)(ctx) as any;
   }
   if (typeof context === "function") {
@@ -465,8 +482,7 @@ function evalContext(context: any, ctx: ResourceContext): ResourceContext | unde
   return context;
 }
 
-
-function wakSchema<S extends Schema>(res: S) {}
+//function wakSchema<S extends Schema>(res: S) {}
 
 export function processContext(context: DataContext) {
   const IGNORE = [
@@ -481,21 +497,21 @@ export function processContext(context: DataContext) {
 
   function process(_value: DataContext) {
     if (typeof _value !== "object") return _value;
+    const ctx = { ..._value };
+    const value = {} as any;
+    for (let k in ctx) {
+      const v = ctx[k];
+      if (k === "id") {
+        value.id = !v ? null : v;
+        continue;
+      }
 
-    const value = { ..._value };
-    for (let k in value) {
-      const v = value[k];
       const ignore = IGNORE.includes(k);
       const isDummy = !ignore && k !== "$version" && k.startsWith("_");
 
       // ignore values
-      if (
-        ignore ||
-        k.startsWith("$t:") ||
-        k.startsWith("tr:") ||
-        typeof v === "function"
-      ) {
-        delete value[k];
+      if (ignore || k.startsWith("tr:") || typeof v === "function") {
+        continue;
       } else if (isDummy) {
         //k = getBaseDummy(k);
         //value[k] = value[k] ?? v;
@@ -507,19 +523,32 @@ export function processContext(context: DataContext) {
         } else {
           value[k] = process(v);
         }
+      } else {
+        value[k] = v;
       }
     }
-
-    // set dummy id to null
-    if (typeof value?.id === "number" && value.id < 0) {
-      return { ...value, id: null };
-    } else if (value?.id === "") {
-      return { ...value, id: null };
-    }
-
     return value;
   }
 
   const values = process(context);
   return values;
+}
+
+function processViewFields(res: ResourceView) {
+  let fields = res.fields || [];
+  function visit(widget: Widget) {
+    if (isField(widget)) {
+      if (!fields.includes(widget.name)) {
+        fields.push(widget.name);
+      }
+    } else {
+      getWidgetItems(widget).forEach(visit);
+      if (widget.slots) {
+        Object.values(widget).forEach(visit);
+      }
+    }
+  }
+  visit(res);
+
+  res.fields = fields;
 }

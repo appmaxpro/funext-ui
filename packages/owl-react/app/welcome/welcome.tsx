@@ -2,6 +2,26 @@ import React from "react";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 //import { generateCode } from "@odoo/owl/compiler";
+import type ReactReconciler from 'react-reconciler'
+
+export type Fiber<T = any> = Omit<ReactReconciler.Fiber, 'stateNode'> & { stateNode: T }
+
+export function useFiber(): Fiber {
+  const fiber = React.useRef<Fiber>();
+
+  React.useState(() => {
+    const bind = Function.prototype.bind;
+    Function.prototype.bind = function (self, maybeFiber) {
+      if (self === null && typeof maybeFiber?.type === 'function') {
+        fiber.current = maybeFiber;
+        Function.prototype.bind = bind;
+      }
+      return bind.apply(this, arguments as any);
+    };
+  });
+
+  return fiber.current!;
+}
 
 export function Welcome() {
   const [input, setInput] = React.useState("")
@@ -24,13 +44,19 @@ export function Welcome() {
           <span>Output:</span>
           <textarea  value={output} readOnly rows={10} className="grow border-1 border-gray-300 p-4"/>
         </div>
-        <div className="w-full p-5">
-          <button className="bg-blue-500 hover:bg-blue-700 px-3 py-2 rounded-md outline-0 text-white cursor-pointer border-0" onClick={onCompile}>Compile</button>
-        </div>
+        <RendButton onCompile={onCompile}/>
         
       </div>
     </main>
   );
+}
+
+function RendButton({onCompile}: {onCompile: () => void}) {
+  const fibber = useFiber()
+  console.log(fibber);
+  return <div className="w-full p-5">
+          <button className="bg-blue-500 hover:bg-blue-700 px-3 py-2 rounded-md outline-0 text-white cursor-pointer border-0" onClick={onCompile}>Compile</button>
+        </div>
 }
 
 const resources = [

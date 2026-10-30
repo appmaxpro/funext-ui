@@ -8,7 +8,7 @@ import {
   memoTheme,
   styled,
   type InputProps,
-} from "@funext/ui";
+} from "~/ui";
 import React from "react";
 
 import {

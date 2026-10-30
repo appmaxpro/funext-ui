@@ -3,13 +3,13 @@ import dayjs from 'dayjs';
 import { useTrackerSession } from '../store/session';
 import { useAsyncEffect } from '~/hooks/use-async-effect';
 
-export const nativeEnvironment = window.appInterface || (window.webkit && window.webkit.messageHandlers.appInterface);
+export const nativeEnvironment =
+  window.appInterface || (window.webkit && window.webkit.messageHandlers.appInterface);
 
 export const nativePostMessage = (message:any) => {
   if (window.webkit && window.webkit.messageHandlers.appInterface) {
     window.webkit.messageHandlers.appInterface.postMessage(message);
-  }
-  if (window.appInterface) {
+  } else if (window.appInterface) {
     window.appInterface.postMessage(message);
   }
 };
@@ -18,43 +18,46 @@ export const generateLoginToken = async () => {
   if (nativeEnvironment) {
     let token = '';
     try {
-      const expiration = dayjs().add(6, 'month').toISOString();
-      const response = await fetch('/tracker/session/token', {
+      const expiration = dayjs().add(6, 'months').toISOString();
+      const response = await fetch('/api/session/token', {
         method: 'POST',
         body: new URLSearchParams(`expiration=${expiration}`),
       });
       if (response.ok) {
         token = await response.text();
       }
-    } catch (error) {
+    } catch {
       token = '';
     }
     nativePostMessage(`login|${token}`);
   }
 };
 
-export const handleLoginTokenListeners = new Set<(token:string) => void>();
+export const handleLoginTokenListeners = new Set<(token: string)=> void>();
 window.handleLoginToken = (token) => {
   handleLoginTokenListeners.forEach((listener) => listener(token));
 };
 
-const updateNotificationTokenListeners = new Set<(token:string) => void>();
+const updateNotificationTokenListeners = new Set<(token: string)=> void>();
 window.updateNotificationToken = (token) => {
   updateNotificationTokenListeners.forEach((listener) => listener(token));
 };
 
+export const handleNativeNotificationListeners = new Set< (message:any) => void>();
+(window as any).handleNativeNotification = (message:any) => {
+  handleNativeNotificationListeners.forEach((listener) => listener(message));
+};
+
 const NativeInterface = () => {
+  const sessionActions = useTrackerSession();
 
   const user = useTrackerSession((state) => state.user);
-  const updateUser = useTrackerSession((state) => state.updateUser);
-
-  const [notificationToken, setNotificationToken] = useState<string|null>(null);
+  const [notificationToken, setNotificationToken] = useState(null);
 
   useEffect(() => {
-    const listener = (token:string) => setNotificationToken(token);
-    updateNotificationTokenListeners.add(listener);
+    updateNotificationTokenListeners.add(setNotificationToken as any);
     return () => {
-      updateNotificationTokenListeners.delete(listener);
+      updateNotificationTokenListeners.delete(setNotificationToken as any);
     }
   }, [setNotificationToken]);
 
@@ -72,18 +75,16 @@ const NativeInterface = () => {
             notificationTokens: [...tokens.slice(-2), notificationToken].join(','),
           },
         };
-
-        const response = await fetch(`/tracker/users/${user.id}`, {
+        
+        const response = await fetch(`/api/users/${user.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedUser),
         });
-
-        if (response.ok) {
-          updateUser(await response.json());
-        } else {
-          throw Error(await response.text());
+        if (!response.ok) {
+          throw new Error(await response.text());
         }
+        sessionActions.updateUser(await response.json());
       }
     }
   }, [user, notificationToken, setNotificationToken]);

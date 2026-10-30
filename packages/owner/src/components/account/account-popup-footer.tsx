@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Box, { type BoxProps } from '@funext/ui/Box';
+import {Box, type BoxProps } from '~/ui';
 
 export interface AccountPopupFooterProps extends BoxProps {
   children?: React.ReactNode;

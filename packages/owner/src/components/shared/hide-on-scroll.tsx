@@ -1,10 +1,10 @@
-import * as React from 'react'
-import { Slide } from "@funext/ui";
+import * as React from "react";
+import { Slide } from "~/ui";
 import useScrollTrigger from "~/hooks/use-scroll-trigger";
 
 export function HideOnScroll(props: {
   children: React.ReactElement;
-  direction: 'up' | 'down';
+  direction: "up" | "down";
   target?: Node | null;
   enabled?: boolean;
 }) {
@@ -14,15 +14,25 @@ export function HideOnScroll(props: {
   // This is only being set here because the demo is in an iframe.
   const trigger = useScrollTrigger({
     target,
-    enabled
+    enabled,
   });
-  //console.log("HideOnScroll: trigger:", trigger)
 
   if (!enabled) {
     return children;
   }
 
-  return <Slide direction={direction} appear={false} in={!trigger} timeout={300}>
-    {children}
-  </Slide>
+  console.log("HideOnScroll: trigger:", trigger);
+
+  return (
+    <Slide
+      direction={direction}
+      appear={false}
+      in={!trigger}
+      timeout={300}
+      easing={"cubic-bezier(0.4, 0, 0.6, 1)"}
+      key={target ? "HasTarget" : undefined}
+    >
+      {children}
+    </Slide>
+  );
 }

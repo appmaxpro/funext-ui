@@ -2,13 +2,10 @@ import {
   IconButton,
   Tooltip,
   Avatar,
-  ListItemAvatar,
-  ListItemText,
-  ListItemButton,
   Text,
-  styled,
+  List,
   cn,
-} from "@funext/ui";
+} from "~/ui";
 import BatteryFullIcon from "@funext/icons/BatteryFull";
 import BatteryChargingFullIcon from "@funext/icons/BatteryChargingFull";
 import Battery60Icon from "@funext/icons/Battery60";
@@ -47,8 +44,9 @@ const DeviceItem = ({
   const selectId = useDeviceStore((state) => state.selectId);
   const selectedDeviceId = useDeviceStore((state) => state.selectedId);
 
-  const item = devices[index]!;
-  const position = useTrackerSession((state) => state.positions[item.id]);
+  const item = devices[index] ?? {} as any;
+  const positions = useTrackerSession((state) => state.positions);
+  const position = item.id && positions[item.id];
 
   const devicePrimary = useAttrPref("devicePrimary", "name");
   const deviceSecondary = useAttrPref("deviceSecondary", "");
@@ -62,9 +60,12 @@ const DeviceItem = ({
 
   const secondaryText = () => {
     let status;
-    if (item.status === "online" || !item.lastUpdate) {
+    if (item.status && (item.status === "online" || !item.lastUpdate)) {
       status = formatStatus(item.status, t);
     } else {
+      if(!item.lastUpdate)
+        return "";
+
       status = dayjs(item.lastUpdate).fromNow();
     }
     return (
@@ -82,15 +83,15 @@ const DeviceItem = ({
 
   return (
     <CommandItem
-      onClick={() => selectId(item.id)}
+      onSelect={() => selectId(item.id)}
       
       {...res}
       value={String(item.id)}
       disabled={item.disabled}
       //selected={selectedDeviceId === item.id}
-      className={cn(selectedDeviceId === item.id ? "bg-soft/20" : null, res.className)}
+      className={cn("data-[selected=true]:bg-accent/10 data-[selected=true]:text-card-fg hover:bg-accent/5", selectedDeviceId === item.id ? "bg-soft/20" : null, res.className)}
     >
-      <ListItemAvatar>
+      <List.Avatar>
         <Avatar>
           <img
             className=""
@@ -98,8 +99,8 @@ const DeviceItem = ({
             alt=""
           />
         </Avatar>
-      </ListItemAvatar>
-      <ListItemText
+      </List.Avatar>
+      <List.Text
         primary={primaryValue}
         secondary={secondaryText()}
         slots={{
@@ -130,20 +131,20 @@ const DeviceItem = ({
               <IconButton size="sm">
                 {(position.attributes.batteryLevel > 70 &&
                   (position.attributes.charge ? (
-                    <BatteryChargingFullIcon className="text-success" />
+                    <BatteryChargingFullIcon className="text-green-500" />
                   ) : (
-                    <BatteryFullIcon className="text-success" />
+                    <BatteryFullIcon className="text-green-500" />
                   ))) ||
                   (position.attributes.batteryLevel > 30 &&
                     (position.attributes.charge ? (
-                      <BatteryCharging60Icon className="text-warning" />
+                      <BatteryCharging60Icon className="text-orange-500" />
                     ) : (
-                      <Battery60Icon className="text-warning" />
+                      <Battery60Icon className="text-orange-500" />
                     ))) ||
                   (position.attributes.charge ? (
-                    <BatteryCharging20Icon className="text-error" />
+                    <BatteryCharging20Icon className="text-red-500" />
                   ) : (
-                    <Battery20Icon className="text-error" />
+                    <Battery20Icon className="text-red-500" />
                   ))}
               </IconButton>
             </Tooltip>

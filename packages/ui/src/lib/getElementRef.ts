@@ -11,24 +11,7 @@ const EMPTY_REF = noop;
 // Access the ref using the method that doesn't yield a warning.
 export function getElementRef(element: React.ReactElement) {
   if (!element) return EMPTY_REF
-  if (isDevelopment) {
-    // React <=18 in DEV
-    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get
-    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
-
-    if (mayWarn) {
-      return (element as any).ref
-    }
-
-    // React 19 in DEV
-    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get
-    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning
-
-    if (mayWarn) {
-      return (element.props as {ref?: React.Ref<unknown>}).ref
-    }
-  }
-
+  
   // Not DEV
-  return (element.props as {ref?: React.Ref<unknown>})?.ref || (element as any).ref
+  return (element.props as any)?.ref || (element as any).ref
 }

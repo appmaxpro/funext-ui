@@ -668,9 +668,12 @@ const PopperTrigger = React.forwardRef<HTMLButtonElement, PopperTriggerProps>(
       ref: mergedRef,
       onClick(event: any) {
         event.stopPropagation();
-        children.props.onClick?.(event);
+        (children as any).props.onClick?.(event);
       },
     } as any);
+    if(!children){
+      return '';
+    }
     //console.log("MenuHandler: ReferenceProps:", refProps)
     return React.cloneElement(children, {
       ...refProps,

@@ -54,7 +54,7 @@ function checkFrame( block: Block) {
    }
    
 
-  if(frame.count > 10) {
+  if(frame.count > 2000) {
     
     if (isDevelopment) {
       console.warn("renderDefault:: frame:", frame, ", block:", block); 
@@ -126,8 +126,12 @@ function renderDefault(
     return block;
   }
 
-  const hType = String(tag ?? type ?? "NA");
-
+  const hType = String(tag ?? type ?? "").toLowerCase();
+  if (['div', 'span', 'label', 'h6', 'h5', 'h4', 'p', 'b', 'ul', 'li'].includes(hType)) {
+      return (
+      React.createElement(hType, props)
+    );
+  }
   return (
     <p style={{ fontSize: 8, color: 'red' }}>
       {hType} Block Render
@@ -154,7 +158,7 @@ const H = meta(({block, ctx}:{block: HBlock, ctx?: object}) => {
   return block.content(ctx ?? defaultEvalContext)
 }, {noProps: true, wrap: 'prop'})
 
-const Html = meta(({tag, render, ctx}:{tag?: keyof JSX.IntrinsicElements, render: (ctx: object) => any, ctx?: object}) => {
+const Html = meta(({tag, render, ctx}:{tag?: keyof React.JSX.IntrinsicElements, render: (ctx: object) => any, ctx?: object}) => {
   const Tag = tag ?? "div";
   
   return <Tag dangerouslySetInnerHTML={{ __html: render(ctx ?? defaultEvalContext) }} />; 

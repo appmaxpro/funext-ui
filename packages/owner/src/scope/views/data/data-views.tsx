@@ -8,7 +8,7 @@ import {
   InViewProvider,
   useInViewport,
   useResizeDetector,
-} from "@funext/ui";
+} from "~/ui";
 
 import { ErrorBox } from "~/components/shared/error-box";
 import { useAsyncEffect } from "~/hooks/use-async-effect";
@@ -79,7 +79,7 @@ function ViewError({ error, onReset }: FallbackProps) {
     <ErrorBox
       status={500}
       error={session.data?.user?.technical ? error : undefined}
-      onReset={onReset}
+      onRetry={onReset}
     />
   );
 }

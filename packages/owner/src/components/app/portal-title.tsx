@@ -1,4 +1,4 @@
-import { Portal } from "@funext/ui";
+import { Portal } from "~/ui";
 import { useEffect, type ReactNode } from "react";
 
 export function PortalTitle({

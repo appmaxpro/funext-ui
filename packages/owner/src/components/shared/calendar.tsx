@@ -3,7 +3,7 @@
 // A custom calendar that is compatible
 // with react-day-picker v9 from https://date-picker.luca-felix.com/
 
-import { Button, cn, Dialog, Drawer, Popover } from "@funext/ui";
+import { Button, cn, Dialog, Drawer, Popover } from "~/ui";
 import { isNumber, isPlainObject } from "lodash";
 import * as React from "react";
 import {

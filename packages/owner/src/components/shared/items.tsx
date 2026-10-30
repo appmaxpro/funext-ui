@@ -11,16 +11,18 @@ import {
   Panel,
   Stack,
   type CardHeaderProps,
-  type CardProps,
-  type SxComponentProps,
-} from "@funext/ui";
-import { EMPTY_ARRAY, i18n } from "~/utils";
-import Icons from "./icons";
+  type CardProps
+} from "~/ui";
 import React from "react";
-import { Container } from "./container";
+import { EMPTY_ARRAY, i18n } from "~/utils";
 import { PercentageProgress } from "./circular-progress";
+import { Container } from "./container";
 import { GridIcons } from "./grid-icons";
+import Icons from "./icons";
+import { Loader } from "./loader";
 import { Select } from "./select";
+import { ErrorBox } from "./error-box";
+import { SafeText } from "./safe-text";
 
 type ItemProps = React.ComponentProps<typeof Flex> & {label?: React.ReactNode; title?: React.ReactNode;}
 const Item = ({
@@ -65,8 +67,8 @@ const ExpandCard = ({
               EMPTY_ARRAY,
             )}
           >
-            <Icons.Icons.ChevronDown
-              className={`${open ? "rotate-180" : ""} h-5 w-5 transition-transform`}
+            <Icons.Icons.ChevronDown size={20}
+              className={`${open ? "rotate-180" : ""} transition-transform`}
             />
           </IconButton>
         }
@@ -98,4 +100,7 @@ export const Items = {
   Progress: LinearProgress,
   GridIcons,
   Select,
+  Loader,
+  ErrorBox,
+  SafeText
 };

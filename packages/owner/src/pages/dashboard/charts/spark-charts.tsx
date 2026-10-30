@@ -1,4 +1,4 @@
-import { Card, Grid } from "@funext/ui";
+import { Card, Grid } from "~/ui";
 import { createSparks } from "./spark-data";
 import ReactApexChart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";

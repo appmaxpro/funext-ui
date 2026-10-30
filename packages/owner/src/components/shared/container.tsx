@@ -1,4 +1,4 @@
-import { Box, cn, Stack, type BoxProps} from "@funext/ui";
+import { Box, cn, Stack, type BoxProps} from "~/ui";
 
 export function Container({ children, ...props }: BoxProps) {
  //const layout = useLayoutContext()

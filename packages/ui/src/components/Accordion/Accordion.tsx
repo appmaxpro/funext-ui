@@ -17,13 +17,13 @@ import { useControllableState } from "../../hooks/use-controllable-state";
 import { clsx } from "../../styles";
 
 export interface AccordionProps extends React.ComponentProps<"div"> {
-  open?: boolean;
+  open?: boolean | string;
   icon?: string;
   animate?: AnimationProps;
   disabled?: boolean;
   className?: string;
   children: ReactNode;
-  defaultOpen?: boolean;
+  defaultOpen?: boolean | string;
 }
 
 const AccordionFc = React.forwardRef<HTMLDivElement, AccordionProps>(

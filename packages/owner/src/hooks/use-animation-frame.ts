@@ -1,6 +1,6 @@
 'use client';
 import { EMPTY_ARRAY, isDevelopment } from '~/utils';
-import { useLazyRef } from '@funext/ui';
+import { useLazyRef } from '~/ui';
 import React from 'react';
 
 type AnimationFrameId = number;
@@ -125,9 +125,9 @@ export class AnimationFrame {
  * A `requestAnimationFrame` with automatic cleanup and guard.
  */
 export function useAnimationFrame() {
-  const timeout = useLazyRef(AnimationFrame.create).current;
+  const frame = useLazyRef(AnimationFrame.create).current;
 
-  React.useEffect(timeout.disposeEffect, EMPTY_ARRAY);
+  React.useEffect(frame.disposeEffect, EMPTY_ARRAY);
 
-  return timeout;
+  return frame;
 }

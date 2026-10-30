@@ -1,5 +1,5 @@
 import { EMPTY_ARRAY, isStatefulBlock, type Block, type WidgetBlock } from "~/utils";
-import { Box, useLazyRef } from "@funext/ui";
+import { Box, useLazyRef } from "~/ui";
 import { useFormWidgetState, WidgetStateProvider } from "./root";
 import type { EditableFormState, IWidgetState, IWState } from "../../../types";
 import {
@@ -68,8 +68,8 @@ export const StatefulWidget = ({ ref, defaults}: StatefulWidgetProps) => {
 
   if(defaults)
     return renderDefault(widget.block, props, widget.context)
-
-  return <Box {...props} />;
+  const Tag = (widget.block.tag as React.JSX.ElementType) ?? Box;
+  return <Tag {...props} />;
 };
 
 type StatelessProps = { block: WidgetBlock; defaults?: boolean; ref?: any };

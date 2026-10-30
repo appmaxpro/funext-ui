@@ -24,9 +24,9 @@ export interface AccordionBodyProps extends SxComponentProps {
 }
 
 export const AccordionBody = React.forwardRef<HTMLDivElement, AccordionBodyProps>(
-  ({ className, children, ...rest }, ref) => {
+  ({ className, children, id, ...rest }, ref) => {
     // 1. init
-    const { open } = useAccordion();
+    const { open:openValue } = useAccordion();
     const { accordion } = useTailwindTheme();
     const {
       styles: { base },
@@ -45,9 +45,10 @@ export const AccordionBody = React.forwardRef<HTMLDivElement, AccordionBodyProps
     
     // 5. return
     return (
-      <Collapse open={!!open}>
+      <Collapse open={(openValue === id || openValue === true)}>
           <AccordionBodyRoot
             {...rest}
+            id={id}
             className={bodyClasses}
             ref={ref}
           >

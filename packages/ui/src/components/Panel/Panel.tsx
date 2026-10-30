@@ -66,7 +66,7 @@ export const PanelRoot = styled('div', {
         fill: true
       },
       style: {
-        backgroundColor: 'var(--card)',
+        backgroundColor: 'var(--color-card)',
       },
     },
     {
@@ -74,7 +74,7 @@ export const PanelRoot = styled('div', {
         hasColor: true
       },
       style: {
-        color: 'var(--card-fg)',
+        color: 'var(--color-card-fg)',
       },
     },
     {

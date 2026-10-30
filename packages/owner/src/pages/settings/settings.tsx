@@ -1,11 +1,10 @@
-import React from "react";
-import { Container } from "~/components/shared/container";
-import { Card, Flex, Radio, Switch } from "@funext/ui";
-import { i18n } from "~/utils/i18n";
-import { useLocalStorage } from "~/hooks/use-local-storage";
-import { APP_THEME_MODE } from "~/utils/constant";
-import type { ThemeMode } from "~/utils/types";
 import { languages } from "~/components/app/localization-provider";
+import { Container } from "~/components/shared/container";
+import { useLocalStorage } from "~/hooks/use-local-storage";
+import { Card, Radio, Switch } from "~/ui";
+import { APP_THEME_MODE } from "~/utils/constant";
+import { i18n } from "~/utils/i18n";
+import type { ThemeMode } from "~/utils/types";
 
 import DarkModeIcon from "@funext/icons/DarkMode";
 import LightModeIcon from "@funext/icons/LightMode";

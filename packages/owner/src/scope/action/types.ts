@@ -67,7 +67,7 @@ export interface ActionHandler {
 
   validate(): Promise<void>;
 
-  refresh(target?: string): Promise<void>;
+  refresh(): Promise<void>;
 
   close(): Promise<void>;
 

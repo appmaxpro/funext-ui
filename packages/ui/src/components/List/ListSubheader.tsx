@@ -80,7 +80,7 @@ export interface ListSubheaderOwnProps {
 
 export interface ListSubheaderTypeMap<
   AdditionalProps = {},
-  RootComponent extends React.ElementType = "li",
+  RootComponent extends React.ElementType = "div",
 > {
   props: AdditionalProps & ListSubheaderOwnProps;
   defaultComponent: RootComponent;
@@ -113,7 +113,7 @@ const useUtilityClasses = (ownerState: any) => {
   return composeClasses(slots, getListSubheaderUtilityClass, classes);
 };
 
-const ListSubheaderRoot = styled("li", {
+const ListSubheaderRoot = styled("div", {
   name: "MuxListSubheader",
   slot: "Root",
   overridesResolver: (props, styles) => {
@@ -189,7 +189,7 @@ const ListSubheaderRoot = styled("li", {
 );
 
 export const ListSubheader = React.forwardRef<
-  HTMLLIElement,
+  HTMLDivElement,
   ListSubheaderProps
 >(function ListSubheader(inProps, ref) {
   const props = useMuxDefaultProps({

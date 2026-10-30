@@ -6,14 +6,14 @@ import {
   useContainerSize,
   useResizeDetectorRef,
   Portal,
-} from "@funext/ui";
+} from "~/ui";
 
 import { useCallback, useEffect, useRef } from "react";
 
-import { setRootStore, useTabs, useViewStore } from "./use-tabs";
+import { setRootStore, useTabs, useTabsStore } from "./use-tabs";
 import { ResViews } from "../resource-views";
 import type { Tab } from "../types";
-import { CustomRoute } from "~/routes";
+//import { CustomRoute } from "~/routes";
 import { EMPTY_ARRAY, isDevelopment } from "~/utils";
 
 export function useNavTabsSize() {
@@ -21,12 +21,12 @@ export function useNavTabsSize() {
 }
 
 export function NavTabs({ container }: { container: HTMLDivElement | null }) {
-  const store = useViewStore();
+  const store = useTabsStore();
 
   const { active, items: tabs, popups, open, close, change } = useTabs();
   const value = active?.id;
   setRootStore(store);
-  console.log("NavTabs: change:", change, "\ntabs:", tabs);
+  console.log("NavTabs: change:", change, "\ntabs:", tabs, ", type:", active?.state.type);
   //console.log("store:", store, "\ntabStore:", tabStore, "\nSameStore:", store == tabStore);
 
   const { ref, size } = useResizeDetectorRef(false);
@@ -39,15 +39,12 @@ export function NavTabs({ container }: { container: HTMLDivElement | null }) {
   tabsRef.current = tabs;
 
   //useTabAutoReload(active, doRefresh);
-  useEffect(()=> {
-    return ()=> {
-     
+  useEffect(() => {
+    return () => {
       console.log("NavTabs: destroy all");
-      tabsRef.current.forEach(tab => close(tab.id));
-
-    }
-  }, EMPTY_ARRAY)
-
+      tabsRef.current.forEach((tab) => close(tab.id));
+    };
+  }, EMPTY_ARRAY);
 
   return (
     <div
@@ -79,11 +76,7 @@ export function NavTabs({ container }: { container: HTMLDivElement | null }) {
             hidden: tab.id !== value || tab.state.visible === false,
           })}
         >
-          {tab.custom ? (
-            <CustomRoute route={tab.custom}/>
-          ) : (
-            <ResViews tab={tab} />
-          )}
+          <ResViews tab={tab} />
         </div>
       ))}
       {isDevelopment && <TabsDirtyCheck tabs={tabs} />}
@@ -115,13 +108,10 @@ function TabsDirtyCheck({ tabs }: { tabs: Tab[] }) {
 }
 
 export function SingleTab() {
-  const {items, active=items?.find(tab => tab.state.visible !== false) } = useTabs();
+  const { items, active = items?.find((tab) => tab.state.visible !== false) } =
+    useTabs();
   if (active) {
-    {active.custom ? (
-      <CustomRoute route={active.custom}/>
-    ) : (
-      <ResViews tab={active} />
-    )}
+    return <ResViews tab={active} />;
   }
   return null;
 }

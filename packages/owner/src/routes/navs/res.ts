@@ -24,7 +24,6 @@ export default {
       icon: React.createElement(Icons.LocalShipping),
       props: {
         params: {
-          loader
         }
       }
     },

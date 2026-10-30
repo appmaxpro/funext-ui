@@ -9,6 +9,7 @@ import React from "react";
 export const SaleTargetBranches = React.memo((props: any) => {
     const {branch_id} = useParams()
     
+
     return <DataViewSingle {...props} id={branch_id!}>
          <SaleTargetBranchBox/>
     </DataViewSingle>

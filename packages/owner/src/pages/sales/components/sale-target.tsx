@@ -3,16 +3,10 @@ import {
   Box,
   Flex,
   Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
   Divider,
   List,
-  ListItem,
-  ListItemButton,
   Text,
-  ListItemAvatar,
-} from "@funext/ui";
+} from "~/ui";
 import type {
   SaleEntryTargetProps,
   SaleEntryUserProps,
@@ -80,8 +74,8 @@ export const SaleTargetBranchBox = () => {
 const SaleTargetTopCard = ({ target }: { target: SaleTargetProps }) => {
   return (
     <Card>
-      <CardHeader title={i18n.get("Summery")} />
-      <CardBody>
+      <Card.Header title={i18n.get("Summery")} />
+      <Card.Body>
         <Line title={i18n.get("Total Target")} value={target.target} />
         <Line title={i18n.get("Total Sales")} value={target.balance} />
         <Line title={i18n.get("Total Shipments")} value={target.count} />
@@ -97,8 +91,8 @@ const SaleTargetTopCard = ({ target }: { target: SaleTargetProps }) => {
             </PercentageProgress>
           }
         />
-      </CardBody>
-      <CardFooter divider>
+      </Card.Body>
+      <Card.Footer divider>
         <h3 className="flex items-center gap-2 text-md font-semibold text-primary">
           <ScheduleIcon/>
           <span className="rounded-xs outline-focus-ring focus:outline-2 focus:outline-offset-2">
@@ -106,7 +100,7 @@ const SaleTargetTopCard = ({ target }: { target: SaleTargetProps }) => {
             {target.date_format}
           </span>
         </h3>
-      </CardFooter>
+      </Card.Footer>
     </Card>
   );
 };
@@ -115,7 +109,7 @@ const SaleTargetState = ({ target }: { target: SaleTargetStatesProps }) => {
   const to = target.type === "states" ? `states` : `branches`;
   return (
     <Card>
-      <CardHeader title={i18n.get("Details")} />
+      <Card.Header title={i18n.get("Details")} />
       <Box>
         <Divider />
         <List>
@@ -124,9 +118,9 @@ const SaleTargetState = ({ target }: { target: SaleTargetStatesProps }) => {
           ))}
         </List>
       </Box>
-      <CardFooter>
+      <Card.Footer>
         {target.count} {i18n.get(to === "states" ? "Regions" : "Branches")}
-      </CardFooter>
+      </Card.Footer>
     </Card>
   );
 };
@@ -134,7 +128,7 @@ const SaleTargetState = ({ target }: { target: SaleTargetStatesProps }) => {
 const SaleTargetBranch = ({ target }: { target: SaleTargetBranchProps }) => {
   return (
     <Card>
-      <CardHeader title={i18n.get("Details")} />
+      <Card.Header title={i18n.get("Details")} />
       <Box>
         <Divider />
         <List ul={false} divider className="border-0 border-secondary">
@@ -155,7 +149,7 @@ const SaleEntryItem = ({
   to: string;
 }) => {
   return (
-    <ListItemButton
+    <List.ItemButton
       href={`${to}/${item.id}`}
       divider
       className="border-b-1 border-secondary"
@@ -178,13 +172,13 @@ const SaleEntryItem = ({
           </span>
         </div>
       </Flex>
-    </ListItemButton>
+    </List.ItemButton>
   );
 };
 
 const SaleUserItem = ({ user }: { user: SaleEntryUserProps }) => {
   return (
-    <ListItem li={false} divider>
+    <List.Item li={false} divider>
       <Flex gap={4} flexGrow={1} items="center">
         <div className="text-primary border-2 border-primary rounded-full p-1 flex justify-center items-center">
           <PersonIcon size="md" className="" />
@@ -200,7 +194,7 @@ const SaleUserItem = ({ user }: { user: SaleEntryUserProps }) => {
           
         </div>
       </Flex>
-    </ListItem>
+    </List.Item>
   );
 };
 
@@ -215,8 +209,8 @@ const SaleTargetSide = ({
 }) => {
   return (
     <Card>
-      <CardHeader title={title} />
-      <CardBody>
+      <Card.Header title={title} />
+      <Card.Body>
         <Line
           title={i18n.get("Out City Sales")}
           value={target.outside.balance}
@@ -229,7 +223,7 @@ const SaleTargetSide = ({
         <VerticalSpacer />
         <Line title={i18n.get("Total Sales")} value={target.balance} />
         <Line title={i18n.get("Count")} value={target.count} />
-      </CardBody>
+      </Card.Body>
     </Card>
   );
 };

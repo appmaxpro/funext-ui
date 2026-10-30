@@ -2,7 +2,7 @@
 
 import { EMPTY_ARRAY, getMultiValues, i18n, type Option } from "~/utils";
 
-import { Button, Menu } from "@funext/ui";
+import { Button, Menu } from "~/ui";
 import { Select } from "~/components/shared";
 import { Icons } from "~/components/shared/icons";
 import { registerWidgets } from "./hooks";

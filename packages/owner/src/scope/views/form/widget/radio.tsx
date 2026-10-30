@@ -1,27 +1,19 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import {
   EMPTY_ARRAY,
   EMPTY_OBJECT,
   getMultiValues,
-  i18n,
-  type Option,
+  type Option
 } from "~/utils";
 
-import { Button, cn, Menu, Radio } from "@funext/ui";
-import { Icons } from "~/components/shared/icons";
-import type { IFieldState, IFState } from "../../../types";
-import { Select } from "~/components/shared";
-import {
-  FieldControl,
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./root";
+import { cn, Radio } from "~/ui";
 import { registerWidgets } from "./hooks";
+import {
+  FieldControl
+} from "./root";
 import type { FieldProps } from "./types";
 
 export const RadioField = ({

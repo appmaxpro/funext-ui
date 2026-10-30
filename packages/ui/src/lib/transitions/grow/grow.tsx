@@ -52,7 +52,7 @@ export const Grow = forwardRef<HTMLElement, GrowProps>(
           easing,
           duration: duration * 0.666,
           delay,
-        }),
+        }) ,
       ].join(",");
 
       if (onEnter) {

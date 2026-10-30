@@ -1,5 +1,5 @@
 import { isStatefulBlock, type WidgetBlock } from "~/utils";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 import {
   evalProps,
   mergeBlockRef,
@@ -18,7 +18,6 @@ type Props = {
 export const StatefulWidget = ({ block, ref }: Props) => {
   return useEvalRenderBlock(block, ref);
 };
-
 
 export const StatelessWidget = React.memo<Props>(({ block, ref }) => {
   const ctx = useEvalDataContext();
@@ -53,4 +52,5 @@ export const StateWidget = React.memo<StateWidgetProps>(
 );
 
 
-StateWidget.displayName = "ListStateWidget"
+StateWidget.displayName = "ListStateWidget";
+

@@ -1,5 +1,5 @@
-import { shallowEqual } from '@funext/ui';
 import { create } from 'zustand'
+import { shallowEqual } from '~/utils';
 import { getItemPath } from '~/utils/navigation';
 import type { Breadcrumb, Navigation, OutletRoute, PageRoute } from '~/utils/types';
 

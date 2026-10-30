@@ -10,7 +10,7 @@ import {
   type PanelProps,
   type SxComponentProps,
   type Theme,
-} from "@funext/ui";
+} from "~/ui";
 import React from "react";
 
 export interface ToolbarProps extends SxComponentProps {

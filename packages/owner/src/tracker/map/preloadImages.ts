@@ -4,7 +4,7 @@ import directionSvg from '../../assets/images/direction.svg';
 import backgroundSvg from '../../assets/images/background.svg';
 import animalSvg from '../../assets/images/icon/animal.svg';
 import bicycleSvg from '../../assets/images/icon/bicycle.svg';
-import boatSvg from '../../assets/images/icon/boat.svg';
+import boatSvg from '~/assets/images/icon/boat.svg';
 import busSvg from '../../assets/images/icon/bus.svg';
 import carSvg from '../../assets/images/icon/car.svg';
 import camperSvg from '../../assets/images/icon/camper.svg';
@@ -60,23 +60,42 @@ export const mapIconKey = (category?:string) => {
     case 'trolleybus':
       return 'bus';
     default:
-      return category && mapIcons.hasOwnProperty(category) ? category : 'default';
+      return category && mapIcons.hasOwnProperty(category) ? category : 'truck';
   }
 };
 
 export const mapImages = <any>{};
 
+const theme = {
+  neutral: 'rgb(106 114 130)',
+  error: 'rgb(251 44 54)',
+  success: 'rgb(0 201 81)',
+  blue: '#2b7fff',
+  slate: '#62748e',
+  info: 'rgb(0 166 244)'
+} as any;
 export default async () => {
-  const background = (await loadImage(backgroundSvg)) as any ;
+  const background = await loadImage(backgroundSvg);
   mapImages.background = await prepareIcon(background);
   mapImages.direction = await prepareIcon(await loadImage(directionSvg));
-  await Promise.all(Object.keys(mapIcons).map(async (category) => {
-    const results = <any>[];
-    ['blue', 'green', 'red', 'slate'].forEach((color) => {
-      results.push(loadImage(mapIcons[category as keyof MapIcons]).then((icon) => {
-        mapImages[`${category}-${color}`] = prepareIcon(background, icon, `var(--${color}-500)`);
-      }));
-    });
-    await Promise.all(results);
-  }));
+  await Promise.all(
+    Object.keys(mapIcons).map(async (category) => {
+      //@ts-ignore
+      const results = [];
+      ['info', 'success', 'error', 'neutral'].forEach((color) => {
+        results.push(
+          //@ts-ignore
+          loadImage(mapIcons[category]).then((icon) => {
+            mapImages[`${category}-${color}`] = prepareIcon(
+              background,
+              icon,
+              theme[color],
+            );
+          }),
+        );
+      });
+      //@ts-ignore
+      await Promise.all(results);
+    }),
+  );
 };

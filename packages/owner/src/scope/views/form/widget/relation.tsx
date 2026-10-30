@@ -4,10 +4,10 @@ import { getWidgetStateForm } from "~/scope/utils";
 import format from "~/utils/format";
 import type { Field } from "~/utils/data-types";
 import { FieldControl } from "./root";
-import { Input } from "@funext/ui";
+import { Input } from "~/ui";
 import { registerWidgets } from "./hooks";
 
-const RelationField = ({ state, field, id, type: typeProp }: FieldProps) => {
+export const RelationField = ({ state, field, id, type: typeProp }: FieldProps) => {
    const value= field.value;
    const schema = field.block.schema
    const text = React.useMemo(

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Theme } from "@funext/ui/styles";
+import type { Theme } from "~/ui";
 import React from "react";
 import type {
   Navigation,
@@ -105,8 +105,6 @@ export function useViewBlock<T extends ViewBlock=any>() {
   const {view} = useViewContext<T>()
   return view
 }
-
-
 
 export const useRecord = () => React.useContext(RecordContext);
 

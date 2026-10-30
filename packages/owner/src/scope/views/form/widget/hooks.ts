@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isEqual } from "lodash";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getWidgetStateForm,
   type BasicWidgetState,
   type IFieldState,
   type IWidgetState,
 } from "~/scope";
-import { EMPTY_ARRAY, EMPTY_OBJECT, type Schema } from "~/utils";
-import { dialogs } from "~/hooks/use-dialogs";
-import { useScheduleLayoutEffect } from "~/hooks/use-schedule-layout-effect";
-import { isEqual } from "lodash";
+import { EMPTY_ARRAY } from "~/utils";
 import type { FieldProps } from "./types";
-import React from "react";
+import app from "~/utils/app";
 
 export function useReadonly(widget: BasicWidgetState, checkRoot = false) {
   const readonlyAtom = useMemo(() => {
@@ -50,7 +48,7 @@ export function useClick(widget: IWidgetState) {
     const { onClick } = block;
 
     if (prompt) {
-      const confirmed = await dialogs.confirm(prompt, {
+      const confirmed = await app.dialogs.confirm(prompt, {
         severity: "warning",
       });
 
@@ -172,7 +170,7 @@ export function useInput<T>(
   const [changed, setChanged] = useState(false);
   const [text, setText] = useState(valueText);
 
-  const dirtyRef = useRef<boolean | undefined>();
+  const dirtyRef = useRef<boolean | undefined>(null);
 
   const setValue = useCallback(
     (value: any, fireOnChange: boolean, makeDirty?: boolean) => {
@@ -283,7 +281,7 @@ export function useSimpleInput<T>(
   const [changed, setChanged] = useState(false);
   const valueRef = useRef<any>(value);
 
-  const dirtyRef = useRef<boolean | undefined>();
+  const dirtyRef = useRef<boolean | undefined>(null);
 
   const setValue = useCallback(
     (value: any, fireOnChange: boolean, makeDirty?: boolean) => {
@@ -375,6 +373,7 @@ export function useWidget(type: string, widget?:string, readonly?: boolean) {
     const W = widgets.find(
       (w) =>  w[widget ?? type] ?? w[type]
     );
+    console.log("useWidget: widgets:", widgets)
     const uType = W && widget && W[widget] ? widget : type;
     return W ? [uType, (readonly && W.readonly) || W[uType]]  : EMPTY_ARRAY;
   }, [type, widget, readonly]);

@@ -1,16 +1,16 @@
-import React, { useMemo, type CSSProperties } from "react";
-import { Box, Flex, Grid, useMediaQuery, type Theme } from "@funext/ui";
+import React, { useMemo } from "react";
+import { Grid } from "~/ui";
 
 import MonthlyRevenue from "./MonthlyRevenue";
 import NbNewOrders from "./NbNewOrders";
 
-import type { Order } from "./types";
+import { Container } from "~/components/shared/container";
 import { useAsyncEffect } from "~/hooks/use-async-effect";
+import { DateFilterButton } from "~/scope/views/data/data-view-filter";
 import { getDashboardData } from "~/utils/dashboard-data";
 import { ProvinceSales } from "./charts/province-sales";
 import { SparkCharts } from "./charts/spark-charts";
-import { Container } from "~/components/shared/container";
-import { DateFilterFilter } from "~/scope/views/data/data-view-filter";
+import type { Order } from "./types";
 
 interface OrderStats {
   revenue: number;
@@ -81,7 +81,7 @@ const Dashboard = (props: any) => {
   return (
     <Container {...props}>
       <div className="flex justify-end py-2">
-        <DateFilterFilter/>
+        {/*<DateFilterButton/>*/}
       </div>
       <VerticalSpacer />
       <SparkCharts />

@@ -1,7 +1,6 @@
 import {
   type DependencyList,
   type EffectCallback,
-  type TransitionStartFunction,
   useEffect,
   useRef,
 } from "react";
@@ -15,7 +14,7 @@ export function useAsyncEffect(
   effect: AsyncEffectCallback,
   deps?: DependencyList
 ) {
-  const abortRef = useRef<AbortController>();
+  const abortRef = useRef<AbortController>(null);
 
   useEffect(() => {
     abortRef.current = new AbortController();

@@ -8,7 +8,8 @@ import {
   type Property,
   type Schema,
   type ViewBlock,
-  type Option
+  type Option,
+  EMPTY_OBJECT,
 } from "~/utils";
 import {
   createEvalContext,
@@ -17,6 +18,7 @@ import {
 } from "~/utils/eval-context";
 import type { BasicWidgetState, IFormContext, Ref } from "../types";
 import React from "react";
+import { generatePath } from "~/routes/router-provider";
 
 export function getViewFields(
   view: ViewBlock | Container,
@@ -104,7 +106,7 @@ export function getWidgetStateForm(
   return (widget as any).form as IFormContext;
 }
 
-const allViewTypes = ["form", "list"];
+const allViewTypes = ["form", "list", "custom"];
 const allViewModes = ["show", "edit", "new"];
 
 export function getRouteParams(
@@ -116,7 +118,7 @@ export function getRouteParams(
 
   if (mode) {
     if (allViewTypes.includes(mode)) {
-      if (id) return { action, id};
+      if (id) return { action, id };
       if (mode === "list") return { action };
       return { action, mode };
     }
@@ -128,25 +130,39 @@ export function getRouteParams(
     return { action, id: id ?? mode };
   }
 
-  if(id != null) {
+  if (id != null) {
     return { action, id: id ?? mode };
-  } 
+  }
 
   return { action };
+}
+
+export function getRouteUrl(
+  action: string | null = null,
+  mode: string | null = null,
+  id: string | null = null,
+) {
+  const params = getRouteParams(action, mode, id);
+  if (!params) return undefined;
+  const url = Object.keys(params).reduce(
+    (prev, key) => `${prev}/:${key}`,
+    "/res",
+  );
+  return generatePath(url, params);
 }
 
 export function getRouteMode(
   type?: string,
   mode?: string,
   id?: string,
-  prev?: any
+  prev?: any,
 ) {
-   console.log("Try getRouteMode:", {type, mode, id})
+  console.log("Try getRouteMode:", { type, mode, id });
   if (type) {
-    if (type === "form") {
-      mode = mode && allViewModes.includes(mode) ? mode : 'show';
-      id = mode === 'new' ? '' : id;
-      return { type: type, mode, id};
+    if (type === "form" || (type === "custom" && id != null)) {
+      mode = mode && allViewModes.includes(mode) ? mode : "show";
+      id = mode === "new" ? "" : id;
+      return { type: type, mode, id };
     }
     if (allViewTypes.includes(type)) {
       return { type };
@@ -161,26 +177,52 @@ export function getRouteMode(
     return { type: "form", mode: "show", id };
   }
 
-  if (mode === 'new'){
-    return { type: "form", mode: "new", id:'' };
+  if (mode === "new") {
+    return { type: "form", mode: "new", id: "" };
   }
 
-  if(prev) {
-    return {...prev}
+  if (prev) {
+    return { ...prev };
   }
-  
+
   return { type: "list" };
 }
 
+export function isListMode(
+  inMode: string | null = null,
+  inId: string | null = null,
+) {
+  const params = getRouteParams(" ", inMode, inId);
+  if (!params) {
+    return false;
+  }
+  const { id, mode } = params;
+  
+  if (id || (mode && allViewModes.includes(mode))) {
+     return false;
+  }
+  
+  if(mode === 'custom') {
+    return false;
+  }
+
+  return true;
+  
+}
 
 export function getMediaUrl(
-  targe:string,
-  field:string,
+  targe: string,
+  field: string,
   targetId?: Identifier,
 ) {
-  const search = new URLSearchParams({model: targe, id: String(targetId), field});
-  return targetId ? `rest/media?${search.toString()}`
-        : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  const search = new URLSearchParams({
+    model: targe,
+    id: String(targetId),
+    field,
+  });
+  return targetId
+    ? `rest/media?${search.toString()}`
+    : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 }
 
 export function useSimpleSelectionList(schema: Field, value?: unknown) {

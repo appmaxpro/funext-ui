@@ -7,10 +7,10 @@ import { useLocalStorage } from "./use-local-storage";
 
 const login = session.login.bind(session);
 
-export function useSession() {
+export function useSession(force?: boolean) {
   const [token, setApiToken] = useLocalStorage("ssToken");
-  const doLoadSession = useCallback(()=> loadSession(token, setApiToken), [setApiToken])
-  const { state, error } = useAsync(doLoadSession, []);
+  const doLoadSession = useCallback(()=> loadSession(token, setApiToken, force), [setApiToken])
+  const { state, error } = useAsync(doLoadSession);
   const [data, setData] = useState<SessionInfo | null>(session.info);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
 

@@ -1,36 +1,27 @@
-import { noop, useLazyRef } from "@funext/ui";
-import { isEqual, merge, omit, pick } from "lodash";
+import { useLazyRef } from "~/ui";
+import { isEqual, merge, noop, omit, pick } from "lodash";
 import React from "react";
-import {
-  useFormContext,
-  useResourceContext,
-  useViewBlock,
-  useViewContext,
-  useWidgetState,
-} from "~/context";
-import { useAsync } from "~/hooks/use-async";
+import { useFormContext, useViewContext, useWidgetState } from "~/context";
 import {
   DefaultActionExecutor,
   defaultEvalContext,
   evalProps,
   unSafeRenderBlock,
-  useTabRoute,
-  useViewSwitch,
 } from "~/scope";
 import {
-  DataStore,
   deepClone,
   deepEqual,
   deepGet,
   EMPTY_ARRAY,
+  EMPTY_OBJECT,
   EMPTY_RECORD,
+  getDefaultValue,
+  getDefaultValues,
+  getWidgetItems,
   i18n,
-  isContainer,
   isField,
   isFieldBlock,
   removeEmpty,
-  getDefaultValue,
-  getDefaultValues,
   type Block,
   type DataContext,
   type DataRecord,
@@ -41,14 +32,8 @@ import {
   type Schema,
   type Widget,
   type WidgetBlock,
-  EMPTY_OBJECT,
-  getWidgetItems,
 } from "~/utils";
-import {
-  createEvalContext,
-  createRef,
-  type EvalContextOptions,
-} from "~/utils/eval-context";
+import { createEvalContext } from "~/utils/eval-context";
 import { validate } from "~/utils/validate";
 
 import { useScheduleLayoutEffect } from "~/hooks/use-schedule-layout-effect";
@@ -66,9 +51,8 @@ import type {
   IValidator,
   IWidgetState,
 } from "~/scope";
-import { useActionHandler } from "./form-handler";
+import { createActionHandler, useActionHandler } from "./form-handler";
 import type { FilterFormProps } from "./shared";
-import { runInThisContext } from "vm";
 
 export type Schedule = (id: string | number, cb: () => void) => void;
 
@@ -255,7 +239,7 @@ abstract class WidgetState extends Base implements IWidgetState {
 
   trigger() {
     const block = this._block;
-    const ctx = this.context; 
+    const ctx = this.context;
     if (block.hideIf) {
       this.setState("hidden", block.hideIf(ctx));
     }
@@ -268,7 +252,7 @@ abstract class WidgetState extends Base implements IWidgetState {
       this.setState("required", this.field.requiredIf(ctx));
     }
 
-    if(this.block.evalProps) {
+    if (this.block.evalProps) {
       const props = evalProps(this.block, this.form.context);
       this.setState("props", props);
     }
@@ -334,7 +318,17 @@ class FieldState extends WidgetState implements IFieldState {
   }
 
   get default() {
-    return pick(this._block, "hidden", "readonly", "required", "disabled");
+    const { readonly, ...rest } = pick(
+      this._block,
+      "hidden",
+      "readonly",
+      "required",
+      "disabled",
+    );
+    return {
+      ...rest,
+      readonly: !!readonly || this.form.readOnly,
+    };
   }
 
   get isField(): true {
@@ -350,9 +344,7 @@ class FieldState extends WidgetState implements IFieldState {
   }
 
   get readOnly() {
-    return (
-      (!this.form.editing || this.form.readOnly || this.state.readonly) === true
-    );
+    return this.form.readOnly || !!this.state.readonly;
   }
 
   reset() {
@@ -402,6 +394,12 @@ class FieldState extends WidgetState implements IFieldState {
       }
 
       this._state = { ...this._state, [key]: value };
+      if (key === "readonly") {
+        this._state = {
+          ...this._state,
+          readonly: !!value && this.form.readOnly,
+        };
+      }
 
       if (key === "focused" && !value) {
         this.validate();
@@ -414,14 +412,11 @@ class FieldState extends WidgetState implements IFieldState {
 
   trigger() {
     super.trigger();
-    this._shouldValidate = !this.readOnly ;
+    this._shouldValidate = !this.readOnly;
   }
 
   async commit(force?: boolean) {
-    if (
-      (force || this.state.dirty) ||
-      (this.state.touched && this._form.isNew)
-    ) {
+    if (force || this.state.dirty || (this.state.touched && this._form.isNew)) {
       this._shouldValidate ||= force === true;
       const result = await this.validate();
       if (!result || result.valid) {
@@ -656,7 +651,7 @@ class FormContextObject extends Base implements EditableFormState {
         }
         deps.add(block.uid);
       }
-      depends[0] === '*' && this._dependsAll.add(widget);
+      depends[0] === "*" && this._dependsAll.add(widget);
     }
 
     if (widget.isField && this.isNew) {
@@ -698,15 +693,15 @@ class FormContextObject extends Base implements EditableFormState {
       let field = state as FieldState;
       if (!this._holds.delete(field)) {
         this._fields.delete(field.name);
-        const holdField = this._holds
-          .values()
-          .find((item) => item.name === field.name);
+        const holdField = Array.from(this._holds.values()).find(
+          (item) => item.name === field.name,
+        );
         if (holdField) {
           let hasOther = holdField;
           if (holdField.state.hidden) {
-            const visField = this._holds
-              .values()
-              .find((item) => item.name === field.name && !item.state.hidden);
+            const visField = Array.from(this._holds.values()).find(
+              (item) => item.name === field.name && !item.state.hidden,
+            );
             if (visField) {
               hasOther = visField;
             }
@@ -832,7 +827,6 @@ class FormContextObject extends Base implements EditableFormState {
       const field = this._fields.get(key);
 
       if (field) {
-        
         const result = await field.onChange();
         if (seq !== this._seq) {
           return;
@@ -886,7 +880,7 @@ class FormContextObject extends Base implements EditableFormState {
         }
       }
     }
-    this._dependsAll.forEach((trigger) =>  triggers.add(trigger));
+    this._dependsAll.forEach((trigger) => triggers.add(trigger));
 
     const isNew = this.isNew;
 
@@ -974,17 +968,14 @@ class FormContextObject extends Base implements EditableFormState {
   }
 
   async validate() {
-
     await this._executer.run(
-      async () =>
-        await Promise.all(this.list.map((field) => field.validate())),
+      async () => await Promise.all(this.list.map((field) => field.validate())),
     );
-    
   }
 
   async commit() {
-    this.setState('valid', true);
-    this.setState('error', undefined);
+    this.setState("valid", true);
+    this.setState("error", undefined);
     await Promise.all(Array.from(this._committers));
 
     const promos = Promise.all(this.list.map((field) => field.commit(true)));
@@ -996,7 +987,7 @@ class FormContextObject extends Base implements EditableFormState {
   }
 
   get readOnly() {
-    return this._state.readonly;
+    return !this.editing && !!this._state.readonly;
   }
 
   get record() {
@@ -1036,7 +1027,7 @@ class FormContextObject extends Base implements EditableFormState {
   }
 
   get list() {
-    return this._fields.values();
+    return Array.from(this._fields.values());
   }
 
   get executer() {
@@ -1088,7 +1079,6 @@ class FormContextObject extends Base implements EditableFormState {
     if (this.state[key] !== value) {
       const prev = this.state.change;
       this._state = { ...this._state, change: prev + 1, [key]: value };
-
     }
     if (trigger && this.state.change !== this.state.prev) {
       this.emit();
@@ -1114,7 +1104,7 @@ const createFormContext = (
 ): IFormContext => new FormContextObject(data, view, handler);
 
 export const useCreateFormContext = (
-  refreshRef: React.MutableRefObject<() => void>,
+  refreshRef: React.RefObject<() => void>,
 ) => {
   //const { tab, dataStore } = useResourceContext();
   const { view, dataStore, evalContext, getContext, bind, fields } =
@@ -1125,40 +1115,37 @@ export const useCreateFormContext = (
 
   //const route = useTabRoute("form");
   //const origContextRef = React.useRef<DataContext>(origContext ?? {});
-  let formRef = React.useRef<IFormContext>();
-
+  let formRef = React.useRef<IFormContext>(null);
 
   const context = useLazyRef(() => {
+
     const map = new Map(fields?.map((field) => [field.name, field]));
-    
-    return createEvalContext(
-      getContext(),
-      {
-        popup: evalContext._popup,
-        get record(): DataRecord {
-          return formRef.current?.record ?? EMPTY_OBJECT;
-        },
-        field(name) {
-          const form = formRef.current!;
-          return form.field(name)?.block?.schema ?? map.get(name);
-        },
-        async execute(action: string, options: { context?: DataContext }) {
-          const form = formRef.current!;
-          switch (action) {
-            case "save":
-            case "submit":
-              return await form.submit();
-            case "validate":
-              return await form.validate();
-            case "commit":
-              return await form.commit();
-            default:
-              return await form.executer.execute(action, options);
-          }
-        },
-        //valid: v
+
+    return createEvalContext(getContext(), {
+      popup: evalContext._popup,
+      get record(): DataRecord {
+        return formRef.current?.record ?? EMPTY_OBJECT;
       },
-    );
+      field(name) {
+        const form = formRef.current!;
+        return form.field(name)?.block?.schema ?? map.get(name);
+      },
+      async execute(action: string, options: { context?: DataContext }) {
+        const form = formRef.current!;
+        switch (action) {
+          case "save":
+          case "submit":
+            return await form.submit();
+          case "validate":
+            return await form.validate();
+          case "commit":
+            return await form.commit();
+          default:
+            return await form.executer.execute(action, options);
+        }
+      },
+      //valid: v
+    });
   });
 
   /** Imperatively run a function on the next layout effect cycle. */
@@ -1186,9 +1173,8 @@ export const useCreateFormContext = (
     };
   });
 
-  const handler = useActionHandler(options);
-
   const form = useLazyRef(() => {
+    const handler = createActionHandler(options); 
     return new FormContextObject(
       EMPTY_OBJECT,
       view,
@@ -1200,8 +1186,7 @@ export const useCreateFormContext = (
   formRef.current = form;
 
   React.useEffect(() => {
-    
-    bind({
+    const unbind = bind({
       getContext() {
         return form.record;
       },
@@ -1210,12 +1195,9 @@ export const useCreateFormContext = (
       },
     });
     return () => {
+      unbind();
       console.log("-----------Close Form-----------");
       form.close();
-      bind({
-        getContext,
-        evalContext,
-      });
     };
   }, [form]);
 
@@ -1235,18 +1217,17 @@ export const useCreateFormContext = (
 
 export const useCreateFilterForm = (props: FilterFormProps) => {
   const viewContext = useViewContext<FormViewBlock>();
-  const { query } = useResourceContext();
+  //const {filters} = viewContext;
+  const { filter } = props;
   //const { tab, listParams, modifiers } =
   //const view = (useViewBlock() ?? tab.filter?.form) as FormViewBlock;
   const parentForm = useFormContext();
   const parentWidget = useWidgetState();
-  const queryRef = React.useRef(query);
 
-  queryRef.current = query;
   const propsRef = React.useRef(props);
   propsRef.current = props;
 
-  let formRef = React.useRef<FormContextObject>();
+  let formRef = React.useRef<FormContextObject>(null);
   let viewContextRef = React.useRef(viewContext);
   viewContextRef.current = viewContext;
 
@@ -1264,8 +1245,6 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
     return fields;
   }, [viewContext.view]);
 
-  const { filter } = props ?? EMPTY_OBJECT;
-
   let recordRef = React.useRef(EMPTY_OBJECT);
   //console.log("useCreateFilterForm:: filter:", filter)
   const hasRef = React.useRef(false);
@@ -1273,8 +1252,7 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
   React.useEffect(() => {
     const rec = recordRef.current;
     if (filter) {
-      const newFilter = fields
-        .keys()
+      const newFilter = Array.from(fields.keys())
         .filter((name) => filter[name] != null)
         .reduce((acc, name) => ({ ...acc, [name]: filter[name] }), {} as any);
 
@@ -1288,50 +1266,34 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
     }
   }, [filter]);
 
-  
-
-  const context = useLazyRef(() =>{
-    const context = viewContextRef.current.getContext()
-    return createEvalContext(
-      context,
-      {
-        get record(): DataRecord {
-          return formRef.current?.record ?? EMPTY_OBJECT;
-        },
-        popup: true,
-        field: fields.get.bind(fields),
-        async execute(action: string, options: { context?: DataContext }) {
-          const form = formRef.current!;
-          switch (action) {
-            case "submit":
-              return await form.submit();
-            case "validate":
-              return await form.validate();
-            case "commit":
-              return await form.commit();
-            case "refresh":
-              return await form.refresh();
-            default:
-              return await form.executer.execute(action, options);
-          }
-        },
+  const context = useLazyRef(() => {
+    const context = viewContextRef.current.getContext();
+    return createEvalContext(context, {
+      get record(): DataRecord {
+        return formRef.current?.record ?? EMPTY_OBJECT;
       },
-    );
-});
+      popup: true,
+      field: fields.get.bind(fields),
+      async execute(action: string, options: { context?: DataContext }) {
+        const form = formRef.current!;
+        switch (action) {
+          case "submit":
+            return await form.submit();
+          case "validate":
+            return await form.validate();
+          case "commit":
+            return await form.commit();
+          case "refresh":
+            return await form.refresh();
+          default:
+            return await form.executer.execute(action, options);
+        }
+      },
+    });
+  });
 
   /** Imperatively run a function on the next layout effect cycle. */
   const schedule = useScheduleLayoutEffect();
-
-  React.useEffect(() => {
-    if (hasRef.current) {
-      const tm = setTimeout(() => {
-        hasRef.current = false;
-        console.log("FilterSidebar: filter:", query?.filter);
-        propsRef.current!.search?.();
-      }, 500);
-      return () => clearTimeout(tm);
-    }
-  }, [filter]);
 
   const options = useLazyRef(() => {
     const submit = async () => {
@@ -1340,11 +1302,12 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
       const rec = form.record;
       console.log("FilterForm submit: ", rec);
       hasRef.current = true;
-      propsRef.current.updateFilters(rec, false);
-      
-      schedule(8, () => propsRef.current.onSubmit?.());
+      const work = await propsRef.current.updateFilters(rec, false);
+      if ((work as any) === false) {
+        return;
+      }
+      propsRef.current.search();
     };
-
     const reset = async () => {
       const form = formRef.current!;
       const rec = form.record;
@@ -1353,12 +1316,13 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
       //if(isEqual(recordRef.current, rec))
       //  return;
 
-      form.reset({}, false);
       hasRef.current = true;
-      propsRef.current.updateFilters(restRec);
-
-      //schedule(9, () => propsRef.current.search?.());
-      schedule(7, () => propsRef.current.onReset?.());
+      const work = await propsRef.current.updateFilters(restRec);
+      if ((work as any) === false) {
+        return;
+      }
+      propsRef.current.search();
+      form.reset({}, false);
     };
     return {
       schedule,
@@ -1373,9 +1337,9 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
     };
   });
 
-  const handler = useActionHandler(options);
 
   const form = React.useMemo(() => {
+    const handler = createActionHandler(options); 
     return new FormContextObject(
       recordRef.current,
       viewContext.view,
@@ -1394,8 +1358,6 @@ export const useCreateFilterForm = (props: FilterFormProps) => {
 
   return form;
 };
-
-
 
 let emptyWidgetState: IWidgetState | undefined;
 

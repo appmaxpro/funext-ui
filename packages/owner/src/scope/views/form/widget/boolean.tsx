@@ -1,10 +1,7 @@
-import type { IFieldState, IFState } from "~/scope/types";
-import { FieldControl, FormControl, FormItem, FormMessage } from "./root";
-import { Checkbox, Switch } from "@funext/ui";
+import { Checkbox, Switch } from "~/ui";
 import { getBoolean, i18n } from "~/utils";
-import { RadioField } from "./radio";
 import { registerWidgets } from "./hooks";
-import { check } from "prettier";
+import { FieldControl } from "./root";
 import type { FieldProps } from "./types";
 
 const BooleanField = ({ state, field, id, type }: FieldProps) => {

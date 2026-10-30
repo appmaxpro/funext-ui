@@ -43,7 +43,7 @@ $use(async (args, next) => {
     init.headers = {
       ...init.headers,
       "Content-Type": "application/json",
-      "x-requested-with": "XMLHttpRequest"
+      "x-requested-with": "XMLHttpRequest",
     };
     init.body = JSON.stringify(body, (key, value) => {
       //XXX: exclude dymmy fields, should be removed in next major release
@@ -54,42 +54,17 @@ $use(async (args, next) => {
   return next();
 });
 
-
-export type {
-  RequestArgs,
-  RequestOptions
-}
-
+export type { RequestArgs, RequestOptions };
+//
 const baseURL = "/";
-let URL =  FUNEXT_API_SERVER ?? '';
-if (URL.length && !URL.endsWith('/')) {
-  URL = URL.substring(0, URL.length - 1)
-}
+let URL = (FUNEXT_API_SERVER ?? "" + CONTEXT_PATH + "/").replaceAll(/\/\//g, "/");
 
-if (CONTEXT_PATH.length)
-  URL += CONTEXT_PATH.startsWith("/") ? CONTEXT_PATH.substring(1) : "/" + CONTEXT_PATH;
-
-if (URL.length && !URL.endsWith('/')) {
-  URL = URL + "/"
-}
-console.log("Request:process.URL:",URL);
+console.log("Request:process.URL:", URL);
 
 export function makeURL(path: string | string[]) {
   const parts = [path].flat();
   const url = parts.join("/");
-  if(URL) {
-    if (url.startsWith("/")) {
-      return `${URL}${url.substring(1)}`;
-    }
-    if (url.endsWith("/")) {
-      return `${URL}${url.substring(0, -1)}`;
-    }
-    return `${URL}${url}`;
-  }
-  if (url.startsWith(baseURL) || url.startsWith("/")) {
-    return `${URL}${url}`;
-  }
-  return baseURL + url;
+  return `/${URL}${url}`.replaceAll(/\/\//g, "/");
 }
 
 export async function fetch(args: RequestArgs): Promise<Response> {

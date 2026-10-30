@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useEvalDataContext, useRecord } from "~/context";
 import { EMPTY_ARRAY, type DataContext, type RelationField } from "~/utils";
 import { createExtendedContext, createViewContext } from "../utils";
-import { useLazyRef } from "@funext/ui";
+import { useLazyRef } from "~/ui";
 import { processViewBlock } from "./block-processor";
 
 type Props = {

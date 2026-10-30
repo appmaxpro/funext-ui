@@ -15,6 +15,7 @@ import {
   useLocation,
   useSearchParams,
   useRoutes,
+  useParams,
 } from "react-router";
 
 import queryReducer, {
@@ -29,10 +30,12 @@ import queryReducer, {
   SET_PAGE_INFO,
 } from "./queryReducer";
 import { useLocalStorage } from "~/hooks/use-local-storage";
-import { useIsMounted, useLazyRef } from "@funext/ui";
-import { EMPTY_ARRAY, EMPTY_RECORD } from "~/utils";
-import { noop, pick } from "lodash";
+import { useIsMounted, useLazyRef } from "~/ui";
+import { EMPTY_ARRAY, EMPTY_DEPS, EMPTY_OBJECT, EMPTY_RECORD } from "~/utils";
+import { isEqual, noop, omit, pick } from "lodash";
 import type { ListParams, ListModifiers, PageInfo } from "../types";
+import { useRouter } from "~/hooks";
+import { getRouteUrl, isListMode } from "./view-utils";
 
 /**
  * Get the list parameters (page, sort, filters) and modifiers.
@@ -83,6 +86,23 @@ import type { ListParams, ListModifiers, PageInfo } from "../types";
  *      setSort,
  * } = listParamsActions;
  */
+type Commit = {
+  promise: Promise<any>;
+  commit(val?: any): void;
+  onCommit(): void;
+};
+function getSearchParams(params: any) {
+  const inQuery = {
+    ...pickBy(params ?? EMPTY_OBJECT, (v, k) => initialQueryKeys.includes(k)),
+  };
+  if ((params as any)?.filter) {
+    inQuery.filter = JSON.stringify((params as any).filter);
+  }
+  const q = qs.stringify(inQuery);
+  const qfl = q ? `?${qs.stringify(inQuery)}` : "";
+  return qfl;
+}
+
 export const useListParams = (
   {
     resource,
@@ -95,104 +115,193 @@ export const useListParams = (
   enabled: boolean = true,
 ): [Parameters, ListModifiers] => {
   const location = useLocation();
+
+  const locationRef = useRef(location);
+  locationRef.current = location;
+
+  const pathParams = useParams();
+
   const [searchParams, setSearchParams] = useSearchParams();
-  const [localParams, setLocalParams] = useState(defaultParams);
-  const [params, setParams] = useLocalStorage(resource, defaultParams);
-  const tempParams = useRef<ListParams>();
+  const [localParams, setLocalParams] = useState(EMPTY_OBJECT);
+  const [params, setParams] = useLocalStorage(resource, EMPTY_OBJECT);
+  const tempParams = useRef<ListParams>(null);
   const isMounted = useIsMounted();
-  const commitRef = useLazyRef(() => {
-    let resolveFn: any;
-    const promise = new Promise((resolve) => {
-      resolveFn = resolve;
-    });
-    return {
-      promise,
-      commit: (val?: any) => {
-        if (typeof resolveFn === "function") {
-          resolveFn(val);
-        }
-        commitRef.current.onCommit();
-      },
-      onCommit: noop,
-    };
+  const commitRef = useRef<Commit>(null);
+  const initPathRef = useRef<string>(null);
+
+  const [listMode, setListMode] = useState(() => {
+    if (!syncWithLocation) return true;
+    const { action, mode, id } = pathParams ?? EMPTY_OBJECT;
+    return action && isListMode(mode, id);
   });
 
-  const toStringParams = !syncWithLocation ? localParams : params;
+  const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
+  const activeParams = !syncWithLocation ? localParams : params;
   const finalParams = useMemo(() => {
-    console.warn("finalParams: ", toStringParams);
-    return JSON.stringify(toStringParams);
-  }, [toStringParams]);
+    console.warn("finalParams: ", activeParams);
+    return JSON.stringify(activeParams);
+  }, [activeParams]);
 
   const signature = [
     resource,
     !syncWithLocation || !enabled ? null : location.search,
-    finalParams,
+    !syncWithLocation ? finalParams : null,
     enabled,
   ];
 
-  const queryFromLocation = useMemo(
-    () =>
-      !syncWithLocation || !enabled
-        ? EMPTY_RECORD
-        : parseQueryFromLocation(location),
-    [!syncWithLocation || !enabled, location.search],
-  );
+  const [query, setQuery] = useState(() => {
+    const queryFromLocation =
+      syncWithLocation && listMode
+        ? parseQueryFromLocation(location)
+        : EMPTY_OBJECT;
+    const query = getQuery({
+      queryFromLocation,
+      params: !syncWithLocation ? localParams : params,
+      defaults,
+      sort,
+      pageSize,
+    });
+    query.ready = false;
+    return query;
+  });
 
-  const query = useMemo(
-    () =>
-      enabled
-        ? getQuery({
-            queryFromLocation,
-            params: !syncWithLocation ? localParams : params,
-            defaults,
-            sort,
-            pageSize,
-          })
-        : ({
-            openedGroups: EMPTY_ARRAY,
-            page: 0,
-            pageSize,
-            total: 0,
-            offset: 0,
-            pages: 0,
-          } as ListParams),
-    signature, // eslint-disable-line react-hooks/exhaustive-deps
-  );
-  /*
+  const synced = useLazyRef<{
+    qfl: string 
+    qfp: string | null,
+    query: typeof query
+  }>(() => {
+    let qfl = location.search;
+    //const qfp = '';
+    return {
+      qfl,
+      qfp: null,
+      query,
+    };
+  });
+  synced.current.query = query;
+
   useEffect(() => {
-    if (syncWithLocation && enabled) {
-      const inQuery = {
-        ...pickBy(query, (v, k) => initialQueryKeys.includes(k)),
-      };
-      if (query.filter) {
-        inQuery.filter = JSON.stringify(query.filter);
-      }
-      setSearchParams(`?${qs.stringify(inQuery)}`, {replace: true});
+    let listMode = enabled && syncWithLocation;
+    if (listMode) {
+      const { action, mode, id } = pathParams ?? EMPTY_OBJECT;
+      listMode = !!action && isListMode(mode, id);
     }
-  }, [enabled]);*/ // eslint-disable-line
+    setListMode(listMode);
+  }, [enabled && syncWithLocation, pathParams]);
 
+  useEffect(() => {
+    if (!listMode) {
+      return;
+    }
+    
+    if (!initPathRef.current) {
+      initPathRef.current = location.pathname;
+      synced.current.qfl = location.search;
+    }
+    
+    if (initPathRef.current !== location.pathname) {
+      return;
+    }
+
+    const force = !synced.current.qfl && !synced.current.qfp;
+    synced.current.qfp = finalParams;
+    const qfl = getSearchParams(params);
+    if (force || qfl !== synced.current.qfl) {
+      // the useEffect above will apply the changes to the params in the store
+      setSearchParams(qfl, { replace: true });
+    } else {
+      setQuery((query) => {
+        if (query.ready) return query;
+        return { ...query, ready: true } as any;
+      });
+    }
+  }, [finalParams, listMode]);
   // if the location includes params (for example from a link like
   // the categories products on the demo), we need to persist them in the
   // store as well so that we don't lose them after a redirection back
   // to the list
   useEffect(() => {
-    if (enabled) {
-      setParams(Object.keys(queryFromLocation).length > 0 ? query : null);
+    if (!listMode) {
+      console.warn("FilterTabsBar: is not List mode");
+      return;
     }
-  }, [searchParams, enabled]); // eslint-disable-line
+    if (isMounted.current) {
+
+      if(!synced.current.qfp){
+        return
+      }
+
+      if (initPathRef.current !== location.pathname) {
+        console.warn(
+          "FilterTabsBar: location change from:",
+          initPathRef.current,
+          ", to:",
+          location.pathname,
+        );
+        return;
+      }
+      
+      const search = searchParams?.size ? `?${searchParams.toString()}` : "";
+      if (synced.current.qfl !== search) {
+        const prevSearch = synced.current.qfl;
+        synced.current.qfl = search;
+        const queryFromLocation = parseQueryFromLocation({ search });
+        const newParams =
+          Object.keys(queryFromLocation).length > 0 ? queryFromLocation : null;
+        setQuery((query) => {
+          const filter = isEqual(query.filter, newParams?.filter) ? query.filter : newParams?.filter;
+          const newQuery = omit(query, ...validQueryParams);
+          return { ...newQuery, ...newParams, filter, ready: true } as any;
+        });
+        console.log(
+          "FilterTabsBar: newParams:",
+          newParams,
+          ", prevSearch:", prevSearch,
+          ", search:",
+          search,
+        );
+
+        const qfp = JSON.stringify(newParams);
+
+        if (qfp !== synced.current.qfp) {
+          synced.current.qfp = qfp;
+          setParams(newParams);
+        }
+      } else {
+        console.log(
+          "FilterTabsBar: no search change:",
+          search,
+          ", searchParams:",
+          searchParams?.toString(),
+        );
+        setQuery((query) => {
+          if (query.ready) return query;
+          return { ...query, ready: true } as any;
+        });
+      }
+    }
+  }, [searchParams, listMode]);
+
+  // eslint-disable-line
 
   const changeParams = useCallback((action: any) => {
     // do not change params if the component is already unmounted
     // this is necessary because changeParams can be debounced, and therefore
     // executed after the component is unmounted
+
     if (!isMounted.current) {
-      console.log("useListParams:: changeParams:: not  mounted");
-      return commitRef.current.promise;
+      console.log("useListParams FilterTabsBar:: changeParams:: not  mounted");
+      return commitRef.current?.promise;
     }
-    console.log("useListParams:: changeParams:: ", action);
+    //console.log("useListParams:: changeParams:: ", action);
     if (!tempParams.current) {
       // no other changeParams action dispatched this tick
-      tempParams.current = queryReducer(query, action);
+      tempParams.current = queryReducer(synced.current.query, action);
+
+      //console.error("FilterTabsBar:: set filter", tempParams.current?.filter)
 
       // schedule side effects for next tick
       setTimeout(() => {
@@ -207,40 +316,58 @@ export const useListParams = (
           if (tempParams.current?.filter) {
             inQuery.filter = JSON.stringify(tempParams.current.filter);
           }
-
           // the useEffect above will apply the changes to the params in the store
-          setSearchParams(`?${qs.stringify(inQuery)}`);
+          setSearchParams(`?${qs.stringify(inQuery)}`, { replace: true });
         }
-        tempParams.current = undefined;
+        (tempParams.current as any) = undefined;
       }, 0);
     } else {
       // side effects already scheduled, just change the params
       tempParams.current = queryReducer(tempParams.current, action);
     }
-    return commitRef.current.promise;
-  }, EMPTY_ARRAY); // eslint-disable-line react-hooks/exhaustive-deps
+    return commitRef.current?.promise;
+  }, EMPTY_DEPS); // eslint-disable-line react-hooks/exhaustive-deps
 
   const modifiers = useMemo(() => {
+    //console.log("FilterTabsBar: change modifiers")
+    let promoId = 0;
+    (commitRef.current as any) = {};
+
     function doCommit() {
+      promoId++;
       let resolveFn: any;
       const promise = new Promise((resolve) => {
         resolveFn = resolve;
+        (resolveFn as any).promoId = promoId;
+        (commitRef.current as any).resolveFn = resolveFn;
       });
+      (promise as any).resolveFn = resolveFn;
+      (promise as any).promoId = promoId;
       commitRef.current = {
         promise,
+        resolveFn,
         commit: (val?: any) => {
-          if (typeof resolveFn === "function") {
-            resolveFn(val);
+          const resolve = (commitRef.current as any).resolveFn;
+          resolveFn = null;
+          console.log(
+            "FilterTabsBar: commit:",
+            val,
+            ", promoId:",
+            (resolve as any)?.promoId,
+          );
+          if (typeof resolve === "function") {
+            resolve(val);
           }
-          commitRef.current.onCommit();
+
+          doCommit();
         },
-        onCommit: doCommit,
-      };
+      } as any;
     }
-    commitRef.current.onCommit = doCommit;
+
+    doCommit();
 
     return {
-      commit: commitRef.current.commit,
+      commit: commitRef.current?.commit,
       setSort: (sort?: string | null) =>
         changeParams({
           type: SET_SORT,
@@ -290,30 +417,21 @@ export const useListParams = (
     };
   }, [changeParams]);
 
+  useEffect(() => {
+    return () => {
+      console.log("FilterTabsBar: clear commit");
+      if (commitRef.current) {
+        commitRef.current.onCommit = noop;
+        commitRef.current.commit?.(false);
+      }
+    };
+  }, EMPTY_DEPS);
+
   const resultQuery = useMemo(
-    () =>
-      [
-        {
-          ...(query as ListParams),
-          signature,
-        },
-        modifiers,
-      ] as unknown as [Parameters, ListModifiers],
-    [
-      ...signature,
-      modifiers,
-      query.selectedIds,
-      query.openedGroups,
-      query.search,
-    ],
+    () => [query, modifiers] as unknown as [Parameters, ListModifiers],
+    [query, modifiers, query.selectedIds, query.openedGroups, query.search],
   );
 
-  useEffect(() => {
-    return ()=> {
-      commitRef.current.onCommit = noop;
-      commitRef.current.commit(false)
-    }
-  }, EMPTY_ARRAY)
   return resultQuery;
 };
 
@@ -343,7 +461,7 @@ const parseObject = (query, field) => {
 
 // @ts-expect-error TS(7031): Binding element 'search' implicitly has an 'any' t... Remove this comment to see the full error message
 export const parseQueryFromLocation = ({ search }): Partial<ListParams> => {
-  const query = pickBy(qs.parse(search), (v, k) =>
+  const query = pickBy(qs.parse(search), (_v, k) =>
     validQueryParams.includes(k),
   );
   parseObject(query, "filter");
@@ -455,5 +573,3 @@ interface Parameters extends ListParams {
   signature: any[];
 }
 
-const emptyObject: any = {};
-const defaultParams = {};

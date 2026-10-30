@@ -3,11 +3,11 @@ import {
   BottomNavigationAction,
   useRtl,
   type BottomNavigationProps,
-} from "@funext/ui";
-import { useMemo, useCallback } from "react";
+} from "~/ui";
+import { useMemo } from "react";
 import { getItemPath, isPageRoute } from "~/utils/navigation";
-import type { Navigation, NavRoute, OutletRoute } from "~/utils/types";
-import { isLeftClickEvent, isModifiedEvent, useLink } from "./link";
+import type { NavRoute, OutletRoute } from "~/utils/types";
+import { isLeftClickEvent, isModifiedEvent } from "./link";
 import React from "react";
 import { useNavContext } from "~/context";
 import { useRouter } from "~/hooks/use-router";

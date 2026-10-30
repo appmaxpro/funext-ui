@@ -1,7 +1,7 @@
 import type { NavRoute } from "~/utils";
 import { useTabsContext, type NavTabsNode } from "./types";
 import { NavRouteTabs } from "~/scope/views";
-import { useIsMounted } from "@funext/ui";
+import { useIsMounted } from "~/ui";
 
 const isNavTabsMounted = (
   nav: NavRoute,

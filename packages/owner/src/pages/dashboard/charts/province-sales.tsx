@@ -1,4 +1,4 @@
-import { Card } from "@funext/ui";
+import { Card } from "~/ui";
 import type { ApexOptions } from "apexcharts";
 import React from "react";
 import ReactApexChart from "react-apexcharts";

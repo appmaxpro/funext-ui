@@ -1,55 +1,59 @@
 import { create } from "zustand";
 
-
 interface TrackerSession {
   server: any;
   user: any;
   socket: any;
-  positions: Record<number,any>;
-  history: Record<number,any[]>;
+  positions: Record<number, any>;
+  history: Record<number, any[]>;
   includeLogs: boolean;
   logs: any[];
-  readonly deviceIds?: string[]|null;
-  updateServer(server:any): void;
-  updateUser(user:any): void;
-  updateSocket(socket:any): void;
-  updatePositions(positions: any[]) : void;
-  updateLogs(logs: any[]): void; 
-  setDevices(deviceIds?: string[]|null): void; 
+  posCount: number;
+  readonly deviceIds?: string[] | null;
+  updateServer(server: any): void;
+  updateUser(user: any): void;
+  updateSocket(socket: any): void;
+  updatePositions(positions: any[]): void;
+  updateLogs(logs: any[]): void;
+  setDevices(deviceIds?: string[] | null): void;
+  reset(): void;
 }
+const init = ()=> ({
+  server: {
+        attributes: {},
+      },
+      user: {
+        attributes: {},
+      },
+      deviceIds: null,
+      socket: null,
+      includeLogs: false,
+      logs: [],
+      posCount: 0,
+      positions: {},
+      history: {},
+})
 
 export const useTrackerSession = create<TrackerSession>((set) => ({
-  server: {
-    attributes: {
-
-    }
+  ...init(),
+  reset() {
+    set(init());
   },
-  user: {
-    attributes: {
-      
-    }
-  },
-  deviceIds: null,
-  socket: null,
-  includeLogs: false,
-  logs: [],
-  positions: {},
-  history: {},
   updateLogs(logs) {
-    set((state) => ({...state, logs}))
+    set((state) => ({ ...state, logs }));
   },
   updateServer(server) {
-    set((state) => ({...state, server}))
+    set((state) => ({ ...state, server }));
   },
   updateUser(user) {
-    set((state) => ({...state, user}))
+    set({ ...init(), user });
   },
   updateSocket(socket) {
-    set((state) => ({...state, socket}))
+    set((state) => ({ ...state, socket }));
   },
   updatePositions(positions: any[]) {
     set((state) => {
-
+      const newPositions = { ...state.positions };
       const liveRoutes =
         state.user.attributes.mapLiveRoutes ||
         state.server.attributes.mapLiveRoutes ||
@@ -58,9 +62,9 @@ export const useTrackerSession = create<TrackerSession>((set) => ({
         state.user.attributes["web.liveRouteLength"] ||
         state.server.attributes["web.liveRouteLength"] ||
         10;
-       
+
       positions.forEach((position) => {
-        state.positions[position.deviceId] = position;
+        newPositions[position.deviceId] = position;
         if (liveRoutes !== "none") {
           const route = state.history[position.deviceId] || [];
           const last = route.at(-1);
@@ -73,21 +77,23 @@ export const useTrackerSession = create<TrackerSession>((set) => ({
               [position.longitude, position.latitude],
             ];
           }
-        }        
+        }
       });
 
       return {
         ...state,
+        positions: newPositions,
+        posCount: Object.keys(newPositions).length,
         history: liveRoutes !== "none" ? state.history : {},
-      }
+      };
     });
   },
-  setDevices(deviceIds?: string[]|null){
+  setDevices(deviceIds?: string[] | null) {
     set((state) => {
       return {
         ...state,
-        deviceIds
-      }
-    })
-  }
+        deviceIds,
+      };
+    });
+  },
 }));

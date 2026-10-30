@@ -149,13 +149,11 @@ const Trigger = React.forwardRef<HTMLButtonElement, TriggerProps>(
       return trigger;
     }
 
-    const mergedProps = { ...trigger!.props, ...props };
+    const mergedProps = { ...trigger!.props, ...props } as any;
 
     const ChevronIcon = rtl ? ChevronLeft : ChevronRight;
 
-    const endIcon =
-      mergedProps.endIcon ??
-      (nested && (
+    const endIcon = (nested && !(mergedProps as any).endIcon && (
         <ListItemSuffix aria-hidden>
           <ChevronIcon
             size={18}
@@ -167,7 +165,7 @@ const Trigger = React.forwardRef<HTMLButtonElement, TriggerProps>(
       trigger as ReactElement,
       getReferenceProps({
         ...mergedProps,
-        endIcon,
+        children : endIcon ? <>{mergedProps.children}{endIcon}</> : mergedProps.children,
         "data-open": context.open ? "open" : undefined,
         role: nested ? "menuitem" : mergedProps.role,
         onClick(event: any) {

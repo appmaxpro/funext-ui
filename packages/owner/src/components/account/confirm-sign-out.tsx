@@ -1,8 +1,7 @@
-import Dialog  from "@funext/ui/Dialog";
-import Button  from "@funext/ui/Button";
-import { session } from "~/utils/session";
+
 import { i18n } from "~/utils/i18n";
 import { useSession } from "~/hooks/use-session";
+import { Button, Dialog } from "~/ui";
 
 export type ConfirmSignOutProps = {
   message?: React.ReactNode;

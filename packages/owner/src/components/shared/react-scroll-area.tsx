@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Box, useEvent, composeEventHandlers,  Presence, type BoxProps, type PossibleRef, useRtl } from "@funext/ui";
+import { Box, useEvent, composeEventHandlers,  Presence, type BoxProps, useRtl } from "~/ui";
 import { composeRefs } from "~/utils/compose-ref";
 
 
@@ -915,7 +915,7 @@ const ScrollAreaThumbImpl = React.forwardRef<
   const composedRef = composeRefs(forwardedRef, (node:any) =>
     scrollbarContext.onThumbChange(node),
   );
-  const removeUnlinkedScrollListenerRef = React.useRef<() => void | undefined>();
+  const removeUnlinkedScrollListenerRef = React.useRef<() => void | undefined>(undefined);
   const debounceScrollEnd = useDebounceCallback(() => {
     if (removeUnlinkedScrollListenerRef.current) {
       removeUnlinkedScrollListenerRef.current();

@@ -1,4 +1,4 @@
-import { Box, CircularProgress, type CircularProgressProps } from "@funext/ui";
+import { Box, CircularProgress, type CircularProgressProps } from "~/ui";
 
 type PercentageProgressProps = CircularProgressProps & {
     children?: React.ReactNode

@@ -16,7 +16,7 @@ export const ViewTabs: React.FC<{
 }>;
 
 export const RouteView: React.ComponentType<{
-  children?: JSX.Element;
+  children?: React.JSX.Element;
   inTabs?: boolean;
 }>;
 

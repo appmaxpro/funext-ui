@@ -1,4 +1,4 @@
-import { noop, useLazyRef } from "@funext/ui";
+import { noop, useLazyRef } from "~/ui";
 import { isEqual, pick } from "lodash";
 import React from "react";
 import {

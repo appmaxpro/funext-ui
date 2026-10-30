@@ -1,7 +1,7 @@
 import { useId, useCallback, useEffect } from "react";
-import { useMediaQuery, useTheme } from "@funext/ui";
+import { useMediaQuery, useTheme } from "~/ui";
 import { map } from "../map/MapView";
-import { formatTime, getStatusColor } from "../utils/formatter";
+import { formatTime, getMarkerStatusColor, getStatusColor } from "../utils/formatter";
 import { useCatchCallback } from "~/hooks/use-catch";
 import { findFonts } from "../map/mapUtil";
 import { useAttrPref } from "../utils/preferences";
@@ -55,6 +55,10 @@ const MapPositions = ({
           selectedPositionId === position.id && position.course > 0;
         break;
     }
+    console.log("createFeature:", {
+      color: position.attributes.color || getMarkerStatusColor(device.status),
+      category: device.category
+    })
     return {
       id: position.id,
       deviceId: position.deviceId,
@@ -62,7 +66,7 @@ const MapPositions = ({
       fixTime: formatTime(position.fixTime, "seconds"),
       category: mapIconKey(device.category),
       color: showStatus
-        ? position.attributes.color || getStatusColor(device.status)
+        ? position.attributes.color || getMarkerStatusColor(device.status)
         : "neutral",
       rotation: position.course,
       direction: showDirection,
@@ -179,6 +183,7 @@ const MapPositions = ({
         "text-size": 14,
       },
     });
+    
 
     map.on("mouseenter", clusters, onMouseEnter);
     map.on("mouseleave", clusters, onMouseLeave);
@@ -218,7 +223,7 @@ const MapPositions = ({
       (map.getSource(source) as any)?.setData({
         type: "FeatureCollection",
         features: positions
-          .filter((it) => devices.hasOwnProperty(it.deviceId))
+          .filter((it) => !!devices[it.deviceId])
           .filter((it) =>
             source === id
               ? it.deviceId !== selectedDeviceId

@@ -227,3 +227,13 @@ export type RequiredExcept<T, K extends keyof T> = Required<Omit<T, K>> & Pick<T
 
 export type Orientation = 'horizontal' | 'vertical';
 
+export type DeviceSelector = {
+  uniqueIds?: string[];
+  ids?: number[];
+  readonly by?: "unique" | "id" | "*";
+  setAll(): void;
+  setUniqueIds(ids: string[]): void;
+  setIds(ids: number[]): void;
+  reset(): void;
+  get(): DeviceSelector;
+};

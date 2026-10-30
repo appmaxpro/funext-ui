@@ -250,7 +250,7 @@ export function deepMerge<
 
 function baseClone<T>(value: T, cloned = new WeakMap()): T {
   // non-object types
-  if (value === null || typeof value !== "object") {
+  if (value == null || typeof value !== "object") {
     return value;
   }
 

@@ -10,10 +10,6 @@ export default [
     icon: <Icons.ShoppingCart />,
     showNav: true,
     childNav: false,
-    props: {
-      custom: true,
-
-    },  
     children: [
       {
         CP: "SaleTargetStates",
@@ -27,7 +23,6 @@ export default [
         CP: "SaleTargetStates",
         props: {
           model: "odata/states",
-          custom: true
         },
         children: [],
       },
@@ -39,7 +34,6 @@ export default [
     type: "tabs",
     Component: RouteTabs,
     props: {
-      custom: true,
       isLayout: true,
     },
     children: [
@@ -48,10 +42,8 @@ export default [
         type: "tab",
         title: "Revenue",
         path: ':branch_id',
-        Component: RouteView,
         props: {
           model: `odata/branches`,
-          custom: true
         },
       },
       {
@@ -59,10 +51,8 @@ export default [
         type: "tab",
         title: "Expense",
         path: ":branch_id/expense",
-        Component: RouteView,
         props: {
           model: `odata/branches/expense`,
-          custom: true
         },
       },
     ],

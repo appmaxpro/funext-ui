@@ -1,15 +1,37 @@
 import React from "react";
-import { useResourceContext, useViewContext } from "~/context";
+import { useViewContext } from "~/context";
 import type { FilterTabs } from "~/utils/filter";
 import { TabFilter } from "./widgets/tab-filter";
-import type { ListViewBlock } from "~/utils";
+import { i18n, type ListViewBlock } from "~/utils";
 
-export function FilterTabsBar({ tabs, ref }: { tabs: FilterTabs, ref?: any }) {
-  const { query: listParams, modifiers, doSearch } = useResourceContext();
+const homeValue = ' ';
+
+export function FilterTabsBar({ tabs: tabsProp, home, ref }: { 
+    home?: boolean;
+    tabs: FilterTabs;
+    ref?: any;
+  }) {
   const viewContext = useViewContext<ListViewBlock>()
+  const {search, filters} = viewContext;
+  const { query: listParams, modifiers } = filters 
   const params = listParams!;
-
-  const prevFilterRef = React.useRef();
+  const tabs = React.useMemo(() => {
+    let tabs = tabsProp;
+    if (home) {
+      tabs = {
+        ...tabs,
+        options: [
+          {
+            title: i18n.get('Home'),
+            domain: () => [],
+            value: homeValue
+          } as any,
+          ...tabs.options
+        ]
+      }
+    }
+    return tabs  
+  }, [tabsProp, home]);
 
   const selected = React.useMemo(() => {
     const filter = params.filter;
@@ -18,34 +40,31 @@ export function FilterTabsBar({ tabs, ref }: { tabs: FilterTabs, ref?: any }) {
     return tabs.options.find((item) => item.value === value) ?? tabs.options[0];
   }, [tabs, params.filter]);
 
-  const hasTabFilter = React.useRef(false);
+  const prevFilterRef = React.useRef(selected?.value);
 
   const onChange = React.useCallback(
     async (val?: any) => {
-      
+
+      console.log("FilterTabsBar::pre onChange:", {prev:prevFilterRef.current,   [tabs.name]: val });
       if(prevFilterRef.current === val) {
         return
       }
+      
+      
       prevFilterRef.current = val;
-      hasTabFilter.current = true;
+      //(modifiers as any).commit(false);
+      
       const work = await modifiers!.updateFilters({ [tabs.name]: val }) as any;
-      if(work === false) return;
+      if(work === false) {
+        console.log("FilterTabsBar::no work:")
+        return;
+      }
 
-      const search = viewContext.search ?? doSearch
-      search();
+      search?.();
       console.log("FilterTabsBar::onChange:", { [tabs.name]: val })
     },
-    [modifiers],
+    [modifiers, search],
   );
-  /*
-  React.useEffect(() => {
-    console.log("FilterTabsBar::filter:", params.filter)
-    if (hasTabFilter.current) {
-      hasTabFilter.current = false;
-      const search = viewContext.search ?? doSearch
-      search();
-    }
-  }, [params.filter]);*/
 
   console.log("FilterTabsBar::selected:", selected)
   if (selected) {
@@ -54,7 +73,7 @@ export function FilterTabsBar({ tabs, ref }: { tabs: FilterTabs, ref?: any }) {
         <TabFilter
           item={tabs!}
           onChange={onChange}
-          value={selected.value}
+          value={selected?.value}
           showTabsScroll={false}
         />
       </div>

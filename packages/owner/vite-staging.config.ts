@@ -1,5 +1,4 @@
-import { mergeConfig } from "vite";
-import { defineConfig } from "vitest/config";
+import { mergeConfig, defineConfig } from "vite";
 import viteConfig from "./vite.config";
 
 export default mergeConfig(
@@ -16,7 +15,6 @@ export default mergeConfig(
     build: {
       sourcemap: true,
       minify: false,
-      outDir: './build',
       emptyOutDir: true,
     },
   })

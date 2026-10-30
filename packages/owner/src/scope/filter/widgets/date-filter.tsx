@@ -1,4 +1,4 @@
-import { Button, Dialog, Flex, IconButton, List, Stack } from "@funext/ui";
+import { Button, Dialog, Flex, IconButton, List, Stack } from "~/ui";
 import { useMemo } from "react";
 import {
   ItemFilter,
@@ -94,7 +94,7 @@ function useDateSelection({ options, name }: FilterFieldDateOptions) {
     });
     if (options?.includes("range")) {
       if (selectionArray.length) {
-        selectionArray.push({});
+        //selectionArray.push({});
       }
       selectionArray.push({ value: "range", title: i18n.get("Custom") });
     }
@@ -183,6 +183,7 @@ export const CustomDateFilter = React.forwardRef<
 
   const btnRef = React.useRef<HTMLElement>(null);
   const rootRef = React.useRef<HTMLElement>(null);
+  const rootClickedRef = React.useRef<boolean>(false);
 
   const dateLabel = React.useMemo(
     () => (selected ? formatRangeDates(value as any) : null),
@@ -210,6 +211,7 @@ export const CustomDateFilter = React.forwardRef<
         delete root.dataset["new_value"];
         root.dataset["value"] = value;
       }
+      rootClickedRef.current = true;
       rootRef.current!.click();
       setVisible(false);
     },
@@ -218,7 +220,9 @@ export const CustomDateFilter = React.forwardRef<
 
   const onClick = React.useCallback(
     (e: React.SyntheticEvent<HTMLButtonElement>) => {
-      onClickProp?.(e as any);
+      if(rootClickedRef.current)
+        onClickProp?.(e as any);
+      rootClickedRef.current = false;
     },
     [selected, onClickProp],
   );
@@ -232,11 +236,12 @@ export const CustomDateFilter = React.forwardRef<
 
   return (
     <Stack
-      onClick={onClick}
+      onClick={selected ? onClick : undefined}
       ref={rootRef as any}
       data-value={selected ? value : undefined}
       data-new_value={undefined}
       width="100%"
+      mb='-10px'
     >
       <Flex gap={1} width="100%">
         <List.Item className="flex items-center w-full p-0">

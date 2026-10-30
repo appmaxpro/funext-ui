@@ -4,7 +4,7 @@ import {
   SvgIcons,
   type SvgIconProps,
   type SxComponentProps,
-} from "@funext/ui";
+} from "~/ui";
 import React from "react";
 
 import AccessAlarm from "@funext/icons/AccessAlarm";
@@ -71,7 +71,7 @@ export type IconProps = SvgIconProps;
 
 export type IconComponent = typeof SvgIcon;// React.ComponentType<IconProps>;
 
-type IconData<C extends IconComponent = IconComponent> = Record<string, C>;
+//type IconData<C extends IconComponent = IconComponent> = Record<string, C>;
 
 export const Blank = createSvgIcon(<path d="" />, "Empty") as IconComponent;
 

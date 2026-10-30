@@ -1,7 +1,7 @@
-import { Snackbar } from "@funext/ui";
+import { Snackbar } from "~/ui";
 import React from "react";
 import { useShowNextError } from "~/hooks/use-catch"
-import { snackBarDurationShortMs } from "~/utils/constant";
+import { snackBarDurationLongMs, snackBarDurationShortMs } from "~/utils/constant";
 import { i18n } from "~/utils/i18n";
 
 function getErrorMessage(error:any) {
@@ -36,14 +36,15 @@ function getErrorMessage(error:any) {
 
 export const ErrorCatch = ()=> {
     const [error, onClose]  = useShowNextError()
-    const message = React.useMemo(()=> getErrorMessage(error), [error]) 
+    const message = React.useMemo(()=> getErrorMessage(error), [error])
+    //console.error("ErrorCatch error:", error)
     return (
         <Snackbar
           open={!!message}
           message={message}
           onClose={onClose}
-          autoHideDuration={snackBarDurationShortMs}
-          ContentProps={{color: 'red'}}
+          autoHideDuration={snackBarDurationLongMs}
+          ContentProps={{className: 'bg-red-500'}}
         />
       );
 

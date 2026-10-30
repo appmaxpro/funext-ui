@@ -82,7 +82,7 @@ function createRoute(navItem: NavItem, index: number): React.ReactNode {
     if (children && children.length) {
       const Component = route.Component;
       //@ts-ignore
-      if (route.Component?.nullView) {
+      if (Component?.nullView) {
         delete route.Component;
         if (navItem.isolate) {
           route.element = (

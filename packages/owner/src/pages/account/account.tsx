@@ -1,15 +1,13 @@
 import React from "react";
 import { Container } from "~/components/shared/container";
 import {
-  Alert,
   Avatar,
   Box,
   Card,
   IconButton,
   List,
-  ListItemButton, useRtl,
   Text
-} from "@funext/ui";
+} from "~/ui";
 import { i18n } from "~/utils/i18n";
 import { session } from "~/utils/session";
 import { makeURL } from "~/utils/client";
@@ -99,7 +97,7 @@ function OtherCard() {
     <Card>
       <Card.Header title={i18n.get("Others")} />
       <Box display="flex" flexDirection="column">
-        <ListItemButton
+        <List.ItemButton
           href="settings"
           className="b-4"
         >
@@ -107,8 +105,8 @@ function OtherCard() {
             <Icons.Settings/>
           </List.Prefix>
           <List.Text primary={i18n.get("Settings")}/>
-        </ListItemButton>
-        <ListItemButton
+        </List.ItemButton>
+        <List.ItemButton
           href="account/security"
           divider
           className="b-4"
@@ -117,8 +115,8 @@ function OtherCard() {
             <Icons.Security/>
           </List.Prefix>
           <List.Text primary={i18n.get("Change Password")}/>
-        </ListItemButton>
-        <ListItemButton
+        </List.ItemButton>
+        <List.ItemButton
           className="b-4 text-red-500"
           onClick={onLogout}
         >
@@ -126,7 +124,7 @@ function OtherCard() {
             <Icons.Logout/>
           </List.Prefix>
           <List.Text primary={i18n.get("Logout")}/>
-        </ListItemButton>
+        </List.ItemButton>
       </Box>
     </Card>
   );

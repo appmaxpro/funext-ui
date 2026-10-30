@@ -1,5 +1,6 @@
 import * as React from "react";
 import { TransitionStatus } from "react-transition-group";
+import { EMPTY_RECORD } from "../constants";
 
 export const reflow = (node: Element) => node.scrollTop;
 
@@ -21,9 +22,9 @@ export const getTransitionStyle = (
   styles: {
     [k in TransitionStatus]?: React.CSSProperties;
   },
-  children: React.ReactElement,
+  children: React.ReactElement<any>,
 ): React.CSSProperties => ({
-  ...children.props.style,
+  ...children?.props?.style,
   ...styles[state],
 });
 
@@ -31,7 +32,7 @@ const getOptionValue = (value: any, mode: string, defaultValue?: any) =>
   (typeof value === "object" ? value[mode] : value) || defaultValue;
 
 const getStyleValue = (value: string | undefined) => {
-  if (value === undefined || value === null || value.length === 0) return null;
+  if (value == null || value.length === 0) return null;
   return value;
 };
 
@@ -40,10 +41,10 @@ export const getTransitionProps = (
   options: {
     easing?: string | { enter?: string; exit?: string };
     timeout: number | { enter?: number; exit?: number };
-    style: Partial<CSSStyleDeclaration>;
+    style?: Partial<CSSStyleDeclaration>;
   },
 ) => {
-  const { easing, timeout, style = {} } = options;
+  const { easing, timeout, style = EMPTY_RECORD } = options;
   return {
     easing:
       getStyleValue(style.transitionTimingFunction) ??
@@ -83,3 +84,21 @@ export const getTransition = (
     .map((prop) => `${prop} ${formatMs(duration)} ${easing} ${formatMs(delay)}`)
     .join(",");
 };
+
+export function normalizedTransitionCallback(
+  nodeRef: React.RefObject<HTMLElement | null>,
+  callback: ((node: HTMLElement, isAppearing?: boolean) => void) | undefined,
+): (maybeIsAppearing?: boolean) => void {
+  return (maybeIsAppearing) => {
+    const node = nodeRef.current;
+    if(!node || !callback) return;
+
+    // onEnterXxx and onExitXxx callbacks have a different arguments.length value.
+    if (maybeIsAppearing === undefined) {
+      callback(node);
+    } else {
+      callback(node, maybeIsAppearing);
+    }
+  };
+}
+
